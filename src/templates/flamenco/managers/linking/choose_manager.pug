@@ -3,6 +3,7 @@
 
 .box
     form(onsubmit="return linkManager(this)",method='POST')
+        input(type='hidden',name='csrf_token',value='{{ csrf_token() }}')
         | {% if not managers %}
         p You have no Manager registered at Flamenco Server. Provide a name for your new Manager.
         | {% else %}
