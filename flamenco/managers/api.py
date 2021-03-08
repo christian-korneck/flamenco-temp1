@@ -209,7 +209,7 @@ def handle_task_update_batch(manager_id, task_updates):
             continue
 
         if task_info['manager'] != manager_id:
-            log.warning('Manager %s sent update for task %s which belongs to other manager %s',
+            log.info('Manager %s sent update for task %s which belongs to other manager %s',
                         manager_id, task_id, task_info['manager'])
             continue
 
