@@ -210,7 +210,7 @@ def handle_task_update_batch(manager_id, task_updates):
 
         if task_info['manager'] != manager_id:
             log.info('Manager %s sent update for task %s which belongs to other manager %s',
-                        manager_id, task_id, task_info['manager'])
+                     manager_id, task_id, task_info['manager'])
             continue
 
         if task_update.get('received_on_manager'):
