@@ -19,5 +19,5 @@ pyjwt = "1.7.1"
 pillar-devdeps = {path = "../pillar/devdeps"}
 
 [build-system]
-requires = ["poetry==1.0","cryptography==2.7","setuptools==51.0.0","wheel==0.36.2"]
+requires = ["poetry==1.0","cryptography==2.7","setuptools==51.0.0","wheel==0.35.1"]
 build-backend = "poetry.masonry.api"
