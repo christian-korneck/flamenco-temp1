@@ -326,7 +326,7 @@ class BlenderRenderTest(AbstractFlamencoTest):
                 job_doc,
                 [commands.CreateVideo(
                     input_files='/render/out__intermediate-2018-07-06_115233/*.png',
-                    output_file='/render/out__intermediate-2018-07-06_115233/somefile-1-5.mkv',
+                    output_file='/render/out__intermediate-2018-07-06_115233/somefile-1-5.mp4',
                     fps=24,
                     ffmpeg_cmd='{ffmpeg}',
                 )],

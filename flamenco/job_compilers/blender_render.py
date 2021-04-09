@@ -313,7 +313,7 @@ class BlenderRender(AbstractBlenderJobCompiler):
 
         blendfile = pathlib.Path(job_settings['filepath'])
         stem = blendfile.stem.replace('.flamenco', '')
-        outfile = self.render_dir / f'{stem}-{job_settings["frames"]}.mkv'
+        outfile = self.render_dir / f'{stem}-{job_settings["frames"]}.mp4'
 
         cmd = commands.CreateVideo(
             input_files=str(self.render_dir / f'*{output_file_extension}'),

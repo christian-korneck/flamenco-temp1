@@ -8,6 +8,7 @@ Flamenco Server Changelog
   the task can try again. This is essential when the task was failing due to external conditions,m
   for example failure due to a crash that was fixed by upgrading Blender.
 - Switched to [Poetry](https://poetry.eustace.io/) for dependency management.
+- Change `blender-render` video output from MKV (Matroska) to MP4 containers.
 
 
 ## Version 2.2 (released 2019-03-25)
