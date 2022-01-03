@@ -1,7 +1,23 @@
-print('Blender Render job submitted');
-print('job: ', job)
+print("Blender Render job submitted");
+print("job: ", job);
 
 const { created, settings } = job;
+
+// Set of scene.render.image_settings.file_format values that produce
+// files which FFmpeg is known not to handle as input.
+const ffmpegIncompatibleImageFormats = new Set([
+    "EXR",
+    "MULTILAYER", // Old CLI-style format indicators
+    "OPEN_EXR",
+    "OPEN_EXR_MULTILAYER", // DNA values for these formats.
+]);
+
+// The render path contains a filename pattern, most likely '######' or
+// something similar. This has to be removed, so that we end up with
+// the directory that will contain the frames.
+const renderOutput = path.dirname(settings.render_output);
+const finalDir = path.dirname(renderOutput);
+const renderDir = intermediatePath(finalDir);
 
 // Determine the intermediate render output path.
 function intermediatePath(render_path) {
@@ -11,33 +27,62 @@ function intermediatePath(render_path) {
 }
 
 function frameChunker(frames, callback) {
-    callback('1-10');
-    callback('11-20');
-    callback('21-30');
+    // TODO: actually implement.
+    callback("1-10");
+    callback("11-20");
+    callback("21-30");
 }
 
-// The render path contains a filename pattern, most likely '######' or
-// something similar. This has to be removed, so that we end up with
-// the directory that will contain the frames.
-const renderOutput = path.dirname(settings.render_output);
-const finalDir = path.dirname(renderOutput);
-const renderDir = intermediatePath(finalDir);
+function authorRenderTasks() {
+    let renderTasks = [];
+    frameChunker(settings.frames, function(chunk) {
+        const task = author.Task(`render-${chunk}`);
+        const command = author.Command("blender-render", {
+            cmd: settings.blender_cmd,
+            filepath: settings.filepath,
+            format: settings.format,
+            render_output: path.join(renderDir, path.basename(renderOutput)),
+            frames: chunk,
+        });
+        task.addCommand(command);
+        renderTasks.push(task);
+    });
+    return renderTasks;
+}
 
-let renderTasks = [];
-frameChunker(settings.frames, function(chunk) {
-    const task = author.Task(`render-${chunk}`);
-    const command = author.Command('blender-render', {
-        cmd: settings.blender_cmd,
-        filepath: settings.filepath,
-        format: settings.format,
-        render_output: path.join(renderDir, path.basename(renderOutput)),
-        frames: chunk,
+function authorCreateVideoTask() {
+    if (ffmpegIncompatibleImageFormats.has(settings.format)) {
+        return;
+    }
+    if (!settings.fps || !settings.output_file_extension) {
+        return;
+    }
+
+    const stem = path.stem(settings.filepath).replace('.flamenco', '');
+    const outfile = path.join(renderDir, `${stem}-${settings.frames}.mp4`);
+
+    const task = author.Task('create-video');
+    const command = author.Command("create-video", {
+        input_files: path.join(renderDir, `*${settings.output_file_extension}`),
+        output_file: outfile,
+        fps: settings.fps,
     });
     task.addCommand(command);
-    renderTasks.push(task);
-});
 
-print(`done creating ${renderTasks.length} tasks`);
-for (const task of renderTasks) {
-    print(task);
+    print(`Creating output video for ${settings.format}`);
+    return task;
+}
+
+const renderTasks = authorRenderTasks();
+const videoTask = authorCreateVideoTask(renderTasks);
+
+if (videoTask) {
+    // If there is a video task, all other tasks have to be done first.
+    for (const rt of renderTasks) {
+        videoTask.addDependency(rt);
+    }
+    job.addTask(videoTask);
+}
+for (const rt of renderTasks) {
+    job.addTask(rt);
 }

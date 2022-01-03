@@ -66,21 +66,6 @@ func newGojaVM() *goja.Runtime {
 	return vm
 }
 
-type Job struct {
-	JobID    int64
-	Name     string
-	JobType  string
-	Priority int8
-
-	Created time.Time
-
-	Settings JobSettings
-	Metadata JobMetadata
-}
-
-type JobSettings map[string]interface{}
-type JobMetadata map[string]string
-
 func (c *GojaJobCompiler) Run(jobType string) error {
 	program, ok := c.jobtypes[jobType]
 	if !ok {
@@ -92,7 +77,7 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 		panic("hard-coded timestamp is wrong")
 	}
 
-	job := Job{
+	job := AuthoredJob{
 		JobID:    327,
 		JobType:  "blender-render",
 		Priority: 50,
@@ -106,8 +91,8 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 			"fps":                   24.0,
 			"extract_audio":         false,
 			"images_or_video":       "images",
-			"format":                "OPEN_EXR_MULTILAYER",
-			"output_file_extension": ".exr",
+			"format":                "JPG",
+			"output_file_extension": ".jpg",
 			"filepath":              "{shaman}/65/61672427b63a96392cd72d65/pro/shots/190_credits/190_0030_A/190_0030_A.lighting.flamenco.blend",
 		},
 		Metadata: JobMetadata{
@@ -117,11 +102,15 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 	}
 	c.vm.Set("job", &job)
 
-	_, err = c.vm.RunProgram(program)
-	return err
-}
+	if _, err := c.vm.RunProgram(program); err != nil {
+		return err
+	}
 
-func (j *Job) NewTask(call goja.ConstructorCall) goja.Value {
-	log.Debug().Interface("args", call.Arguments).Msg("job.NewTask")
-	return goja.Undefined()
+	log.Info().
+		Int("tasks", len(job.Tasks)).
+		Str("name", job.Name).
+		Str("jobtype", job.JobType).
+		Msg("job created")
+
+	return nil
 }
