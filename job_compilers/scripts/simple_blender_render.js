@@ -2,28 +2,44 @@ var path = require('path');
 
 print('Blender Render job submitted');
 print('job: ', job)
-print('running on platform', process.platform);
+
+const { created, settings } = job;
 
 // Determine the intermediate render output path.
-function intermediate_path(render_path) {
+function intermediatePath(render_path) {
     const basename = path.basename(render_path);
-    const name = `${basename}__intermediate-${job.created}`;
+    const name = `${basename}__intermediate-${created}`;
     return path.join(path.dirname(render_path), name);
 }
 
+function frameChunker(frames, callback) {
+    callback('1-10');
+    callback('11-20');
+    callback('21-30');
+}
 
 // The render path contains a filename pattern, most likely '######' or
 // something similar. This has to be removed, so that we end up with
 // the directory that will contain the frames.
-const render_output = path.dirname(job.settings.render_output);
-print('render output', render_output);
-const final_dir = path.dirname(render_output);
-print('final dir    ', final_dir);
-const render_dir = intermediate_path(final_dir);
-print('render dir   ', render_dir);
+const renderOutput = path.dirname(settings.render_output);
+const finalDir = path.dirname(renderOutput);
+const renderDir = intermediatePath(finalDir);
 
-// for (var i = 0; i < 5; i++) {
-//     create_task('task' + i, 'task' + i + ' description');
-// }
+let renderTasks = [];
+frameChunker(settings.frames, function(chunk) {
+    const task = author.Task(`render-${chunk}`);
+    const command = author.Command('blender-render', {
+        cmd: settings.blender_cmd,
+        filepath: settings.filepath,
+        format: settings.format,
+        render_output: path.join(renderDir, path.basename(renderOutput)),
+        frames: chunk,
+    });
+    task.addCommand(command);
+    renderTasks.push(task);
+});
 
-print('done creating tasks');
+print(`done creating ${renderTasks.length} tasks`);
+for (const task of renderTasks) {
+    print(task);
+}

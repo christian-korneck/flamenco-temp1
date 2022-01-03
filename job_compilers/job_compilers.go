@@ -2,6 +2,7 @@ package job_compilers
 
 import (
 	"errors"
+	"time"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
@@ -40,8 +41,9 @@ func Load() (*GojaJobCompiler, error) {
 	registry := require.NewRegistry(require.WithLoader(staticFileLoader))
 	registry.Enable(compiler.vm)
 
-	// NodeJS has this module both importable and globally available.
+	registry.RegisterNativeModule("author", AuthorModule)
 	registry.RegisterNativeModule("process", ProcessModule)
+	compiler.vm.Set("author", require.Require(compiler.vm, "author"))
 	compiler.vm.Set("process", require.Require(compiler.vm, "process"))
 
 	return &compiler, nil
@@ -55,10 +57,6 @@ func newGojaVM() *goja.Runtime {
 		log.Info().Interface("args", call.Arguments).Msg("print")
 		return goja.Undefined()
 	})
-	vm.Set("create_task", func(call goja.FunctionCall) goja.Value {
-		log.Info().Interface("args", call.Arguments).Msg("create_task")
-		return goja.Undefined()
-	})
 	vm.Set("alert", func(call goja.FunctionCall) goja.Value {
 		log.Warn().Interface("args", call.Arguments).Msg("alert")
 		return goja.Undefined()
@@ -67,10 +65,13 @@ func newGojaVM() *goja.Runtime {
 }
 
 type Job struct {
-	ID       int64
+	JobID    int64
 	Name     string
 	JobType  string
 	Priority int8
+
+	Created time.Time
+
 	Settings JobSettings
 	Metadata JobMetadata
 }
@@ -84,11 +85,17 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 		return ErrJobTypeUnknown
 	}
 
+	created, err := time.Parse(time.RFC3339, "2022-01-03T18:53:00+01:00")
+	if err != nil {
+		panic("hard-coded timestamp is wrong")
+	}
+
 	job := Job{
-		ID:       327,
+		JobID:    327,
 		JobType:  "blender-render",
 		Priority: 50,
 		Name:     "190_0030_A.lighting",
+		Created:  created,
 		Settings: JobSettings{
 			"blender_cmd":           "{blender}",
 			"chunk_size":            5,
@@ -108,7 +115,7 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 	}
 	c.vm.Set("job", &job)
 
-	_, err := c.vm.RunProgram(program)
+	_, err = c.vm.RunProgram(program)
 	return err
 }
 
