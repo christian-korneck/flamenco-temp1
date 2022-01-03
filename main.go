@@ -18,5 +18,7 @@ func main() {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
 
-	compiler.Run("simple-blender-render")
+	if err := compiler.Run("simple-blender-render"); err != nil {
+		log.Fatal().Err(err).Msg("error running job compiler")
+	}
 }

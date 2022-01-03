@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-//go:embed scripts/*.js
+//go:embed scripts
 var scriptsFS embed.FS
 
 func (c *GojaJobCompiler) loadScripts() error {
@@ -22,12 +22,8 @@ func (c *GojaJobCompiler) loadScripts() error {
 
 	for _, script := range scripts {
 		filename := path.Join("scripts", script.Name())
-		file, err := scriptsFS.Open(filename)
-		if err != nil {
-			return fmt.Errorf("failed to open embedded script: %w", err)
-		}
 
-		script_bytes, err := io.ReadAll(file)
+		script_bytes, err := c.loadScript(filename)
 		if err != nil {
 			log.Error().Err(err).Str("filename", filename).Msg("failed to read script")
 			continue
@@ -46,6 +42,14 @@ func (c *GojaJobCompiler) loadScripts() error {
 	}
 
 	return nil
+}
+
+func (c *GojaJobCompiler) loadScript(path string) ([]byte, error) {
+	file, err := scriptsFS.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open embedded script: %w", err)
+	}
+	return io.ReadAll(file)
 }
 
 func filenameToJobType(filename string) string {

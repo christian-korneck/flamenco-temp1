@@ -38,6 +38,9 @@ version:
 	@echo "Version: ${VERSION}"
 	@echo "Target : ${OUT}"
 
+embedded:
+	@go list -f "{{.Name}}: {{.EmbedFiles}}" ${PKG}/...
+
 test:
 	go test -short ${PKG_LIST}
 
