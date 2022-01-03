@@ -39,7 +39,7 @@ version:
 	@echo "Target : ${OUT}"
 
 embedded:
-	@go list -f "{{.Name}}: {{.EmbedFiles}}" ${PKG}/...
+	@go list -f "{{.EmbedFiles}}" ${PKG}/job_compilers
 
 test:
 	go test -short ${PKG_LIST}

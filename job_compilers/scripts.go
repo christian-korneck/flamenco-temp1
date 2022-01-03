@@ -21,6 +21,9 @@ func (c *GojaJobCompiler) loadScripts() error {
 	}
 
 	for _, script := range scripts {
+		if !strings.HasSuffix(script.Name(), ".js") {
+			continue
+		}
 		filename := path.Join("scripts", script.Name())
 
 		script_bytes, err := c.loadScript(filename)

@@ -34,24 +34,20 @@ func Load() (*GojaJobCompiler, error) {
 			// such errors.
 			return nil, require.ModuleFileDoesNotExistError
 		}
-		log.Debug().Err(err).Str("path", path).Msg("imported module")
 		return content, nil
 	}
 
-	registry := require.NewRegistry(require.WithLoader(staticFileLoader)) // this can be shared by multiple runtimes
+	registry := require.NewRegistry(require.WithLoader(staticFileLoader))
 	registry.Enable(compiler.vm)
 
-	// registry.RegisterNativeModule("pathlib", func(r *goja.Runtime, o *goja.Object) {
-	// 	log.Debug().Interface("runtime", r).Interface("object", o).Msg("loading pathlib")
-	// 	o.Set("exports", compiler.jobtypes["simple-blender-render"])
-	// 	log.Debug().Interface("exports", o).Msg("exporting")
-	// })
+	// NodeJS has this module both importable and globally available.
+	registry.RegisterNativeModule("process", ProcessModule)
+	compiler.vm.Set("process", require.Require(compiler.vm, "process"))
 
 	return &compiler, nil
 }
 
 func newGojaVM() *goja.Runtime {
-
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
