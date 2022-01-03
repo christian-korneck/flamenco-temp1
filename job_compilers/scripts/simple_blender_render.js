@@ -1,5 +1,3 @@
-var path = require('path');
-
 print('Blender Render job submitted');
 print('job: ', job)
 

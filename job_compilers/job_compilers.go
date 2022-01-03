@@ -42,8 +42,10 @@ func Load() (*GojaJobCompiler, error) {
 	registry.Enable(compiler.vm)
 
 	registry.RegisterNativeModule("author", AuthorModule)
+	registry.RegisterNativeModule("path", PathModule)
 	registry.RegisterNativeModule("process", ProcessModule)
 	compiler.vm.Set("author", require.Require(compiler.vm, "author"))
+	compiler.vm.Set("path", require.Require(compiler.vm, "path"))
 	compiler.vm.Set("process", require.Require(compiler.vm, "process"))
 
 	return &compiler, nil
