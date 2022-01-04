@@ -13,7 +13,7 @@ type Author struct {
 }
 
 type AuthoredJob struct {
-	JobID    int64
+	JobID    string
 	Name     string
 	JobType  string
 	Priority int8

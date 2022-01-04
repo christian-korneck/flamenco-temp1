@@ -6,6 +6,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
 
@@ -78,7 +79,7 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 	}
 
 	job := AuthoredJob{
-		JobID:    327,
+		JobID:    uuid.New().String(),
 		JobType:  "blender-render",
 		Priority: 50,
 		Name:     "190_0030_A.lighting",
