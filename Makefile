@@ -1,11 +1,11 @@
-OUT := $(notdir $(realpath .))
-PKG := stuvel.eu/flamenco-test/goja
+OUT := flamenco-goja-poc
+PKG := stuvel.eu/flamenco-test/goja/cmd/flamenco-goja-poc
 VERSION := $(shell git describe --tags --dirty --always)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 STATIC_OUT := ${OUT}-${VERSION}
 PACKAGE_PATH := dist/${OUT}-${VERSION}
 
-LDFLAGS := -X ${PKG}/appinfo.ApplicationVersion=${VERSION}
+LDFLAGS := -X stuvel.eu/flamenco-test/goja/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
 ifndef PACKAGE_PATH
