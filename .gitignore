@@ -1,2 +1,3 @@
 *.exe
-/goja
+/flamenco-poc
+*.gen.go

@@ -1,11 +1,11 @@
-OUT := flamenco-goja-poc
-PKG := stuvel.eu/flamenco-test/goja/cmd/flamenco-goja-poc
+OUT := flamenco-poc
+PKG := gitlab.com/blender/flamenco-goja-test
 VERSION := $(shell git describe --tags --dirty --always)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 STATIC_OUT := ${OUT}-${VERSION}
 PACKAGE_PATH := dist/${OUT}-${VERSION}
 
-LDFLAGS := -X stuvel.eu/flamenco-test/goja/internal/appinfo.ApplicationVersion=${VERSION}
+LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
 ifndef PACKAGE_PATH
@@ -24,10 +24,8 @@ endif
 all: application
 
 application: ${RESOURCES}
-	go build -v -o ${OUT} ${BUILD_FLAGS} ${PKG}
-
-install: ${RESOURCES}
-	go install -i -v ${BUILD_FLAGS} ${PKG}
+	go generate ${PKG}/...
+	go build -v -o ${OUT} ${BUILD_FLAGS} ${PKG}/cmd/flamenco-poc
 
 resource.syso: resource/thermogui.ico resource/versioninfo.json
 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
@@ -38,8 +36,16 @@ version:
 	@echo "Version: ${VERSION}"
 	@echo "Target : ${OUT}"
 
-embedded:
-	@go list -f "{{.EmbedFiles}}" ${PKG}/job_compilers
+list-embedded:
+	@go list -f '{{printf "%10s" .Name}}: {{.EmbedFiles}}' ${PKG}/...
+
+swagger-ui:
+	git clone --depth 1 https://github.com/swagger-api/swagger-ui.git tmp-swagger-ui
+	rm -rf pkg/api/static/swagger-ui
+	mv tmp-swagger-ui/dist pkg/api/static/swagger-ui
+	rm -rf tmp-swagger-ui
+	@echo
+	@echo 'Now update pkg/api/static/swagger-ui/index.html to have url: "/api/openapi3.json",'
 
 test:
 	go test -short ${PKG_LIST}

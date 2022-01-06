@@ -1,0 +1,127 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Flamenco manager
+  description: Render Farm manager API
+  contact:
+    name: Flamenco Team
+    url: https://flamenco.io/
+  license:
+    name: GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.en.html
+servers:
+  - url: http://localhost:8080/
+paths:
+  /register-worker:
+    summary: Registration of new workers
+    post:
+      description: Register a new worker.
+      operationId: registerWorker
+      requestBody:
+        description: Worker to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerRegistration"
+      responses:
+        "200":
+          description: normal response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisteredWorker"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /task:
+    summary: Task scheduler endpoint.
+    post:
+      summary: Obtain a new task to execute.
+      responses:
+        "204":
+          description: No tasks available for this Worker.
+        "200":
+          description: Task to execute.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AssignedTask"}
+
+components:
+  schemas:
+    WorkerRegistration:
+      type: object
+      required: [secret, platform, supported_task_types, nickname]
+      properties:
+        secret: {type: string}
+        platform: {type: string}
+        supported_task_types:
+          type: array
+          items: {type: string}
+        nickname: {type: string}
+
+    RegisteredWorker:
+      type: object
+      properties:
+        _id: {type: string}
+        nickname: {type: string}
+        address: {type: string}
+        status: {type: string}
+        platform: {type: string}
+        last_activity: {type: string}
+        software: {type: string}
+        supported_task_types:
+          type: array
+          items: {type: string}
+      required: [_id, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
+
+    AssignedTask:
+      type: object
+      description: AssignedTask is a task as it is received by the Worker.
+      properties:
+        _id: {type: string}
+        job: {type: string}
+        user: {type: string}
+        name: {type: string}
+        status: {$ref: "#/components/schemas/TaskStatus"}
+        priority: {type: integer}
+        job_priority: {type: integer}
+        job_type: {type: string}
+        task_type: {type: string}
+        commands:
+          type: array
+          items: {$ref: "#/components/schemas/Command"}
+      required: [_id, job, user, name, status, priority, job_priority, job_type, task_type, commands]
+
+    JobStatus:
+      type: string
+      enum: [active, canceled, completed, construction-failed, failed, paused, queued, archived, archiving, cancel-requested, fail-requested, requeued, under-construction, waiting-for-files]
+
+    TaskStatus:
+      type: string
+      enum: [active, canceled, completed, failed, queued, soft-failed, cancel-requested, fail-requested, paused, processing]
+
+## Authentication
+
+
+    Command:
+      type: object
+      description: Command represents a single command to execute by the Worker.
+      properties:
+        name: {type: string}
+        settings: {type: object}
+      required: [name, settings]
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
