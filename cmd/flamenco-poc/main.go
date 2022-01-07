@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	middleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-colorable"
@@ -68,7 +67,6 @@ func ginOpenAPIPoC() {
 		c.JSON(http.StatusOK, swagger)
 	})
 
-	r.Use(middleware.OapiRequestValidator(swagger))
 	flamenco := api.NewFlamenco()
 	r = api.RegisterHandlers(r, flamenco)
 
