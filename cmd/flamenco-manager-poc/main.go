@@ -17,6 +17,7 @@ import (
 	"github.com/ziflex/lecho/v3"
 
 	"gitlab.com/blender/flamenco-goja-test/internal/appinfo"
+	"gitlab.com/blender/flamenco-goja-test/internal/manager/api_impl"
 	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
 	"gitlab.com/blender/flamenco-goja-test/internal/manager/swagger_ui"
 	"gitlab.com/blender/flamenco-goja-test/pkg/api"
@@ -92,7 +93,7 @@ func echoOpenAPIPoC() {
 		})
 	e.Use(validator)
 
-	flamenco := api.NewFlamenco()
+	flamenco := api_impl.NewFlamenco()
 	api.RegisterHandlers(e, flamenco)
 
 	// Log available routes
