@@ -1,6 +1,7 @@
-//go:generate oapi-codegen -generate types -o openapi_types.gen.go -package api flamenco-manager.yaml
-//go:generate oapi-codegen -generate gin   -o openapi_gin.gen.go   -package api flamenco-manager.yaml
-//go:generate oapi-codegen -generate spec  -o openapi_spec.gen.go  -package api flamenco-manager.yaml
+//go:generate oapi-codegen -generate types  -o openapi_types.gen.go  -package api flamenco-manager.yaml
+//go:generate oapi-codegen -generate gin    -o openapi_gin.gen.go    -package api flamenco-manager.yaml
+//go:generate oapi-codegen -generate spec   -o openapi_spec.gen.go   -package api flamenco-manager.yaml
+//go:generate oapi-codegen -generate client -o openapi_client.gen.go -package api flamenco-manager.yaml
 
 package api
 

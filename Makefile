@@ -25,7 +25,8 @@ all: application
 
 application: ${RESOURCES}
 	go generate ${PKG}/...
-	go build -v -o ${OUT} ${BUILD_FLAGS} ${PKG}/cmd/flamenco-poc
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-poc
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
 
 resource.syso: resource/thermogui.ico resource/versioninfo.json
 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
