@@ -30,6 +30,10 @@ func main() {
 	flamenco, err := api.NewClientWithResponses(
 		"http://localhost:8080/",
 		api.WithRequestEditorFn(basicAuthProvider.Intercept),
+		api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			req.Header.Set("User-Agent", appinfo.UserAgent())
+			return nil
+		}),
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error creating client")

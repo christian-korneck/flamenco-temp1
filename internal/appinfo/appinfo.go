@@ -12,3 +12,8 @@ var ApplicationVersion = "set-during-build"
 func FormattedApplicationInfo() string {
 	return fmt.Sprintf("%s %s", ApplicationName, ApplicationVersion)
 }
+
+// UserAgent returns the application name & version suitable for the HTTP User-Agent header.
+func UserAgent() string {
+	return fmt.Sprintf("%s/%s", ApplicationName, ApplicationVersion)
+}
