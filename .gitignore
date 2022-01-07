@@ -1,3 +1,2 @@
 *.exe
 /flamenco*-poc
-*.gen.go
