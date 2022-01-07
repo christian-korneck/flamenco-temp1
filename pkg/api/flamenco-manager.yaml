@@ -10,9 +10,9 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.en.html
 servers:
-  - url: http://localhost:8080/
+  - url: /
 paths:
-  /register-worker:
+  /api/register-worker:
     summary: Registration of new workers
     post:
       description: Register a new worker.
@@ -38,10 +38,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /task:
+  /api/task:
     summary: Task scheduler endpoint.
     post:
+      operationId: scheduleTask
       summary: Obtain a new task to execute.
+      security: [{worker_auth: []}]
       responses:
         "204":
           description: No tasks available for this Worker.
@@ -50,6 +52,7 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/AssignedTask"}
+
 
 components:
   schemas:
@@ -105,9 +108,6 @@ components:
       type: string
       enum: [active, canceled, completed, failed, queued, soft-failed, cancel-requested, fail-requested, paused, processing]
 
-## Authentication
-
-
     Command:
       type: object
       description: Command represents a single command to execute by the Worker.
@@ -125,3 +125,9 @@ components:
           format: int32
         message:
           type: string
+
+  securitySchemes:
+    worker_auth:
+      description: Username is the worker ID, password is the secret given at worker registration.
+      type: http
+      scheme: basic

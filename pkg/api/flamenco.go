@@ -46,7 +46,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 	})
 }
 
-func (f *Flamenco) PostTask(e echo.Context) error {
+func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	return e.JSON(http.StatusOK, &AssignedTask{
 		Id: uuid.New().String(),
 		Commands: []Command{

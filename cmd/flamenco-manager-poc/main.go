@@ -1,12 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"net"
 	"net/http"
 	"time"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mattn/go-colorable"
@@ -48,12 +50,24 @@ func echoOpenAPIPoC() {
 	log.Info().Str("port", port).Msg("listening")
 
 	e := echo.New()
+	e.HideBanner = true
 	e.Use(lecho.Middleware(lecho.Config{
 		Logger: lecho.From(log.Logger),
 	}))
 	e.Use(middleware.Recover())
 
-	e.GET("/ping", func(c echo.Context) error {
+	api.RegisterSwaggerUIStaticFiles(e)
+
+	// Adjust the OpenAPI3/Swagger spec to match the port we're listening on.
+	swagger, err := api.GetSwagger()
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to get swagger")
+	}
+	e.GET("/api/openapi3.json", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, swagger)
+	})
+
+	e.GET("/api/ping", func(c echo.Context) error {
 		logger := log.Level(zerolog.InfoLevel)
 		logger.Debug().Msg("debug debug")
 		logger.Info().Msg("Info Info")
@@ -63,25 +77,56 @@ func echoOpenAPIPoC() {
 		})
 	})
 
-	api.RegisterSwaggerUIStaticFiles(e)
+	validator := oapi_middle.OapiRequestValidatorWithOptions(swagger,
+		&oapi_middle.Options{
+			Options: openapi3filter.Options{
+				AuthenticationFunc: authenticator,
+			},
 
-	// Adjust the OpenAPI3/Swagger spec to match the port we're listening on.
-	swagger, err := api.GetSwagger()
-	swagger.Servers = []*openapi3.Server{
-		{
-			URL: fmt.Sprintf("http://0.0.0.0:%s/", port),
-		},
-	}
-	if err != nil {
-		log.Fatal().Err(err).Msg("unable to get swagger")
-	}
-	e.GET("/api/openapi3.json", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, swagger)
-	})
+			// Skip OAPI validation when the request is not for the OAPI interface.
+			Skipper: func(e echo.Context) bool {
+				path := e.Path()
+				skip := swagger.Paths.Find(path) == nil
+				return skip
+			},
+		})
+	e.Use(validator)
 
 	flamenco := api.NewFlamenco()
 	api.RegisterHandlers(e, flamenco)
 
+	// Log available routes
+	routeLogger := log.Level(zerolog.DebugLevel)
+	routeLogger.Debug().Msg("available routes:")
+	for _, route := range e.Routes() {
+		routeLogger.Debug().Msgf("%7s %s", route.Method, route.Path)
+	}
+
 	finalErr := e.Start(listen)
 	log.Warn().Err(finalErr).Msg("shutting down")
+}
+
+func authenticator(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
+	switch authInfo.SecuritySchemeName {
+	case "worker_auth":
+		return workerAuth(ctx, authInfo)
+	default:
+		log.Warn().Str("scheme", authInfo.SecuritySchemeName).Msg("unknown security scheme")
+		return errors.New("unknown security scheme")
+	}
+}
+
+func workerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
+	echo := ctx.Value(oapi_middle.EchoContextKey).(echo.Context)
+	req := echo.Request()
+	u, p, ok := req.BasicAuth()
+
+	// TODO: stop logging passwords.
+	log.Debug().Interface("scheme", authInfo.SecuritySchemeName).Str("user", u).Str("password", p).Msg("authenticator")
+	if !ok {
+		return authInfo.NewError(errors.New("no auth header found"))
+	}
+
+	// TODO: check username/password against worker database.
+	return nil
 }
