@@ -1,4 +1,4 @@
-package api
+package swagger_ui
 
 import (
 	"embed"
@@ -9,11 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-//go:embed swagger-ui
+//go:embed static
 var swaggerUI embed.FS
 
 func RegisterSwaggerUIStaticFiles(router *echo.Echo) {
-	files, err := fs.Sub(swaggerUI, "swagger-ui")
+	files, err := fs.Sub(swaggerUI, "static")
 	if err != nil {
 		log.Fatal().Err(err).Msg("error preparing embedded files for serving over HTTP")
 	}

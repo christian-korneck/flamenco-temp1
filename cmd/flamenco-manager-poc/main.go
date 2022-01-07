@@ -17,7 +17,8 @@ import (
 	"github.com/ziflex/lecho/v3"
 
 	"gitlab.com/blender/flamenco-goja-test/internal/appinfo"
-	"gitlab.com/blender/flamenco-goja-test/internal/job_compilers"
+	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-goja-test/internal/manager/swagger_ui"
 	"gitlab.com/blender/flamenco-goja-test/pkg/api"
 )
 
@@ -56,7 +57,7 @@ func echoOpenAPIPoC() {
 	}))
 	e.Use(middleware.Recover())
 
-	api.RegisterSwaggerUIStaticFiles(e)
+	swagger_ui.RegisterSwaggerUIStaticFiles(e)
 
 	swagger, err := api.GetSwagger()
 	if err != nil {
