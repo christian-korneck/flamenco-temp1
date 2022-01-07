@@ -52,7 +52,11 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/AssignedTask"}
-
+        "403":
+          description: Permission Denied
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SecurityError"}
 
 components:
   schemas:
@@ -120,11 +124,14 @@ components:
       type: object
       required: [code, message]
       properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
+        code: {type: integer, format: int32}
+        message: {type: string}
+
+    SecurityError:
+      type: object
+      required: [message]
+      properties:
+        message: {type: string}
 
   securitySchemes:
     worker_auth:
