@@ -58,7 +58,6 @@ func echoOpenAPIPoC() {
 
 	api.RegisterSwaggerUIStaticFiles(e)
 
-	// Adjust the OpenAPI3/Swagger spec to match the port we're listening on.
 	swagger, err := api.GetSwagger()
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to get swagger")
