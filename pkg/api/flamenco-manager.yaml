@@ -12,11 +12,12 @@ info:
 servers:
   - url: /
 paths:
-  /api/register-worker:
+  /api/worker/register-worker:
     summary: Registration of new workers
     post:
-      description: Register a new worker.
+      summary: Register a new worker
       operationId: registerWorker
+      tags: [worker]
       requestBody:
         description: Worker to register
         required: true
@@ -38,12 +39,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/task:
+  /api/worker/task:
     summary: Task scheduler endpoint.
     post:
       operationId: scheduleTask
-      summary: Obtain a new task to execute.
+      summary: Obtain a new task to execute
       security: [{worker_auth: []}]
+      tags: [worker]
       responses:
         "204":
           description: No tasks available for this Worker.
@@ -57,6 +59,10 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/SecurityError"}
+
+tags:
+  - name: worker
+    description: API for Flamenco Workers to communicate with Flamenco Manager.
 
 components:
   schemas:
