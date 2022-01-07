@@ -8,9 +8,12 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mattn/go-colorable"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/ziflex/lecho/v3"
+
 	"gitlab.com/blender/flamenco-goja-test/internal/appinfo"
 	"gitlab.com/blender/flamenco-goja-test/internal/job_compilers"
 	"gitlab.com/blender/flamenco-goja-test/pkg/api"
@@ -45,7 +48,16 @@ func echoOpenAPIPoC() {
 	log.Info().Str("port", port).Msg("listening")
 
 	e := echo.New()
+	e.Use(lecho.Middleware(lecho.Config{
+		Logger: lecho.From(log.Logger),
+	}))
+	e.Use(middleware.Recover())
+
 	e.GET("/ping", func(c echo.Context) error {
+		logger := log.Level(zerolog.InfoLevel)
+		logger.Debug().Msg("debug debug")
+		logger.Info().Msg("Info Info")
+
 		return c.JSON(http.StatusOK, echo.Map{
 			"message": "pong",
 		})
