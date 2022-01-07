@@ -1,4 +1,4 @@
-OUT := flamenco-poc
+OUT := flamenco-manager-poc
 PKG := gitlab.com/blender/flamenco-goja-test
 VERSION := $(shell git describe --tags --dirty --always)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
@@ -25,7 +25,7 @@ all: application
 
 application: ${RESOURCES}
 	go generate ${PKG}/...
-	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-poc
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
 
 resource.syso: resource/thermogui.ico resource/versioninfo.json
@@ -59,12 +59,9 @@ lint:
 		golint $$file ; \
 	done
 
-run: application
-	./${OUT}
-
 clean:
 	@go clean -i -x
-	rm -f ${OUT}-v* resource.syso
+	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso
 
 static: vet lint resource.syso
 	go build -v -o ${STATIC_OUT} -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}
