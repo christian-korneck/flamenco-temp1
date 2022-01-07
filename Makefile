@@ -61,7 +61,7 @@ lint:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso
+	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso pkg/api/*.gen.go
 
 static: vet lint resource.syso
 	go build -v -o ${STATIC_OUT} -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}
