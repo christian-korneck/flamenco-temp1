@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"github.com/mattn/go-colorable"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -23,7 +23,7 @@ func main() {
 	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v", appinfo.ApplicationName)
 
 	gojaPoC()
-	ginOpenAPIPoC()
+	echoOpenAPIPoC()
 }
 
 // Proof of concept of job compiler in JavaScript.
@@ -38,20 +38,20 @@ func gojaPoC() {
 	}
 }
 
-// Proof of concept of a REST API with Gin and OpenAPI.
-func ginOpenAPIPoC() {
+// Proof of concept of a REST API with Echo and OpenAPI.
+func echoOpenAPIPoC() {
 	listen := ":8080"
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
+	e := echo.New()
+	e.GET("/ping", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, echo.Map{
 			"message": "pong",
 		})
 	})
 
-	api.RegisterSwaggerUIStaticFiles(r)
+	api.RegisterSwaggerUIStaticFiles(e)
 
 	// Adjust the OpenAPI3/Swagger spec to match the port we're listening on.
 	swagger, err := api.GetSwagger()
@@ -63,13 +63,13 @@ func ginOpenAPIPoC() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to get swagger")
 	}
-	r.GET("/api/openapi3.json", func(c *gin.Context) {
-		c.JSON(http.StatusOK, swagger)
+	e.GET("/api/openapi3.json", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, swagger)
 	})
 
 	flamenco := api.NewFlamenco()
-	r = api.RegisterHandlers(r, flamenco)
+	api.RegisterHandlers(e, flamenco)
 
-	finalErr := r.Run(listen)
+	finalErr := e.Start(listen)
 	log.Warn().Err(finalErr).Msg("shutting down")
 }
