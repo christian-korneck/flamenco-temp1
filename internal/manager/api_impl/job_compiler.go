@@ -24,52 +24,15 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"github.com/rs/zerolog/log"
 )
 
 func (f *Flamenco) GetJobTypes(e echo.Context) error {
-	// Some helper functions because Go doesn't allow taking the address of a literal.
-	defaultString := func(s string) *interface{} {
-		var iValue interface{} = s
-		return &iValue
-	}
-	defaultInt32 := func(i int32) *interface{} {
-		var iValue interface{} = i
-		return &iValue
-	}
-	defaultBool := func(b bool) *interface{} {
-		var iValue interface{} = b
-		return &iValue
-	}
-	boolPtr := func(b bool) *bool {
-		return &b
-	}
-	choicesStr := func(choices ...string) *[]string {
-		return &choices
+	if f.jobCompiler == nil {
+		log.Error().Msg("Flamenco is running without job compiler")
+		return sendAPIError(e, http.StatusInternalServerError, "no job types available")
 	}
 
-	// TODO: dynamically build based on the actually registered job types.
-	types := api.AvailableJobTypes{
-		JobTypes: []api.AvailableJobType{{
-			Name: "simple-blender-render",
-			Settings: []api.AvailableJobSetting{
-				{Key: "blender_cmd", Type: "string", Default: defaultString("{blender}")},
-				{Key: "chunk_size", Type: "int32", Default: defaultInt32(1)},
-				{Key: "frames", Type: "string", Required: boolPtr(true)},
-				{Key: "render_output", Type: "string", Required: boolPtr(true)},
-				{Key: "fps", Type: "int32"},
-				{Key: "extract_audio", Type: "bool", Default: defaultBool(true)},
-				{Key: "images_or_video",
-					Type:     "string",
-					Required: boolPtr(true),
-					Choices:  choicesStr("images", "video"),
-					Visible:  boolPtr(false),
-				},
-				{Key: "format", Type: "string", Required: boolPtr(true)},
-				{Key: "output_file_extension", Type: "string", Required: boolPtr(true)},
-			},
-		}},
-	}
-
-	return e.JSON(http.StatusOK, &types)
+	jobTypes := f.jobCompiler.ListJobTypes()
+	return e.JSON(http.StatusOK, &jobTypes)
 }

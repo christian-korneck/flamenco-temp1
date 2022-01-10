@@ -18,6 +18,28 @@
  *
  * ***** END GPL LICENSE BLOCK ***** */
 
+const JOB_TYPE = {
+    label: "Simple Blender Render",
+    settings: [
+        { key: "blender_cmd", type: "string", default: "{blender}" },
+        { key: "chunk_size", type: "int32", default: 1 },
+        { key: "frames", type: "string", required: true },
+        { key: "render_output", type: "string", required: true },
+        { key: "fps", type: "int32" },
+        { key: "extract_audio", type: "bool", default: true },
+        {
+            key: "images_or_video",
+            type: "string",
+            required: true,
+            choices: ["images", "video"],
+            visible: false,
+        },
+        { key: "format", type: "string", required: true },
+        { key: "output_file_extension", type: "string", required: true },
+    ]
+};
+
+
 // Set of scene.render.image_settings.file_format values that produce
 // files which FFmpeg is known not to handle as input.
 const ffmpegIncompatibleImageFormats = new Set([

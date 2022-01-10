@@ -49,7 +49,6 @@ func main() {
 
 	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v", appinfo.ApplicationName)
 
-	gojaPoC()
 	echoOpenAPIPoC()
 }
 
@@ -113,7 +112,12 @@ func echoOpenAPIPoC() {
 		})
 	e.Use(validator)
 
-	flamenco := api_impl.NewFlamenco()
+	compiler, err := job_compilers.Load()
+	if err != nil {
+		log.Fatal().Err(err).Msg("error loading job compilers")
+	}
+
+	flamenco := api_impl.NewFlamenco(compiler)
 	api.RegisterHandlers(e, flamenco)
 
 	// Log available routes

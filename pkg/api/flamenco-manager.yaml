@@ -77,6 +77,8 @@ paths:
 tags:
   - name: worker
     description: API for Flamenco Workers to communicate with Flamenco Manager.
+  - name: jobs
+    description: Blablabla for users to get job metadata balbla
 
 components:
   schemas:
@@ -154,10 +156,11 @@ components:
       description: Job type supported by this Manager, and its parameters.
       properties:
         "name": {type: string}
+        "label": {type: string}
         "settings":
           type: array
           items: {$ref: "#/components/schemas/AvailableJobSetting"}
-      required: [name, settings]
+      required: [name, label, settings]
 
     AvailableJobSetting:
       type: object

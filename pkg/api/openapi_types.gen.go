@@ -81,6 +81,7 @@ type AvailableJobSettingType string
 
 // Job type supported by this Manager, and its parameters.
 type AvailableJobType struct {
+	Label    string                `json:"label"`
 	Name     string                `json:"name"`
 	Settings []AvailableJobSetting `json:"settings"`
 }

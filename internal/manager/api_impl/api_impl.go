@@ -27,12 +27,20 @@ import (
 )
 
 type Flamenco struct {
+	jobCompiler JobCompiler
+}
+
+type JobCompiler interface {
+	ListJobTypes() api.AvailableJobTypes
 }
 
 var _ api.ServerInterface = (*Flamenco)(nil)
 
-func NewFlamenco() *Flamenco {
-	return &Flamenco{}
+// NewFlamenco creates a new Flamenco service, using the given JobCompiler.
+func NewFlamenco(jc JobCompiler) *Flamenco {
+	return &Flamenco{
+		jobCompiler: jc,
+	}
 }
 
 // sendPetstoreError wraps sending of an error in the Error format, and

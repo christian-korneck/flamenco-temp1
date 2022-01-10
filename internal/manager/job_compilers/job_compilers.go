@@ -1,3 +1,5 @@
+// Package job_compilers contains functionality to convert a Flamenco job
+// definition into concrete tasks and commands to execute by Workers.
 package job_compilers
 
 /* ***** BEGIN GPL LICENSE BLOCK *****
@@ -28,24 +30,32 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
+	"gitlab.com/blender/flamenco-goja-test/pkg/api"
 )
 
 var ErrJobTypeUnknown = errors.New("job type unknown")
 var ErrScriptIncomplete = errors.New("job compiler script incomplete")
 
-type GojaJobCompiler struct {
-	jobtypes map[string]JobType // Mapping from job type name to jobType struct.
-	registry *require.Registry  // Goja module registry.
+// Service contains job compilers defined in JavaScript.
+type Service struct {
+	compilers map[string]Compiler // Mapping from job type name to the job compiler of that type.
+	registry  *require.Registry   // Goja module registry.
 }
 
-type JobType struct {
+type Compiler struct {
+	jobType  string
 	program  *goja.Program // Compiled JavaScript file.
 	filename string        // The filename of that JS file.
 }
 
-func Load() (*GojaJobCompiler, error) {
-	compiler := GojaJobCompiler{
-		jobtypes: map[string]JobType{},
+type VM struct {
+	runtime  *goja.Runtime // Goja VM containing the job compiler script.
+	compiler Compiler      // Program loaded into this VM.
+}
+
+func Load() (*Service, error) {
+	compiler := Service{
+		compilers: map[string]Compiler{},
 	}
 
 	if err := compiler.loadScripts(); err != nil {
@@ -53,7 +63,7 @@ func Load() (*GojaJobCompiler, error) {
 	}
 
 	staticFileLoader := func(path string) ([]byte, error) {
-		content, err := compiler.loadScript(path)
+		content, err := compiler.loadScriptBytes(path)
 		if err != nil {
 			// The 'require' module uses this to try different variations of the path
 			// in order to find it (without .js, with .js, etc.), so don't log any of
@@ -71,34 +81,15 @@ func Load() (*GojaJobCompiler, error) {
 	return &compiler, nil
 }
 
-func (c *GojaJobCompiler) newGojaVM() *goja.Runtime {
-	vm := goja.New()
-	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
-
-	mustSet := func(name string, value interface{}) {
-		err := vm.Set(name, value)
-		if err != nil {
-			log.Panic().Err(err).Msgf("unable to register '%s' in Goja VM", name)
-		}
+func (s *Service) Run(jobTypeName string) error {
+	vm, err := s.compilerForJobType(jobTypeName)
+	if err != nil {
+		return err
 	}
 
-	// Set some global functions for script debugging purposes.
-	mustSet("print", jsPrint)
-	mustSet("alert", jsAlert)
-
-	// Pre-import some useful modules.
-	c.registry.Enable(vm)
-	mustSet("author", require.Require(vm, "author"))
-	mustSet("path", require.Require(vm, "path"))
-	mustSet("process", require.Require(vm, "process"))
-
-	return vm
-}
-
-func (c *GojaJobCompiler) Run(jobTypeName string) error {
-	jobType, ok := c.jobtypes[jobTypeName]
-	if !ok {
-		return ErrJobTypeUnknown
+	compileJob, err := vm.getCompileJob()
+	if err != nil {
+		return err
 	}
 
 	created, err := time.Parse(time.RFC3339, "2022-01-03T18:53:00+01:00")
@@ -130,24 +121,7 @@ func (c *GojaJobCompiler) Run(jobTypeName string) error {
 		},
 	}
 
-	vm := c.newGojaVM()
-
-	// This should register the `compileJob()` function called below:
-	if _, err := vm.RunProgram(jobType.program); err != nil {
-		return err
-	}
-
-	compileJob, isCallable := goja.AssertFunction(vm.Get("compileJob"))
-	if !isCallable {
-		log.Error().
-			Str("jobType", jobTypeName).
-			Str("script", jobType.filename).
-			Msg("script does not define a compileJob(job) function")
-		return ErrScriptIncomplete
-
-	}
-
-	if _, err := compileJob(nil, vm.ToValue(&job)); err != nil {
+	if err := compileJob(&job); err != nil {
 		return err
 	}
 
@@ -158,4 +132,61 @@ func (c *GojaJobCompiler) Run(jobTypeName string) error {
 		Msg("job created")
 
 	return nil
+}
+
+//  ListJobTypes returns the list of available job types.
+func (s *Service) ListJobTypes() api.AvailableJobTypes {
+	jobTypes := make([]api.AvailableJobType, 0)
+	for typeName := range s.compilers {
+		compiler, err := s.compilerForJobType(typeName)
+		if err != nil {
+			log.Warn().Err(err).Str("jobType", typeName).Msg("unable to determine job type settings")
+			continue
+		}
+
+		description, err := compiler.getJobTypeInfo()
+		if err != nil {
+			log.Warn().Err(err).Str("jobType", typeName).Msg("unable to determine job type settings")
+			continue
+		}
+
+		jobTypes = append(jobTypes, *description)
+	}
+	return api.AvailableJobTypes{JobTypes: jobTypes}
+}
+
+func (vm *VM) getCompileJob() (func(job *AuthoredJob) error, error) {
+	compileJob, isCallable := goja.AssertFunction(vm.runtime.Get("compileJob"))
+	if !isCallable {
+		// TODO: construct a more elaborate Error object that contains this info, instead of logging here.
+		log.Error().
+			Str("jobType", vm.compiler.jobType).
+			Str("script", vm.compiler.filename).
+			Msg("script does not define a compileJob(job) function")
+		return nil, ErrScriptIncomplete
+	}
+
+	// TODO: wrap this in a nicer way.
+	return func(job *AuthoredJob) error {
+		_, err := compileJob(nil, vm.runtime.ToValue(job))
+		return err
+	}, nil
+}
+
+func (vm *VM) getJobTypeInfo() (*api.AvailableJobType, error) {
+	jtValue := vm.runtime.Get("JOB_TYPE")
+
+	var ajt api.AvailableJobType
+	if err := vm.runtime.ExportTo(jtValue, &ajt); err != nil {
+		// TODO: construct a more elaborate Error object that contains this info, instead of logging here.
+		log.Error().
+			Err(err).
+			Str("jobType", vm.compiler.jobType).
+			Str("script", vm.compiler.filename).
+			Msg("script does not define a proper JOB_TYPE object")
+		return nil, ErrScriptIncomplete
+	}
+
+	ajt.Name = vm.compiler.jobType
+	return &ajt, nil
 }
