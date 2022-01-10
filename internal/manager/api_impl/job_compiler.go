@@ -30,18 +30,15 @@ import (
 func (f *Flamenco) GetJobTypes(e echo.Context) error {
 	// Some helper functions because Go doesn't allow taking the address of a literal.
 	defaultString := func(s string) *interface{} {
-		var iValue interface{}
-		iValue = s
+		var iValue interface{} = s
 		return &iValue
 	}
 	defaultInt32 := func(i int32) *interface{} {
-		var iValue interface{}
-		iValue = i
+		var iValue interface{} = i
 		return &iValue
 	}
 	defaultBool := func(b bool) *interface{} {
-		var iValue interface{}
-		iValue = b
+		var iValue interface{} = b
 		return &iValue
 	}
 	boolPtr := func(b bool) *bool {

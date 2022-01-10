@@ -58,8 +58,8 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	return e.JSON(http.StatusOK, &api.AssignedTask{
 		Id: uuid.New().String(),
 		Commands: []api.Command{
-			{"echo", echo.Map{"payload": "Simon says \"Shaders!\""}},
-			{"blender", echo.Map{"blender_cmd": "/shared/bin/blender"}},
+			{Name: "echo", Settings: echo.Map{"payload": "Simon says \"Shaders!\""}},
+			{Name: "blender", Settings: echo.Map{"blender_cmd": "/shared/bin/blender"}},
 		},
 		Job:         uuid.New().String(),
 		JobPriority: 50,

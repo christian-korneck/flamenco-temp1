@@ -25,6 +25,7 @@ import (
 	"runtime"
 
 	"github.com/dop251/goja"
+	"github.com/rs/zerolog/log"
 )
 
 // Process implements a subset of the built-in NodeJS process object.
@@ -43,10 +44,18 @@ func ProcessModule(r *goja.Runtime, module *goja.Object) {
 		runtime: r,
 	}
 	obj := module.Get("exports").(*goja.Object)
-	obj.Set("cwd", p.cwd)
+
+	mustExport := func(name string, value interface{}) {
+		err := obj.Set(name, value)
+		if err != nil {
+			log.Panic().Err(err).Msgf("unable to register '%s' in Goja 'process' module", name)
+		}
+	}
+
+	mustExport("cwd", p.cwd)
 
 	// To get a list of possible values of runtime.GOOS, run `go tool dist list`.
 	// The NodeJS values are documented on https://nodejs.org/api/process.html#processplatform
 	// Both lists are equal enough to just use runtime.GOOS here.
-	obj.Set("platform", runtime.GOOS)
+	mustExport("platform", runtime.GOOS)
 }

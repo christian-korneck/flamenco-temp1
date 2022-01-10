@@ -76,13 +76,21 @@ func (a *Author) Command(cmdType string, parameters map[string]string) (*Authore
 	return &ac, nil
 }
 
+// AuthorModule exports the Author module members to Goja.
 func AuthorModule(r *goja.Runtime, module *goja.Object) {
 	a := &Author{
 		runtime: r,
 	}
 	obj := module.Get("exports").(*goja.Object)
-	obj.Set("Task", a.Task)
-	obj.Set("Command", a.Command)
+	mustExport := func(name string, value interface{}) {
+		err := obj.Set(name, value)
+		if err != nil {
+			log.Panic().Err(err).Msgf("unable to register '%s' in Goja 'author' module", name)
+		}
+	}
+
+	mustExport("Task", a.Task)
+	mustExport("Command", a.Command)
 }
 
 func (aj *AuthoredJob) AddTask(at *AuthoredTask) {

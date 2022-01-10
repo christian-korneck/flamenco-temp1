@@ -75,21 +75,22 @@ func (c *GojaJobCompiler) newGojaVM() *goja.Runtime {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
+	mustSet := func(name string, value interface{}) {
+		err := vm.Set(name, value)
+		if err != nil {
+			log.Panic().Err(err).Msgf("unable to register '%s' in Goja VM", name)
+		}
+	}
+
 	// Set some global functions for script debugging purposes.
-	vm.Set("print", func(call goja.FunctionCall) goja.Value {
-		log.Info().Interface("args", call.Arguments).Msg("print")
-		return goja.Undefined()
-	})
-	vm.Set("alert", func(call goja.FunctionCall) goja.Value {
-		log.Warn().Interface("args", call.Arguments).Msg("alert")
-		return goja.Undefined()
-	})
+	mustSet("print", jsPrint)
+	mustSet("alert", jsAlert)
 
 	// Pre-import some useful modules.
 	c.registry.Enable(vm)
-	vm.Set("author", require.Require(vm, "author"))
-	vm.Set("path", require.Require(vm, "path"))
-	vm.Set("process", require.Require(vm, "process"))
+	mustSet("author", require.Require(vm, "author"))
+	mustSet("path", require.Require(vm, "path"))
+	mustSet("process", require.Require(vm, "process"))
 
 	return vm
 }

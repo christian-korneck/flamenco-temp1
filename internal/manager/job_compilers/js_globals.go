@@ -21,31 +21,16 @@ package job_compilers
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"path/filepath"
-
 	"github.com/dop251/goja"
 	"github.com/rs/zerolog/log"
 )
 
-// PathModule provides file path manipulation functions by wrapping Go's `path`.
-func PathModule(r *goja.Runtime, module *goja.Object) {
-	obj := module.Get("exports").(*goja.Object)
-
-	mustExport := func(name string, value interface{}) {
-		err := obj.Set(name, value)
-		if err != nil {
-			log.Panic().Err(err).Msgf("unable to register '%s' in Goja 'path' module", name)
-		}
-	}
-
-	mustExport("basename", filepath.Base)
-	mustExport("dirname", filepath.Dir)
-	mustExport("join", filepath.Join)
-	mustExport("stem", Stem)
+func jsPrint(call goja.FunctionCall) goja.Value {
+	log.Info().Interface("args", call.Arguments).Msg("print")
+	return goja.Undefined()
 }
 
-func Stem(fpath string) string {
-	base := filepath.Base(fpath)
-	ext := filepath.Ext(base)
-	return base[:len(base)-len(ext)]
+func jsAlert(call goja.FunctionCall) goja.Value {
+	log.Warn().Interface("args", call.Arguments).Msg("alert")
+	return goja.Undefined()
 }
