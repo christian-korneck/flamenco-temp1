@@ -18,11 +18,6 @@
  *
  * ***** END GPL LICENSE BLOCK ***** */
 
-print("Blender Render job submitted");
-print("job: ", job);
-
-const { created, settings } = job;
-
 // Set of scene.render.image_settings.file_format values that produce
 // files which FFmpeg is known not to handle as input.
 const ffmpegIncompatibleImageFormats = new Set([
@@ -32,18 +27,39 @@ const ffmpegIncompatibleImageFormats = new Set([
     "OPEN_EXR_MULTILAYER", // DNA values for these formats.
 ]);
 
-// The render path contains a filename pattern, most likely '######' or
-// something similar. This has to be removed, so that we end up with
-// the directory that will contain the frames.
-const renderOutput = path.dirname(settings.render_output);
-const finalDir = path.dirname(renderOutput);
-const renderDir = intermediatePath(finalDir);
+function compileJob(job) {
+    print("Blender Render job submitted");
+    print("job: ", job);
+
+    const settings = job.settings;
+
+    // The render path contains a filename pattern, most likely '######' or
+    // something similar. This has to be removed, so that we end up with
+    // the directory that will contain the frames.
+    const renderOutput = path.dirname(settings.render_output);
+    const finalDir = path.dirname(renderOutput);
+    const renderDir = intermediatePath(job, finalDir);
+
+    const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
+    const videoTask = authorCreateVideoTask(renderTasks, renderDir);
+
+    if (videoTask) {
+        // If there is a video task, all other tasks have to be done first.
+        for (const rt of renderTasks) {
+            videoTask.addDependency(rt);
+        }
+        job.addTask(videoTask);
+    }
+    for (const rt of renderTasks) {
+        job.addTask(rt);
+    }
+}
 
 // Determine the intermediate render output path.
-function intermediatePath(render_path) {
-    const basename = path.basename(render_path);
-    const name = `${basename}__intermediate-${created}`;
-    return path.join(path.dirname(render_path), name);
+function intermediatePath(job, finalDir) {
+    const basename = path.basename(finalDir);
+    const name = `${basename}__intermediate-${job.created}`;
+    return path.join(path.dirname(finalDir), name);
 }
 
 function frameChunker(frames, callback) {
@@ -53,7 +69,7 @@ function frameChunker(frames, callback) {
     callback("21-30");
 }
 
-function authorRenderTasks() {
+function authorRenderTasks(settings, renderDir, renderOutput) {
     let renderTasks = [];
     frameChunker(settings.frames, function(chunk) {
         const task = author.Task(`render-${chunk}`);
@@ -70,7 +86,7 @@ function authorRenderTasks() {
     return renderTasks;
 }
 
-function authorCreateVideoTask() {
+function authorCreateVideoTask(settings, renderDir) {
     if (ffmpegIncompatibleImageFormats.has(settings.format)) {
         return;
     }
@@ -91,18 +107,4 @@ function authorCreateVideoTask() {
 
     print(`Creating output video for ${settings.format}`);
     return task;
-}
-
-const renderTasks = authorRenderTasks();
-const videoTask = authorCreateVideoTask(renderTasks);
-
-if (videoTask) {
-    // If there is a video task, all other tasks have to be done first.
-    for (const rt of renderTasks) {
-        videoTask.addDependency(rt);
-    }
-    job.addTask(videoTask);
-}
-for (const rt of renderTasks) {
-    job.addTask(rt);
 }

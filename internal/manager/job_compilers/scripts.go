@@ -58,10 +58,13 @@ func (c *GojaJobCompiler) loadScripts() error {
 			continue
 		}
 
-		jobType := filenameToJobType(script.Name())
-		c.jobtypes[jobType] = program
+		jobTypeName := filenameToJobType(script.Name())
+		c.jobtypes[jobTypeName] = JobType{
+			program:  program,
+			filename: script.Name(),
+		}
 
-		log.Debug().Str("script", script.Name()).Str("jobType", jobType).Msg("loaded script")
+		log.Debug().Str("script", script.Name()).Str("jobType", jobTypeName).Msg("loaded script")
 	}
 
 	return nil

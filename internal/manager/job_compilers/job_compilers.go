@@ -31,17 +31,21 @@ import (
 )
 
 var ErrJobTypeUnknown = errors.New("job type unknown")
+var ErrScriptIncomplete = errors.New("job compiler script incomplete")
 
 type GojaJobCompiler struct {
-	vm *goja.Runtime
+	jobtypes map[string]JobType // Mapping from job type name to jobType struct.
+	registry *require.Registry  // Goja module registry.
+}
 
-	jobtypes map[string]*goja.Program
+type JobType struct {
+	program  *goja.Program // Compiled JavaScript file.
+	filename string        // The filename of that JS file.
 }
 
 func Load() (*GojaJobCompiler, error) {
 	compiler := GojaJobCompiler{
-		vm:       newGojaVM(),
-		jobtypes: map[string]*goja.Program{},
+		jobtypes: map[string]JobType{},
 	}
 
 	if err := compiler.loadScripts(); err != nil {
@@ -59,23 +63,19 @@ func Load() (*GojaJobCompiler, error) {
 		return content, nil
 	}
 
-	registry := require.NewRegistry(require.WithLoader(staticFileLoader))
-	registry.Enable(compiler.vm)
-
-	registry.RegisterNativeModule("author", AuthorModule)
-	registry.RegisterNativeModule("path", PathModule)
-	registry.RegisterNativeModule("process", ProcessModule)
-	compiler.vm.Set("author", require.Require(compiler.vm, "author"))
-	compiler.vm.Set("path", require.Require(compiler.vm, "path"))
-	compiler.vm.Set("process", require.Require(compiler.vm, "process"))
+	compiler.registry = require.NewRegistry(require.WithLoader(staticFileLoader))
+	compiler.registry.RegisterNativeModule("author", AuthorModule)
+	compiler.registry.RegisterNativeModule("path", PathModule)
+	compiler.registry.RegisterNativeModule("process", ProcessModule)
 
 	return &compiler, nil
 }
 
-func newGojaVM() *goja.Runtime {
+func (c *GojaJobCompiler) newGojaVM() *goja.Runtime {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
+	// Set some global functions for script debugging purposes.
 	vm.Set("print", func(call goja.FunctionCall) goja.Value {
 		log.Info().Interface("args", call.Arguments).Msg("print")
 		return goja.Undefined()
@@ -84,11 +84,18 @@ func newGojaVM() *goja.Runtime {
 		log.Warn().Interface("args", call.Arguments).Msg("alert")
 		return goja.Undefined()
 	})
+
+	// Pre-import some useful modules.
+	c.registry.Enable(vm)
+	vm.Set("author", require.Require(vm, "author"))
+	vm.Set("path", require.Require(vm, "path"))
+	vm.Set("process", require.Require(vm, "process"))
+
 	return vm
 }
 
-func (c *GojaJobCompiler) Run(jobType string) error {
-	program, ok := c.jobtypes[jobType]
+func (c *GojaJobCompiler) Run(jobTypeName string) error {
+	jobType, ok := c.jobtypes[jobTypeName]
 	if !ok {
 		return ErrJobTypeUnknown
 	}
@@ -121,9 +128,25 @@ func (c *GojaJobCompiler) Run(jobType string) error {
 			"project": "Sprøte Frøte",
 		},
 	}
-	c.vm.Set("job", &job)
 
-	if _, err := c.vm.RunProgram(program); err != nil {
+	vm := c.newGojaVM()
+
+	// This should register the `compileJob()` function called below:
+	if _, err := vm.RunProgram(jobType.program); err != nil {
+		return err
+	}
+
+	compileJob, isCallable := goja.AssertFunction(vm.Get("compileJob"))
+	if !isCallable {
+		log.Error().
+			Str("jobType", jobTypeName).
+			Str("script", jobType.filename).
+			Msg("script does not define a compileJob(job) function")
+		return ErrScriptIncomplete
+
+	}
+
+	if _, err := compileJob(nil, vm.ToValue(&job)); err != nil {
 		return err
 	}
 
