@@ -88,6 +88,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetJobTypes request
+	GetJobTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -95,6 +98,18 @@ type ClientInterface interface {
 
 	// ScheduleTask request
 	ScheduleTask(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) GetJobTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetJobTypesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) RegisterWorkerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -131,6 +146,33 @@ func (c *Client) ScheduleTask(ctx context.Context, reqEditors ...RequestEditorFn
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetJobTypesRequest generates requests for GetJobTypes
+func NewGetJobTypesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewRegisterWorkerRequest calls the generic RegisterWorker builder with application/json body
@@ -243,6 +285,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetJobTypes request
+	GetJobTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetJobTypesResponse, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error)
 
@@ -250,6 +295,28 @@ type ClientWithResponsesInterface interface {
 
 	// ScheduleTask request
 	ScheduleTaskWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ScheduleTaskResponse, error)
+}
+
+type GetJobTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AvailableJobTypes
+}
+
+// Status returns HTTPResponse.Status
+func (r GetJobTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetJobTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type RegisterWorkerResponse struct {
@@ -298,6 +365,15 @@ func (r ScheduleTaskResponse) StatusCode() int {
 	return 0
 }
 
+// GetJobTypesWithResponse request returning *GetJobTypesResponse
+func (c *ClientWithResponses) GetJobTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetJobTypesResponse, error) {
+	rsp, err := c.GetJobTypes(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetJobTypesResponse(rsp)
+}
+
 // RegisterWorkerWithBodyWithResponse request with arbitrary body returning *RegisterWorkerResponse
 func (c *ClientWithResponses) RegisterWorkerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error) {
 	rsp, err := c.RegisterWorkerWithBody(ctx, contentType, body, reqEditors...)
@@ -322,6 +398,32 @@ func (c *ClientWithResponses) ScheduleTaskWithResponse(ctx context.Context, reqE
 		return nil, err
 	}
 	return ParseScheduleTaskResponse(rsp)
+}
+
+// ParseGetJobTypesResponse parses an HTTP response from a GetJobTypesWithResponse call
+func ParseGetJobTypesResponse(rsp *http.Response) (*GetJobTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetJobTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AvailableJobTypes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseRegisterWorkerResponse parses an HTTP response from a RegisterWorkerWithResponse call

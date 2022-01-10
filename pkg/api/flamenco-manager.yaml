@@ -60,6 +60,20 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/SecurityError"}
 
+  /api/jobs/types:
+    summary: Available Flamenco job types.
+    get:
+      operationId: getJobTypes
+      summary: Get list of job types and their parameters.
+      tags: [jobs]
+      responses:
+        "200":
+          description: Available job types
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AvailableJobTypes"}
+
+
 tags:
   - name: worker
     description: API for Flamenco Workers to communicate with Flamenco Manager.
@@ -126,6 +140,57 @@ components:
         settings: {type: object}
       required: [name, settings]
 
+    AvailableJobTypes:
+      type: object
+      description: List of job types supported by this Manager.
+      properties:
+        "job_types":
+          type: array
+          items: {$ref: "#/components/schemas/AvailableJobType"}
+      required: [job_types]
+
+    AvailableJobType:
+      type: object
+      description: Job type supported by this Manager, and its parameters.
+      properties:
+        "name": {type: string}
+        "settings":
+          type: array
+          items: {$ref: "#/components/schemas/AvailableJobSetting"}
+      required: [name, settings]
+
+    AvailableJobSetting:
+      type: object
+      description: Single setting of a Job types.
+      properties:
+        "key":
+          type: string
+          description: Identifier for the setting, must be unique within the job type.
+        "type": {$ref: "#/components/schemas/AvailableJobSettingType"}
+        "choices":
+          description: When given, limit the valid values to these choices. Only usable with string type.
+          type: array
+          items: {type: string}
+        "default":
+          description: The default value shown to the user when determining this setting.
+        "visible":
+          type: boolean
+          description: >
+            Whether to show this setting in the UI of a job submitter (like a
+            Blender add-on). Set to `false` when it is an internal setting that
+            shouldn't be shown to end users.
+          default: true
+        "required":
+          type: boolean
+          description: Whether to immediately reject a job definition, of this type, without this particular setting.
+          default: false
+      required: [key, type]
+
+    AvailableJobSettingType:
+      type: string
+      description: Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
+      enum: [string, int32, float, bool]
+
     Error:
       type: object
       required: [code, message]
@@ -139,8 +204,15 @@ components:
       properties:
         message: {type: string}
 
+
   securitySchemes:
     worker_auth:
       description: Username is the worker ID, password is the secret given at worker registration.
+      type: http
+      scheme: basic
+    user_auth:
+      description: >
+        OAuth2 authentication flow for authenticating users. Currently not
+        implemented, so now more used as a "todo" than actual authentication.
       type: http
       scheme: basic

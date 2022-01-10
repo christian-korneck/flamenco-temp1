@@ -7,6 +7,17 @@ const (
 	Worker_authScopes = "worker_auth.Scopes"
 )
 
+// Defines values for AvailableJobSettingType.
+const (
+	AvailableJobSettingTypeBool AvailableJobSettingType = "bool"
+
+	AvailableJobSettingTypeFloat AvailableJobSettingType = "float"
+
+	AvailableJobSettingTypeInt32 AvailableJobSettingType = "int32"
+
+	AvailableJobSettingTypeString AvailableJobSettingType = "string"
+)
+
 // Defines values for TaskStatus.
 const (
 	TaskStatusActive TaskStatus = "active"
@@ -42,6 +53,41 @@ type AssignedTask struct {
 	Status      TaskStatus `json:"status"`
 	TaskType    string     `json:"task_type"`
 	User        string     `json:"user"`
+}
+
+// Single setting of a Job types.
+type AvailableJobSetting struct {
+	// When given, limit the valid values to these choices. Only usable with string type.
+	Choices *[]string `json:"choices,omitempty"`
+
+	// The default value shown to the user when determining this setting.
+	Default *interface{} `json:"default,omitempty"`
+
+	// Identifier for the setting, must be unique within the job type.
+	Key string `json:"key"`
+
+	// Whether to immediately reject a job definition, of this type, without this particular setting.
+	Required *bool `json:"required,omitempty"`
+
+	// Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
+	Type AvailableJobSettingType `json:"type"`
+
+	// Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users.
+	Visible *bool `json:"visible,omitempty"`
+}
+
+// Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
+type AvailableJobSettingType string
+
+// Job type supported by this Manager, and its parameters.
+type AvailableJobType struct {
+	Name     string                `json:"name"`
+	Settings []AvailableJobSetting `json:"settings"`
+}
+
+// List of job types supported by this Manager.
+type AvailableJobTypes struct {
+	JobTypes []AvailableJobType `json:"job_types"`
 }
 
 // Command represents a single command to execute by the Worker.
