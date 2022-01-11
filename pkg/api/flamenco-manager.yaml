@@ -138,7 +138,7 @@ components:
     RegisteredWorker:
       type: object
       properties:
-        id: {type: string}
+        id: {type: string, format: uuid}
         nickname: {type: string}
         address: {type: string}
         status: {type: string}
@@ -154,7 +154,7 @@ components:
       type: object
       description: AssignedTask is a task as it is received by the Worker.
       properties:
-        id: {type: string}
+        id: {type: string, format: uuid}
         job: {type: string}
         user: {type: string}
         name: {type: string}
@@ -293,6 +293,7 @@ components:
         - properties:
             id:
               type: string
+              format: uuid
               description: UUID of the Job
             created:
               type: string
