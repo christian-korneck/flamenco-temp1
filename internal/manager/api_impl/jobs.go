@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-goja-test/pkg/api"
@@ -82,6 +83,11 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 		Str("ip", e.RealIP()).
 		Str("job_id", jobId).
 		Logger()
+
+	if _, err := uuid.Parse(jobId); err != nil {
+		logger.Debug().Msg("invalid job ID received")
+		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
+	}
 
 	logger.Debug().Msg("fetching job")
 
