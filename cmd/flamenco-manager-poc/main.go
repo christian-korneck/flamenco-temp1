@@ -39,6 +39,7 @@ import (
 	"gitlab.com/blender/flamenco-goja-test/internal/appinfo"
 	"gitlab.com/blender/flamenco-goja-test/internal/manager/api_impl"
 	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-goja-test/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-goja-test/internal/manager/swagger_ui"
 	"gitlab.com/blender/flamenco-goja-test/pkg/api"
 )
@@ -46,57 +47,52 @@ import (
 func main() {
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
 	log.Logger = log.Output(output)
-
 	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v", appinfo.ApplicationName)
 
-	echoOpenAPIPoC()
-}
-
-// Proof of concept of job compiler in JavaScript.
-func gojaPoC() {
-	compiler, err := job_compilers.Load()
+	// Open the database.
+	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer dbCtxCancel()
+	_, err := persistence.OpenDB(dbCtx)
 	if err != nil {
-		log.Fatal().Err(err).Msg("error loading job compilers")
+		log.Fatal().Err(err).Msg("error opening database")
 	}
 
-	if err := compiler.Run("simple-blender-render"); err != nil {
-		log.Fatal().Err(err).Msg("error running job compiler")
-	}
-}
-
-// Proof of concept of a REST API with Echo and OpenAPI.
-func echoOpenAPIPoC() {
+	// TODO: load port number from the configuration.
+	// TODO: enable TLS via Let's Encrypt.
 	listen := ":8080"
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
+	// Construct the services.
+	compiler, err := job_compilers.Load()
+	if err != nil {
+		log.Fatal().Err(err).Msg("error loading job compilers")
+	}
+	flamenco := api_impl.NewFlamenco(compiler)
+	e := buildWebService(flamenco)
+
+	// Start the web server.
+	finalErr := e.Start(listen)
+	log.Warn().Err(finalErr).Msg("shutting down")
+}
+
+func buildWebService(flamenco api.ServerInterface) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
+
+	// Hook Zerolog onto Echo:
 	e.Use(lecho.Middleware(lecho.Config{
 		Logger: lecho.From(log.Logger),
 	}))
+
+	// Ensure panics when serving a web request won't bring down the server.
 	e.Use(middleware.Recover())
 
-	swagger_ui.RegisterSwaggerUIStaticFiles(e)
-
+	// Load the API definition and enable validation & authentication checks.
 	swagger, err := api.GetSwagger()
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to get swagger")
 	}
-	e.GET("/api/openapi3.json", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, swagger)
-	})
-
-	e.GET("/api/ping", func(c echo.Context) error {
-		logger := log.Level(zerolog.InfoLevel)
-		logger.Debug().Msg("debug debug")
-		logger.Info().Msg("Info Info")
-
-		return c.JSON(http.StatusOK, echo.Map{
-			"message": "pong",
-		})
-	})
-
 	validator := oapi_middle.OapiRequestValidatorWithOptions(swagger,
 		&oapi_middle.Options{
 			Options: openapi3filter.Options{
@@ -112,13 +108,12 @@ func echoOpenAPIPoC() {
 		})
 	e.Use(validator)
 
-	compiler, err := job_compilers.Load()
-	if err != nil {
-		log.Fatal().Err(err).Msg("error loading job compilers")
-	}
-
-	flamenco := api_impl.NewFlamenco(compiler)
+	// Register routes.
 	api.RegisterHandlers(e, flamenco)
+	swagger_ui.RegisterSwaggerUIStaticFiles(e)
+	e.GET("/api/openapi3.json", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, swagger)
+	})
 
 	// Log available routes
 	routeLogger := log.Level(zerolog.DebugLevel)
@@ -127,8 +122,7 @@ func echoOpenAPIPoC() {
 		routeLogger.Debug().Msgf("%7s %s", route.Method, route.Path)
 	}
 
-	finalErr := e.Start(listen)
-	log.Warn().Err(finalErr).Msg("shutting down")
+	return e
 }
 
 func authenticator(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
