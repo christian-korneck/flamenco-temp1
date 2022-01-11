@@ -75,3 +75,22 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 
 	return e.JSON(http.StatusOK, authoredJob)
 }
+
+func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
+	// TODO: move this into some middleware.
+	logger := log.With().
+		Str("ip", e.RealIP()).
+		Str("job_id", jobId).
+		Logger()
+
+	logger.Debug().Msg("fetching job")
+
+	ctx := e.Request().Context()
+	job, err := f.persist.FetchJob(ctx, jobId)
+	if err != nil {
+		logger.Warn().Err(err).Msg("cannot fetch job")
+		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobId))
+	}
+
+	return e.JSON(http.StatusOK, job)
+}

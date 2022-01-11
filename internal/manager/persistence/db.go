@@ -30,6 +30,7 @@ import (
 	_ "modernc.org/sqlite"
 
 	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-goja-test/pkg/api"
 )
 
 // TODO : have this configurable from the CLI.
@@ -101,4 +102,62 @@ func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJo
 	}
 
 	return tx.Commit()
+}
+
+func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
+	job := api.Job{}
+
+	err := db.sqldb.
+		QueryRowContext(ctx, `SELECT * FROM jobs j where j.uuid=?`, jobID).
+		Scan(&job.Id, &job.Name, &job.Type, &job.Priority, &job.Created, &job.Updated)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: make settings and metadata an explicit type.
+	settings := make(map[string]interface{})
+	metadata := make(map[string]interface{})
+
+	rows, err := db.sqldb.QueryContext(ctx, "SELECT key, value FROM job_settings WHERE job_id=?", jobID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var key, value string
+		if err := rows.Scan(&key, &value); err != nil {
+			return nil, err
+		}
+		settings[key] = value
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	rows, err = db.sqldb.QueryContext(ctx, "SELECT key, value FROM job_metadata WHERE job_id=?", jobID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var key, value string
+		if err := rows.Scan(&key, &value); err != nil {
+			return nil, err
+		}
+		metadata[key] = value
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	job.Settings = &settings
+	job.Metadata = &metadata
+
+	return &job, nil
 }

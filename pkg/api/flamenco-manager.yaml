@@ -79,7 +79,6 @@ paths:
       operationId: submitJob
       summary: Submit a new job for Flamenco Manager to execute.
       tags: [jobs]
-      # TODO: Security!
       requestBody:
         description: Job to submit
         required: true
@@ -98,6 +97,24 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/Error"}
+
+  /api/jobs/{job_id}:
+    summary: Job info and management
+    get:
+      operationId: fetchJob
+      summary: Fetch info about the job.
+      tags: [jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        "200":
+          description: Job info
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Job"}
 
 tags:
   - name: jobs
@@ -242,7 +259,6 @@ components:
       type: object
       description: Job definition submitted to Flamenco.
       properties:
-        "id": {type: string}
         "name": {type: string}
         "type": {type: string}
         "status": {$ref: "#/components/schemas/JobStatus"}
@@ -271,6 +287,22 @@ components:
           "user.name": "Sybren Stüvel"
           "user.email": "sybren@blender.org"
           project: "Sprite Fright"
+    Job:
+      allOf:
+        - $ref: '#/components/schemas/SubmittedJob'
+        - properties:
+            id:
+              type: string
+              description: UUID of the Job
+            created:
+              type: string
+              format: date-time
+              description: Creation timestamp
+            updated:
+              type: string
+              format: date-time
+              description: Creation timestamp
+          required: [id, created, updated]
 
 
     Error:

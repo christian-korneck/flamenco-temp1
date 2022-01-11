@@ -4,6 +4,10 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,6 +19,9 @@ type ServerInterface interface {
 	// Get list of job types and their parameters.
 	// (GET /api/jobs/types)
 	GetJobTypes(ctx echo.Context) error
+	// Fetch info about the job.
+	// (GET /api/jobs/{job_id})
+	FetchJob(ctx echo.Context, jobId string) error
 	// Register a new worker
 	// (POST /api/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
@@ -43,6 +50,22 @@ func (w *ServerInterfaceWrapper) GetJobTypes(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetJobTypes(ctx)
+	return err
+}
+
+// FetchJob converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchJob(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "job_id" -------------
+	var jobId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "job_id", runtime.ParamLocationPath, ctx.Param("job_id"), &jobId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter job_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FetchJob(ctx, jobId)
 	return err
 }
 
@@ -96,6 +119,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.POST(baseURL+"/api/jobs", wrapper.SubmitJob)
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
+	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
 

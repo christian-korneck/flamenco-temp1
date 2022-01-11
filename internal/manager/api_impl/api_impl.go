@@ -37,6 +37,7 @@ type Flamenco struct {
 type JobPersistenceService interface {
 	// StoreJob stores a job in the persistence layer.
 	StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
+	FetchJob(ctx context.Context, jobID string) (*api.Job, error)
 }
 
 type JobCompiler interface {
