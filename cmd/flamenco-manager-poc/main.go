@@ -52,12 +52,12 @@ func main() {
 	// Open the database.
 	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer dbCtxCancel()
-	_, err := persistence.OpenDB(dbCtx)
+	persist, err := persistence.OpenDB(dbCtx)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error opening database")
 	}
 
-	// TODO: load port number from the configuration.
+	// TODO: load port number from the configuration in the database.
 	// TODO: enable TLS via Let's Encrypt.
 	listen := ":8080"
 	_, port, _ := net.SplitHostPort(listen)
@@ -68,7 +68,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
-	flamenco := api_impl.NewFlamenco(compiler)
+	flamenco := api_impl.NewFlamenco(compiler, persist)
 	e := buildWebService(flamenco)
 
 	// Start the web server.

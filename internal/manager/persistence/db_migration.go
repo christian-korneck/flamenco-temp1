@@ -53,7 +53,7 @@ func (db *DB) migrate() error {
 	}
 
 	err = m.Up()
-	if err != nil {
+	if err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("cannot migrate database: %w", err)
 	}
 	return nil

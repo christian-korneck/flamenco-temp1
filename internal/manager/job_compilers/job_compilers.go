@@ -23,6 +23,7 @@ package job_compilers
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -53,6 +54,9 @@ type VM struct {
 	compiler Compiler      // Program loaded into this VM.
 }
 
+// jobCompileFunc is a function that fills job.Tasks.
+type jobCompileFunc func(job *AuthoredJob) error
+
 func Load() (*Service, error) {
 	compiler := Service{
 		compilers: map[string]Compiler{},
@@ -79,6 +83,52 @@ func Load() (*Service, error) {
 	compiler.registry.RegisterNativeModule("process", ProcessModule)
 
 	return &compiler, nil
+}
+
+func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJob, error) {
+	vm, err := s.compilerForJobType(sj.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create an AuthoredJob from this SubmittedJob.
+	aj := AuthoredJob{
+		JobID:    uuid.New().String(), // Ignore the submitted ID.
+		Name:     sj.Name,
+		JobType:  sj.Type,
+		Priority: sj.Priority,
+		Status:   api.JobStatusUnderConstruction,
+
+		Settings: make(JobSettings),
+		Metadata: make(JobMetadata),
+	}
+	if sj.Settings != nil {
+		for key, value := range *sj.Settings {
+			aj.Settings[key] = value
+		}
+	}
+	if sj.Metadata != nil {
+		for key, value := range *sj.Metadata {
+			// TODO: make sure OpenAPI understands these keys can only be strings.
+			aj.Metadata[key] = value.(string)
+		}
+	}
+
+	compiler, err := vm.getCompileJob()
+	if err != nil {
+		return nil, err
+	}
+	if err := compiler(&aj); err != nil {
+		return nil, err
+	}
+
+	log.Info().
+		Int("num_tasks", len(aj.Tasks)).
+		Str("name", aj.Name).
+		Str("jobtype", aj.JobType).
+		Msg("job compiled")
+
+	return &aj, nil
 }
 
 func (s *Service) Run(jobTypeName string) error {
@@ -155,10 +205,10 @@ func (s *Service) ListJobTypes() api.AvailableJobTypes {
 	return api.AvailableJobTypes{JobTypes: jobTypes}
 }
 
-func (vm *VM) getCompileJob() (func(job *AuthoredJob) error, error) {
+func (vm *VM) getCompileJob() (jobCompileFunc, error) {
 	compileJob, isCallable := goja.AssertFunction(vm.runtime.Get("compileJob"))
 	if !isCallable {
-		// TODO: construct a more elaborate Error object that contains this info, instead of logging here.
+		// TODO: construct a more elaborate Error type that contains this info, instead of logging here.
 		log.Error().
 			Str("jobType", vm.compiler.jobType).
 			Str("script", vm.compiler.filename).
@@ -178,7 +228,7 @@ func (vm *VM) getJobTypeInfo() (*api.AvailableJobType, error) {
 
 	var ajt api.AvailableJobType
 	if err := vm.runtime.ExportTo(jtValue, &ajt); err != nil {
-		// TODO: construct a more elaborate Error object that contains this info, instead of logging here.
+		// TODO: construct a more elaborate Error type that contains this info, instead of logging here.
 		log.Error().
 			Err(err).
 			Str("jobType", vm.compiler.jobType).

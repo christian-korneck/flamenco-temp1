@@ -28,6 +28,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 	_ "modernc.org/sqlite"
+
+	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
 )
 
 // TODO : have this configurable from the CLI.
@@ -40,8 +42,11 @@ type DB struct {
 
 func OpenDB(ctx context.Context) (*DB, error) {
 	log.Info().Str("uri", dbURI).Msg("opening database")
+	return openDB(ctx, dbURI)
+}
 
-	sqldb, err := sql.Open("sqlite", dbURI)
+func openDB(ctx context.Context, uri string) (*DB, error) {
+	sqldb, err := sql.Open("sqlite", uri)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database: %w", err)
 	}
@@ -58,4 +63,42 @@ func OpenDB(ctx context.Context) (*DB, error) {
 	}
 
 	return &db, err
+}
+
+func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
+	tx, err := db.sqldb.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx,
+		`INSERT INTO jobs (uuid, name, jobType, priority) VALUES (?, ?, ?, ?)`,
+		authoredJob.JobID, authoredJob.Name, authoredJob.JobType, authoredJob.Priority,
+	)
+	if err != nil {
+		return err
+	}
+
+	for key, value := range authoredJob.Settings {
+		_, err := tx.ExecContext(ctx,
+			`INSERT INTO job_settings (job_id, key, value) VALUES (?, ?, ?)`,
+			authoredJob.JobID, key, value,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	for key, value := range authoredJob.Metadata {
+		_, err := tx.ExecContext(ctx,
+			`INSERT INTO job_metadata (job_id, key, value) VALUES (?, ?, ?)`,
+			authoredJob.JobID, key, value,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }

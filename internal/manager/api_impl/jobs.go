@@ -1,0 +1,77 @@
+package api_impl
+
+/* ***** BEGIN GPL LICENSE BLOCK *****
+ *
+ * Original Code Copyright (C) 2022 Blender Foundation.
+ *
+ * This file is part of Flamenco.
+ *
+ * Flamenco is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * Flamenco is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Flamenco.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * ***** END GPL LICENSE BLOCK ***** */
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
+	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+)
+
+func (f *Flamenco) GetJobTypes(e echo.Context) error {
+	if f.jobCompiler == nil {
+		log.Error().Msg("Flamenco is running without job compiler")
+		return sendAPIError(e, http.StatusInternalServerError, "no job types available")
+	}
+
+	jobTypes := f.jobCompiler.ListJobTypes()
+	return e.JSON(http.StatusOK, &jobTypes)
+}
+
+func (f *Flamenco) SubmitJob(e echo.Context) error {
+	// TODO: move this into some middleware.
+	logger := log.With().
+		Str("ip", e.RealIP()).
+		Logger()
+
+	var job api.SubmitJobJSONRequestBody
+	if err := e.Bind(&job); err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	logger = logger.With().
+		Str("type", job.Type).
+		Str("name", job.Name).
+		Logger()
+	logger.Info().Msg("new Flamenco job received")
+
+	ctx := e.Request().Context()
+	submittedJob := api.SubmittedJob(job)
+	authoredJob, err := f.jobCompiler.Compile(ctx, submittedJob)
+	if err != nil {
+		logger.Warn().Err(err).Msg("error compiling job")
+		// TODO: make this a more specific error object for this API call.
+		return sendAPIError(e, http.StatusBadRequest, fmt.Sprintf("error compiling job: %v", err))
+	}
+
+	logger = logger.With().Str("job_id", authoredJob.JobID).Logger()
+
+	if err := f.persist.StoreJob(ctx, *authoredJob); err != nil {
+		logger.Error().Err(err).Msg("error persisting job in database")
+		return sendAPIError(e, http.StatusInternalServerError, "error persisting job in database")
+	}
+
+	return e.JSON(http.StatusOK, authoredJob)
+}

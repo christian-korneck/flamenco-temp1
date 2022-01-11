@@ -9,6 +9,9 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Submit a new job for Flamenco Manager to execute.
+	// (POST /api/jobs)
+	SubmitJob(ctx echo.Context) error
 	// Get list of job types and their parameters.
 	// (GET /api/jobs/types)
 	GetJobTypes(ctx echo.Context) error
@@ -23,6 +26,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// SubmitJob converts echo context to params.
+func (w *ServerInterfaceWrapper) SubmitJob(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.SubmitJob(ctx)
+	return err
 }
 
 // GetJobTypes converts echo context to params.
@@ -82,6 +94,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/api/jobs", wrapper.SubmitJob)
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)

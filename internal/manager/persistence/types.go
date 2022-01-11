@@ -1,4 +1,4 @@
-package api_impl
+package persistence
 
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
@@ -20,19 +20,25 @@ package api_impl
  *
  * ***** END GPL LICENSE BLOCK ***** */
 
-import (
-	"net/http"
+import "time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
-)
+type Job struct {
+	ID       string // UUID
+	Name     string
+	JobType  string
+	Priority int8
+	Created  time.Time
+	Updated  time.Time
+}
 
-func (f *Flamenco) GetJobTypes(e echo.Context) error {
-	if f.jobCompiler == nil {
-		log.Error().Msg("Flamenco is running without job compiler")
-		return sendAPIError(e, http.StatusInternalServerError, "no job types available")
-	}
+type JobSetting struct {
+	JobID string
+	Key   string
+	Value string
+}
 
-	jobTypes := f.jobCompiler.ListJobTypes()
-	return e.JSON(http.StatusOK, &jobTypes)
+type JobMetadata struct {
+	JobID string
+	Key   string
+	Value string
 }

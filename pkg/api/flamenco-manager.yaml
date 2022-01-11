@@ -73,12 +73,37 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/AvailableJobTypes"}
 
+  /api/jobs:
+    summary: Job submission endpoint.
+    post:
+      operationId: submitJob
+      summary: Submit a new job for Flamenco Manager to execute.
+      tags: [jobs]
+      # TODO: Security!
+      requestBody:
+        description: Job to submit
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmittedJob"
+      responses:
+        "200":
+          description: Job was succesfully compiled into individual tasks.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SubmittedJob"}
+        default:
+          description: Error message
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Error"}
 
 tags:
-  - name: worker
-    description: API for Flamenco Workers to communicate with Flamenco Manager.
   - name: jobs
     description: Blablabla for users to get job metadata balbla
+  - name: worker
+    description: API for Flamenco Workers to communicate with Flamenco Manager.
 
 components:
   schemas:
@@ -96,7 +121,7 @@ components:
     RegisteredWorker:
       type: object
       properties:
-        _id: {type: string}
+        id: {type: string}
         nickname: {type: string}
         address: {type: string}
         status: {type: string}
@@ -106,13 +131,13 @@ components:
         supported_task_types:
           type: array
           items: {type: string}
-      required: [_id, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
+      required: [id, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
 
     AssignedTask:
       type: object
       description: AssignedTask is a task as it is received by the Worker.
       properties:
-        _id: {type: string}
+        id: {type: string}
         job: {type: string}
         user: {type: string}
         name: {type: string}
@@ -124,7 +149,7 @@ components:
         commands:
           type: array
           items: {$ref: "#/components/schemas/Command"}
-      required: [_id, job, user, name, status, priority, job_priority, job_type, task_type, commands]
+      required: [id, job, user, name, status, priority, job_priority, job_type, task_type, commands]
 
     JobStatus:
       type: string
@@ -213,6 +238,41 @@ components:
         `HASHED_FILE_PATH` is a directory path + `"/######"` appended.
       enum: ["file_path", "dir_path", "file_name", "hashed_file_path"]
 
+    SubmittedJob:
+      type: object
+      description: Job definition submitted to Flamenco.
+      properties:
+        "id": {type: string}
+        "name": {type: string}
+        "type": {type: string}
+        "status": {$ref: "#/components/schemas/JobStatus"}
+        "priority": {type: integer, default: 50}
+        "settings":
+          type: object
+        "metadata":
+          type: object
+      required: [name, type, priority]
+      example:
+        type: "simple-blender-render"
+        name: 3Д рендеринг
+        priority: 50
+        settings:
+          blender_cmd: "{blender}"
+          filepath: "/render/sf/jobs/scene123.blend"
+          render_output: "/render/sf/frames/scene123"
+          frames: "1-10"
+          chunk_size: 3
+          fps: 24
+          extract_audio: true
+          images_or_video: "images"
+          format: "PNG"
+          output_file_extension: ".png"
+        metadata:
+          "user.name": "Sybren Stüvel"
+          "user.email": "sybren@blender.org"
+          project: "Sprite Fright"
+
+
     Error:
       type: object
       required: [code, message]
@@ -226,15 +286,23 @@ components:
       properties:
         message: {type: string}
 
+    Configuration:
+      type: object
+      description: Flamenco Manager configuration
+      properties:
+        "_meta":
+          type: object
+          properties:
+            "schema_version": {type: integer}
+          required: [schema_version]
+        "settings":
+          description: Key-value pairs for settings.
+          type: object
+          additionalProperties: true
+      required: [_meta, settings]
 
   securitySchemes:
     worker_auth:
       description: Username is the worker ID, password is the secret given at worker registration.
-      type: http
-      scheme: basic
-    user_auth:
-      description: >
-        OAuth2 authentication flow for authenticating users. Currently not
-        implemented, so now more used as a "todo" than actual authentication.
       type: http
       scheme: basic

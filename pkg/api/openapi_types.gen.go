@@ -29,6 +29,37 @@ const (
 	AvailableJobSettingTypeString AvailableJobSettingType = "string"
 )
 
+// Defines values for JobStatus.
+const (
+	JobStatusActive JobStatus = "active"
+
+	JobStatusArchived JobStatus = "archived"
+
+	JobStatusArchiving JobStatus = "archiving"
+
+	JobStatusCancelRequested JobStatus = "cancel-requested"
+
+	JobStatusCanceled JobStatus = "canceled"
+
+	JobStatusCompleted JobStatus = "completed"
+
+	JobStatusConstructionFailed JobStatus = "construction-failed"
+
+	JobStatusFailRequested JobStatus = "fail-requested"
+
+	JobStatusFailed JobStatus = "failed"
+
+	JobStatusPaused JobStatus = "paused"
+
+	JobStatusQueued JobStatus = "queued"
+
+	JobStatusRequeued JobStatus = "requeued"
+
+	JobStatusUnderConstruction JobStatus = "under-construction"
+
+	JobStatusWaitingForFiles JobStatus = "waiting-for-files"
+)
+
 // Defines values for TaskStatus.
 const (
 	TaskStatusActive TaskStatus = "active"
@@ -54,8 +85,8 @@ const (
 
 // AssignedTask is a task as it is received by the Worker.
 type AssignedTask struct {
-	Id          string     `json:"_id"`
 	Commands    []Command  `json:"commands"`
+	Id          string     `json:"id"`
 	Job         string     `json:"job"`
 	JobPriority int        `json:"job_priority"`
 	JobType     string     `json:"job_type"`
@@ -123,10 +154,13 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// JobStatus defines model for JobStatus.
+type JobStatus string
+
 // RegisteredWorker defines model for RegisteredWorker.
 type RegisteredWorker struct {
-	Id                 string   `json:"_id"`
 	Address            string   `json:"address"`
+	Id                 string   `json:"id"`
 	LastActivity       string   `json:"last_activity"`
 	Nickname           string   `json:"nickname"`
 	Platform           string   `json:"platform"`
@@ -140,6 +174,17 @@ type SecurityError struct {
 	Message string `json:"message"`
 }
 
+// Job definition submitted to Flamenco.
+type SubmittedJob struct {
+	Id       *string                 `json:"id,omitempty"`
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+	Name     string                  `json:"name"`
+	Priority int                     `json:"priority"`
+	Settings *map[string]interface{} `json:"settings,omitempty"`
+	Status   *JobStatus              `json:"status,omitempty"`
+	Type     string                  `json:"type"`
+}
+
 // TaskStatus defines model for TaskStatus.
 type TaskStatus string
 
@@ -151,8 +196,14 @@ type WorkerRegistration struct {
 	SupportedTaskTypes []string `json:"supported_task_types"`
 }
 
+// SubmitJobJSONBody defines parameters for SubmitJob.
+type SubmitJobJSONBody SubmittedJob
+
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
+
+// SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
+type SubmitJobJSONRequestBody SubmitJobJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody

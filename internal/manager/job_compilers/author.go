@@ -25,6 +25,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/rs/zerolog/log"
+	"gitlab.com/blender/flamenco-goja-test/pkg/api"
 )
 
 // Author allows scripts to author tasks and commands.
@@ -36,7 +37,8 @@ type AuthoredJob struct {
 	JobID    string
 	Name     string
 	JobType  string
-	Priority int8
+	Priority int
+	Status   api.JobStatus
 
 	Created time.Time
 

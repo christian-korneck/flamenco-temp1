@@ -22,24 +22,35 @@ package api_impl
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
+
 	"github.com/labstack/echo/v4"
+	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
 	"gitlab.com/blender/flamenco-goja-test/pkg/api"
 )
 
 type Flamenco struct {
 	jobCompiler JobCompiler
+	persist     JobPersistenceService
+}
+
+type JobPersistenceService interface {
+	// StoreJob stores a job in the persistence layer.
+	StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
 }
 
 type JobCompiler interface {
 	ListJobTypes() api.AvailableJobTypes
+	Compile(ctx context.Context, job api.SubmittedJob) (*job_compilers.AuthoredJob, error)
 }
 
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // NewFlamenco creates a new Flamenco service, using the given JobCompiler.
-func NewFlamenco(jc JobCompiler) *Flamenco {
+func NewFlamenco(jc JobCompiler, jps JobPersistenceService) *Flamenco {
 	return &Flamenco{
 		jobCompiler: jc,
+		persist:     jps,
 	}
 }
 
