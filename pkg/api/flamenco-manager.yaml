@@ -170,6 +170,7 @@ components:
           type: string
           description: Identifier for the setting, must be unique within the job type.
         "type": {$ref: "#/components/schemas/AvailableJobSettingType"}
+        "subtype": {$ref: "#/components/schemas/AvailableJobSettingSubtype"}
         "choices":
           description: When given, limit the valid values to these choices. Only usable with string type.
           type: array
@@ -185,14 +186,32 @@ components:
           default: true
         "required":
           type: boolean
-          description: Whether to immediately reject a job definition, of this type, without this particular setting.
+          description: >
+            Whether to immediately reject a job definition, of this type,
+            without this particular setting.
+          default: false
+        "editable":
+          type: boolean
+          description: >
+            Whether to allow editing this setting after the job has been
+            submitted. Would imply deleting all existing tasks for this job, and
+            recompiling it.
           default: false
       required: [key, type]
 
     AvailableJobSettingType:
       type: string
-      description: Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
+      description: >
+        Type of job setting, must be usable as IDProperty type in Blender. No
+        nested structures (arrays, dictionaries) are supported.
       enum: [string, int32, float, bool]
+
+    AvailableJobSettingSubtype:
+      type: string
+      description: >
+        Sub-type of the job setting. Currently only available for string types.
+        `HASHED_FILE_PATH` is a directory path + `"/######"` appended.
+      enum: ["file_path", "dir_path", "file_name", "hashed_file_path"]
 
     Error:
       type: object

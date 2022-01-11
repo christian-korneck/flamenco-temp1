@@ -7,6 +7,17 @@ const (
 	Worker_authScopes = "worker_auth.Scopes"
 )
 
+// Defines values for AvailableJobSettingSubtype.
+const (
+	AvailableJobSettingSubtypeDirPath AvailableJobSettingSubtype = "dir_path"
+
+	AvailableJobSettingSubtypeFileName AvailableJobSettingSubtype = "file_name"
+
+	AvailableJobSettingSubtypeFilePath AvailableJobSettingSubtype = "file_path"
+
+	AvailableJobSettingSubtypeHashedFilePath AvailableJobSettingSubtype = "hashed_file_path"
+)
+
 // Defines values for AvailableJobSettingType.
 const (
 	AvailableJobSettingTypeBool AvailableJobSettingType = "bool"
@@ -63,11 +74,17 @@ type AvailableJobSetting struct {
 	// The default value shown to the user when determining this setting.
 	Default *interface{} `json:"default,omitempty"`
 
+	// Whether to allow editing this setting after the job has been submitted. Would imply deleting all existing tasks for this job, and recompiling it.
+	Editable *bool `json:"editable,omitempty"`
+
 	// Identifier for the setting, must be unique within the job type.
 	Key string `json:"key"`
 
 	// Whether to immediately reject a job definition, of this type, without this particular setting.
 	Required *bool `json:"required,omitempty"`
+
+	// Sub-type of the job setting. Currently only available for string types. `HASHED_FILE_PATH` is a directory path + `"/######"` appended.
+	Subtype *AvailableJobSettingSubtype `json:"subtype,omitempty"`
 
 	// Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
 	Type AvailableJobSettingType `json:"type"`
@@ -75,6 +92,9 @@ type AvailableJobSetting struct {
 	// Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users.
 	Visible *bool `json:"visible,omitempty"`
 }
+
+// Sub-type of the job setting. Currently only available for string types. `HASHED_FILE_PATH` is a directory path + `"/######"` appended.
+type AvailableJobSettingSubtype string
 
 // Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
 type AvailableJobSettingType string

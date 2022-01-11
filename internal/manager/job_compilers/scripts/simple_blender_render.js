@@ -21,10 +21,11 @@
 const JOB_TYPE = {
     label: "Simple Blender Render",
     settings: [
-        { key: "blender_cmd", type: "string", default: "{blender}" },
+        { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
+        { key: "filepath", type: "string", subtype: "file_path", required: true },
         { key: "chunk_size", type: "int32", default: 1 },
         { key: "frames", type: "string", required: true },
-        { key: "render_output", type: "string", required: true },
+        { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
         { key: "fps", type: "int32" },
         { key: "extract_audio", type: "bool", default: true },
         {
