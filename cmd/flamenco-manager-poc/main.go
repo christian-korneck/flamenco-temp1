@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/benbjohnson/clock"
 	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
@@ -64,7 +65,8 @@ func main() {
 	log.Info().Str("port", port).Msg("listening")
 
 	// Construct the services.
-	compiler, err := job_compilers.Load()
+	timeService := clock.New()
+	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}

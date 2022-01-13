@@ -114,10 +114,7 @@ func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
 		return nil, err
 	}
 
-	// TODO: make settings and metadata an explicit type.
-	settings := make(map[string]interface{})
-	metadata := make(map[string]interface{})
-
+	var settings api.JobSettings
 	rows, err := db.sqldb.QueryContext(ctx, "SELECT key, value FROM job_settings WHERE job_id=?", jobID)
 	if err != nil {
 		return nil, err
@@ -128,7 +125,7 @@ func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
 		if err := rows.Scan(&key, &value); err != nil {
 			return nil, err
 		}
-		settings[key] = value
+		settings.AdditionalProperties[key] = value
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -137,6 +134,7 @@ func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
 		return nil, err
 	}
 
+	var metadata api.JobMetadata
 	rows, err = db.sqldb.QueryContext(ctx, "SELECT key, value FROM job_metadata WHERE job_id=?", jobID)
 	if err != nil {
 		return nil, err
@@ -147,7 +145,7 @@ func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
 		if err := rows.Scan(&key, &value); err != nil {
 			return nil, err
 		}
-		metadata[key] = value
+		metadata.AdditionalProperties[key] = value
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

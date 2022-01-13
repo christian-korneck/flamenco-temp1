@@ -4,6 +4,8 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -167,10 +169,21 @@ type Job struct {
 	Created time.Time `json:"created"`
 
 	// UUID of the Job
-	Id string `json:"id"`
+	Id     string    `json:"id"`
+	Status JobStatus `json:"status"`
 
 	// Creation timestamp
 	Updated time.Time `json:"updated"`
+}
+
+// Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
+type JobMetadata struct {
+	AdditionalProperties map[string]string `json:"-"`
+}
+
+// JobSettings defines model for JobSettings.
+type JobSettings struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // JobStatus defines model for JobStatus.
@@ -195,12 +208,12 @@ type SecurityError struct {
 
 // Job definition submitted to Flamenco.
 type SubmittedJob struct {
-	Metadata *map[string]interface{} `json:"metadata,omitempty"`
-	Name     string                  `json:"name"`
-	Priority int                     `json:"priority"`
-	Settings *map[string]interface{} `json:"settings,omitempty"`
-	Status   *JobStatus              `json:"status,omitempty"`
-	Type     string                  `json:"type"`
+	// Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
+	Metadata *JobMetadata `json:"metadata,omitempty"`
+	Name     string       `json:"name"`
+	Priority int          `json:"priority"`
+	Settings *JobSettings `json:"settings,omitempty"`
+	Type     string       `json:"type"`
 }
 
 // TaskStatus defines model for TaskStatus.
@@ -225,3 +238,109 @@ type SubmitJobJSONRequestBody SubmitJobJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody
+
+// Getter for additional properties for JobMetadata. Returns the specified
+// element and whether it was found
+func (a JobMetadata) Get(fieldName string) (value string, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for JobMetadata
+func (a *JobMetadata) Set(fieldName string, value string) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]string)
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for JobMetadata to handle AdditionalProperties
+func (a *JobMetadata) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]string)
+		for fieldName, fieldBuf := range object {
+			var fieldVal string
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for JobMetadata to handle AdditionalProperties
+func (a JobMetadata) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for JobSettings. Returns the specified
+// element and whether it was found
+func (a JobSettings) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for JobSettings
+func (a *JobSettings) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for JobSettings to handle AdditionalProperties
+func (a *JobSettings) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for JobSettings to handle AdditionalProperties
+func (a JobSettings) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}

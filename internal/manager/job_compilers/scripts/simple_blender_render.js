@@ -81,20 +81,14 @@ function compileJob(job) {
 // Determine the intermediate render output path.
 function intermediatePath(job, finalDir) {
     const basename = path.basename(finalDir);
-    const name = `${basename}__intermediate-${job.created}`;
+    const name = `${basename}__intermediate-${formatTimestampLocal(job.created)}`;
     return path.join(path.dirname(finalDir), name);
-}
-
-function frameChunker(frames, callback) {
-    // TODO: actually implement.
-    callback("1-10");
-    callback("11-20");
-    callback("21-30");
 }
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
     let renderTasks = [];
-    frameChunker(settings.frames, function(chunk) {
+    let chunks = frameChunker(settings.frames, settings.chunk_size);
+    for (let chunk of chunks) {
         const task = author.Task(`render-${chunk}`);
         const command = author.Command("blender-render", {
             cmd: settings.blender_cmd,
@@ -105,7 +99,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         });
         task.addCommand(command);
         renderTasks.push(task);
-    });
+    }
     return renderTasks;
 }
 

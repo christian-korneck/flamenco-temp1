@@ -261,12 +261,9 @@ components:
       properties:
         "name": {type: string}
         "type": {type: string}
-        "status": {$ref: "#/components/schemas/JobStatus"}
         "priority": {type: integer, default: 50}
-        "settings":
-          type: object
-        "metadata":
-          type: object
+        "settings": {$ref: "#/components/schemas/JobSettings"}
+        "metadata": {$ref: "#/components/schemas/JobMetadata"}
       required: [name, type, priority]
       example:
         type: "simple-blender-render"
@@ -286,7 +283,7 @@ components:
         metadata:
           "user.name": "Sybren Stüvel"
           "user.email": "sybren@blender.org"
-          project: "Sprite Fright"
+          "project": "Sprite Fright"
     Job:
       allOf:
         - $ref: '#/components/schemas/SubmittedJob'
@@ -303,8 +300,22 @@ components:
               type: string
               format: date-time
               description: Creation timestamp
-          required: [id, created, updated]
+            status: {$ref: "#/components/schemas/JobStatus"}
+          required: [id, created, updated, status]
 
+    JobSettings:
+      type: object
+      additionalProperties: true
+
+    JobMetadata:
+      type: object
+      description: Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
+      additionalProperties:
+        type: string
+      example:
+        "user.name": Sybren Stüvel
+        "user.email": sybren@blender.org
+        "project": "Sprite Fright"
 
     Error:
       type: object

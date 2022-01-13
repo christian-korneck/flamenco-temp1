@@ -96,9 +96,11 @@ func (s *Service) newGojaVM() *goja.Runtime {
 		}
 	}
 
-	// Set some global functions for script debugging purposes.
-	mustSet("print", jsPrint)
-	mustSet("alert", jsAlert)
+	// Set some global functions.
+	mustSet("print", JSPrint)
+	mustSet("alert", JSAlert)
+	mustSet("frameChunker", JSFrameChunker)
+	mustSet("formatTimestampLocal", JSFormatTimestampLocal)
 
 	// Pre-import some useful modules.
 	s.registry.Enable(vm)

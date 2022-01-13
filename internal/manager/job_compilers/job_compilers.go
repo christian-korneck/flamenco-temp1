@@ -39,8 +39,9 @@ var ErrScriptIncomplete = errors.New("job compiler script incomplete")
 
 // Service contains job compilers defined in JavaScript.
 type Service struct {
-	compilers map[string]Compiler // Mapping from job type name to the job compiler of that type.
-	registry  *require.Registry   // Goja module registry.
+	compilers   map[string]Compiler // Mapping from job type name to the job compiler of that type.
+	registry    *require.Registry   // Goja module registry.
+	timeService TimeService
 }
 
 type Compiler struct {
@@ -57,9 +58,16 @@ type VM struct {
 // jobCompileFunc is a function that fills job.Tasks.
 type jobCompileFunc func(job *AuthoredJob) error
 
-func Load() (*Service, error) {
+// TimeService is a service that can tell the current time.
+type TimeService interface {
+	Now() time.Time
+}
+
+// Load returns a job compiler service with all JS files loaded.
+func Load(ts TimeService) (*Service, error) {
 	compiler := Service{
-		compilers: map[string]Compiler{},
+		compilers:   map[string]Compiler{},
+		timeService: ts,
 	}
 
 	if err := compiler.loadScripts(); err != nil {
@@ -94,6 +102,7 @@ func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJo
 	// Create an AuthoredJob from this SubmittedJob.
 	aj := AuthoredJob{
 		JobID:    uuid.New().String(), // Ignore the submitted ID.
+		Created:  s.timeService.Now(),
 		Name:     sj.Name,
 		JobType:  sj.Type,
 		Priority: sj.Priority,
@@ -103,14 +112,13 @@ func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJo
 		Metadata: make(JobMetadata),
 	}
 	if sj.Settings != nil {
-		for key, value := range *sj.Settings {
+		for key, value := range sj.Settings.AdditionalProperties {
 			aj.Settings[key] = value
 		}
 	}
 	if sj.Metadata != nil {
-		for key, value := range *sj.Metadata {
-			// TODO: make sure OpenAPI understands these keys can only be strings.
-			aj.Metadata[key] = value.(string)
+		for key, value := range sj.Metadata.AdditionalProperties {
+			aj.Metadata[key] = value
 		}
 	}
 
