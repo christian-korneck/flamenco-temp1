@@ -32,22 +32,22 @@ import (
 )
 
 // ----------------------------------------------------------
-// Functions that start with `JS` are exposed to JavaScript.
+// Functions that start with `js` are exposed to JavaScript.
 // See newGojaVM() for the actual expose-as-globals code.
 // ----------------------------------------------------------
 
-func JSPrint(call goja.FunctionCall) goja.Value {
+func jsPrint(call goja.FunctionCall) goja.Value {
 	log.Info().Interface("args", call.Arguments).Msg("print")
 	return goja.Undefined()
 }
 
-func JSAlert(call goja.FunctionCall) goja.Value {
+func jsAlert(call goja.FunctionCall) goja.Value {
 	log.Warn().Interface("args", call.Arguments).Msg("alert")
 	return goja.Undefined()
 }
 
-// JSFormatTimestampLocal returns the timestamp formatted as local time in a way that's compatible with filenames.
-func JSFormatTimestampLocal(timestamp time.Time) string {
+// jsFormatTimestampLocal returns the timestamp formatted as local time in a way that's compatible with filenames.
+func jsFormatTimestampLocal(timestamp time.Time) string {
 	return timestamp.Local().Format("2006-01-02_150405")
 }
 
@@ -87,14 +87,14 @@ const (
 	chunkBlender = ".."
 )
 
-// JSFrameChunker takes a range like "1..10,20..25,40" and returns chunked ranges.
+// jsFrameChunker takes a range like "1..10,20..25,40" and returns chunked ranges.
 //
 // The returned ranges will be at most `chunkSize` frames long.
 //
 // Supports "regular" and "blender" notation, resp. "A-Z" and "A..Z". Returned
 // chunks will always be in "regular" notation because they're more compatible
 // with embedding in filenames.
-func JSFrameChunker(frameRange string, chunkSize int) ([]string, error) {
+func jsFrameChunker(frameRange string, chunkSize int) ([]string, error) {
 	frameRange = strings.TrimSpace(frameRange)
 	if len(frameRange) == 0 {
 		return nil, errInvalidRange(frameRange, "empty range")
