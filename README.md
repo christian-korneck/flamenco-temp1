@@ -7,12 +7,7 @@ This repository contains a proof of concept of a next-generation Flamenco implem
 1. Install [Go 1.17 or newer](https://go.dev/).
 2. Set the environment variable `GOPATH` to where you want Go to put its packages. Defaults to `$HOME/go` if not set. Run `go env GOPATH` if you're not sure.
 3. Ensure `$GOPATH/bin` is included in your `$PATH` environment variable.
-4. Run the following commands:
-
-```
-go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
-make
-```
+4. Run `make with-deps` to install build-time dependencies and build the application. Subsequent builds can just run `make` without arguments.
 
 You should now have two executables: `flamenco-manager-poc` and `flamenco-worker-poc`.
 

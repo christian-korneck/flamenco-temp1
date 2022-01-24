@@ -23,6 +23,11 @@ endif
 
 all: application
 
+# Install generators and build the software.
+with-deps:
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
+	make -s application
+
 application: ${RESOURCES}
 	go generate ${PKG}/...
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
@@ -125,4 +130,4 @@ _package_zip: static
 	cd $(dir ${PACKAGE_PATH}) && zip -9 -r -q $(notdir ${PACKAGE_PATH})-${GOOS}.zip $(notdir ${PACKAGE_PATH})
 	rm ${STATIC_OUT}
 
-.PHONY: run application version static vet lint deploy package release
+.PHONY: run application version static vet lint deploy package release prepare
