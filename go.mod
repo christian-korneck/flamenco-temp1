@@ -16,5 +16,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/ziflex/lecho/v3 v3.1.0
 	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e
+	gorm.io/driver/postgres v1.0.8
+	gorm.io/gorm v1.21.4
 	modernc.org/sqlite v1.14.4
 )

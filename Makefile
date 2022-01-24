@@ -32,9 +32,10 @@ application: ${RESOURCES}
 	go generate ${PKG}/...
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/psql-gorm-poc
 
-resource.syso: resource/thermogui.ico resource/versioninfo.json
-	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
+# resource.syso: resource/thermogui.ico resource/versioninfo.json
+# 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
 
 version:
 	@echo "OS     : ${OS}"
@@ -69,8 +70,9 @@ clean:
 	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso pkg/api/*.gen.go
 	go generate ./...
 
-static: vet lint resource.syso
-	go build -v -o ${STATIC_OUT} -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}
+# static: vet lint resource.syso
+static: vet lint
+	CGO_ENABLED=0 go build -v -o psql-gorm-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/psql-gorm-poc
 
 .gitlabAccessToken:
 	$(error gitlabAccessToken does not exist, visit Visit https://gitlab.com/profile/personal_access_tokens, create a Personal Access Token with API access then save it to the file .gitlabAccessToken)
