@@ -66,7 +66,7 @@ func main() {
 		case float64:
 			theInt = int(v)
 		case int:
-			theInt = int(v)
+			theInt = v
 		default:
 			log.Panic().Interface("value", v).Msg("unexpected type in JSON")
 		}

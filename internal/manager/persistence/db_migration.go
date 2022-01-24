@@ -21,48 +21,12 @@ package persistence
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"embed"
 	"fmt"
-
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite"
-	"github.com/golang-migrate/migrate/v4/source"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
-func init() {
-	source.Register("embedfs", &EmbedFS{})
-}
-
-type EmbedFS struct {
-	iofs.PartialDriver
-}
-
-//go:embed migrations/*.sql
-var embedFS embed.FS
-
 func (db *DB) migrate() error {
-	driver, err := sqlite.WithInstance(db.sqldb, &sqlite.Config{})
-	if err != nil {
-		return fmt.Errorf("cannot create migration driver: %w", err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance("embedfs://", "sqlite", driver)
-	if err != nil {
-		return fmt.Errorf("cannot create migration instance: %w", err)
-	}
-
-	err = m.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("cannot migrate database: %w", err)
+	if err := db.gormDB.AutoMigrate(&Job{}); err != nil {
+		return fmt.Errorf("failed to automigrate database: %v", err)
 	}
 	return nil
-}
-
-func (f *EmbedFS) Open(url string) (source.Driver, error) {
-	nf := &EmbedFS{}
-	if err := nf.Init(embedFS, "migrations"); err != nil {
-		return nil, err
-	}
-	return nf, nil
 }

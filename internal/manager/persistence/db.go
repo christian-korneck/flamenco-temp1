@@ -23,10 +23,11 @@ package persistence
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/rs/zerolog/log"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
@@ -34,30 +35,28 @@ import (
 )
 
 // TODO : have this configurable from the CLI.
-const dbURI = "flamenco-manager.sqlite"
+const dbDSN = "host=localhost user=flamenco password=flamenco dbname=flamenco TimeZone=Europe/Amsterdam"
 
 // DB provides the database interface.
 type DB struct {
-	sqldb *sql.DB
+	gormDB *gorm.DB
 }
 
 func OpenDB(ctx context.Context) (*DB, error) {
-	log.Info().Str("uri", dbURI).Msg("opening database")
-	return openDB(ctx, dbURI)
+	return openDB(ctx, dbDSN)
 }
 
 func openDB(ctx context.Context, uri string) (*DB, error) {
-	sqldb, err := sql.Open("sqlite", uri)
-	if err != nil {
-		return nil, fmt.Errorf("unable to open database: %w", err)
-	}
+	// TODO: don't log the password.
+	log.Info().Str("dsn", dbDSN).Msg("opening database")
 
-	if err := sqldb.PingContext(ctx); err != nil {
-		return nil, fmt.Errorf("error accessing database %s: %w", dbURI, err)
+	gormDB, err := gorm.Open(postgres.Open(dbDSN), &gorm.Config{})
+	if err != nil {
+		log.Panic().Err(err).Msg("failed to connect database")
 	}
 
 	db := DB{
-		sqldb: sqldb,
+		gormDB: gormDB,
 	}
 	if err := db.migrate(); err != nil {
 		return nil, err
@@ -67,95 +66,46 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 }
 
 func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
-	tx, err := db.sqldb.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
 
-	_, err = tx.ExecContext(ctx,
-		`INSERT INTO jobs (uuid, name, jobType, priority) VALUES (?, ?, ?, ?)`,
-		authoredJob.JobID, authoredJob.Name, authoredJob.JobType, authoredJob.Priority,
-	)
-	if err != nil {
-		return err
+	dbJob := Job{
+		UUID:     authoredJob.JobID,
+		Name:     authoredJob.Name,
+		JobType:  authoredJob.JobType,
+		Priority: int8(authoredJob.Priority),
+		Settings: JobSettings(authoredJob.Settings),
+		Metadata: JobMetadata(authoredJob.Metadata),
 	}
 
-	for key, value := range authoredJob.Settings {
-		_, err := tx.ExecContext(ctx,
-			`INSERT INTO job_settings (job_id, key, value) VALUES (?, ?, ?)`,
-			authoredJob.JobID, key, value,
-		)
-		if err != nil {
-			return err
-		}
+	tx := db.gormDB.Create(&dbJob)
+	if tx.Error != nil {
+		return fmt.Errorf("error storing job: %v", tx.Error)
 	}
 
-	for key, value := range authoredJob.Metadata {
-		_, err := tx.ExecContext(ctx,
-			`INSERT INTO job_metadata (job_id, key, value) VALUES (?, ?, ?)`,
-			authoredJob.JobID, key, value,
-		)
-		if err != nil {
-			return err
-		}
-	}
-
-	return tx.Commit()
+	return nil
 }
 
 func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
-	job := api.Job{}
-
-	err := db.sqldb.
-		QueryRowContext(ctx, `SELECT * FROM jobs j where j.uuid=?`, jobID).
-		Scan(&job.Id, &job.Name, &job.Type, &job.Priority, &job.Created, &job.Updated)
-	if err != nil {
-		return nil, err
+	dbJob := Job{}
+	findResult := db.gormDB.First(&dbJob, "uuid = ?", jobID)
+	if findResult.Error != nil {
+		return nil, findResult.Error
 	}
 
-	var settings api.JobSettings
-	rows, err := db.sqldb.QueryContext(ctx, "SELECT key, value FROM job_settings WHERE job_id=?", jobID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var key, value string
-		if err := rows.Scan(&key, &value); err != nil {
-			return nil, err
-		}
-		settings.AdditionalProperties[key] = value
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
+	apiJob := api.Job{
+		SubmittedJob: api.SubmittedJob{
+			Name:     dbJob.Name,
+			Priority: int(dbJob.Priority),
+			Type:     dbJob.JobType,
+		},
+
+		Id:      dbJob.UUID,
+		Created: dbJob.CreatedAt,
+		Updated: dbJob.UpdatedAt,
+		Status:  api.JobStatus(dbJob.Status),
 	}
 
-	var metadata api.JobMetadata
-	rows, err = db.sqldb.QueryContext(ctx, "SELECT key, value FROM job_metadata WHERE job_id=?", jobID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var key, value string
-		if err := rows.Scan(&key, &value); err != nil {
-			return nil, err
-		}
-		metadata.AdditionalProperties[key] = value
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+	apiJob.Settings.AdditionalProperties = dbJob.Settings
+	apiJob.Metadata.AdditionalProperties = dbJob.Metadata
 
-	job.Settings = &settings
-	job.Metadata = &metadata
-
-	return &job, nil
+	return &apiJob, nil
 }
