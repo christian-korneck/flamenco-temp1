@@ -1,4 +1,4 @@
-module gitlab.com/blender/flamenco-goja-test
+module gitlab.com/blender/flamenco-ng-poc
 
 go 1.16
 

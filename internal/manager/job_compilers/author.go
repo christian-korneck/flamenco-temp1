@@ -25,7 +25,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 // Author allows scripts to author tasks and commands.

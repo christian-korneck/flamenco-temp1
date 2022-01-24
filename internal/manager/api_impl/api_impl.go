@@ -25,8 +25,8 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 type Flamenco struct {

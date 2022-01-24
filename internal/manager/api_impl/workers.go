@@ -27,7 +27,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func (f *Flamenco) RegisterWorker(e echo.Context) error {

@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"golang.org/x/net/context"
 	_ "modernc.org/sqlite"
 )

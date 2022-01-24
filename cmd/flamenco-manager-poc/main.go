@@ -37,12 +37,12 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v3"
 
-	"gitlab.com/blender/flamenco-goja-test/internal/appinfo"
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/api_impl"
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/swagger_ui"
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/swagger_ui"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func main() {

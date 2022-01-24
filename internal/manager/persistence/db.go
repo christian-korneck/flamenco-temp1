@@ -29,8 +29,8 @@ import (
 	"github.com/rs/zerolog/log"
 	_ "modernc.org/sqlite"
 
-	"gitlab.com/blender/flamenco-goja-test/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 // TODO : have this configurable from the CLI.

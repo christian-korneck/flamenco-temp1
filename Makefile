@@ -1,5 +1,5 @@
 OUT := flamenco-manager-poc
-PKG := gitlab.com/blender/flamenco-goja-test
+PKG := gitlab.com/blender/flamenco-ng-poc
 VERSION := $(shell git describe --tags --dirty --always)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 STATIC_OUT := ${OUT}-${VERSION}

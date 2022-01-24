@@ -31,7 +31,7 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-goja-test/pkg/api"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 var ErrJobTypeUnknown = errors.New("job type unknown")
