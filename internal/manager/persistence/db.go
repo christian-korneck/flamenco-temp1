@@ -71,22 +71,46 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 }
 
 func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
+	return db.gormDB.Transaction(func(tx *gorm.DB) error {
+		// TODO: separate conversion of struct types from storing things in the database.
+		dbJob := Job{
+			UUID:     authoredJob.JobID,
+			Name:     authoredJob.Name,
+			JobType:  authoredJob.JobType,
+			Priority: int8(authoredJob.Priority),
+			Settings: JobSettings(authoredJob.Settings),
+			Metadata: StringStringMap(authoredJob.Metadata),
+		}
 
-	dbJob := Job{
-		UUID:     authoredJob.JobID,
-		Name:     authoredJob.Name,
-		JobType:  authoredJob.JobType,
-		Priority: int8(authoredJob.Priority),
-		Settings: JobSettings(authoredJob.Settings),
-		Metadata: StringStringMap(authoredJob.Metadata),
-	}
+		if err := db.gormDB.Create(&dbJob).Error; err != nil {
+			return fmt.Errorf("error storing job: %v", err)
+		}
 
-	tx := db.gormDB.Create(&dbJob)
-	if tx.Error != nil {
-		return fmt.Errorf("error storing job: %v", tx.Error)
-	}
+		for _, authoredTask := range authoredJob.Tasks {
+			var commands []Command
+			for _, authoredCommand := range authoredTask.Commands {
+				commands = append(commands, Command{
+					Type:       authoredCommand.Type,
+					Parameters: authoredCommand.Parameters,
+				})
+			}
 
-	return nil
+			dbTask := Task{
+				Name:     authoredTask.Name,
+				Type:     authoredTask.Type,
+				Job:      &dbJob,
+				Priority: authoredTask.Priority,
+				Status:   string(api.TaskStatusProcessing), // TODO: is this the right place to set the default status?
+				// TODO: store dependencies
+				Commands: commands,
+			}
+			if err := db.gormDB.Create(&dbTask).Error; err != nil {
+				return fmt.Errorf("error storing task: %v", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
@@ -109,8 +133,8 @@ func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
 		Status:  api.JobStatus(dbJob.Status),
 	}
 
-	apiJob.Settings.AdditionalProperties = dbJob.Settings
-	apiJob.Metadata.AdditionalProperties = dbJob.Metadata
+	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}
+	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
 
 	return &apiJob, nil
 }
