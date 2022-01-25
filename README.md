@@ -15,22 +15,13 @@ You should now have two executables: `flamenco-manager-poc` and `flamenco-worker
 
 Flamenco Manager has a SwaggerUI interface at http://localhost:8080/api/swagger-ui/
 
-## Flamenco Manager DB migrations
+## Flamenco Manager DB development machine setup.
 
-First install the `migrate` tool:
-
-```
-go install -tags sqlite github.com/golang-migrate/migrate/v4/cmd/migrate
-```
-
-To create a migration called `create_users_table`, run:
+Install PostgreSQL, then run:
 
 ```
-migrate create -dir internal/manager/persistence/migrations -ext sql -seq create_users_table
-```
-
-Migrations are **automatically run when Flamenco Manager starts**. To run them manually, use:
-
-```
-migrate -database sqlite://flamenco-manager.sqlite -path internal/manager/persistence/migrations up
+sudo -u postgres createuser -D -P flamenco  # give it the password 'flamenco'
+sudo -u postgres createdb flamenco -O flamenco -E utf8
+sudo -u postgres createdb flamenco-test -O flamenco -E utf8
+echo "alter schema public owner to flamenco;" | sudo -u postgres psql flamenco-test
 ```

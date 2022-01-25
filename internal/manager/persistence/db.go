@@ -43,14 +43,23 @@ type DB struct {
 }
 
 func OpenDB(ctx context.Context) (*DB, error) {
-	return openDB(ctx, dbDSN)
+	db, err := openDB(ctx, dbDSN)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.migrate(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 func openDB(ctx context.Context, uri string) (*DB, error) {
 	// TODO: don't log the password.
-	log.Info().Str("dsn", dbDSN).Msg("opening database")
+	log.Info().Str("dsn", uri).Msg("opening database")
 
-	gormDB, err := gorm.Open(postgres.Open(dbDSN), &gorm.Config{})
+	gormDB, err := gorm.Open(postgres.Open(uri), &gorm.Config{})
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to connect database")
 	}
@@ -58,11 +67,7 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 	db := DB{
 		gormDB: gormDB,
 	}
-	if err := db.migrate(); err != nil {
-		return nil, err
-	}
-
-	return &db, err
+	return &db, nil
 }
 
 func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
@@ -73,7 +78,7 @@ func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJo
 		JobType:  authoredJob.JobType,
 		Priority: int8(authoredJob.Priority),
 		Settings: JobSettings(authoredJob.Settings),
-		Metadata: JobMetadata(authoredJob.Metadata),
+		Metadata: StringStringMap(authoredJob.Metadata),
 	}
 
 	tx := db.gormDB.Create(&dbJob)

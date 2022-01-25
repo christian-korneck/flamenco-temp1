@@ -22,34 +22,47 @@ package persistence
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"golang.org/x/net/context"
+	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
 )
 
-const testURI = "testing.sqlite"
+const testURI = "host=localhost user=flamenco password=flamenco dbname=flamenco-test TimeZone=Europe/Amsterdam"
 
-func createTestDB(t *testing.T) (*DB, func()) {
+func createTestDB(t *testing.T) *DB {
 	// Creating a new database should be fast.
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	db, err := openDB(ctx, testURI)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
-	return db, func() {
-		os.Remove(testURI)
-	}
+	// Erase everything in the database.
+	var tx *gorm.DB
+	tx = db.gormDB.Exec("DROP SCHEMA public CASCADE")
+	assert.NoError(t, tx.Error)
+	tx = db.gormDB.Exec("CREATE SCHEMA public")
+	assert.NoError(t, tx.Error)
+
+	// Restore default grants (source: https://stackoverflow.com/questions/3327312/how-can-i-drop-all-the-tables-in-a-postgresql-database)
+	tx = db.gormDB.Exec("GRANT ALL ON SCHEMA public TO postgres")
+	assert.NoError(t, tx.Error)
+	tx = db.gormDB.Exec("GRANT ALL ON SCHEMA public TO public")
+	assert.NoError(t, tx.Error)
+
+	err = db.migrate()
+	assert.NoError(t, err)
+
+	return db
 }
 
 func TestStoreAuthoredJob(t *testing.T) {
-	db, cleanup := createTestDB(t)
-	defer cleanup()
+	db := createTestDB(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
