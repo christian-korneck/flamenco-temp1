@@ -53,6 +53,8 @@ type JobMetadata map[string]string
 
 type AuthoredTask struct {
 	Name     string
+	Type     string
+	Priority int
 	Commands []AuthoredCommand
 
 	// Dependencies are tasks that need to be completed before this one can run.
@@ -64,9 +66,11 @@ type AuthoredCommand struct {
 	Parameters map[string]string
 }
 
-func (a *Author) Task(name string) (*AuthoredTask, error) {
+func (a *Author) Task(name string, taskType string) (*AuthoredTask, error) {
 	at := AuthoredTask{
 		name,
+		taskType,
+		50, // TODO: handle default priority somehow.
 		make([]AuthoredCommand, 0),
 		make([]*AuthoredTask, 0),
 	}

@@ -89,7 +89,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
     let renderTasks = [];
     let chunks = frameChunker(settings.frames, settings.chunk_size);
     for (let chunk of chunks) {
-        const task = author.Task(`render-${chunk}`);
+        const task = author.Task(`render-${chunk}`, "blender");
         const command = author.Command("blender-render", {
             cmd: settings.blender_cmd,
             filepath: settings.filepath,
