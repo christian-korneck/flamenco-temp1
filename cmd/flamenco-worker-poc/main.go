@@ -22,76 +22,59 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"os"
-	"runtime"
+	"net/url"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/securityprovider"
 	"github.com/mattn/go-colorable"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
+	"gitlab.com/blender/flamenco-ng-poc/internal/worker"
+	"gitlab.com/blender/flamenco-ng-poc/internal/worker/ssdp"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func main() {
+	parseCliArgs()
+	if cliArgs.version {
+		fmt.Println(appinfo.ApplicationVersion)
+		return
+	}
+
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
 	log.Logger = log.Output(output)
 
 	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v Worker", appinfo.ApplicationName)
 
-	basicAuthProvider, err := securityprovider.NewSecurityProviderBasicAuth("MY_USER", "MY_PASS")
-	if err != nil {
-		log.Panic().Err(err).Msg("unable to create basic authr")
-	}
+	// configWrangler := worker.NewConfigWrangler()
+	managerFinder := ssdp.NewManagerFinder(cliArgs.managerURL)
+	// taskRunner := struct{}{}
+	findManager(managerFinder)
 
-	flamenco, err := api.NewClientWithResponses(
-		"http://localhost:8080/",
-		api.WithRequestEditorFn(basicAuthProvider.Intercept),
-		api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			req.Header.Set("User-Agent", appinfo.UserAgent())
-			return nil
-		}),
-	)
-	if err != nil {
-		log.Fatal().Err(err).Msg("error creating client")
-	}
+	// basicAuthProvider, err := securityprovider.NewSecurityProviderBasicAuth("MY_USER", "MY_PASS")
+	// if err != nil {
+	// 	log.Panic().Err(err).Msg("unable to create basic authr")
+	// }
 
-	ctx := context.Background()
-	registerWorker(ctx, flamenco)
-	obtainTask(ctx, flamenco)
-}
+	// flamenco, err := api.NewClientWithResponses(
+	// 	"http://localhost:8080/",
+	// 	api.WithRequestEditorFn(basicAuthProvider.Intercept),
+	// 	api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+	// 		req.Header.Set("User-Agent", appinfo.UserAgent())
+	// 		return nil
+	// 	}),
+	// )
+	// if err != nil {
+	// 	log.Fatal().Err(err).Msg("error creating client")
+	// }
 
-func registerWorker(ctx context.Context, flamenco *api.ClientWithResponses) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatal().Err(err).Msg("error getting hostname")
-	}
-
-	req := api.RegisterWorkerJSONRequestBody{
-		Nickname:           hostname,
-		Platform:           runtime.GOOS,
-		Secret:             "secret",
-		SupportedTaskTypes: []string{"sleep", "blender-render", "ffmpeg", "file-management"},
-	}
-	resp, err := flamenco.RegisterWorkerWithResponse(ctx, req)
-	if err != nil {
-		log.Fatal().Err(err).Msg("error registering at Manager")
-	}
-	switch {
-	case resp.JSON200 != nil:
-		log.Info().
-			Int("code", resp.StatusCode()).
-			Interface("resp", resp.JSON200).
-			Msg("registered at Manager")
-	default:
-		log.Fatal().
-			Int("code", resp.StatusCode()).
-			Interface("resp", resp.JSONDefault).
-			Msg("unable to register at Manager")
-	}
+	// w := worker.NewWorker(flamenco, configWrangler, managerFinder, taskRunner)
+	// ctx := context.Background()
+	// registerWorker(ctx, flamenco)
+	// obtainTask(ctx, flamenco)
 }
 
 func obtainTask(ctx context.Context, flamenco *api.ClientWithResponses) {
@@ -117,4 +100,17 @@ func obtainTask(ctx context.Context, flamenco *api.ClientWithResponses) {
 			Str("error", string(resp.Body)).
 			Msg("unable to obtain task")
 	}
+}
+
+func findManager(managerFinder worker.ManagerFinder) *url.URL {
+	finder := managerFinder.FindFlamencoManager()
+	select {
+	case manager := <-finder:
+		log.Info().Str("manager", manager.String()).Msg("found Manager")
+		return manager
+	case <-time.After(10 * time.Second):
+		log.Fatal().Msg("unable to autodetect Flamenco Manager via UPnP/SSDP; configure the URL explicitly")
+	}
+
+	return nil
 }

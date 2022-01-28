@@ -30,8 +30,9 @@ import (
 
 type Worker struct {
 	gorm.Model
-	UUID string `gorm:"type:char(36);not null;unique;index"`
-	Name string `gorm:"type:varchar(64);not null"`
+	UUID   string `gorm:"type:char(36);not null;unique;index"`
+	Secret string `gorm:"type:varchar(255);not null"`
+	Name   string `gorm:"type:varchar(64);not null"`
 
 	Address      string           `gorm:"type:varchar(39);not null;index"` // 39 = max length of IPv6 address.
 	LastActivity string           `gorm:"type:varchar(255);not null"`

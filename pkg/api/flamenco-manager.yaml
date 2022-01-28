@@ -39,6 +39,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/worker/sign-on:
+    summary: Called by Workers to let the Manager know they're ready to work, and to update their metadata.
+    post:
+      summary: Authenticate & sign in the worker.
+      operationId: signOn
+      security: [{worker_auth: []}]
+      tags: [worker]
+      requestBody:
+        description: Worker metadata
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerSignOn"
+      responses:
+        "200":
+          description: normal response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkerStateChange"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/worker/task:
     summary: Task scheduler endpoint.
     post:
@@ -153,6 +181,21 @@ components:
     WorkerStatus:
       type: string
       enum: [starting, awake, asleep, error, shutting-down, testing]
+
+    WorkerSignOn:
+      type: object
+      properties:
+        nickname: {type: string}
+        supported_task_types:
+          type: array
+          items: {type: string}
+      required: [nickname, supported_task_types]
+
+    WorkerStateChange:
+      type: object
+      properties:
+        status_requested: {$ref: "#/components/schemas/WorkerStatus"}
+      required: [status_requested]
 
     AssignedTask:
       type: object

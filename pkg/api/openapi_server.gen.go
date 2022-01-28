@@ -25,6 +25,9 @@ type ServerInterface interface {
 	// Register a new worker
 	// (POST /api/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
+	// Authenticate & sign in the worker.
+	// (POST /api/worker/sign-on)
+	SignOn(ctx echo.Context) error
 	// Obtain a new task to execute
 	// (POST /api/worker/task)
 	ScheduleTask(ctx echo.Context) error
@@ -78,6 +81,17 @@ func (w *ServerInterfaceWrapper) RegisterWorker(ctx echo.Context) error {
 	return err
 }
 
+// SignOn converts echo context to params.
+func (w *ServerInterfaceWrapper) SignOn(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(Worker_authScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.SignOn(ctx)
+	return err
+}
+
 // ScheduleTask converts echo context to params.
 func (w *ServerInterfaceWrapper) ScheduleTask(ctx echo.Context) error {
 	var err error
@@ -121,6 +135,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
+	router.POST(baseURL+"/api/worker/sign-on", wrapper.SignOn)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
 
 }

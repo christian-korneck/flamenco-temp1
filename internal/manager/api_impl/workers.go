@@ -35,10 +35,7 @@ import (
 // RegisterWorker registers a new worker and stores it in the database.
 func (f *Flamenco) RegisterWorker(e echo.Context) error {
 	remoteIP := e.RealIP()
-
-	logger := log.With().
-		Str("ip", remoteIP).
-		Logger()
+	logger := log.With().Str("ip", remoteIP).Logger()
 
 	var req api.RegisterWorkerJSONBody
 	err := e.Bind(&req)
@@ -47,11 +44,14 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
+	// TODO: validate the request, should at least have non-empty name, secret, and platform.
+
 	logger.Info().Str("nickname", req.Nickname).Msg("registering new worker")
 
 	dbWorker := persistence.Worker{
 		UUID:               uuid.New().String(),
 		Name:               req.Nickname,
+		Secret:             req.Secret,
 		Platform:           req.Platform,
 		Address:            remoteIP,
 		SupportedTaskTypes: strings.Join(req.SupportedTaskTypes, ","),
@@ -70,6 +70,25 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 		Software:           dbWorker.Software,
 		Status:             dbWorker.Status,
 		SupportedTaskTypes: strings.Split(dbWorker.SupportedTaskTypes, ","),
+	})
+}
+
+func (f *Flamenco) SignOn(e echo.Context) error {
+	remoteIP := e.RealIP()
+	logger := log.With().Str("ip", remoteIP).Logger()
+
+	var req api.SignOnJSONBody
+	err := e.Bind(&req)
+	if err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	logger.Info().Str("nickname", req.Nickname).Msg("worker signing on")
+
+	return e.JSON(http.StatusOK, &api.WorkerStateChange{
+		// TODO: look up proper status in DB.
+		StatusRequested: api.WorkerStatusAwake,
 	})
 }
 

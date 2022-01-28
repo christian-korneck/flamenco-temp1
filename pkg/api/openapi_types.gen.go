@@ -242,6 +242,17 @@ type WorkerRegistration struct {
 	SupportedTaskTypes []string `json:"supported_task_types"`
 }
 
+// WorkerSignOn defines model for WorkerSignOn.
+type WorkerSignOn struct {
+	Nickname           string   `json:"nickname"`
+	SupportedTaskTypes []string `json:"supported_task_types"`
+}
+
+// WorkerStateChange defines model for WorkerStateChange.
+type WorkerStateChange struct {
+	StatusRequested WorkerStatus `json:"status_requested"`
+}
+
 // WorkerStatus defines model for WorkerStatus.
 type WorkerStatus string
 
@@ -251,11 +262,17 @@ type SubmitJobJSONBody SubmittedJob
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
 
+// SignOnJSONBody defines parameters for SignOn.
+type SignOnJSONBody WorkerSignOn
+
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody
+
+// SignOnJSONRequestBody defines body for SignOn for application/json ContentType.
+type SignOnJSONRequestBody SignOnJSONBody
 
 // Getter for additional properties for JobMetadata. Returns the specified
 // element and whether it was found
