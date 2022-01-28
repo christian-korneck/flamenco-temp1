@@ -91,11 +91,13 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
     for (let chunk of chunks) {
         const task = author.Task(`render-${chunk}`, "blender");
         const command = author.Command("blender-render", {
-            cmd: settings.blender_cmd,
-            filepath: settings.filepath,
-            format: settings.format,
-            render_output: path.join(renderDir, path.basename(renderOutput)),
-            frames: chunk,
+            exe: settings.blender_cmd,
+            blendfile: settings.filepath,
+            args: [
+                "--render-output", path.join(renderDir, path.basename(renderOutput)),
+                "--render-format", settings.format,
+                "--render-frame", chunk,
+            ]
         });
         task.addCommand(command);
         renderTasks.push(task);

@@ -37,11 +37,11 @@ type Job struct {
 	Priority int8   `gorm:"type:smallint;not null"`
 	Status   string `gorm:"type:varchar(32);not null"` // See JobStatusXxxx consts in openapi_types.gen.go
 
-	Settings JobSettings     `gorm:"type:jsonb"`
-	Metadata StringStringMap `gorm:"type:jsonb"`
+	Settings StringInterfaceMap `gorm:"type:jsonb"`
+	Metadata StringStringMap    `gorm:"type:jsonb"`
 }
 
-type JobSettings map[string]interface{}
+type StringInterfaceMap map[string]interface{}
 type StringStringMap map[string]string
 
 type Task struct {
@@ -65,8 +65,8 @@ type Task struct {
 type Commands []Command
 
 type Command struct {
-	Type       string          `json:"type"`
-	Parameters StringStringMap `json:"parameters"`
+	Type       string             `json:"type"`
+	Parameters StringInterfaceMap `json:"parameters"`
 }
 
 func (c Commands) Value() (driver.Value, error) {
@@ -80,10 +80,10 @@ func (c *Commands) Scan(value interface{}) error {
 	return json.Unmarshal(b, &c)
 }
 
-func (js JobSettings) Value() (driver.Value, error) {
+func (js StringInterfaceMap) Value() (driver.Value, error) {
 	return json.Marshal(js)
 }
-func (js *JobSettings) Scan(value interface{}) error {
+func (js *StringInterfaceMap) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")

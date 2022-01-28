@@ -104,12 +104,17 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	// Tasks should have been created to render the frames.
 	assert.Equal(t, 4, len(aj.Tasks))
 	t0 := aj.Tasks[0]
+	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
+		"--render-output", "/render/sf__intermediate-2006-01-02_090405/frames",
+		"--render-format", settings["format"].(string),
+		"--render-frame", "1-3",
+	}
 	assert.Equal(t, "render-1-3", t0.Name)
 	assert.Equal(t, 1, len(t0.Commands))
 	assert.Equal(t, "blender-render", t0.Commands[0].Type)
-	assert.Equal(t, "{blender}", t0.Commands[0].Parameters["cmd"])
-	assert.Equal(t, settings["filepath"], t0.Commands[0].Parameters["filepath"])
-	assert.Equal(t, settings["format"], t0.Commands[0].Parameters["format"])
-	assert.Equal(t, "1-3", t0.Commands[0].Parameters["frames"])
-	assert.Equal(t, "/render/sf__intermediate-2006-01-02_090405/frames", t0.Commands[0].Parameters["render_output"])
+	assert.EqualValues(t, AuthoredCommandParameters{
+		"exe":       "{blender}",
+		"blendfile": settings["filepath"].(string),
+		"args":      expectCliArgs,
+	}, t0.Commands[0].Parameters)
 }

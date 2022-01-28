@@ -73,12 +73,14 @@ func TestStoreAuthoredJob(t *testing.T) {
 		Commands: []job_compilers.AuthoredCommand{
 			{
 				Type: "blender-render",
-				Parameters: StringStringMap{
-					"cmd":           "{blender}",
-					"filepath":      "/path/to/file.blend",
-					"format":        "PNG",
-					"render_output": "/path/to/output/######.png",
-					"frames":        "1-3",
+				Parameters: job_compilers.AuthoredCommandParameters{
+					"exe":       "{blender}",
+					"blendfile": "/path/to/file.blend",
+					"args": []interface{}{
+						"--render-output", "/path/to/output/######.png",
+						"--render-format", "PNG",
+						"--render-frame", "1-3",
+					},
 				}},
 		},
 	}
@@ -93,7 +95,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 		Commands: []job_compilers.AuthoredCommand{
 			{
 				Type: "merge-frames-to-video",
-				Parameters: StringStringMap{
+				Parameters: job_compilers.AuthoredCommandParameters{
 					"images":       "/path/to/output/######.png",
 					"output":       "/path/to/output/preview.mkv",
 					"ffmpegParams": "-c:v hevc -crf 31",

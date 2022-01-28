@@ -78,7 +78,7 @@ func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJo
 			Name:     authoredJob.Name,
 			JobType:  authoredJob.JobType,
 			Priority: int8(authoredJob.Priority),
-			Settings: JobSettings(authoredJob.Settings),
+			Settings: StringInterfaceMap(authoredJob.Settings),
 			Metadata: StringStringMap(authoredJob.Metadata),
 		}
 
@@ -91,7 +91,7 @@ func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJo
 			for _, authoredCommand := range authoredTask.Commands {
 				commands = append(commands, Command{
 					Type:       authoredCommand.Type,
-					Parameters: authoredCommand.Parameters,
+					Parameters: StringInterfaceMap(authoredCommand.Parameters),
 				})
 			}
 
