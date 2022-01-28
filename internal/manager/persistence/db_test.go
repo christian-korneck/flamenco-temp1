@@ -29,7 +29,6 @@ import (
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"golang.org/x/net/context"
 	"gorm.io/gorm"
-	_ "modernc.org/sqlite"
 )
 
 const testURI = "host=localhost user=flamenco password=flamenco dbname=flamenco-test TimeZone=Europe/Amsterdam"

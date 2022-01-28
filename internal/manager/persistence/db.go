@@ -28,7 +28,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	_ "modernc.org/sqlite"
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
