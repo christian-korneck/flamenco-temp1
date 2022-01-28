@@ -23,14 +23,10 @@ package persistence
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 // TODO : have this configurable from the CLI.
@@ -67,73 +63,4 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 		gormDB: gormDB,
 	}
 	return &db, nil
-}
-
-func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
-	return db.gormDB.Transaction(func(tx *gorm.DB) error {
-		// TODO: separate conversion of struct types from storing things in the database.
-		dbJob := Job{
-			UUID:     authoredJob.JobID,
-			Name:     authoredJob.Name,
-			JobType:  authoredJob.JobType,
-			Priority: int8(authoredJob.Priority),
-			Settings: StringInterfaceMap(authoredJob.Settings),
-			Metadata: StringStringMap(authoredJob.Metadata),
-		}
-
-		if err := db.gormDB.Create(&dbJob).Error; err != nil {
-			return fmt.Errorf("error storing job: %v", err)
-		}
-
-		for _, authoredTask := range authoredJob.Tasks {
-			var commands []Command
-			for _, authoredCommand := range authoredTask.Commands {
-				commands = append(commands, Command{
-					Type:       authoredCommand.Type,
-					Parameters: StringInterfaceMap(authoredCommand.Parameters),
-				})
-			}
-
-			dbTask := Task{
-				Name:     authoredTask.Name,
-				Type:     authoredTask.Type,
-				Job:      &dbJob,
-				Priority: authoredTask.Priority,
-				Status:   string(api.TaskStatusProcessing), // TODO: is this the right place to set the default status?
-				// TODO: store dependencies
-				Commands: commands,
-			}
-			if err := db.gormDB.Create(&dbTask).Error; err != nil {
-				return fmt.Errorf("error storing task: %v", err)
-			}
-		}
-
-		return nil
-	})
-}
-
-func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
-	dbJob := Job{}
-	findResult := db.gormDB.First(&dbJob, "uuid = ?", jobID)
-	if findResult.Error != nil {
-		return nil, findResult.Error
-	}
-
-	apiJob := api.Job{
-		SubmittedJob: api.SubmittedJob{
-			Name:     dbJob.Name,
-			Priority: int(dbJob.Priority),
-			Type:     dbJob.JobType,
-		},
-
-		Id:      dbJob.UUID,
-		Created: dbJob.CreatedAt,
-		Updated: dbJob.UpdatedAt,
-		Status:  api.JobStatus(dbJob.Status),
-	}
-
-	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}
-	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
-
-	return &apiJob, nil
 }
