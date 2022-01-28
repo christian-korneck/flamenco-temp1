@@ -89,10 +89,24 @@ const (
 	TaskStatusSoftFailed TaskStatus = "soft-failed"
 )
 
+// Defines values for WorkerStatus.
+const (
+	WorkerStatusAsleep WorkerStatus = "asleep"
+
+	WorkerStatusAwake WorkerStatus = "awake"
+
+	WorkerStatusError WorkerStatus = "error"
+
+	WorkerStatusShuttingDown WorkerStatus = "shutting-down"
+
+	WorkerStatusStarting WorkerStatus = "starting"
+
+	WorkerStatusTesting WorkerStatus = "testing"
+)
+
 // AssignedTask is a task as it is received by the Worker.
 type AssignedTask struct {
 	Commands    []Command  `json:"commands"`
-	Id          string     `json:"id"`
 	Job         string     `json:"job"`
 	JobPriority int        `json:"job_priority"`
 	JobType     string     `json:"job_type"`
@@ -101,6 +115,7 @@ type AssignedTask struct {
 	Status      TaskStatus `json:"status"`
 	TaskType    string     `json:"task_type"`
 	User        string     `json:"user"`
+	Uuid        string     `json:"uuid"`
 }
 
 // Single setting of a Job types.
@@ -191,14 +206,14 @@ type JobStatus string
 
 // RegisteredWorker defines model for RegisteredWorker.
 type RegisteredWorker struct {
-	Address            string   `json:"address"`
-	Id                 string   `json:"id"`
-	LastActivity       string   `json:"last_activity"`
-	Nickname           string   `json:"nickname"`
-	Platform           string   `json:"platform"`
-	Software           string   `json:"software"`
-	Status             string   `json:"status"`
-	SupportedTaskTypes []string `json:"supported_task_types"`
+	Address            string       `json:"address"`
+	LastActivity       string       `json:"last_activity"`
+	Nickname           string       `json:"nickname"`
+	Platform           string       `json:"platform"`
+	Software           string       `json:"software"`
+	Status             WorkerStatus `json:"status"`
+	SupportedTaskTypes []string     `json:"supported_task_types"`
+	Uuid               string       `json:"uuid"`
 }
 
 // SecurityError defines model for SecurityError.
@@ -226,6 +241,9 @@ type WorkerRegistration struct {
 	Secret             string   `json:"secret"`
 	SupportedTaskTypes []string `json:"supported_task_types"`
 }
+
+// WorkerStatus defines model for WorkerStatus.
+type WorkerStatus string
 
 // SubmitJobJSONBody defines parameters for SubmitJob.
 type SubmitJobJSONBody SubmittedJob

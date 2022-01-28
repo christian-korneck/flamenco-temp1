@@ -28,10 +28,12 @@ with-deps:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
 	make -s application
 
-application: ${RESOURCES}
-	go generate ${PKG}/...
+application: ${RESOURCES} generate
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
+
+generate:
+	go generate ${PKG}/...
 
 # resource.syso: resource/thermogui.ico resource/versioninfo.json
 # 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
@@ -53,7 +55,7 @@ swagger-ui:
 	@echo
 	@echo 'Now update pkg/api/static/swagger-ui/index.html to have url: "/api/openapi3.json",'
 
-test:
+test: generate
 	go test -short ${PKG_LIST}
 
 vet:
@@ -70,7 +72,7 @@ clean:
 	go generate ./...
 
 # static: vet lint resource.syso
-static: vet lint
+static: vet lint generate
 	CGO_ENABLED=0 go build -v -o flamenco-manager-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-manager-poc
 	CGO_ENABLED=0 go build -v -o flamenco-worker-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-worker-poc
 

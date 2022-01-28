@@ -112,4 +112,6 @@ func TestStoreAuthoredJob(t *testing.T) {
 	assert.NoError(t, tx.Error)
 
 	assert.Len(t, tasks, 3)
+
+	// TODO: test task contents.
 }

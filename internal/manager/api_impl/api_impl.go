@@ -26,18 +26,22 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 type Flamenco struct {
 	jobCompiler JobCompiler
-	persist     JobPersistenceService
+	persist     PersistenceService
 }
 
-type JobPersistenceService interface {
+type PersistenceService interface {
 	// StoreJob stores a job in the persistence layer.
 	StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
 	FetchJob(ctx context.Context, jobID string) (*api.Job, error)
+
+	CreateWorker(ctx context.Context, w *persistence.Worker) error
+	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)
 }
 
 type JobCompiler interface {
@@ -48,7 +52,7 @@ type JobCompiler interface {
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // NewFlamenco creates a new Flamenco service, using the given JobCompiler.
-func NewFlamenco(jc JobCompiler, jps JobPersistenceService) *Flamenco {
+func NewFlamenco(jc JobCompiler, jps PersistenceService) *Flamenco {
 	return &Flamenco{
 		jobCompiler: jc,
 		persist:     jps,

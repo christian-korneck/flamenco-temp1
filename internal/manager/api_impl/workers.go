@@ -22,14 +22,17 @@ package api_impl
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
+// RegisterWorker registers a new worker and stores it in the database.
 func (f *Flamenco) RegisterWorker(e echo.Context) error {
 	remoteIP := e.RealIP()
 
@@ -46,17 +49,33 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 
 	logger.Info().Str("nickname", req.Nickname).Msg("registering new worker")
 
+	dbWorker := persistence.Worker{
+		UUID:               uuid.New().String(),
+		Name:               req.Nickname,
+		Platform:           req.Platform,
+		Address:            remoteIP,
+		SupportedTaskTypes: strings.Join(req.SupportedTaskTypes, ","),
+	}
+	if err := f.persist.CreateWorker(e.Request().Context(), &dbWorker); err != nil {
+		logger.Warn().Err(err).Msg("error creating new worker in DB")
+		return sendAPIError(e, http.StatusBadRequest, "error registering worker")
+	}
+
 	return e.JSON(http.StatusOK, &api.RegisteredWorker{
-		Id:       uuid.New().String(),
-		Nickname: req.Nickname,
-		Platform: req.Platform,
-		Address:  remoteIP,
+		Uuid:               dbWorker.UUID,
+		Nickname:           dbWorker.Name,
+		Address:            dbWorker.Address,
+		LastActivity:       dbWorker.LastActivity,
+		Platform:           dbWorker.Platform,
+		Software:           dbWorker.Software,
+		Status:             dbWorker.Status,
+		SupportedTaskTypes: strings.Split(dbWorker.SupportedTaskTypes, ","),
 	})
 }
 
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	return e.JSON(http.StatusOK, &api.AssignedTask{
-		Id: uuid.New().String(),
+		Uuid: uuid.New().String(),
 		Commands: []api.Command{
 			{Name: "echo", Settings: echo.Map{"payload": "Simon says \"Shaders!\""}},
 			{Name: "blender", Settings: echo.Map{"blender_cmd": "/shared/bin/blender"}},

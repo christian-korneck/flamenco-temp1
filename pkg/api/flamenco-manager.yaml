@@ -138,23 +138,27 @@ components:
     RegisteredWorker:
       type: object
       properties:
-        id: {type: string, format: uuid}
+        uuid: {type: string, format: uuid}
         nickname: {type: string}
         address: {type: string}
-        status: {type: string}
+        status: {$ref: "#/components/schemas/WorkerStatus"}
         platform: {type: string}
         last_activity: {type: string}
         software: {type: string}
         supported_task_types:
           type: array
           items: {type: string}
-      required: [id, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
+      required: [uuid, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
+
+    WorkerStatus:
+      type: string
+      enum: [starting, awake, asleep, error, shutting-down, testing]
 
     AssignedTask:
       type: object
       description: AssignedTask is a task as it is received by the Worker.
       properties:
-        id: {type: string, format: uuid}
+        uuid: {type: string, format: uuid}
         job: {type: string}
         user: {type: string}
         name: {type: string}
@@ -166,7 +170,7 @@ components:
         commands:
           type: array
           items: {$ref: "#/components/schemas/Command"}
-      required: [id, job, user, name, status, priority, job_priority, job_type, task_type, commands]
+      required: [uuid, job, user, name, status, priority, job_priority, job_type, task_type, commands]
 
     JobStatus:
       type: string
