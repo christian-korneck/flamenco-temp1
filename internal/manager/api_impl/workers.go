@@ -88,7 +88,7 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	logger.Info().Str("nickname", req.Nickname).Msg("worker signing on")
+	logger.Info().Msg("worker signing on")
 
 	return e.JSON(http.StatusOK, &api.WorkerStateChange{
 		// TODO: look up proper status in DB.
@@ -106,7 +106,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	logger.Info().Str("nickname", req.Nickname).Msg("worker signing off")
+	logger.Info().Msg("worker signing off")
 
 	// TODO: store status in DB.
 	return e.String(http.StatusNoContent, "")
@@ -135,6 +135,9 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 }
 
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
+	logger := requestLogger(e)
+	logger.Info().Msg("worker requesting task")
+
 	return e.JSON(http.StatusOK, &api.AssignedTask{
 		Uuid: uuid.New().String(),
 		Commands: []api.Command{

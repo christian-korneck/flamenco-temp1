@@ -27,6 +27,7 @@ import (
 	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -75,5 +76,15 @@ func WorkerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInpu
 	reqCtx := context.WithValue(req.Context(), workerKey, w)
 	echo.SetRequest(req.WithContext(reqCtx))
 
+	return nil
+}
+
+// requestWorker returns the Worker associated with this HTTP request.
+func requestWorker(e echo.Context) *persistence.Worker {
+	ctx := e.Request().Context()
+	worker, ok := ctx.Value(workerKey).(*persistence.Worker)
+	if ok {
+		return worker
+	}
 	return nil
 }
