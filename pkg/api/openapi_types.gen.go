@@ -97,7 +97,9 @@ const (
 
 	WorkerStatusError WorkerStatus = "error"
 
-	WorkerStatusShuttingDown WorkerStatus = "shutting-down"
+	WorkerStatusOffline WorkerStatus = "offline"
+
+	WorkerStatusShutdown WorkerStatus = "shutdown"
 
 	WorkerStatusStarting WorkerStatus = "starting"
 
@@ -253,6 +255,11 @@ type WorkerStateChange struct {
 	StatusRequested WorkerStatus `json:"status_requested"`
 }
 
+// WorkerStateChanged defines model for WorkerStateChanged.
+type WorkerStateChanged struct {
+	Status WorkerStatus `json:"status"`
+}
+
 // WorkerStatus defines model for WorkerStatus.
 type WorkerStatus string
 
@@ -265,6 +272,9 @@ type RegisterWorkerJSONBody WorkerRegistration
 // SignOnJSONBody defines parameters for SignOn.
 type SignOnJSONBody WorkerSignOn
 
+// WorkerStateChangedJSONBody defines parameters for WorkerStateChanged.
+type WorkerStateChangedJSONBody WorkerStateChanged
+
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody
 
@@ -273,6 +283,9 @@ type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody
 
 // SignOnJSONRequestBody defines body for SignOn for application/json ContentType.
 type SignOnJSONRequestBody SignOnJSONBody
+
+// WorkerStateChangedJSONRequestBody defines body for WorkerStateChanged for application/json ContentType.
+type WorkerStateChangedJSONRequestBody WorkerStateChangedJSONBody
 
 // Getter for additional properties for JobMetadata. Returns the specified
 // element and whether it was found

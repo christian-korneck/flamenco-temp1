@@ -106,10 +106,21 @@ type ClientInterface interface {
 
 	RegisterWorker(ctx context.Context, body RegisterWorkerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SignOff request
+	SignOff(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SignOn request with any body
 	SignOnWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	SignOn(ctx context.Context, body SignOnJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// WorkerState request
+	WorkerState(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// WorkerStateChanged request with any body
+	WorkerStateChangedWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	WorkerStateChanged(ctx context.Context, body WorkerStateChangedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ScheduleTask request
 	ScheduleTask(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -187,6 +198,18 @@ func (c *Client) RegisterWorker(ctx context.Context, body RegisterWorkerJSONRequ
 	return c.Client.Do(req)
 }
 
+func (c *Client) SignOff(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSignOffRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) SignOnWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSignOnRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -201,6 +224,42 @@ func (c *Client) SignOnWithBody(ctx context.Context, contentType string, body io
 
 func (c *Client) SignOn(ctx context.Context, body SignOnJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSignOnRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) WorkerState(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWorkerStateRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) WorkerStateChangedWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWorkerStateChangedRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) WorkerStateChanged(ctx context.Context, body WorkerStateChangedJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWorkerStateChangedRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -364,6 +423,33 @@ func NewRegisterWorkerRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
+// NewSignOffRequest generates requests for SignOff
+func NewSignOffRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker/sign-off")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewSignOnRequest calls the generic SignOn builder with application/json body
 func NewSignOnRequest(server string, body SignOnJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -385,6 +471,73 @@ func NewSignOnRequestWithBody(server string, contentType string, body io.Reader)
 	}
 
 	operationPath := fmt.Sprintf("/api/worker/sign-on")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewWorkerStateRequest generates requests for WorkerState
+func NewWorkerStateRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker/state")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewWorkerStateChangedRequest calls the generic WorkerStateChanged builder with application/json body
+func NewWorkerStateChangedRequest(server string, body WorkerStateChangedJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewWorkerStateChangedRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewWorkerStateChangedRequestWithBody generates requests for WorkerStateChanged with any type of body
+func NewWorkerStateChangedRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker/state-changed")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -490,10 +643,21 @@ type ClientWithResponsesInterface interface {
 
 	RegisterWorkerWithResponse(ctx context.Context, body RegisterWorkerJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error)
 
+	// SignOff request
+	SignOffWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SignOffResponse, error)
+
 	// SignOn request with any body
 	SignOnWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SignOnResponse, error)
 
 	SignOnWithResponse(ctx context.Context, body SignOnJSONRequestBody, reqEditors ...RequestEditorFn) (*SignOnResponse, error)
+
+	// WorkerState request
+	WorkerStateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*WorkerStateResponse, error)
+
+	// WorkerStateChanged request with any body
+	WorkerStateChangedWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*WorkerStateChangedResponse, error)
+
+	WorkerStateChangedWithResponse(ctx context.Context, body WorkerStateChangedJSONRequestBody, reqEditors ...RequestEditorFn) (*WorkerStateChangedResponse, error)
 
 	// ScheduleTask request
 	ScheduleTaskWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ScheduleTaskResponse, error)
@@ -589,6 +753,28 @@ func (r RegisterWorkerResponse) StatusCode() int {
 	return 0
 }
 
+type SignOffResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r SignOffResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SignOffResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type SignOnResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -612,11 +798,57 @@ func (r SignOnResponse) StatusCode() int {
 	return 0
 }
 
+type WorkerStateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WorkerStateChange
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r WorkerStateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WorkerStateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type WorkerStateChangedResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r WorkerStateChangedResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WorkerStateChangedResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ScheduleTaskResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *AssignedTask
 	JSON403      *SecurityError
+	JSON423      *WorkerStateChange
 }
 
 // Status returns HTTPResponse.Status
@@ -687,6 +919,15 @@ func (c *ClientWithResponses) RegisterWorkerWithResponse(ctx context.Context, bo
 	return ParseRegisterWorkerResponse(rsp)
 }
 
+// SignOffWithResponse request returning *SignOffResponse
+func (c *ClientWithResponses) SignOffWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SignOffResponse, error) {
+	rsp, err := c.SignOff(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSignOffResponse(rsp)
+}
+
 // SignOnWithBodyWithResponse request with arbitrary body returning *SignOnResponse
 func (c *ClientWithResponses) SignOnWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SignOnResponse, error) {
 	rsp, err := c.SignOnWithBody(ctx, contentType, body, reqEditors...)
@@ -702,6 +943,32 @@ func (c *ClientWithResponses) SignOnWithResponse(ctx context.Context, body SignO
 		return nil, err
 	}
 	return ParseSignOnResponse(rsp)
+}
+
+// WorkerStateWithResponse request returning *WorkerStateResponse
+func (c *ClientWithResponses) WorkerStateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*WorkerStateResponse, error) {
+	rsp, err := c.WorkerState(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWorkerStateResponse(rsp)
+}
+
+// WorkerStateChangedWithBodyWithResponse request with arbitrary body returning *WorkerStateChangedResponse
+func (c *ClientWithResponses) WorkerStateChangedWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*WorkerStateChangedResponse, error) {
+	rsp, err := c.WorkerStateChangedWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWorkerStateChangedResponse(rsp)
+}
+
+func (c *ClientWithResponses) WorkerStateChangedWithResponse(ctx context.Context, body WorkerStateChangedJSONRequestBody, reqEditors ...RequestEditorFn) (*WorkerStateChangedResponse, error) {
+	rsp, err := c.WorkerStateChanged(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWorkerStateChangedResponse(rsp)
 }
 
 // ScheduleTaskWithResponse request returning *ScheduleTaskResponse
@@ -831,6 +1098,32 @@ func ParseRegisterWorkerResponse(rsp *http.Response) (*RegisterWorkerResponse, e
 	return response, nil
 }
 
+// ParseSignOffResponse parses an HTTP response from a SignOffWithResponse call
+func ParseSignOffResponse(rsp *http.Response) (*SignOffResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SignOffResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSignOnResponse parses an HTTP response from a SignOnWithResponse call
 func ParseSignOnResponse(rsp *http.Response) (*SignOnResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -852,6 +1145,65 @@ func ParseSignOnResponse(rsp *http.Response) (*SignOnResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseWorkerStateResponse parses an HTTP response from a WorkerStateWithResponse call
+func ParseWorkerStateResponse(rsp *http.Response) (*WorkerStateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WorkerStateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkerStateChange
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseWorkerStateChangedResponse parses an HTTP response from a WorkerStateChangedWithResponse call
+func ParseWorkerStateChangedResponse(rsp *http.Response) (*WorkerStateChangedResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WorkerStateChangedResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -891,6 +1243,13 @@ func ParseScheduleTaskResponse(rsp *http.Response) (*ScheduleTaskResponse, error
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest WorkerStateChange
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 

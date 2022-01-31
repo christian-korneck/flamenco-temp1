@@ -89,6 +89,7 @@ func buildWebService(flamenco api.ServerInterface) *echo.Echo {
 
 	// Ensure panics when serving a web request won't bring down the server.
 	e.Use(middleware.Recover())
+	e.Use(api_impl.MiddleWareRequestLogger)
 
 	// Load the API definition and enable validation & authentication checks.
 	swagger, err := api.GetSwagger()

@@ -25,9 +25,18 @@ type ServerInterface interface {
 	// Register a new worker
 	// (POST /api/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
+	// Mark the worker as offline
+	// (POST /api/worker/sign-off)
+	SignOff(ctx echo.Context) error
 	// Authenticate & sign in the worker.
 	// (POST /api/worker/sign-on)
 	SignOn(ctx echo.Context) error
+
+	// (GET /api/worker/state)
+	WorkerState(ctx echo.Context) error
+	// Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
+	// (POST /api/worker/state-changed)
+	WorkerStateChanged(ctx echo.Context) error
 	// Obtain a new task to execute
 	// (POST /api/worker/task)
 	ScheduleTask(ctx echo.Context) error
@@ -81,6 +90,17 @@ func (w *ServerInterfaceWrapper) RegisterWorker(ctx echo.Context) error {
 	return err
 }
 
+// SignOff converts echo context to params.
+func (w *ServerInterfaceWrapper) SignOff(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(Worker_authScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.SignOff(ctx)
+	return err
+}
+
 // SignOn converts echo context to params.
 func (w *ServerInterfaceWrapper) SignOn(ctx echo.Context) error {
 	var err error
@@ -89,6 +109,28 @@ func (w *ServerInterfaceWrapper) SignOn(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.SignOn(ctx)
+	return err
+}
+
+// WorkerState converts echo context to params.
+func (w *ServerInterfaceWrapper) WorkerState(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(Worker_authScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.WorkerState(ctx)
+	return err
+}
+
+// WorkerStateChanged converts echo context to params.
+func (w *ServerInterfaceWrapper) WorkerStateChanged(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(Worker_authScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.WorkerStateChanged(ctx)
 	return err
 }
 
@@ -135,7 +177,10 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
+	router.POST(baseURL+"/api/worker/sign-off", wrapper.SignOff)
 	router.POST(baseURL+"/api/worker/sign-on", wrapper.SignOn)
+	router.GET(baseURL+"/api/worker/state", wrapper.WorkerState)
+	router.POST(baseURL+"/api/worker/state-changed", wrapper.WorkerStateChanged)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
 
 }

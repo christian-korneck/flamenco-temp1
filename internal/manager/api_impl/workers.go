@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
@@ -34,8 +33,7 @@ import (
 
 // RegisterWorker registers a new worker and stores it in the database.
 func (f *Flamenco) RegisterWorker(e echo.Context) error {
-	remoteIP := e.RealIP()
-	logger := log.With().Str("ip", remoteIP).Logger()
+	logger := requestLogger(e)
 
 	var req api.RegisterWorkerJSONBody
 	err := e.Bind(&req)
@@ -53,7 +51,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 		Name:               req.Nickname,
 		Secret:             req.Secret,
 		Platform:           req.Platform,
-		Address:            remoteIP,
+		Address:            e.RealIP(),
 		SupportedTaskTypes: strings.Join(req.SupportedTaskTypes, ","),
 	}
 	if err := f.persist.CreateWorker(e.Request().Context(), &dbWorker); err != nil {
@@ -74,8 +72,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 }
 
 func (f *Flamenco) SignOn(e echo.Context) error {
-	remoteIP := e.RealIP()
-	logger := log.With().Str("ip", remoteIP).Logger()
+	logger := requestLogger(e)
 
 	var req api.SignOnJSONBody
 	err := e.Bind(&req)
@@ -90,6 +87,44 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 		// TODO: look up proper status in DB.
 		StatusRequested: api.WorkerStatusAwake,
 	})
+}
+
+func (f *Flamenco) SignOff(e echo.Context) error {
+	logger := requestLogger(e)
+
+	var req api.SignOnJSONBody
+	err := e.Bind(&req)
+	if err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	logger.Info().Str("nickname", req.Nickname).Msg("worker signing off")
+
+	// TODO: store status in DB.
+	return e.String(http.StatusNoContent, "")
+}
+
+// (GET /api/worker/state)
+func (f *Flamenco) WorkerState(e echo.Context) error {
+	// TODO: look up proper status in DB.
+	return e.String(http.StatusNoContent, "")
+}
+
+// Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
+// (POST /api/worker/state-changed)
+func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
+	logger := requestLogger(e)
+
+	var req api.WorkerStateChangedJSONRequestBody
+	err := e.Bind(&req)
+	if err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	logger.Info().Str("newStatus", string(req.Status)).Msg("worker changed status")
+	return e.String(http.StatusNoContent, "")
 }
 
 func (f *Flamenco) ScheduleTask(e echo.Context) error {

@@ -43,23 +43,16 @@ type WorkerConfig struct {
 	TaskTypes []string `yaml:"task_types"`
 }
 
-type workerCredentials struct {
+type WorkerCredentials struct {
 	WorkerID string `yaml:"worker_id"`
 	Secret   string `yaml:"worker_secret"`
-}
-
-// ConfigWrangler makes it simple to load and write configuration files.
-type ConfigWrangler interface {
-	DefaultConfig() WorkerConfig
-	WriteConfig(filename string, filetype string, config interface{}) error
-	LoadConfig(filename string, config interface{}) error
 }
 
 // FileConfigWrangler is the default config wrangler that actually reads & writes files.
 type FileConfigWrangler struct{}
 
-// NewConfigWrangler returns a new ConfigWrangler instance of the default type FileConfigWrangler.
-func NewConfigWrangler() ConfigWrangler {
+// NewConfigWrangler returns ConfigWrangler that reads files.
+func NewConfigWrangler() FileConfigWrangler {
 	return FileConfigWrangler{}
 }
 

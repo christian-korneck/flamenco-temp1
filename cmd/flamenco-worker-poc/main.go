@@ -23,8 +23,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/url"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/mattn/go-colorable"
@@ -33,8 +35,11 @@ import (
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
 	"gitlab.com/blender/flamenco-ng-poc/internal/worker"
-	"gitlab.com/blender/flamenco-ng-poc/internal/worker/ssdp"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+)
+
+var (
+	w                *worker.Worker
+	shutdownComplete chan struct{}
 )
 
 func main() {
@@ -47,70 +52,65 @@ func main() {
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
 	log.Logger = log.Output(output)
 
-	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v Worker", appinfo.ApplicationName)
+	log.Info().
+		Str("version", appinfo.ApplicationVersion).
+		Str("OS", runtime.GOOS).
+		Str("ARCH", runtime.GOARCH).
+		Int("pid", os.Getpid()).
+		Msgf("starting %v Worker", appinfo.ApplicationName)
 
-	// configWrangler := worker.NewConfigWrangler()
-	managerFinder := ssdp.NewManagerFinder(cliArgs.managerURL)
-	// taskRunner := struct{}{}
-	findManager(managerFinder)
+	configWrangler := worker.NewConfigWrangler()
 
-	// basicAuthProvider, err := securityprovider.NewSecurityProviderBasicAuth("MY_USER", "MY_PASS")
-	// if err != nil {
-	// 	log.Panic().Err(err).Msg("unable to create basic authr")
-	// }
+	startupCtx, sctxCancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
+	client, startupState := registerOrSignOn(startupCtx, configWrangler)
+	sctxCancelFunc()
 
-	// flamenco, err := api.NewClientWithResponses(
-	// 	"http://localhost:8080/",
-	// 	api.WithRequestEditorFn(basicAuthProvider.Intercept),
-	// 	api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-	// 		req.Header.Set("User-Agent", appinfo.UserAgent())
-	// 		return nil
-	// 	}),
-	// )
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("error creating client")
-	// }
+	shutdownComplete = make(chan struct{})
 
-	// w := worker.NewWorker(flamenco, configWrangler, managerFinder, taskRunner)
-	// ctx := context.Background()
-	// registerWorker(ctx, flamenco)
-	// obtainTask(ctx, flamenco)
+	taskRunner := struct{}{}
+	w = worker.NewWorker(client, taskRunner)
+
+	// Handle Ctrl+C
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGTERM)
+	go func() {
+		for signum := range c {
+			// Run the shutdown sequence in a goroutine, so that multiple Ctrl+C presses can be handled in parallel.
+			go shutdown(signum)
+		}
+	}()
+
+	workerCtx := context.Background()
+	w.Start(workerCtx, startupState)
+
+	<-shutdownComplete
+
+	log.Debug().Msg("process shutting down")
 }
 
-func obtainTask(ctx context.Context, flamenco *api.ClientWithResponses) {
-	resp, err := flamenco.ScheduleTaskWithResponse(ctx)
-	if err != nil {
-		log.Fatal().Err(err).Msg("error obtaining task")
-	}
-	switch {
-	case resp.JSON200 != nil:
-		log.Info().
-			Interface("task", resp.JSON200).
-			Msg("obtained task")
-	case resp.JSON403 != nil:
-		log.Fatal().
-			Int("code", resp.StatusCode()).
-			Str("error", string(resp.JSON403.Message)).
-			Msg("access denied")
-	case resp.StatusCode() == http.StatusNoContent:
-		log.Info().Msg("no task available")
-	default:
-		log.Fatal().
-			Int("code", resp.StatusCode()).
-			Str("error", string(resp.Body)).
-			Msg("unable to obtain task")
-	}
-}
+func shutdown(signum os.Signal) {
+	done := make(chan struct{})
+	go func() {
+		log.Info().Str("signal", signum.String()).Msg("signal received, shutting down.")
 
-func findManager(managerFinder worker.ManagerFinder) *url.URL {
-	finder := managerFinder.FindFlamencoManager()
+		if w != nil {
+			shutdownCtx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancelFunc()
+			w.SignOff(shutdownCtx)
+			w.Close()
+		}
+		close(done)
+	}()
+
 	select {
-	case manager := <-finder:
-		log.Info().Str("manager", manager.String()).Msg("found Manager")
-		return manager
-	case <-time.After(10 * time.Second):
-		log.Fatal().Msg("unable to autodetect Flamenco Manager via UPnP/SSDP; configure the URL explicitly")
+	case <-done:
+		log.Debug().Msg("shutdown OK")
+	case <-time.After(20 * time.Second):
+		log.Error().Msg("shutdown forced, stopping process.")
+		os.Exit(-2)
 	}
 
-	return nil
+	log.Warn().Msg("shutdown complete, stopping process.")
+	close(shutdownComplete)
 }

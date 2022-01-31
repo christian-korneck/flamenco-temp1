@@ -67,6 +67,69 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/worker/sign-off:
+    summary: Called by Workers to let the Manager know they're going offline.
+    post:
+      summary: Mark the worker as offline
+      operationId: signOff
+      security: [{worker_auth: []}]
+      tags: [worker]
+      responses:
+        "204":
+          description: normal response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/worker/state:
+    summary: Called by Workers to check whether there is any state change requested.
+    get:
+      operationId: workerState
+      security: [{worker_auth: []}]
+      tags: [worker]
+      responses:
+        "204":
+          description: no state change requested
+        "200":
+          description: state change requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkerStateChange"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/worker/state-changed:
+    summary: Called by Workers to let the Manager know they've changed status.
+    post:
+      summary: Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
+      operationId: workerStateChanged
+      security: [{worker_auth: []}]
+      tags: [worker]
+      requestBody:
+        description: New worker state
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerStateChanged"
+      responses:
+        "204":
+          description: normal response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/worker/task:
     summary: Task scheduler endpoint.
     post:
@@ -87,6 +150,12 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/SecurityError"}
+        "423":
+          description: Worker cannot obtain new tasks, but must go to another state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkerStateChange"
 
   /api/jobs/types:
     summary: Available Flamenco job types.
@@ -180,7 +249,7 @@ components:
 
     WorkerStatus:
       type: string
-      enum: [starting, awake, asleep, error, shutting-down, testing]
+      enum: [starting, awake, asleep, error, shutdown, testing, offline]
 
     WorkerSignOn:
       type: object
@@ -196,6 +265,12 @@ components:
       properties:
         status_requested: {$ref: "#/components/schemas/WorkerStatus"}
       required: [status_requested]
+
+    WorkerStateChanged:
+      type: object
+      properties:
+        status: {$ref: "#/components/schemas/WorkerStatus"}
+      required: [status]
 
     AssignedTask:
       type: object
