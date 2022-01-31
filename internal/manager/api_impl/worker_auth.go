@@ -79,7 +79,7 @@ func WorkerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInpu
 	return nil
 }
 
-// requestWorker returns the Worker associated with this HTTP request.
+// requestWorker returns the Worker associated with this HTTP request, or nil if there is none.
 func requestWorker(e echo.Context) *persistence.Worker {
 	ctx := e.Request().Context()
 	worker, ok := ctx.Value(workerKey).(*persistence.Worker)
@@ -87,4 +87,14 @@ func requestWorker(e echo.Context) *persistence.Worker {
 		return worker
 	}
 	return nil
+}
+
+// requestWorkerOrPanic returns the Worker associated with this HTTP request, or panics if there is none.
+func requestWorkerOrPanic(e echo.Context) *persistence.Worker {
+	w := requestWorker(e)
+	if w == nil {
+		logger := requestLogger(e)
+		logger.Panic().Msg("no worker available where one was expected")
+	}
+	return w
 }

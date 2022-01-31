@@ -34,11 +34,12 @@ type Worker struct {
 	Secret string `gorm:"type:varchar(255);not null"`
 	Name   string `gorm:"type:varchar(64);not null"`
 
-	Address      string           `gorm:"type:varchar(39);not null;index"` // 39 = max length of IPv6 address.
-	LastActivity string           `gorm:"type:varchar(255);not null"`
-	Platform     string           `gorm:"type:varchar(16);not null"`
-	Software     string           `gorm:"type:varchar(32);not null"`
-	Status       api.WorkerStatus `gorm:"type:varchar(16);not null"`
+	Address         string           `gorm:"type:varchar(39);not null;index"` // 39 = max length of IPv6 address.
+	LastActivity    string           `gorm:"type:varchar(255);not null"`
+	Platform        string           `gorm:"type:varchar(16);not null"`
+	Software        string           `gorm:"type:varchar(32);not null"`
+	Status          api.WorkerStatus `gorm:"type:varchar(16);not null"`
+	StatusRequested api.WorkerStatus `gorm:"type:varchar(16);not null;default:''"`
 
 	SupportedTaskTypes string `gorm:"type:varchar(255);not null"` // comma-separated list of task types.
 }
@@ -57,4 +58,11 @@ func (db *DB) FetchWorker(ctx context.Context, uuid string) (*Worker, error) {
 		return nil, findResult.Error
 	}
 	return &w, nil
+}
+
+func (db *DB) SaveWorker(ctx context.Context, w *Worker) error {
+	if err := db.gormDB.Save(w).Error; err != nil {
+		return fmt.Errorf("error saving worker: %v", err)
+	}
+	return nil
 }

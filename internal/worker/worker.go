@@ -29,7 +29,9 @@ type Worker struct {
 
 type StateStarter func(context.Context)
 
-type TaskRunner interface{}
+type TaskRunner interface {
+	Run(ctx context.Context, task api.AssignedTask) error
+}
 
 // NewWorker constructs and returns a new Worker.
 func NewWorker(

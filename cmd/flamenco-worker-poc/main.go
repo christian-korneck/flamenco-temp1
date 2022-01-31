@@ -67,8 +67,8 @@ func main() {
 
 	shutdownComplete = make(chan struct{})
 
-	taskRunner := struct{}{}
-	w = worker.NewWorker(client, taskRunner)
+	taskRunner := worker.TaskExecutor{}
+	w = worker.NewWorker(client, &taskRunner)
 
 	// Handle Ctrl+C
 	c := make(chan os.Signal, 1)

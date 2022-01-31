@@ -90,10 +90,23 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 
 	logger.Info().Msg("worker signing on")
 
-	return e.JSON(http.StatusOK, &api.WorkerStateChange{
-		// TODO: look up proper status in DB.
-		StatusRequested: api.WorkerStatusAwake,
-	})
+	w := requestWorkerOrPanic(e)
+	w.Status = api.WorkerStatusStarting
+	err = f.persist.SaveWorker(e.Request().Context(), w)
+	if err != nil {
+		logger.Warn().Err(err).
+			Str("newStatus", string(w.Status)).
+			Msg("error storing Worker in database")
+		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
+	}
+
+	resp := api.WorkerStateChange{}
+	if w.StatusRequested != "" {
+		resp.StatusRequested = w.StatusRequested
+	} else {
+		resp.StatusRequested = api.WorkerStatusAwake
+	}
+	return e.JSON(http.StatusOK, resp)
 }
 
 func (f *Flamenco) SignOff(e echo.Context) error {
@@ -107,8 +120,20 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	}
 
 	logger.Info().Msg("worker signing off")
+	w := requestWorkerOrPanic(e)
+	w.Status = api.WorkerStatusOffline
+	// TODO: check whether we should pass the request context here, or a generic
+	// background context, as this should be stored even when the HTTP connection
+	// is aborted.
+	err = f.persist.SaveWorker(e.Request().Context(), w)
+	if err != nil {
+		logger.Warn().
+			Err(err).
+			Str("newStatus", string(w.Status)).
+			Msg("error storing worker status in database")
+		return sendAPIError(e, http.StatusInternalServerError, "error storing new status in database")
+	}
 
-	// TODO: store status in DB.
 	return e.String(http.StatusNoContent, "")
 }
 
@@ -131,6 +156,17 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 	}
 
 	logger.Info().Str("newStatus", string(req.Status)).Msg("worker changed status")
+
+	w := requestWorkerOrPanic(e)
+	w.Status = req.Status
+	err = f.persist.SaveWorker(e.Request().Context(), w)
+	if err != nil {
+		logger.Warn().Err(err).
+			Str("newStatus", string(w.Status)).
+			Msg("error storing Worker in database")
+		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
+	}
+
 	return e.String(http.StatusNoContent, "")
 }
 

@@ -1,5 +1,25 @@
 package worker
 
+/* ***** BEGIN GPL LICENSE BLOCK *****
+ *
+ * Original Code Copyright (C) 2022 Blender Foundation.
+ *
+ * This file is part of Flamenco.
+ *
+ * Flamenco is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * Flamenco is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Flamenco.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * ***** END GPL LICENSE BLOCK ***** */
+
 import (
 	"context"
 	"errors"
@@ -34,13 +54,20 @@ func (w *Worker) gotoStateAwake(ctx context.Context) {
 
 func (w *Worker) runStateAwake(ctx context.Context) {
 	defer w.doneWg.Done()
-	task := w.fetchTask(ctx)
-	if task == nil {
-		return
-	}
 
-	// TODO: actually execute the task
-	log.Error().Interface("task", *task).Msg("task execution not implemented yet")
+	for {
+		task := w.fetchTask(ctx)
+		if task == nil {
+			return
+		}
+
+		err := w.taskRunner.Run(ctx, *task)
+		if err != nil {
+			log.Warn().Err(err).Interface("task", *task).Msg("error executing task")
+		}
+
+		// TODO: send the result of the execution back to the Manager.
+	}
 }
 
 // fetchTasks periodically tries to fetch a task from the Manager, returning it when obtained.
@@ -70,6 +97,7 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 		resp, err := w.client.ScheduleTaskWithResponse(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("error obtaining task")
+			return nil
 		}
 		switch {
 		case resp.JSON200 != nil:
