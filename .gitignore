@@ -1,3 +1,6 @@
 *.exe
 /*-poc
 /*.sqlite
+
+/flamenco-worker.yaml
+/flamenco-worker-credentials.yaml

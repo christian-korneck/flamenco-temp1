@@ -26,6 +26,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
@@ -46,10 +47,16 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 
 	logger.Info().Str("nickname", req.Nickname).Msg("registering new worker")
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Secret), bcrypt.DefaultCost)
+	if err != nil {
+		logger.Warn().Err(err).Msg("error hashing worker password")
+		return sendAPIError(e, http.StatusBadRequest, "error hashing password")
+	}
+
 	dbWorker := persistence.Worker{
 		UUID:               uuid.New().String(),
 		Name:               req.Nickname,
-		Secret:             req.Secret,
+		Secret:             string(hashedPassword),
 		Platform:           req.Platform,
 		Address:            e.RealIP(),
 		SupportedTaskTypes: strings.Join(req.SupportedTaskTypes, ","),

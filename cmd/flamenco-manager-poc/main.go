@@ -71,14 +71,14 @@ func main() {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
 	flamenco := api_impl.NewFlamenco(compiler, persist)
-	e := buildWebService(flamenco)
+	e := buildWebService(flamenco, persist)
 
 	// Start the web server.
 	finalErr := e.Start(listen)
 	log.Warn().Err(finalErr).Msg("shutting down")
 }
 
-func buildWebService(flamenco api.ServerInterface) *echo.Echo {
+func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceService) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -99,7 +99,9 @@ func buildWebService(flamenco api.ServerInterface) *echo.Echo {
 	validator := oapi_middle.OapiRequestValidatorWithOptions(swagger,
 		&oapi_middle.Options{
 			Options: openapi3filter.Options{
-				AuthenticationFunc: authenticator,
+				AuthenticationFunc: func(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
+					return api_impl.WorkerAuth(ctx, authInfo, persist)
+				},
 			},
 
 			// Skip OAPI validation when the request is not for the OAPI interface.
