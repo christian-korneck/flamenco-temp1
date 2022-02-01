@@ -115,6 +115,45 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 	assert.Equal(t, att1.Name, task.Name, "the first task should have been chosen")
 }
 
+func TestTwoJobsThreeTasks(t *testing.T) {
+	db := persistence.CreateTestDB(t)
+	ts := NewTaskScheduler(db)
+	w := linuxWorker()
+
+	att1_1 := authorTestTask("1.1 low-prio task", "blender-render")
+	att1_2 := authorTestTask("1.2 high-prio task", "render-preview")
+	att1_2.Priority = 100
+	att1_2.Dependencies = []*job_compilers.AuthoredTask{&att1_1}
+	att1_3 := authorTestTask("1.3 low-prio task", "blender-render")
+	atj1 := authorTestJob(
+		"1295757b-e668-4c49-8b89-f73db8270e42",
+		"simple-blender-render",
+		att1_1, att1_2, att1_3)
+
+	att2_1 := authorTestTask("2.1 low-prio task", "blender-render")
+	att2_2 := authorTestTask("2.2 high-prio task", "render-preview")
+	att2_2.Priority = 100
+	att2_2.Dependencies = []*job_compilers.AuthoredTask{&att2_1}
+	att2_3 := authorTestTask("2.3 highest-prio task", "blender-render")
+	att2_3.Priority = 150
+	atj2 := authorTestJob(
+		"7180617b-da70-411c-8b38-b972ab2bae8d",
+		"simple-blender-render",
+		att2_1, att2_2, att2_3)
+	atj2.Priority = 100 // Increase priority over job 1.
+
+	constructTestJob(t, db, atj1)
+	job2 := constructTestJob(t, db, atj2)
+
+	task, err := ts.ScheduleTask(&w)
+	assert.NoError(t, err)
+	if task == nil {
+		t.Fatal("task is nil")
+	}
+	assert.Equal(t, job2.ID, task.JobID)
+	assert.Equal(t, att2_3.Name, task.Name, "the 3rd task of the 2nd job should have been chosen")
+}
+
 // To test: worker with non-active state.
 // Unlike Flamenco v2, this Manager shouldn't change a worker's status
 // simply because it requests a task. New tasks for non-awake workers

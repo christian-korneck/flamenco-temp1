@@ -76,8 +76,8 @@ func (ts *TaskScheduler) findTaskForWorker(w *persistence.Worker) (*persistence.
 		Where("jobs.status in ?", schedulableJobStatuses).                         // Schedulable job statuses
 		// TODO: Supported task types
 		// TODO: Non-blacklisted
-		// TODO: Highest job priority
-		Order("priority desc"). // Highest task priority
+		Order("jobs.priority desc"). // Highest job priority
+		Order("priority desc").      // Highest task priority
 		Limit(1).
 		Preload("Job").
 		First(&task)
