@@ -42,7 +42,7 @@ type PersistenceService interface {
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)
-	SaveWorker(ctx context.Context, w *persistence.Worker) error
+	SaveWorkerStatus(ctx context.Context, w *persistence.Worker) error
 }
 
 type JobCompiler interface {

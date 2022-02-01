@@ -92,7 +92,7 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 
 	w := requestWorkerOrPanic(e)
 	w.Status = api.WorkerStatusStarting
-	err = f.persist.SaveWorker(e.Request().Context(), w)
+	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
 	if err != nil {
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
@@ -125,7 +125,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	// TODO: check whether we should pass the request context here, or a generic
 	// background context, as this should be stored even when the HTTP connection
 	// is aborted.
-	err = f.persist.SaveWorker(e.Request().Context(), w)
+	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
 	if err != nil {
 		logger.Warn().
 			Err(err).
@@ -159,7 +159,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 
 	w := requestWorkerOrPanic(e)
 	w.Status = req.Status
-	err = f.persist.SaveWorker(e.Request().Context(), w)
+	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
 	if err != nil {
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
