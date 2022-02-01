@@ -26,12 +26,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type loggerContextKey string
-
-const (
-	loggerKey = loggerContextKey("logger")
-)
-
 func requestLogger(e echo.Context) zerolog.Logger {
 	logCtx := log.With().Str("remoteAddr", e.RealIP())
 

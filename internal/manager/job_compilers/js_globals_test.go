@@ -34,11 +34,11 @@ func TestFrameChunkerHappyBlenderStyle(t *testing.T) {
 
 func TestFrameChunkerHappySmallInput(t *testing.T) {
 	// No frames, should be an error
-	chunks, err := jsFrameChunker("   ", 4)
+	_, err := jsFrameChunker("   ", 4)
 	assert.ErrorIs(t, err, ErrInvalidRange{Message: "empty range"})
 
 	// Just one frame.
-	chunks, err = jsFrameChunker("47", 4)
+	chunks, err := jsFrameChunker("47", 4)
 	assert.Nil(t, err)
 	assert.Equal(t, []string{"47"}, chunks)
 
