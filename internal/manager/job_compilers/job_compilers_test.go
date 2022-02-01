@@ -44,7 +44,7 @@ func exampleSubmittedJob() api.SubmittedJob {
 			"frames":                "1-10",
 			"images_or_video":       "images",
 			"output_file_extension": ".png",
-			"render_output":         "/render/sf/frames/scene123",
+			"render_output":         "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2/######",
 		}}
 	metadata := api.JobMetadata{
 		AdditionalProperties: map[string]string{
@@ -101,14 +101,15 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 
 	settings := sj.Settings.AdditionalProperties
 
-	// Tasks should have been created to render the frames.
-	assert.Equal(t, 4, len(aj.Tasks))
+	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding
+	assert.Equal(t, 5, len(aj.Tasks))
 	t0 := aj.Tasks[0]
 	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
-		"--render-output", "/render/sf__intermediate-2006-01-02_090405/frames",
+		"--render-output", "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/######",
 		"--render-format", settings["format"].(string),
 		"--render-frame", "1-3",
 	}
+	assert.NotEmpty(t, t0.UUID)
 	assert.Equal(t, "render-1-3", t0.Name)
 	assert.Equal(t, 1, len(t0.Commands))
 	assert.Equal(t, "blender-render", t0.Commands[0].Type)
@@ -117,4 +118,32 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 		"blendfile": settings["filepath"].(string),
 		"args":      expectCliArgs,
 	}, t0.Commands[0].Parameters)
+
+	tVideo := aj.Tasks[4] // This should be a video encoding task
+	assert.NotEmpty(t, tVideo.UUID)
+	assert.Equal(t, "create-video", tVideo.Name)
+	assert.Equal(t, 1, len(tVideo.Commands))
+	assert.Equal(t, "create-video", tVideo.Commands[0].Type)
+	assert.EqualValues(t, AuthoredCommandParameters{
+		"input_files": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
+		"output_file": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
+		"fps":         int64(24),
+	}, tVideo.Commands[0].Parameters)
+
+	for index, task := range aj.Tasks {
+		if index == 0 {
+			continue
+		}
+		assert.NotEqual(t, t0.UUID, task.UUID, "Task UUIDs should be unique")
+	}
+
+	// Check dependencies
+	assert.Empty(t, aj.Tasks[0].Dependencies)
+	assert.Empty(t, aj.Tasks[1].Dependencies)
+	assert.Empty(t, aj.Tasks[2].Dependencies)
+	assert.Equal(t, 4, len(tVideo.Dependencies))
+	expectDeps := []*AuthoredTask{
+		&aj.Tasks[0], &aj.Tasks[1], &aj.Tasks[2], &aj.Tasks[3],
+	}
+	assert.Equal(t, expectDeps, tVideo.Dependencies)
 }

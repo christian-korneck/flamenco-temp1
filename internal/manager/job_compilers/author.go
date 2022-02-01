@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
@@ -52,6 +53,11 @@ type JobSettings map[string]interface{}
 type JobMetadata map[string]string
 
 type AuthoredTask struct {
+	// Tasks already get their UUID in the authoring stage. This makes it simpler
+	// to store the dependencies, as the code doesn't have to worry about value
+	// vs. pointer semantics. Tasks can always be unambiguously referenced by
+	// their UUID.
+	UUID     string
 	Name     string
 	Type     string
 	Priority int
@@ -69,6 +75,7 @@ type AuthoredCommandParameters map[string]interface{}
 
 func (a *Author) Task(name string, taskType string) (*AuthoredTask, error) {
 	at := AuthoredTask{
+		uuid.New().String(),
 		name,
 		taskType,
 		50, // TODO: handle default priority somehow.

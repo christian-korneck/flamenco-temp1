@@ -59,22 +59,22 @@ function compileJob(job) {
     // The render path contains a filename pattern, most likely '######' or
     // something similar. This has to be removed, so that we end up with
     // the directory that will contain the frames.
-    const renderOutput = path.dirname(settings.render_output);
+    const renderOutput = settings.render_output;
     const finalDir = path.dirname(renderOutput);
     const renderDir = intermediatePath(job, finalDir);
 
     const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
-    const videoTask = authorCreateVideoTask(renderTasks, renderDir);
+    const videoTask = authorCreateVideoTask(settings, renderDir);
 
+    for (const rt of renderTasks) {
+        job.addTask(rt);
+    }
     if (videoTask) {
         // If there is a video task, all other tasks have to be done first.
         for (const rt of renderTasks) {
             videoTask.addDependency(rt);
         }
         job.addTask(videoTask);
-    }
-    for (const rt of renderTasks) {
-        job.addTask(rt);
     }
 }
 
@@ -86,6 +86,7 @@ function intermediatePath(job, finalDir) {
 }
 
 function authorRenderTasks(settings, renderDir, renderOutput) {
+    print("authorRenderTasks(", renderDir, renderOutput, ")");
     let renderTasks = [];
     let chunks = frameChunker(settings.frames, settings.chunk_size);
     for (let chunk of chunks) {
@@ -107,9 +108,11 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
 
 function authorCreateVideoTask(settings, renderDir) {
     if (ffmpegIncompatibleImageFormats.has(settings.format)) {
+        print("Not authoring video task, FFmpeg-incompatible render output")
         return;
     }
     if (!settings.fps || !settings.output_file_extension) {
+        print("Not authoring video task, no FPS or output file extension setting:", settings)
         return;
     }
 

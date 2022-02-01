@@ -40,6 +40,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 	task1 := job_compilers.AuthoredTask{
 		Name: "render-1-3",
 		Type: "blender",
+		UUID: "db1f5481-4ef5-4084-8571-8460c547ecaa",
 		Commands: []job_compilers.AuthoredCommand{
 			{
 				Type: "blender-render",
@@ -57,11 +58,13 @@ func TestStoreAuthoredJob(t *testing.T) {
 
 	task2 := task1
 	task2.Name = "render-4-6"
+	task2.UUID = "d75ac779-151b-4bc2-b8f1-d153a9c4ac69"
 	task2.Commands[0].Parameters["frames"] = "4-6"
 
 	task3 := job_compilers.AuthoredTask{
 		Name: "preview-video",
 		Type: "ffmpeg",
+		UUID: "4915fb05-72f5-463e-a2f4-7efdb2584a1e",
 		Commands: []job_compilers.AuthoredCommand{
 			{
 				Type: "merge-frames-to-video",

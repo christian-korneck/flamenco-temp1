@@ -50,6 +50,7 @@ type StringStringMap map[string]string
 
 type Task struct {
 	gorm.Model
+	UUID string `gorm:"type:char(36);not null;unique;index"`
 
 	Name     string `gorm:"type:varchar(64);not null"`
 	Type     string `gorm:"type:varchar(32);not null"`
@@ -137,6 +138,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			dbTask := Task{
 				Name:     authoredTask.Name,
 				Type:     authoredTask.Type,
+				UUID:     authoredTask.UUID,
 				Job:      &dbJob,
 				Priority: authoredTask.Priority,
 				Status:   string(api.TaskStatusProcessing), // TODO: is this the right place to set the default status?
