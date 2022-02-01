@@ -27,6 +27,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"golang.org/x/net/context"
 )
 
@@ -88,7 +89,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 		Tasks: []job_compilers.AuthoredTask{task1, task2, task3},
 	}
 
-	err := db.StoreJob(ctx, job)
+	err := db.StoreAuthoredJob(ctx, job)
 	assert.NoError(t, err)
 
 	fetchedJob, err := db.FetchJob(ctx, job.JobID)
@@ -96,12 +97,13 @@ func TestStoreAuthoredJob(t *testing.T) {
 	assert.NotNil(t, fetchedJob)
 
 	// Test contents of fetched job
-	assert.Equal(t, job.JobID, fetchedJob.Id)
+	assert.Equal(t, job.JobID, fetchedJob.UUID)
 	assert.Equal(t, job.Name, fetchedJob.Name)
-	assert.Equal(t, job.JobType, fetchedJob.Type)
+	assert.Equal(t, job.JobType, fetchedJob.JobType)
 	assert.Equal(t, job.Priority, fetchedJob.Priority)
-	assert.EqualValues(t, map[string]interface{}(job.Settings), fetchedJob.Settings.AdditionalProperties)
-	assert.EqualValues(t, map[string]string(job.Metadata), fetchedJob.Metadata.AdditionalProperties)
+	assert.Equal(t, string(api.JobStatusUnderConstruction), fetchedJob.Status)
+	assert.EqualValues(t, map[string]interface{}(job.Settings), fetchedJob.Settings)
+	assert.EqualValues(t, map[string]string(job.Metadata), fetchedJob.Metadata)
 
 	// Fetch tasks of job.
 	var dbJob Job
@@ -111,7 +113,12 @@ func TestStoreAuthoredJob(t *testing.T) {
 	tx = db.gormDB.Where("job_id = ?", dbJob.ID).Find(&tasks)
 	assert.NoError(t, tx.Error)
 
-	assert.Len(t, tasks, 3)
+	if len(tasks) != 3 {
+		t.Fatalf("expected 3 tasks, got %d", len(tasks))
+	}
 
 	// TODO: test task contents.
+	assert.Equal(t, string(api.TaskStatusQueued), tasks[0].Status)
+	assert.Equal(t, string(api.TaskStatusQueued), tasks[1].Status)
+	assert.Equal(t, string(api.TaskStatusQueued), tasks[2].Status)
 }

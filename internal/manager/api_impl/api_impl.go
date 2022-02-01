@@ -36,9 +36,8 @@ type Flamenco struct {
 }
 
 type PersistenceService interface {
-	// StoreJob stores a job in the persistence layer.
-	StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
-	FetchJob(ctx context.Context, jobID string) (*api.Job, error)
+	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
+	FetchJob(ctx context.Context, jobID string) (*persistence.Job, error)
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)

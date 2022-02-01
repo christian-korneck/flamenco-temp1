@@ -69,7 +69,7 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 
 	logger = logger.With().Str("job_id", authoredJob.JobID).Logger()
 
-	if err := f.persist.StoreJob(ctx, *authoredJob); err != nil {
+	if err := f.persist.StoreAuthoredJob(ctx, *authoredJob); err != nil {
 		logger.Error().Err(err).Msg("error persisting job in database")
 		return sendAPIError(e, http.StatusInternalServerError, "error persisting job in database")
 	}
@@ -92,11 +92,27 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 	logger.Debug().Msg("fetching job")
 
 	ctx := e.Request().Context()
-	job, err := f.persist.FetchJob(ctx, jobId)
+	dbJob, err := f.persist.FetchJob(ctx, jobId)
 	if err != nil {
 		logger.Warn().Err(err).Msg("cannot fetch job")
 		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobId))
 	}
 
-	return e.JSON(http.StatusOK, job)
+	apiJob := api.Job{
+		SubmittedJob: api.SubmittedJob{
+			Name:     dbJob.Name,
+			Priority: dbJob.Priority,
+			Type:     dbJob.JobType,
+		},
+
+		Id:      dbJob.UUID,
+		Created: dbJob.CreatedAt,
+		Updated: dbJob.UpdatedAt,
+		Status:  api.JobStatus(dbJob.Status),
+	}
+
+	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}
+	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
+
+	return e.JSON(http.StatusOK, apiJob)
 }

@@ -38,7 +38,7 @@ type Job struct {
 
 	Name     string `gorm:"type:varchar(64);not null"`
 	JobType  string `gorm:"type:varchar(32);not null"`
-	Priority int8   `gorm:"type:smallint;not null"`
+	Priority int    `gorm:"type:smallint;not null"`
 	Status   string `gorm:"type:varchar(32);not null"` // See JobStatusXxxx consts in openapi_types.gen.go
 
 	Settings StringInterfaceMap `gorm:"type:jsonb"`
@@ -106,14 +106,17 @@ func (js *StringStringMap) Scan(value interface{}) error {
 	return json.Unmarshal(b, &js)
 }
 
-func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
+// StoreJob stores an AuthoredJob and its tasks, and saves it to the database.
+// The job will be in 'under construction' status. It is up to the caller to transition it to its desired initial status.
+func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
 	return db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// TODO: separate conversion of struct types from storing things in the database.
 		dbJob := Job{
 			UUID:     authoredJob.JobID,
 			Name:     authoredJob.Name,
 			JobType:  authoredJob.JobType,
-			Priority: int8(authoredJob.Priority),
+			Status:   string(api.JobStatusUnderConstruction),
+			Priority: authoredJob.Priority,
 			Settings: StringInterfaceMap(authoredJob.Settings),
 			Metadata: StringStringMap(authoredJob.Metadata),
 		}
@@ -149,28 +152,12 @@ func (db *DB) StoreJob(ctx context.Context, authoredJob job_compilers.AuthoredJo
 	})
 }
 
-func (db *DB) FetchJob(ctx context.Context, jobID string) (*api.Job, error) {
+func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	dbJob := Job{}
-	findResult := db.gormDB.First(&dbJob, "uuid = ?", jobID)
+	findResult := db.gormDB.First(&dbJob, "uuid = ?", jobUUID)
 	if findResult.Error != nil {
 		return nil, findResult.Error
 	}
 
-	apiJob := api.Job{
-		SubmittedJob: api.SubmittedJob{
-			Name:     dbJob.Name,
-			Priority: int(dbJob.Priority),
-			Type:     dbJob.JobType,
-		},
-
-		Id:      dbJob.UUID,
-		Created: dbJob.CreatedAt,
-		Updated: dbJob.UpdatedAt,
-		Status:  api.JobStatus(dbJob.Status),
-	}
-
-	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}
-	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
-
-	return &apiJob, nil
+	return &dbJob, nil
 }
