@@ -64,3 +64,10 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 	}
 	return &db, nil
 }
+
+// GormDB returns the GORM interface.
+// This should only be used for the one Task Scheduler Monster Query. Other
+// operations should just be implemented as a function on DB.
+func (db *DB) GormDB() *gorm.DB {
+	return db.gormDB
+}

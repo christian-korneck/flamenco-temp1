@@ -42,7 +42,10 @@ func CreateTestDB(t *testing.T) *DB {
 
 	// Erase everything in the database.
 	var tx *gorm.DB
-	tx = db.gormDB.Exec("DROP SCHEMA public CASCADE")
+	tx = db.gormDB.Exec("DROP SCHEMA IF EXISTS public CASCADE")
+	if tx.Error != nil {
+		t.Fatalf("error dropping database schema: %v", tx.Error)
+	}
 	assert.NoError(t, tx.Error)
 	tx = db.gormDB.Exec("CREATE SCHEMA public")
 	assert.NoError(t, tx.Error)

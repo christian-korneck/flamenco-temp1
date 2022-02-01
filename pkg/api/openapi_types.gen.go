@@ -82,8 +82,6 @@ const (
 
 	TaskStatusPaused TaskStatus = "paused"
 
-	TaskStatusProcessing TaskStatus = "processing"
-
 	TaskStatusQueued TaskStatus = "queued"
 
 	TaskStatusSoftFailed TaskStatus = "soft-failed"

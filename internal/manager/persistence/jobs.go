@@ -126,6 +126,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			return fmt.Errorf("error storing job: %v", err)
 		}
 
+		uuidToTask := make(map[string]*Task)
 		for _, authoredTask := range authoredJob.Tasks {
 			var commands []Command
 			for _, authoredCommand := range authoredTask.Commands {
@@ -141,12 +142,40 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 				UUID:     authoredTask.UUID,
 				Job:      &dbJob,
 				Priority: authoredTask.Priority,
-				Status:   string(api.TaskStatusProcessing), // TODO: is this the right place to set the default status?
-				// TODO: store dependencies
+				Status:   string(api.TaskStatusQueued),
 				Commands: commands,
+				// dependencies are stored below.
 			}
 			if err := db.gormDB.Create(&dbTask).Error; err != nil {
 				return fmt.Errorf("error storing task: %v", err)
+			}
+
+			uuidToTask[authoredTask.UUID] = &dbTask
+		}
+
+		// Store the dependencies between tasks.
+		for _, authoredTask := range authoredJob.Tasks {
+			if len(authoredTask.Dependencies) == 0 {
+				continue
+			}
+
+			dbTask, ok := uuidToTask[authoredTask.UUID]
+			if !ok {
+				return fmt.Errorf("unable to find task %q in the database, even though it was just authored", authoredTask.UUID)
+			}
+
+			deps := make([]*Task, len(authoredTask.Dependencies))
+			for i, t := range authoredTask.Dependencies {
+				depTask, ok := uuidToTask[t.UUID]
+				if !ok {
+					return fmt.Errorf("error finding task with UUID %q; a task depends on a task that is not part of this job", t.UUID)
+				}
+				deps[i] = depTask
+			}
+
+			dbTask.Dependencies = deps
+			if err := db.gormDB.Save(dbTask).Error; err != nil {
+				return fmt.Errorf("unable to store dependencies of task %q: %w", authoredTask.UUID, err)
 			}
 		}
 
@@ -162,4 +191,11 @@ func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	}
 
 	return &dbJob, nil
+}
+
+func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
+	if err := db.gormDB.Model(j).Updates(Job{Status: j.Status}).Error; err != nil {
+		return fmt.Errorf("error saving job status: %v", err)
+	}
+	return nil
 }
