@@ -30,14 +30,14 @@ import (
 	"gorm.io/gorm"
 )
 
-const testURI = "host=localhost user=flamenco password=flamenco dbname=flamenco-test TimeZone=Europe/Amsterdam"
+const TestDSN = "host=localhost user=flamenco password=flamenco dbname=flamenco-test TimeZone=Europe/Amsterdam"
 
-func createTestDB(t *testing.T) *DB {
+func CreateTestDB(t *testing.T) *DB {
 	// Creating a new database should be fast.
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	db, err := openDB(ctx, testURI)
+	db, err := openDB(ctx, TestDSN)
 	assert.NoError(t, err)
 
 	// Erase everything in the database.

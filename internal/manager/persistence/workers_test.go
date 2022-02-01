@@ -32,7 +32,7 @@ import (
 )
 
 func TestCreateFetchWorker(t *testing.T) {
-	db := createTestDB(t)
+	db := CreateTestDB(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
