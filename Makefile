@@ -56,7 +56,7 @@ swagger-ui:
 	@echo 'Now update pkg/api/static/swagger-ui/index.html to have url: "/api/openapi3.json",'
 
 test: generate
-	go test -short ${PKG_LIST}
+	go test -p 1 -short ${PKG_LIST}
 
 vet:
 	@go vet ${PKG_LIST}
