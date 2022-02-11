@@ -39,6 +39,7 @@ import (
 
 var (
 	w                *worker.Worker
+	listener         *worker.Listener
 	shutdownComplete chan struct{}
 )
 
@@ -66,9 +67,12 @@ func main() {
 	sctxCancelFunc()
 
 	shutdownComplete = make(chan struct{})
+	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
 
-	taskRunner := worker.TaskExecutor{}
-	w = worker.NewWorker(client, &taskRunner)
+	listener = worker.NewListener(client)
+	cmdRunner := worker.NewCommandExecutor(listener)
+	taskRunner := worker.NewTaskExecutor(cmdRunner, listener)
+	w = worker.NewWorker(client, taskRunner)
 
 	// Handle Ctrl+C
 	c := make(chan os.Signal, 1)
@@ -76,13 +80,14 @@ func main() {
 	signal.Notify(c, syscall.SIGTERM)
 	go func() {
 		for signum := range c {
+			workerCtxCancel()
 			// Run the shutdown sequence in a goroutine, so that multiple Ctrl+C presses can be handled in parallel.
 			go shutdown(signum)
 		}
 	}()
 
-	workerCtx := context.Background()
-	w.Start(workerCtx, startupState)
+	go listener.Run(workerCtx)
+	go w.Start(workerCtx, startupState)
 
 	<-shutdownComplete
 
@@ -99,6 +104,7 @@ func shutdown(signum os.Signal) {
 			defer cancelFunc()
 			w.SignOff(shutdownCtx)
 			w.Close()
+			listener.Wait()
 		}
 		close(done)
 	}()
