@@ -31,6 +31,7 @@ with-deps:
 application: ${RESOURCES} generate
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
 generate:
 	go generate ${PKG}/...

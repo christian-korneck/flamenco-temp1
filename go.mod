@@ -10,6 +10,10 @@ require (
 	github.com/getkin/kin-openapi v0.88.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/handlers v1.5.1
+	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/graarh/golang-socketio v0.0.0-20170510162725-2c44953b9b5f
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/lib/pq v1.10.0 // indirect
