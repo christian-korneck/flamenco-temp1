@@ -21,15 +21,12 @@ package main
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"errors"
 	"flag"
 	"net/url"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/internal/worker"
 )
-
-var errURLWithoutHostName = errors.New("manager URL should contain a host name")
 
 var cliArgs struct {
 	version    bool
