@@ -39,6 +39,7 @@ type Flamenco struct {
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
 	FetchJob(ctx context.Context, jobID string) (*persistence.Job, error)
+	FetchTask(ctx context.Context, taskID string) (*persistence.Task, error)
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)

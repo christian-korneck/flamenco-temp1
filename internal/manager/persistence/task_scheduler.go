@@ -22,6 +22,7 @@ package persistence
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
@@ -51,31 +52,57 @@ func (db *DB) findTaskForWorker(w *Worker) (*Task, error) {
 	logger.Debug().Msg("finding task for worker")
 
 	task := Task{}
-	gormDB := db.GormDB()
-	tx := gormDB.Debug().
-		Model(&task).
-		Joins("left join jobs on tasks.job_id = jobs.id").
-		Joins("left join task_dependencies on tasks.id = task_dependencies.task_id").
-		Joins("left join tasks as tdeps on tdeps.id = task_dependencies.dependency_id").
-		Where("tasks.status in ?", schedulableTaskStatuses).                       // Schedulable task statuses
-		Where("tdeps.status in ? or tdeps.status is NULL", completedTaskStatuses). // Dependencies completed
-		Where("jobs.status in ?", schedulableJobStatuses).                         // Schedulable job statuses
-		// TODO: Supported task types
-		// TODO: Non-blacklisted
-		Order("jobs.priority desc"). // Highest job priority
-		Order("priority desc").      // Highest task priority
-		Limit(1).
-		Preload("Job").
-		First(&task)
 
-	if tx.Error != nil {
-		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+	// Run two queries in one transaction:
+	// 1. find task, and
+	// 2. assign the task to the worker.
+	err := db.gormDB.Transaction(func(tx *gorm.DB) error {
+		findTaskResult := tx.Debug().
+			Model(&task).
+			Joins("left join jobs on tasks.job_id = jobs.id").
+			Joins("left join task_dependencies on tasks.id = task_dependencies.task_id").
+			Joins("left join tasks as tdeps on tdeps.id = task_dependencies.dependency_id").
+			Where("tasks.status in ?", schedulableTaskStatuses).                       // Schedulable task statuses
+			Where("tdeps.status in ? or tdeps.status is NULL", completedTaskStatuses). // Dependencies completed
+			Where("jobs.status in ?", schedulableJobStatuses).                         // Schedulable job statuses
+			// TODO: Supported task types
+			// TODO: assigned to this worker or not assigned at all
+			// TODO: Non-blacklisted
+			Order("jobs.priority desc"). // Highest job priority
+			Order("priority desc").      // Highest task priority
+			Limit(1).
+			Preload("Job").
+			First(&task)
+
+		if findTaskResult.Error != nil {
+			return findTaskResult.Error
+		}
+
+		// Found a task, now assign it to the requesting worker.
+		// Without the Select() call, Gorm will try and also store task.Job in the jobs database, which is not what we want.
+		if err := tx.Debug().Model(&task).Select("worker_id").Updates(Task{WorkerID: &w.ID}).Error; err != nil {
+			logger.Warn().
+				Str("taskID", task.UUID).
+				Err(err).
+				Msg("error assigning task to worker")
+			return fmt.Errorf("error assigning task to worker: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Debug().Msg("no task for worker")
 			return nil, nil
 		}
-		logger.Error().Err(tx.Error).Msg("error finding task for worker")
-		return nil, tx.Error
+		logger.Error().Err(err).Msg("error finding task for worker")
+		return nil, fmt.Errorf("error finding task for worker: %w", err)
 	}
+
+	logger.Info().
+		Str("taskID", task.UUID).
+		Msg("assigned task to worker")
 
 	return &task, nil
 }

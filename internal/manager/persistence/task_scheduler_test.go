@@ -33,7 +33,7 @@ import (
 
 func TestNoTasks(t *testing.T) {
 	db := CreateTestDB(t)
-	w := linuxWorker()
+	w := linuxWorker(t, db)
 
 	task, err := db.ScheduleTask(&w)
 	assert.Nil(t, task)
@@ -42,7 +42,7 @@ func TestNoTasks(t *testing.T) {
 
 func TestOneJobOneTask(t *testing.T) {
 	db := CreateTestDB(t)
-	w := linuxWorker()
+	w := linuxWorker(t, db)
 
 	authTask := authorTestTask("the task", "blender-render")
 	atj := authorTestJob("b6a1d859-122f-4791-8b78-b943329a9989", "simple-blender-render", authTask)
@@ -54,11 +54,22 @@ func TestOneJobOneTask(t *testing.T) {
 		t.Fatal("task is nil")
 	}
 	assert.Equal(t, job.ID, task.JobID)
+
+	// Test that the task has been assigned to this worker.
+	dbTask, err := db.FetchTask(context.Background(), authTask.UUID)
+	assert.NoError(t, err)
+	if dbTask == nil {
+		t.Fatal("task cannot be fetched from database")
+	}
+	if dbTask.WorkerID == nil {
+		t.Fatal("no worker assigned to task")
+	}
+	assert.Equal(t, w.ID, *dbTask.WorkerID)
 }
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {
 	db := CreateTestDB(t)
-	w := linuxWorker()
+	w := linuxWorker(t, db)
 
 	att1 := authorTestTask("1 low-prio task", "blender-render")
 	att2 := authorTestTask("2 high-prio task", "render-preview")
@@ -87,7 +98,7 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 
 func TestOneJobThreeTasksByDependencies(t *testing.T) {
 	db := CreateTestDB(t)
-	w := linuxWorker()
+	w := linuxWorker(t, db)
 
 	att1 := authorTestTask("1 low-prio task", "blender-render")
 	att2 := authorTestTask("2 high-prio task", "render-preview")
@@ -111,7 +122,7 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 
 func TestTwoJobsThreeTasks(t *testing.T) {
 	db := CreateTestDB(t)
-	w := linuxWorker()
+	w := linuxWorker(t, db)
 
 	att1_1 := authorTestTask("1.1 low-prio task", "blender-render")
 	att1_2 := authorTestTask("1.2 high-prio task", "render-preview")
@@ -201,7 +212,7 @@ func authorTestTask(name, taskType string, dependencies ...*job_compilers.Author
 	return task
 }
 
-func linuxWorker() Worker {
+func linuxWorker(t *testing.T, db *DB) Worker {
 	w := Worker{
 		UUID:               "b13b8322-3e96-41c3-940a-3d581008a5f8",
 		Name:               "Linux",
@@ -209,5 +220,12 @@ func linuxWorker() Worker {
 		Status:             api.WorkerStatusAwake,
 		SupportedTaskTypes: "blender,ffmpeg,file-management",
 	}
+
+	err := db.gormDB.Save(&w).Error
+	if err != nil {
+		t.Logf("cannot save Linux worker: %v", err)
+		t.FailNow()
+	}
+
 	return w
 }

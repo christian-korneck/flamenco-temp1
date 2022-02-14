@@ -69,6 +69,9 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 
 	logger = logger.With().Str("job_id", authoredJob.JobID).Logger()
 
+	// TODO: check whether this job should be queued immediately or start paused.
+	authoredJob.Status = api.JobStatusQueued
+
 	if err := f.persist.StoreAuthoredJob(ctx, *authoredJob); err != nil {
 		logger.Error().Err(err).Msg("error persisting job in database")
 		return sendAPIError(e, http.StatusInternalServerError, "error persisting job in database")
@@ -84,8 +87,7 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 
 func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 	// TODO: move this into some middleware.
-	logger := log.With().
-		Str("ip", e.RealIP()).
+	logger := requestLogger(e).With().
 		Str("job_id", jobId).
 		Logger()
 
@@ -120,4 +122,40 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
 
 	return e.JSON(http.StatusOK, apiJob)
+}
+
+func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
+	logger := requestLogger(e)
+
+	if _, err := uuid.Parse(taskID); err != nil {
+		logger.Debug().Msg("invalid task ID received")
+		return sendAPIError(e, http.StatusBadRequest, "task ID not valid")
+	}
+	logger = logger.With().Str("taskID", taskID).Logger()
+
+	// Fetch the task, to see if this worker is even allowed to send us updates.
+	ctx := e.Request().Context()
+	dbTask, err := f.persist.FetchTask(ctx, taskID)
+	if err != nil {
+		logger.Warn().Err(err).Msg("cannot fetch task")
+		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("task %+v not found", taskID))
+	}
+
+	worker := requestWorker(e)
+	if dbTask.Worker == nil {
+		logger.Warn().
+			Str("requestingWorkerID", worker.UUID).
+			Msg("worker trying to update task that's not assigned to any worker")
+		return sendAPIError(e, http.StatusConflict, fmt.Sprintf("task %+v is not assigned to any worker, so also not to you", taskID))
+	}
+	if dbTask.Worker.UUID != worker.UUID {
+		logger.Warn().
+			Str("requestingWorkerID", worker.UUID).
+			Str("assignedWorkerID", dbTask.Worker.UUID).
+			Msg("worker trying to update task that's assigned to another worker")
+		return sendAPIError(e, http.StatusConflict, fmt.Sprintf("task %+v is not assigned to you, but to worker %v", taskID, dbTask.Worker.UUID))
+	}
+
+	// TODO: actually handle the task update.
+	return e.String(http.StatusNoContent, "")
 }

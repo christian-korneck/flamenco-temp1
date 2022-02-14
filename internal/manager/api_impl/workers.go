@@ -174,19 +174,42 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	logger := requestLogger(e)
 	logger.Info().Msg("worker requesting task")
 
-	return e.JSON(http.StatusOK, &api.AssignedTask{
-		Uuid: uuid.New().String(),
-		Commands: []api.Command{
-			{Name: "echo", Settings: echo.Map{"payload": "Simon says \"Shaders!\""}},
-			{Name: "blender", Settings: echo.Map{"blender_cmd": "/shared/bin/blender"}},
-		},
-		Job:         uuid.New().String(),
-		JobPriority: 50,
-		JobType:     "blender-render",
-		Name:        "A1032",
-		Priority:    50,
-		Status:      "active",
-		TaskType:    "blender-render",
-		User:        "",
-	})
+	// Figure out which worker is requesting a task:
+	worker := requestWorker(e)
+	if worker == nil {
+		logger.Warn().Msg("task requested by non-worker")
+		return sendAPIError(e, http.StatusBadRequest, "not authenticated as Worker")
+	}
+
+	// Get a task to execute:
+	dbTask, err := f.persist.ScheduleTask(worker)
+	if err != nil {
+		logger.Warn().Err(err).Msg("error scheduling task for worker")
+		return sendAPIError(e, http.StatusInternalServerError, "internal error finding a task for you: %v", err)
+	}
+	if dbTask == nil {
+		return e.String(http.StatusNoContent, "")
+	}
+
+	// Convert database objects to API objects:
+	apiCommands := []api.Command{}
+	for _, cmd := range dbTask.Commands {
+		apiCommands = append(apiCommands, api.Command{
+			Name:     cmd.Type,
+			Settings: cmd.Parameters,
+		})
+	}
+	apiTask := api.AssignedTask{
+		Uuid:        dbTask.UUID,
+		Commands:    apiCommands,
+		Job:         dbTask.Job.UUID,
+		JobPriority: dbTask.Job.Priority,
+		JobType:     dbTask.Job.JobType,
+		Name:        dbTask.Name,
+		Priority:    dbTask.Priority,
+		Status:      api.TaskStatus(dbTask.Status),
+		TaskType:    dbTask.Type,
+	}
+
+	return e.JSON(http.StatusOK, apiTask)
 }

@@ -59,7 +59,9 @@ type Task struct {
 	Priority int    `gorm:"type:smallint;not null"`
 	Status   string `gorm:"type:varchar(16);not null"`
 
-	// TODO: include info about which worker is/was working on this.
+	// Which worker is/was working on this.
+	WorkerID *uint
+	Worker   *Worker `gorm:"foreignkey:WorkerID;references:ID;constraint:OnDelete:CASCADE"`
 
 	// Dependencies are tasks that need to be completed before this one can run.
 	Dependencies []*Task `gorm:"many2many:task_dependencies;constraint:OnDelete:CASCADE"`
@@ -198,4 +200,14 @@ func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
 		return fmt.Errorf("error saving job status: %v", err)
 	}
 	return nil
+}
+
+func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
+	dbTask := Task{}
+	findResult := db.gormDB.First(&dbTask, "uuid = ?", taskUUID)
+	if findResult.Error != nil {
+		return nil, findResult.Error
+	}
+
+	return &dbTask, nil
 }

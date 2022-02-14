@@ -22,6 +22,8 @@ package persistence
 
 import (
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (db *DB) migrate() error {
@@ -29,5 +31,6 @@ func (db *DB) migrate() error {
 	if err != nil {
 		return fmt.Errorf("failed to automigrate database: %v", err)
 	}
+	log.Debug().Msg("database automigration succesful")
 	return nil
 }
