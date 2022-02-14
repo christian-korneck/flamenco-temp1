@@ -22,7 +22,6 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
@@ -36,11 +35,6 @@ const (
 	durationFetchFailed = 10 * time.Second // ... if fetching failed somehow.
 )
 
-var (
-	errUnknownTaskRequestStatus = errors.New("unknown task request status")
-	errReregistrationRequired   = errors.New("re-registration is required")
-)
-
 func (w *Worker) gotoStateAwake(ctx context.Context) {
 	w.stateMutex.Lock()
 	defer w.stateMutex.Unlock()
@@ -52,6 +46,7 @@ func (w *Worker) gotoStateAwake(ctx context.Context) {
 	go w.runStateAwake(ctx)
 }
 
+// runStateAwake fetches a task and executes it, in an endless loop.
 func (w *Worker) runStateAwake(ctx context.Context) {
 	defer w.doneWg.Done()
 
@@ -61,12 +56,12 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 			return
 		}
 
+		// The task runner's listener will be responsible for sending results back
+		// to the Manager. This code only needs to fetch a task and run it.
 		err := w.taskRunner.Run(ctx, *task)
 		if err != nil {
 			log.Warn().Err(err).Interface("task", *task).Msg("error executing task")
 		}
-
-		// TODO: send the result of the execution back to the Manager.
 	}
 }
 

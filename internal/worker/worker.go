@@ -2,15 +2,10 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
-)
-
-var (
-	errRequestAborted = errors.New("request to Manager aborted")
 )
 
 // Worker performs regular Flamenco Worker operations.
