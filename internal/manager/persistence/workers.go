@@ -23,6 +23,7 @@ package persistence
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"gorm.io/gorm"
@@ -42,6 +43,11 @@ type Worker struct {
 	StatusRequested api.WorkerStatus `gorm:"type:varchar(16);not null;default:''"`
 
 	SupportedTaskTypes string `gorm:"type:varchar(255);not null"` // comma-separated list of task types.
+}
+
+// TaskTypes returns the worker's supported task types as list of strings.
+func (w *Worker) TaskTypes() []string {
+	return strings.Split(w.SupportedTaskTypes, ",")
 }
 
 func (db *DB) CreateWorker(ctx context.Context, w *Worker) error {

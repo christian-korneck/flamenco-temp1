@@ -65,8 +65,8 @@ func (db *DB) findTaskForWorker(w *Worker) (*Task, error) {
 			Where("tasks.status in ?", schedulableTaskStatuses).                       // Schedulable task statuses
 			Where("tdeps.status in ? or tdeps.status is NULL", completedTaskStatuses). // Dependencies completed
 			Where("jobs.status in ?", schedulableJobStatuses).                         // Schedulable job statuses
-			// TODO: Supported task types
-			// TODO: assigned to this worker or not assigned at all
+			Where("tasks.type in ?", w.TaskTypes()).                                   // Supported task types
+			Where("tasks.worker_id = ? or tasks.worker_id is NULL", w.ID).             // assigned to this worker or not assigned at all
 			// TODO: Non-blacklisted
 			Order("jobs.priority desc"). // Highest job priority
 			Order("priority desc").      // Highest task priority
