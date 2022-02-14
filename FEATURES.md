@@ -9,6 +9,7 @@ rediscovered.
 - [x] OpenAPI implementation that actually runs as a server process
 - [x] Process lifecycle management, clean shutdown
 - [ ] Task Scheduler
+- [ ] Unify command definition (type/parameters in persistence layer, name/settings in API layer)
 - [ ] Job status change handling
 - [ ] Task timeout monitoring
 - [ ] Worker Blacklisting & failed task requeueing
@@ -50,7 +51,6 @@ rediscovered.
 - [ ] Worker test mode
 - [ ] Worker registration secret (to protect the Manager from arbitrary Workers registering)
 - [ ] SSDP/UPnP for automatic Manager finding
-
 ## Blender Add-on
 
 - [ ] User authentication
