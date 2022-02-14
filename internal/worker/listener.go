@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"time"
 
@@ -73,25 +72,25 @@ func (l *Listener) Wait() {
 
 // TaskStarted tells the Manager that task execution has started.
 func (l *Listener) TaskStarted(taskID TaskID) error {
-	return errors.New("not implemented")
+	return nil
 }
 
 // TaskFailed tells the Manager the task failed for some reason.
 func (l *Listener) TaskFailed(taskID TaskID, reason string) error {
-	return errors.New("not implemented")
+	return nil
 }
 
 // TaskCompleted tells the Manager the task has been completed.
 func (l *Listener) TaskCompleted(taskID TaskID) error {
-	return errors.New("not implemented")
+	return nil
 }
 
 // LogProduced sends any logging to whatever service for storing logging.
 func (l *Listener) LogProduced(taskID TaskID, logLines ...string) error {
-	return errors.New("not implemented")
+	return nil
 }
 
 // OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
 func (l *Listener) OutputProduced(taskID TaskID, outputLocation string) error {
-	return errors.New("not implemented")
+	return nil
 }
