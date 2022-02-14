@@ -87,7 +87,7 @@ func (l *Listener) TaskCompleted(taskID TaskID) error {
 }
 
 // LogProduced sends any logging to whatever service for storing logging.
-func (l *Listener) LogProduced(taskID TaskID, logLines []string) error {
+func (l *Listener) LogProduced(taskID TaskID, logLines ...string) error {
 	return errors.New("not implemented")
 }
 

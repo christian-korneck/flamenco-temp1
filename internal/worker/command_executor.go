@@ -33,7 +33,7 @@ import (
 
 type CommandListener interface {
 	// LogProduced sends any logging to whatever service for storing logging.
-	LogProduced(taskID TaskID, logLines []string) error
+	LogProduced(taskID TaskID, logLines ...string) error
 	// OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
 	OutputProduced(taskID TaskID, outputLocation string) error
 }
@@ -42,20 +42,33 @@ type CommandExecutor struct {
 	listener CommandListener
 	// registry maps a command name to a function that runs that command.
 	registry map[string]commandCallable
+
+	timeService TimeService
 }
 
 var _ CommandRunner = (*CommandExecutor)(nil)
 
 type commandCallable func(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error
 
-func NewCommandExecutor(listener CommandListener) *CommandExecutor {
+// TimeService is a service that operates on time.
+type TimeService interface {
+	After(duration time.Duration) <-chan time.Time
+}
+
+func NewCommandExecutor(listener CommandListener, timeService TimeService) *CommandExecutor {
 	ce := &CommandExecutor{
-		listener: listener,
+		listener:    listener,
+		timeService: timeService,
 	}
+
+	// Registry of supported commands. Having this as a map (instead of a big
+	// switch statement) makes it possible to do things like reporting the list of
+	// supported commands.
 	ce.registry = map[string]commandCallable{
 		"echo":  ce.cmdEcho,
 		"sleep": ce.cmdSleep,
 	}
+
 	return ce
 }
 
@@ -71,6 +84,7 @@ func (ce *CommandExecutor) Run(ctx context.Context, taskID TaskID, cmd api.Comma
 	return runner(ctx, logger, taskID, cmd)
 }
 
+// cmdEcho executes the "echo" command.
 func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error {
 	message, ok := cmd.Settings["message"]
 	if !ok {
@@ -79,16 +93,13 @@ func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, t
 	messageStr := fmt.Sprintf("%v", message)
 
 	logger.Info().Str("message", messageStr).Msg("echo")
-	logLines := []string{
-		fmt.Sprintf("echo: %q", messageStr),
-	}
-
-	if err := ce.listener.LogProduced(taskID, logLines); err != nil {
+	if err := ce.listener.LogProduced(taskID, fmt.Sprintf("echo: %q", messageStr)); err != nil {
 		return err
 	}
 	return nil
 }
 
+// cmdSleep executes the "sleep" command.
 func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error {
 
 	sleepTime, ok := cmd.Settings["time_in_seconds"]
@@ -106,7 +117,19 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 	}
 
 	log.Info().Str("duration", duration.String()).Msg("sleep")
-	time.Sleep(duration)
+
+	select {
+	case <-ctx.Done():
+		err := ctx.Err()
+		log.Warn().Err(err).Msg("sleep aborted because context closed")
+		return fmt.Errorf("sleep aborted because context closed: %w", err)
+	case <-ce.timeService.After(duration):
+		log.Debug().Msg("sleeping done")
+	}
+
+	if err := ce.listener.LogProduced(taskID, fmt.Sprintf("slept %v", duration)); err != nil {
+		return err
+	}
 
 	return nil
 }

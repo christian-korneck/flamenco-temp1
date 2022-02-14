@@ -29,6 +29,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/benbjohnson/clock"
 	"github.com/mattn/go-colorable"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -70,7 +71,8 @@ func main() {
 	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
 
 	listener = worker.NewListener(client)
-	cmdRunner := worker.NewCommandExecutor(listener)
+	timeService := clock.New()
+	cmdRunner := worker.NewCommandExecutor(listener, timeService)
 	taskRunner := worker.NewTaskExecutor(cmdRunner, listener)
 	w = worker.NewWorker(client, taskRunner)
 
