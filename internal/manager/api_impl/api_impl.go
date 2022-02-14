@@ -23,6 +23,7 @@ package api_impl
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
@@ -65,7 +66,12 @@ func NewFlamenco(jc JobCompiler, jps PersistenceService) *Flamenco {
 
 // sendPetstoreError wraps sending of an error in the Error format, and
 // handling the failure to marshal that.
-func sendAPIError(e echo.Context, code int, message string) error {
+func sendAPIError(e echo.Context, code int, message string, args ...interface{}) error {
+	if len(args) > 0 {
+		// Only interpret 'message' as format string if there are actually format parameters.
+		message = fmt.Sprintf(message, args)
+	}
+
 	petErr := api.Error{
 		Code:    int32(code),
 		Message: message,
