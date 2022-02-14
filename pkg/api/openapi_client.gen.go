@@ -124,6 +124,11 @@ type ClientInterface interface {
 
 	// ScheduleTask request
 	ScheduleTask(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TaskUpdate request with any body
+	TaskUpdateWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) SubmitJobWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -272,6 +277,30 @@ func (c *Client) WorkerStateChanged(ctx context.Context, body WorkerStateChanged
 
 func (c *Client) ScheduleTask(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewScheduleTaskRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TaskUpdateWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTaskUpdateRequestWithBody(c.Server, taskId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTaskUpdateRequest(c.Server, taskId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -584,6 +613,53 @@ func NewScheduleTaskRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewTaskUpdateRequest calls the generic TaskUpdate builder with application/json body
+func NewTaskUpdateRequest(server string, taskId string, body TaskUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTaskUpdateRequestWithBody(server, taskId, "application/json", bodyReader)
+}
+
+// NewTaskUpdateRequestWithBody generates requests for TaskUpdate with any type of body
+func NewTaskUpdateRequestWithBody(server string, taskId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker/task/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -661,6 +737,11 @@ type ClientWithResponsesInterface interface {
 
 	// ScheduleTask request
 	ScheduleTaskWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ScheduleTaskResponse, error)
+
+	// TaskUpdate request with any body
+	TaskUpdateWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
+
+	TaskUpdateWithResponse(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
 }
 
 type SubmitJobResponse struct {
@@ -867,6 +948,28 @@ func (r ScheduleTaskResponse) StatusCode() int {
 	return 0
 }
 
+type TaskUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r TaskUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TaskUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // SubmitJobWithBodyWithResponse request with arbitrary body returning *SubmitJobResponse
 func (c *ClientWithResponses) SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error) {
 	rsp, err := c.SubmitJobWithBody(ctx, contentType, body, reqEditors...)
@@ -978,6 +1081,23 @@ func (c *ClientWithResponses) ScheduleTaskWithResponse(ctx context.Context, reqE
 		return nil, err
 	}
 	return ParseScheduleTaskResponse(rsp)
+}
+
+// TaskUpdateWithBodyWithResponse request with arbitrary body returning *TaskUpdateResponse
+func (c *ClientWithResponses) TaskUpdateWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error) {
+	rsp, err := c.TaskUpdateWithBody(ctx, taskId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTaskUpdateResponse(rsp)
+}
+
+func (c *ClientWithResponses) TaskUpdateWithResponse(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error) {
+	rsp, err := c.TaskUpdate(ctx, taskId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTaskUpdateResponse(rsp)
 }
 
 // ParseSubmitJobResponse parses an HTTP response from a SubmitJobWithResponse call
@@ -1250,6 +1370,32 @@ func ParseScheduleTaskResponse(rsp *http.Response) (*ScheduleTaskResponse, error
 			return nil, err
 		}
 		response.JSON423 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTaskUpdateResponse parses an HTTP response from a TaskUpdateWithResponse call
+func ParseTaskUpdateResponse(rsp *http.Response) (*TaskUpdateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TaskUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 

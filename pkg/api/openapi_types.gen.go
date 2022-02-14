@@ -114,7 +114,6 @@ type AssignedTask struct {
 	Priority    int        `json:"priority"`
 	Status      TaskStatus `json:"status"`
 	TaskType    string     `json:"task_type"`
-	User        string     `json:"user"`
 	Uuid        string     `json:"uuid"`
 }
 
@@ -234,6 +233,16 @@ type SubmittedJob struct {
 // TaskStatus defines model for TaskStatus.
 type TaskStatus string
 
+// TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
+type TaskUpdate struct {
+	// One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.
+	Activity *string `json:"activity,omitempty"`
+
+	// Log lines for this task
+	Log        *string     `json:"log,omitempty"`
+	TaskStatus *TaskStatus `json:"taskStatus,omitempty"`
+}
+
 // WorkerRegistration defines model for WorkerRegistration.
 type WorkerRegistration struct {
 	Nickname           string   `json:"nickname"`
@@ -273,6 +282,9 @@ type SignOnJSONBody WorkerSignOn
 // WorkerStateChangedJSONBody defines parameters for WorkerStateChanged.
 type WorkerStateChangedJSONBody WorkerStateChanged
 
+// TaskUpdateJSONBody defines parameters for TaskUpdate.
+type TaskUpdateJSONBody TaskUpdate
+
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody
 
@@ -284,6 +296,9 @@ type SignOnJSONRequestBody SignOnJSONBody
 
 // WorkerStateChangedJSONRequestBody defines body for WorkerStateChanged for application/json ContentType.
 type WorkerStateChangedJSONRequestBody WorkerStateChangedJSONBody
+
+// TaskUpdateJSONRequestBody defines body for TaskUpdate for application/json ContentType.
+type TaskUpdateJSONRequestBody TaskUpdateJSONBody
 
 // Getter for additional properties for JobMetadata. Returns the specified
 // element and whether it was found

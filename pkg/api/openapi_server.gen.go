@@ -40,6 +40,9 @@ type ServerInterface interface {
 	// Obtain a new task to execute
 	// (POST /api/worker/task)
 	ScheduleTask(ctx echo.Context) error
+	// Update the task, typically to indicate progress, completion, or failure.
+	// (POST /api/worker/task/{task_id})
+	TaskUpdate(ctx echo.Context, taskId string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -145,6 +148,24 @@ func (w *ServerInterfaceWrapper) ScheduleTask(ctx echo.Context) error {
 	return err
 }
 
+// TaskUpdate converts echo context to params.
+func (w *ServerInterfaceWrapper) TaskUpdate(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "task_id" -------------
+	var taskId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "task_id", runtime.ParamLocationPath, ctx.Param("task_id"), &taskId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter task_id: %s", err))
+	}
+
+	ctx.Set(Worker_authScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.TaskUpdate(ctx, taskId)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -182,5 +203,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/worker/state", wrapper.WorkerState)
 	router.POST(baseURL+"/api/worker/state-changed", wrapper.WorkerStateChanged)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
+	router.POST(baseURL+"/api/worker/task/:task_id", wrapper.TaskUpdate)
 
 }

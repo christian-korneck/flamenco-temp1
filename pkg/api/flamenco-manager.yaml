@@ -157,6 +157,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkerStateChange"
 
+  /api/worker/task/{task_id}:
+    summary: Workers send info about task progression here.
+    post:
+      operationId: taskUpdate
+      summary: Update the task, typically to indicate progress, completion, or failure.
+      security: [{worker_auth: []}]
+      tags: [worker]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        description: Task update information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "204":
+          description: The update was accepted.
+        "409":
+          description: The task is assigned to another worker, so the update was not accepted.
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/jobs/types:
     summary: Available Flamenco job types.
     get:
@@ -278,7 +309,6 @@ components:
       properties:
         uuid: {type: string, format: uuid}
         job: {type: string}
-        user: {type: string}
         name: {type: string}
         status: {$ref: "#/components/schemas/TaskStatus"}
         priority: {type: integer}
@@ -288,7 +318,15 @@ components:
         commands:
           type: array
           items: {$ref: "#/components/schemas/Command"}
-      required: [uuid, job, user, name, status, priority, job_priority, job_type, task_type, commands]
+      required: [uuid, job, name, status, priority, job_priority, job_type, task_type, commands]
+
+    TaskUpdate:
+      type: object
+      description: TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
+      properties:
+        taskStatus: {$ref: "#/components/schemas/TaskStatus", description: The new task status.}
+        activity: {type: string, description: One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.}
+        log: {type: string, description: Log lines for this task, will be appended to logs sent earlier.}
 
     JobStatus:
       type: string
