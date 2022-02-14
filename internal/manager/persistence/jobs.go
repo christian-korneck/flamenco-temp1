@@ -62,7 +62,7 @@ type Task struct {
 	// TODO: include info about which worker is/was working on this.
 
 	// Dependencies are tasks that need to be completed before this one can run.
-	Dependencies []*Task `gorm:"many2many:task_dependencies;"`
+	Dependencies []*Task `gorm:"many2many:task_dependencies;constraint:OnDelete:CASCADE"`
 
 	Commands Commands `gorm:"type:jsonb"`
 }
