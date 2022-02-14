@@ -74,7 +74,12 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error persisting job in database")
 	}
 
-	return e.JSON(http.StatusOK, authoredJob)
+	dbJob, err := f.persist.FetchJob(ctx, authoredJob.JobID)
+	if err != nil {
+		logger.Error().Err(err).Msg("unable to retrieve just-stored job from database")
+		return sendAPIError(e, http.StatusInternalServerError, "error retrieving job from database")
+	}
+	return e.JSON(http.StatusOK, dbJob)
 }
 
 func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
