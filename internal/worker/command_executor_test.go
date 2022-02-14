@@ -94,7 +94,7 @@ func TestCommandSleep(t *testing.T) {
 	taskID := TaskID("90e9d656-e201-4ef0-b6b0-c80684fafa27")
 	cmd := api.Command{
 		Name:     "sleep",
-		Settings: map[string]interface{}{"time_in_seconds": 47},
+		Settings: map[string]interface{}{"duration_in_seconds": 47},
 	}
 
 	timeBefore := clock.Now()

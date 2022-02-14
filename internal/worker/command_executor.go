@@ -102,9 +102,9 @@ func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, t
 // cmdSleep executes the "sleep" command.
 func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error {
 
-	sleepTime, ok := cmd.Settings["time_in_seconds"]
+	sleepTime, ok := cmd.Settings["duration_in_seconds"]
 	if !ok {
-		return errors.New("missing setting 'time_in_seconds'")
+		return errors.New("missing setting 'duration_in_seconds'")
 	}
 
 	var duration time.Duration
@@ -112,8 +112,8 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 	case int:
 		duration = time.Duration(v) * time.Second
 	default:
-		log.Warn().Interface("time_in_seconds", v).Msg("bad type for setting 'time_in_seconds', expected int")
-		return fmt.Errorf("bad type for setting 'time_in_seconds', expected int, not %v", v)
+		log.Warn().Interface("duration_in_seconds", v).Msg("bad type for setting 'duration_in_seconds', expected int")
+		return fmt.Errorf("bad type for setting 'duration_in_seconds', expected int, not %v", v)
 	}
 
 	log.Info().Str("duration", duration.String()).Msg("sleep")
