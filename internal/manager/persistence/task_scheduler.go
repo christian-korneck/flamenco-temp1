@@ -1,5 +1,4 @@
-// Package task_scheduler can choose which task to assign to a worker.
-package task_scheduler
+package persistence
 
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
@@ -25,7 +24,6 @@ import (
 	"errors"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"gorm.io/gorm"
 )
@@ -36,22 +34,10 @@ var (
 	schedulableJobStatuses  = []api.JobStatus{api.JobStatusActive, api.JobStatusQueued, api.JobStatusRequeued}
 )
 
-type TaskScheduler struct {
-	db PersistenceService
-}
-
-type PersistenceService interface {
-	GormDB() *gorm.DB
-}
-
-func NewTaskScheduler(db PersistenceService) *TaskScheduler {
-	return &TaskScheduler{db}
-}
-
 // ScheduleTask finds a task to execute by the given worker.
 // If no task is available, (nil, nil) is returned, as this is not an error situation.
-func (ts *TaskScheduler) ScheduleTask(w *persistence.Worker) (*persistence.Task, error) {
-	task, err := ts.findTaskForWorker(w)
+func (db *DB) ScheduleTask(w *Worker) (*Task, error) {
+	task, err := db.findTaskForWorker(w)
 
 	// TODO: Mark the task as Active, and push the status change to whatever I think up to handle those changes.
 	// TODO: Store in the database that this task is assigned to this worker.
@@ -59,14 +45,14 @@ func (ts *TaskScheduler) ScheduleTask(w *persistence.Worker) (*persistence.Task,
 	return task, err
 }
 
-func (ts *TaskScheduler) findTaskForWorker(w *persistence.Worker) (*persistence.Task, error) {
+func (db *DB) findTaskForWorker(w *Worker) (*Task, error) {
 
 	logger := log.With().Str("worker", w.UUID).Logger()
 	logger.Debug().Msg("finding task for worker")
 
-	task := persistence.Task{}
-	db := ts.db.GormDB()
-	tx := db.Debug().
+	task := Task{}
+	gormDB := db.GormDB()
+	tx := gormDB.Debug().
 		Model(&task).
 		Joins("left join jobs on tasks.job_id = jobs.id").
 		Joins("left join task_dependencies on tasks.id = task_dependencies.task_id").

@@ -1,5 +1,4 @@
-// Package task_scheduler can choose which task to assign to a worker.
-package task_scheduler
+package persistence
 
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
@@ -29,30 +28,27 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func TestNoTasks(t *testing.T) {
-	db := persistence.CreateTestDB(t)
-	ts := NewTaskScheduler(db)
+	db := CreateTestDB(t)
 	w := linuxWorker()
 
-	task, err := ts.ScheduleTask(&w)
+	task, err := db.ScheduleTask(&w)
 	assert.Nil(t, task)
 	assert.NoError(t, err)
 }
 
 func TestOneJobOneTask(t *testing.T) {
-	db := persistence.CreateTestDB(t)
-	ts := NewTaskScheduler(db)
+	db := CreateTestDB(t)
 	w := linuxWorker()
 
 	authTask := authorTestTask("the task", "blender-render")
 	atj := authorTestJob("b6a1d859-122f-4791-8b78-b943329a9989", "simple-blender-render", authTask)
 	job := constructTestJob(t, db, atj)
 
-	task, err := ts.ScheduleTask(&w)
+	task, err := db.ScheduleTask(&w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")
@@ -61,8 +57,7 @@ func TestOneJobOneTask(t *testing.T) {
 }
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {
-	db := persistence.CreateTestDB(t)
-	ts := NewTaskScheduler(db)
+	db := CreateTestDB(t)
 	w := linuxWorker()
 
 	att1 := authorTestTask("1 low-prio task", "blender-render")
@@ -76,7 +71,7 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 
 	job := constructTestJob(t, db, atj)
 
-	task, err := ts.ScheduleTask(&w)
+	task, err := db.ScheduleTask(&w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")
@@ -91,8 +86,7 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 }
 
 func TestOneJobThreeTasksByDependencies(t *testing.T) {
-	db := persistence.CreateTestDB(t)
-	ts := NewTaskScheduler(db)
+	db := CreateTestDB(t)
 	w := linuxWorker()
 
 	att1 := authorTestTask("1 low-prio task", "blender-render")
@@ -106,7 +100,7 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 		att1, att2, att3)
 	job := constructTestJob(t, db, atj)
 
-	task, err := ts.ScheduleTask(&w)
+	task, err := db.ScheduleTask(&w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")
@@ -116,8 +110,7 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 }
 
 func TestTwoJobsThreeTasks(t *testing.T) {
-	db := persistence.CreateTestDB(t)
-	ts := NewTaskScheduler(db)
+	db := CreateTestDB(t)
 	w := linuxWorker()
 
 	att1_1 := authorTestTask("1.1 low-prio task", "blender-render")
@@ -145,7 +138,7 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 	constructTestJob(t, db, atj1)
 	job2 := constructTestJob(t, db, atj2)
 
-	task, err := ts.ScheduleTask(&w)
+	task, err := db.ScheduleTask(&w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")
@@ -164,8 +157,8 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 // To test: variable replacement
 
 func constructTestJob(
-	t *testing.T, db *persistence.DB, authoredJob job_compilers.AuthoredJob,
-) *persistence.Job {
+	t *testing.T, db *DB, authoredJob job_compilers.AuthoredJob,
+) *Job {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -208,8 +201,8 @@ func authorTestTask(name, taskType string, dependencies ...*job_compilers.Author
 	return task
 }
 
-func linuxWorker() persistence.Worker {
-	w := persistence.Worker{
+func linuxWorker() Worker {
+	w := Worker{
 		UUID:               "b13b8322-3e96-41c3-940a-3d581008a5f8",
 		Name:               "Linux",
 		Platform:           "linux",
