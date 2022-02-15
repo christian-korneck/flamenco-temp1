@@ -197,7 +197,7 @@ func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 
 func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
 	if err := db.gormDB.Model(j).Updates(Job{Status: j.Status}).Error; err != nil {
-		return fmt.Errorf("error saving job status: %v", err)
+		return fmt.Errorf("error saving job status: %w", err)
 	}
 	return nil
 }
