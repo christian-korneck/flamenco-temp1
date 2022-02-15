@@ -63,9 +63,11 @@ func main() {
 
 	configWrangler := worker.NewConfigWrangler()
 
-	startupCtx, sctxCancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
+	// Startup can take arbitrarily long, as it only ends when the Manager can be
+	// reached and accepts our sign-on request. An offline Manager would cause the
+	// Worker to wait for it indefinitely.
+	startupCtx := context.Background()
 	client, startupState := registerOrSignOn(startupCtx, configWrangler)
-	sctxCancelFunc()
 
 	shutdownComplete = make(chan struct{})
 	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
