@@ -63,7 +63,8 @@ func (w *Worker) runStateAsleep(ctx context.Context) {
 
 		resp, err := w.client.WorkerStateWithResponse(ctx)
 		if err != nil {
-			log.Error().Err(err).Msg("error checking upstream state changes")
+			log.Warn().Err(err).Msg("error checking upstream state changes")
+			continue
 		}
 		switch {
 		case resp.JSON200 != nil:
@@ -74,13 +75,11 @@ func (w *Worker) runStateAsleep(ctx context.Context) {
 			return
 		case resp.StatusCode() == http.StatusNoContent:
 			log.Debug().Msg("we can keep sleeping")
-			continue
 		default:
 			log.Warn().
 				Int("code", resp.StatusCode()).
 				Str("error", string(resp.Body)).
 				Msg("unable to obtain requested state for unknown reason")
-			continue
 		}
 	}
 }
