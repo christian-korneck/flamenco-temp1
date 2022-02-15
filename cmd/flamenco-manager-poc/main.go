@@ -99,7 +99,7 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 		&oapi_middle.Options{
 			Options: openapi3filter.Options{
 				AuthenticationFunc: func(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
-					return api_impl.WorkerAuth(ctx, authInfo, persist)
+					return authenticator(ctx, authInfo, persist)
 				},
 			},
 
@@ -129,27 +129,12 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 	return e
 }
 
-func authenticator(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
+func authenticator(ctx context.Context, authInfo *openapi3filter.AuthenticationInput, persist api_impl.PersistenceService) error {
 	switch authInfo.SecuritySchemeName {
 	case "worker_auth":
-		return workerAuth(ctx, authInfo)
+		return api_impl.WorkerAuth(ctx, authInfo, persist)
 	default:
 		log.Warn().Str("scheme", authInfo.SecuritySchemeName).Msg("unknown security scheme")
 		return errors.New("unknown security scheme")
 	}
-}
-
-func workerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
-	echo := ctx.Value(oapi_middle.EchoContextKey).(echo.Context)
-	req := echo.Request()
-	u, p, ok := req.BasicAuth()
-
-	// TODO: stop logging passwords.
-	log.Debug().Interface("scheme", authInfo.SecuritySchemeName).Str("user", u).Str("password", p).Msg("authenticator")
-	if !ok {
-		return authInfo.NewError(errors.New("no auth header found"))
-	}
-
-	// TODO: check username/password against worker database.
-	return nil
 }
