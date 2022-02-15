@@ -21,12 +21,15 @@ package api_impl
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
@@ -126,6 +129,7 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 
 func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
+	worker := requestWorkerOrPanic(e)
 
 	if _, err := uuid.Parse(taskID); err != nil {
 		logger.Debug().Msg("invalid task ID received")
@@ -140,22 +144,63 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 		logger.Warn().Err(err).Msg("cannot fetch task")
 		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("task %+v not found", taskID))
 	}
+	if dbTask == nil {
+		panic("task could not be fetched, but database gave no error either")
+	}
 
-	worker := requestWorker(e)
+	// Decode the request body.
+	var taskUpdate api.TaskUpdateJSONRequestBody
+	if err := e.Bind(&taskUpdate); err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
 	if dbTask.Worker == nil {
 		logger.Warn().
-			Str("requestingWorkerID", worker.UUID).
 			Msg("worker trying to update task that's not assigned to any worker")
 		return sendAPIError(e, http.StatusConflict, fmt.Sprintf("task %+v is not assigned to any worker, so also not to you", taskID))
 	}
 	if dbTask.Worker.UUID != worker.UUID {
 		logger.Warn().
-			Str("requestingWorkerID", worker.UUID).
 			Str("assignedWorkerID", dbTask.Worker.UUID).
 			Msg("worker trying to update task that's assigned to another worker")
 		return sendAPIError(e, http.StatusConflict, fmt.Sprintf("task %+v is not assigned to you, but to worker %v", taskID, dbTask.Worker.UUID))
 	}
 
-	// TODO: actually handle the task update.
+	// TODO: check whether this task may undergo the requested status change.
+
+	if err := f.doTaskUpdate(ctx, logger, worker, dbTask, taskUpdate); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "unable to handle status update: %v", err)
+	}
+
 	return e.String(http.StatusNoContent, "")
+}
+
+func (f *Flamenco) doTaskUpdate(
+	ctx context.Context,
+	logger zerolog.Logger,
+	w *persistence.Worker,
+	dbTask *persistence.Task,
+	update api.TaskUpdateJSONRequestBody,
+) error {
+	if update.TaskStatus != nil {
+		// TODO: check that this status transition is valid.
+		// TODO: process this status transition.
+		newStatus := string(*update.TaskStatus)
+		logger.Info().
+			Str("oldStatus", dbTask.Status).
+			Str("newStatus", newStatus).
+			Msg("task changing status")
+		dbTask.Status = newStatus
+	}
+
+	if update.Activity != nil {
+		dbTask.Worker.LastActivity = *update.Activity
+	}
+
+	if update.Log != nil {
+		// TODO: write log to disk.
+		logger.Warn().Msg("task logs are not yet handled")
+	}
+
+	return f.persist.SaveTask(ctx, dbTask)
 }

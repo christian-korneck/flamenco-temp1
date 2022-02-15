@@ -211,3 +211,10 @@ func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
 
 	return &dbTask, nil
 }
+
+func (db *DB) SaveTask(ctx context.Context, t *Task) error {
+	if err := db.gormDB.Save(t).Error; err != nil {
+		return fmt.Errorf("error saving task: %w", err)
+	}
+	return nil
+}

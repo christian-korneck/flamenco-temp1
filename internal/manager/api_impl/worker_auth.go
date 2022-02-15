@@ -72,11 +72,15 @@ func WorkerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInpu
 		return authInfo.NewError(errAuthBad)
 	}
 
-	// Store the Worker in the request context, so that it doesn't need to be fetched again later.
-	reqCtx := context.WithValue(req.Context(), workerKey, w)
-	echo.SetRequest(req.WithContext(reqCtx))
-
+	requestWorkerStore(echo, w)
 	return nil
+}
+
+// Store the Worker in the request context, so that it doesn't need to be fetched again later.
+func requestWorkerStore(e echo.Context, w *persistence.Worker) {
+	req := e.Request()
+	reqCtx := context.WithValue(req.Context(), workerKey, w)
+	e.SetRequest(req.WithContext(reqCtx))
 }
 
 // requestWorker returns the Worker associated with this HTTP request, or nil if there is none.

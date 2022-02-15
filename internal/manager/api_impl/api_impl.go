@@ -36,10 +36,14 @@ type Flamenco struct {
 	persist     PersistenceService
 }
 
+// Generate mock implementations of these interfaces.
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler
+
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
 	FetchJob(ctx context.Context, jobID string) (*persistence.Job, error)
 	FetchTask(ctx context.Context, taskID string) (*persistence.Task, error)
+	SaveTask(ctx context.Context, task *persistence.Task) error
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)
