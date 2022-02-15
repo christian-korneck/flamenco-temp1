@@ -160,8 +160,15 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 
 // (GET /api/worker/state)
 func (f *Flamenco) WorkerState(e echo.Context) error {
-	// TODO: look up proper status in DB.
-	return e.String(http.StatusNoContent, "")
+	worker := requestWorkerOrPanic(e)
+
+	if worker.StatusRequested == "" {
+		return e.String(http.StatusNoContent, "")
+	}
+
+	return e.JSON(http.StatusOK, api.WorkerStateChange{
+		StatusRequested: worker.StatusRequested,
+	})
 }
 
 // Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
