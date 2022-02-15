@@ -47,6 +47,8 @@ func registerOrSignOn(ctx context.Context, configWrangler worker.FileConfigWrang
 		log.Fatal().Err(err).Msg("loading configuration")
 	}
 
+	log.Info().Interface("config", cfg).Msg("loaded configuration")
+
 	if cfg.Manager == "" {
 		log.Fatal().Msg("no manager configured")
 	}
@@ -126,11 +128,12 @@ func register(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWit
 // signOn tells the Manager we're alive and returns the status the Manager tells us to go to.
 func signOn(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
 	logger := log.With().Str("manager", cfg.Manager).Logger()
-	logger.Info().Msg("signing on at Manager")
+	logger.Info().Interface("taskTypes", cfg.TaskTypes).Msg("signing on at Manager")
 
 	req := api.SignOnJSONRequestBody{
 		Nickname:           mustHostname(),
 		SupportedTaskTypes: cfg.TaskTypes,
+		SoftwareVersion:    appinfo.ApplicationVersion,
 	}
 	resp, err := client.SignOnWithResponse(ctx, req)
 	if err != nil {

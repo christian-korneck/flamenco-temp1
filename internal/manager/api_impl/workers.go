@@ -89,14 +89,8 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 	}
 
 	logger.Info().Msg("worker signing on")
-
-	w := requestWorkerOrPanic(e)
-	w.Status = api.WorkerStatusStarting
-	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
+	w, err := f.workerUpdateAfterSignOn(e, req)
 	if err != nil {
-		logger.Warn().Err(err).
-			Str("newStatus", string(w.Status)).
-			Msg("error storing Worker in database")
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
 
@@ -107,6 +101,33 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 		resp.StatusRequested = api.WorkerStatusAwake
 	}
 	return e.JSON(http.StatusOK, resp)
+}
+
+func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSONBody) (*persistence.Worker, error) {
+	logger := requestLogger(e)
+	w := requestWorkerOrPanic(e)
+
+	// Update the worker for with the new sign-on info.
+	w.Status = api.WorkerStatusStarting
+	w.Address = e.RealIP()
+	w.Name = update.Nickname
+
+	// Remove trailing spaces from task types, and convert to lower case.
+	for idx := range update.SupportedTaskTypes {
+		update.SupportedTaskTypes[idx] = strings.TrimSpace(strings.ToLower(update.SupportedTaskTypes[idx]))
+	}
+	w.SupportedTaskTypes = strings.Join(update.SupportedTaskTypes, ",")
+
+	// Save the new Worker info to the database.
+	err := f.persist.SaveWorker(e.Request().Context(), w)
+	if err != nil {
+		logger.Warn().Err(err).
+			Str("newStatus", string(w.Status)).
+			Msg("error storing Worker in database")
+		return nil, err
+	}
+
+	return w, nil
 }
 
 func (f *Flamenco) SignOff(e echo.Context) error {

@@ -56,8 +56,8 @@ func (w *Worker) runStateAsleep(ctx context.Context) {
 			return
 		case <-time.After(durationSleepCheck):
 		}
-		if !w.isState(api.WorkerStatusAwake) {
-			logger.Debug().Msg("state fetching interrupted by state change")
+		if !w.isState(api.WorkerStatusAsleep) {
+			logger.Debug().Str("newStatus", string(w.state)).Msg("state fetching interrupted by state change")
 			return
 		}
 

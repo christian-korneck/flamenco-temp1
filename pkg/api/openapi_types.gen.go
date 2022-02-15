@@ -254,6 +254,7 @@ type WorkerRegistration struct {
 // WorkerSignOn defines model for WorkerSignOn.
 type WorkerSignOn struct {
 	Nickname           string   `json:"nickname"`
+	SoftwareVersion    string   `json:"software_version"`
 	SupportedTaskTypes []string `json:"supported_task_types"`
 }
 

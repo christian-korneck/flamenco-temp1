@@ -289,7 +289,8 @@ components:
         supported_task_types:
           type: array
           items: {type: string}
-      required: [nickname, supported_task_types]
+        software_version: {type: string}
+      required: [nickname, supported_task_types, software_version]
 
     WorkerStateChange:
       type: object

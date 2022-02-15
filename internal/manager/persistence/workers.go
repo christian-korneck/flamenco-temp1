@@ -52,7 +52,7 @@ func (w *Worker) TaskTypes() []string {
 
 func (db *DB) CreateWorker(ctx context.Context, w *Worker) error {
 	if err := db.gormDB.Create(w).Error; err != nil {
-		return fmt.Errorf("error creating new worker: %v", err)
+		return fmt.Errorf("error creating new worker: %w", err)
 	}
 	return nil
 }
@@ -67,8 +67,15 @@ func (db *DB) FetchWorker(ctx context.Context, uuid string) (*Worker, error) {
 }
 
 func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
-	if err := db.gormDB.Model(w).Updates(Worker{Status: w.Status}).Error; err != nil {
-		return fmt.Errorf("error saving worker: %v", err)
+	if err := db.gormDB.Model(w).Select("status").Updates(Worker{Status: w.Status}).Error; err != nil {
+		return fmt.Errorf("error saving worker: %w", err)
+	}
+	return nil
+}
+
+func (db *DB) SaveWorker(ctx context.Context, w *Worker) error {
+	if err := db.gormDB.Save(w).Error; err != nil {
+		return fmt.Errorf("error saving worker: %w", err)
 	}
 	return nil
 }
