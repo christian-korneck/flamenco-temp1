@@ -3,6 +3,7 @@ package api_impl
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 
@@ -53,16 +54,21 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 }
 
 func (mf *mockedFlamenco) prepareMockedJSONRequest(worker *persistence.Worker, requestBody interface{}) echo.Context {
-
-	e := echo.New()
-
 	bodyBytes, err := json.MarshalIndent(requestBody, "", "    ")
 	if err != nil {
 		panic(err)
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyBytes))
-	req.Header.Add(echo.HeaderContentType, "application/json")
+	c := mf.prepareMockedRequest(worker, bytes.NewBuffer(bodyBytes))
+	c.Request().Header.Add(echo.HeaderContentType, "application/json")
+
+	return c
+}
+
+func (mf *mockedFlamenco) prepareMockedRequest(worker *persistence.Worker, body io.Reader) echo.Context {
+	e := echo.New()
+
+	req := httptest.NewRequest(http.MethodPost, "/", body)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	requestWorkerStore(c, worker)

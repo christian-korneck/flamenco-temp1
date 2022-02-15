@@ -150,6 +150,8 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/SecurityError"}
+        "409":
+          description: Worker is not in the active state, so is not allowed to execute tasks right now.
         "423":
           description: Worker cannot obtain new tasks, but must go to another state.
           content:

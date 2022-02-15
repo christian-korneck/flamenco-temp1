@@ -158,11 +158,6 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 	assert.Equal(t, att2_3.Name, task.Name, "the 3rd task of the 2nd job should have been chosen")
 }
 
-// To test: worker with non-active state.
-// Unlike Flamenco v2, this Manager shouldn't change a worker's status
-// simply because it requests a task. New tasks for non-awake workers
-// should be rejected.
-
 // To test: blacklists
 
 // To test: variable replacement

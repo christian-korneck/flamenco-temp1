@@ -67,7 +67,14 @@ func (db *DB) FetchWorker(ctx context.Context, uuid string) (*Worker, error) {
 }
 
 func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
-	if err := db.gormDB.Model(w).Select("status").Updates(Worker{Status: w.Status}).Error; err != nil {
+	err := db.gormDB.
+		Model(w).
+		Select("status", "status_requested").
+		Updates(Worker{
+			Status:          w.Status,
+			StatusRequested: w.StatusRequested,
+		}).Error
+	if err != nil {
 		return fmt.Errorf("error saving worker: %w", err)
 	}
 	return nil

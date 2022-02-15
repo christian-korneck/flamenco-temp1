@@ -21,6 +21,7 @@ package api_impl
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -143,6 +144,10 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	logger.Info().Msg("worker signing off")
 	w := requestWorkerOrPanic(e)
 	w.Status = api.WorkerStatusOffline
+	if w.StatusRequested == api.WorkerStatusShutdown {
+		w.StatusRequested = ""
+	}
+
 	// TODO: check whether we should pass the request context here, or a generic
 	// background context, as this should be stored even when the HTTP connection
 	// is aborted.
@@ -183,10 +188,24 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	logger.Info().Str("newStatus", string(req.Status)).Msg("worker changed status")
-
 	w := requestWorkerOrPanic(e)
+	logger = logger.With().
+		Str("currentStatus", string(w.Status)).
+		Str("newStatus", string(req.Status)).
+		Logger()
+
 	w.Status = req.Status
+	if w.StatusRequested != "" && req.Status != w.StatusRequested {
+		logger.Warn().
+			Str("workersRequestedStatus", string(w.StatusRequested)).
+			Msg("worker changed to status that was not requested")
+	} else {
+		logger.Info().Msg("worker changed status")
+		// Either there was no status change request (and this is a no-op) or the
+		// status change was actually acknowledging the request.
+		w.StatusRequested = ""
+	}
+
 	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
 	if err != nil {
 		logger.Warn().Err(err).
@@ -200,13 +219,27 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	logger := requestLogger(e)
+	worker := requestWorkerOrPanic(e)
 	logger.Info().Msg("worker requesting task")
 
-	// Figure out which worker is requesting a task:
-	worker := requestWorker(e)
-	if worker == nil {
-		logger.Warn().Msg("task requested by non-worker")
-		return sendAPIError(e, http.StatusBadRequest, "not authenticated as Worker")
+	// Check that this worker is actually allowed to do work.
+	requiredStatusToGetTask := api.WorkerStatusAwake
+	if worker.Status != api.WorkerStatusAwake {
+		logger.Warn().
+			Str("workerStatus", string(worker.Status)).
+			Str("requiredStatus", string(requiredStatusToGetTask)).
+			Msg("worker asking for task but is in wrong state")
+		return sendAPIError(e, http.StatusConflict,
+			fmt.Sprintf("worker is in state %q, requires state %q to execute tasks", worker.Status, requiredStatusToGetTask))
+	}
+	if worker.StatusRequested != "" {
+		logger.Warn().
+			Str("workerStatus", string(worker.Status)).
+			Str("requestedStatus", string(worker.StatusRequested)).
+			Msg("worker asking for task but needs state change first")
+		return e.JSON(http.StatusLocked, api.WorkerStateChange{
+			StatusRequested: worker.StatusRequested,
+		})
 	}
 
 	// Get a task to execute:

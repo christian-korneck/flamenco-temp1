@@ -42,7 +42,7 @@ func (w *Worker) gotoStateAwake(ctx context.Context) {
 	w.state = api.WorkerStatusAwake
 
 	w.doneWg.Add(2)
-	go w.ackStateChange(ctx, w.state)
+	w.ackStateChange(ctx, w.state)
 	go w.runStateAwake(ctx)
 }
 
@@ -62,6 +62,9 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 		if err != nil {
 			log.Warn().Err(err).Interface("task", *task).Msg("error executing task")
 		}
+
+		// Do some rate limiting. This is mostly useful while developing.
+		time.Sleep(2 * time.Second)
 	}
 }
 
@@ -83,10 +86,6 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 			logger.Debug().Msg("task fetching interrupted by shutdown")
 			return nil
 		case <-time.After(wait):
-		}
-		if !w.isState(api.WorkerStatusAwake) {
-			logger.Debug().Msg("task fetching interrupted by state change")
-			return nil
 		}
 
 		resp, err := w.client.ScheduleTaskWithResponse(ctx)
@@ -112,18 +111,16 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 				Str("error", string(resp.JSON403.Message)).
 				Msg("access denied")
 			wait = durationFetchFailed
-			continue
 		case resp.StatusCode() == http.StatusNoContent:
 			log.Info().Msg("no task available")
 			wait = durationNoTask
-			continue
 		default:
 			log.Warn().
 				Int("code", resp.StatusCode()).
 				Str("error", string(resp.Body)).
 				Msg("unable to obtain task for unknown reason")
 			wait = durationFetchFailed
-			continue
 		}
+
 	}
 }
