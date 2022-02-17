@@ -82,9 +82,3 @@ func (w *Worker) ackStateChange(ctx context.Context, state api.WorkerStatus) {
 		return
 	}
 }
-
-func (w *Worker) isState(state api.WorkerStatus) bool {
-	w.stateMutex.Lock()
-	defer w.stateMutex.Unlock()
-	return w.state == state
-}
