@@ -22,7 +22,9 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"os/signal"
 	"runtime"
@@ -43,6 +45,15 @@ var (
 	listener         *worker.Listener
 	shutdownComplete chan struct{}
 )
+
+var cliArgs struct {
+	version    bool
+	verbose    bool
+	debug      bool
+	managerURL *url.URL
+	manager    string
+	register   bool
+}
 
 func main() {
 	parseCliArgs()
@@ -67,7 +78,7 @@ func main() {
 	// reached and accepts our sign-on request. An offline Manager would cause the
 	// Worker to wait for it indefinitely.
 	startupCtx := context.Background()
-	client, startupState := registerOrSignOn(startupCtx, configWrangler)
+	client, startupState := worker.RegisterOrSignOn(startupCtx, configWrangler)
 
 	shutdownComplete = make(chan struct{})
 	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
@@ -123,4 +134,23 @@ func shutdown(signum os.Signal) {
 
 	log.Warn().Msg("shutdown complete, stopping process.")
 	close(shutdownComplete)
+}
+
+func parseCliArgs() {
+	flag.BoolVar(&cliArgs.version, "version", false, "Shows the application version, then exits.")
+	flag.BoolVar(&cliArgs.verbose, "verbose", false, "Enable info-level logging.")
+	flag.BoolVar(&cliArgs.debug, "debug", false, "Enable debug-level logging.")
+
+	flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
+	flag.BoolVar(&cliArgs.register, "register", false, "(Re-)register at the Manager.")
+
+	flag.Parse()
+
+	if cliArgs.manager != "" {
+		var err error
+		cliArgs.managerURL, err = worker.ParseURL(cliArgs.manager)
+		if err != nil {
+			log.Fatal().Err(err).Msg("invalid manager URL")
+		}
+	}
 }

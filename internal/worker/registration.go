@@ -1,4 +1,4 @@
-package main
+package worker
 
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
@@ -33,7 +33,6 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/securityprovider"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
-	"gitlab.com/blender/flamenco-ng-poc/internal/worker"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
@@ -43,7 +42,9 @@ var (
 	errSignOnRejected          = errors.New("manager rejected our sign-on credentials")      // Reached Manager, but it rejected our creds.
 )
 
-func registerOrSignOn(ctx context.Context, configWrangler worker.FileConfigWrangler) (
+// registerOrSignOn tries to sign on, and if that fails (or there are no credentials) tries to register.
+// Returns an authenticated Flamenco OpenAPI client.
+func RegisterOrSignOn(ctx context.Context, configWrangler FileConfigWrangler) (
 	client api.ClientWithResponsesInterface, startupState api.WorkerStatus,
 ) {
 	// Load configuration
@@ -71,7 +72,7 @@ func registerOrSignOn(ctx context.Context, configWrangler worker.FileConfigWrang
 	}
 
 	// Either there were no credentials, or existing ones weren't accepted, just register as new worker.
-	client = authenticatedClient(cfg, worker.WorkerCredentials{})
+	client = authenticatedClient(cfg, WorkerCredentials{})
 	creds = register(ctx, cfg, client)
 
 	// store ID and secretKey in config file when registration is complete.
@@ -93,7 +94,7 @@ func registerOrSignOn(ctx context.Context, configWrangler worker.FileConfigWrang
 
 // (Re-)register ourselves at the Manager.
 // Logs a fatal error if unsuccesful.
-func register(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWithResponsesInterface) worker.WorkerCredentials {
+func register(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponsesInterface) WorkerCredentials {
 	// Construct our new password.
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
@@ -124,7 +125,7 @@ func register(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWit
 			Msg("unable to register at Manager")
 	}
 
-	return worker.WorkerCredentials{
+	return WorkerCredentials{
 		WorkerID: resp.JSON200.Uuid,
 		Secret:   secretKey,
 	}
@@ -132,7 +133,7 @@ func register(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWit
 
 // repeatSignOnUntilAnswer tries to sign on, and only returns when it has been able to reach the Manager.
 // Return still doesn't mean that the sign-on was succesful; inspect the returned error.
-func repeatSignOnUntilAnswer(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
+func repeatSignOnUntilAnswer(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
 	waitTime := 0 * time.Second
 	for {
 		select {
@@ -157,7 +158,7 @@ func repeatSignOnUntilAnswer(ctx context.Context, cfg worker.WorkerConfig, clien
 }
 
 // signOn tells the Manager we're alive and returns the status the Manager tells us to go to.
-func signOn(ctx context.Context, cfg worker.WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
+func signOn(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
 	logger := log.With().Str("manager", cfg.Manager).Logger()
 
 	req := api.SignOnJSONRequestBody{
@@ -206,7 +207,7 @@ func mustHostname() string {
 }
 
 // authenticatedClient constructs a Flamenco client with the given credentials.
-func authenticatedClient(cfg worker.WorkerConfig, creds worker.WorkerCredentials) api.ClientWithResponsesInterface {
+func authenticatedClient(cfg WorkerConfig, creds WorkerCredentials) api.ClientWithResponsesInterface {
 	basicAuthProvider, err := securityprovider.NewSecurityProviderBasicAuth(creds.WorkerID, creds.Secret)
 	if err != nil {
 		log.Panic().Err(err).Msg("unable to create basic auth provider")
