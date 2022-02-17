@@ -28,9 +28,15 @@ with-deps:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
 	make -s application
 
-application: ${RESOURCES} generate
+application: ${RESOURCES} generate flamenco-manager-poc flamenco-worker-poc socketio-poc
+
+flamenco-manager-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
+
+flamenco-worker-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
+
+socketio-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
 generate:
@@ -135,4 +141,4 @@ _package_zip: static
 	cd $(dir ${PACKAGE_PATH}) && zip -9 -r -q $(notdir ${PACKAGE_PATH})-${GOOS}.zip $(notdir ${PACKAGE_PATH})
 	rm ${STATIC_OUT}
 
-.PHONY: run application version static vet lint deploy package release prepare
+.PHONY: run application version static vet lint deploy package release prepare flamenco-manager-poc flamenco-worker-poc socketio-poc generate
