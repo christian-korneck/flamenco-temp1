@@ -30,7 +30,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/securityprovider"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
@@ -208,14 +207,16 @@ func mustHostname() string {
 
 // authenticatedClient constructs a Flamenco client with the given credentials.
 func authenticatedClient(cfg WorkerConfig, creds WorkerCredentials) api.ClientWithResponsesInterface {
-	basicAuthProvider, err := securityprovider.NewSecurityProviderBasicAuth(creds.WorkerID, creds.Secret)
-	if err != nil {
-		log.Panic().Err(err).Msg("unable to create basic auth provider")
-	}
-
 	flamenco, err := api.NewClientWithResponses(
 		cfg.Manager,
-		api.WithRequestEditorFn(basicAuthProvider.Intercept),
+
+		// Add a Basic HTTP authentication header to every request to Flamenco Manager.
+		api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+			req.SetBasicAuth(creds.WorkerID, creds.Secret)
+			return nil
+		}),
+
+		// Add a User-Agent header to identify this software + its version.
 		api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 			req.Header.Set("User-Agent", appinfo.UserAgent())
 			return nil
