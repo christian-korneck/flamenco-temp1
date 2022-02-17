@@ -142,7 +142,7 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	dbTask, err := f.persist.FetchTask(ctx, taskID)
 	if err != nil {
 		logger.Warn().Err(err).Msg("cannot fetch task")
-		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("task %+v not found", taskID))
+		return sendAPIError(e, http.StatusNotFound, "task %+v not found", taskID)
 	}
 	if dbTask == nil {
 		panic("task could not be fetched, but database gave no error either")
@@ -157,13 +157,13 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	if dbTask.Worker == nil {
 		logger.Warn().
 			Msg("worker trying to update task that's not assigned to any worker")
-		return sendAPIError(e, http.StatusConflict, fmt.Sprintf("task %+v is not assigned to any worker, so also not to you", taskID))
+		return sendAPIError(e, http.StatusConflict, "task %+v is not assigned to any worker, so also not to you", taskID)
 	}
 	if dbTask.Worker.UUID != worker.UUID {
 		logger.Warn().
 			Str("assignedWorkerID", dbTask.Worker.UUID).
 			Msg("worker trying to update task that's assigned to another worker")
-		return sendAPIError(e, http.StatusConflict, fmt.Sprintf("task %+v is not assigned to you, but to worker %v", taskID, dbTask.Worker.UUID))
+		return sendAPIError(e, http.StatusConflict, "task %+v is not assigned to you", taskID)
 	}
 
 	// TODO: check whether this task may undergo the requested status change.
