@@ -31,11 +31,15 @@ import (
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
+// Generate mock implementation of this interface.
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/command_listener.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker CommandListener
+
+// CommandListener sends the result of commands (log, output files) to the Manager.
 type CommandListener interface {
 	// LogProduced sends any logging to whatever service for storing logging.
-	LogProduced(taskID TaskID, logLines ...string) error
+	LogProduced(ctx context.Context, taskID string, logLines ...string) error
 	// OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
-	OutputProduced(taskID TaskID, outputLocation string) error
+	OutputProduced(ctx context.Context, taskID string, outputLocation string) error
 }
 
 type CommandExecutor struct {
@@ -48,7 +52,7 @@ type CommandExecutor struct {
 
 var _ CommandRunner = (*CommandExecutor)(nil)
 
-type commandCallable func(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error
+type commandCallable func(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error
 
 // TimeService is a service that operates on time.
 type TimeService interface {
@@ -72,7 +76,7 @@ func NewCommandExecutor(listener CommandListener, timeService TimeService) *Comm
 	return ce
 }
 
-func (ce *CommandExecutor) Run(ctx context.Context, taskID TaskID, cmd api.Command) error {
+func (ce *CommandExecutor) Run(ctx context.Context, taskID string, cmd api.Command) error {
 	logger := log.With().Str("task", string(taskID)).Str("command", cmd.Name).Logger()
 	logger.Info().Interface("settings", cmd.Settings).Msg("running command")
 
@@ -85,7 +89,7 @@ func (ce *CommandExecutor) Run(ctx context.Context, taskID TaskID, cmd api.Comma
 }
 
 // cmdEcho executes the "echo" command.
-func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error {
+func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 	message, ok := cmd.Settings["message"]
 	if !ok {
 		return fmt.Errorf("missing 'message' setting")
@@ -93,14 +97,14 @@ func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, t
 	messageStr := fmt.Sprintf("%v", message)
 
 	logger.Info().Str("message", messageStr).Msg("echo")
-	if err := ce.listener.LogProduced(taskID, fmt.Sprintf("echo: %q", messageStr)); err != nil {
+	if err := ce.listener.LogProduced(ctx, taskID, fmt.Sprintf("echo: %q", messageStr)); err != nil {
 		return err
 	}
 	return nil
 }
 
 // cmdSleep executes the "sleep" command.
-func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, taskID TaskID, cmd api.Command) error {
+func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 
 	sleepTime, ok := cmd.Settings["duration_in_seconds"]
 	if !ok {
@@ -127,7 +131,7 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 		log.Debug().Msg("sleeping done")
 	}
 
-	if err := ce.listener.LogProduced(taskID, fmt.Sprintf("slept %v", duration)); err != nil {
+	if err := ce.listener.LogProduced(ctx, taskID, fmt.Sprintf("slept %v", duration)); err != nil {
 		return err
 	}
 

@@ -25,77 +25,50 @@ import (
 	"testing"
 	"time"
 
-	"github.com/benbjohnson/clock"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/blender/flamenco-ng-poc/internal/worker/mocks"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
-type mockCommandListener struct {
-	log    []loggedLines
-	output []producedOutput
-}
-type loggedLines struct {
-	taskID   TaskID
-	logLines []string
-}
-type producedOutput struct {
-	taskID         TaskID
-	outputLocation string
-}
-
-// LogProduced sends any logging to whatever service for storing logging.
-func (ml *mockCommandListener) LogProduced(taskID TaskID, logLines ...string) error {
-	ml.log = append(ml.log, loggedLines{taskID, logLines})
-	return nil
-}
-
-// OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
-func (ml *mockCommandListener) OutputProduced(taskID TaskID, outputLocation string) error {
-	ml.output = append(ml.output, producedOutput{taskID, outputLocation})
-	return nil
-}
-
-func mockedClock(t *testing.T) *clock.Mock {
-	c := clock.NewMock()
-	now, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05+07:00")
-	assert.NoError(t, err)
-	c.Set(now)
-	return c
-}
-
 func TestCommandEcho(t *testing.T) {
-	l := mockCommandListener{}
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	listener := mocks.NewMockCommandListener(mockCtrl)
 	clock := mockedClock(t)
-	ce := NewCommandExecutor(&l, clock)
+	ce := NewCommandExecutor(listener, clock)
 
 	ctx := context.Background()
 	message := "понављај за мном"
-	taskID := TaskID("90e9d656-e201-4ef0-b6b0-c80684fafa27")
+	taskID := "90e9d656-e201-4ef0-b6b0-c80684fafa27"
 	cmd := api.Command{
 		Name:     "echo",
 		Settings: map[string]interface{}{"message": message},
 	}
 
+	listener.EXPECT().LogProduced(gomock.Any(), taskID, "echo: \"понављај за мном\"")
+
 	err := ce.Run(ctx, taskID, cmd)
 	assert.NoError(t, err)
-
-	assert.Len(t, l.log, 1)
-	assert.Equal(t, taskID, l.log[0].taskID)
-	assert.Equal(t, "echo: \"понављај за мном\"", l.log[0].logLines[0])
-	assert.Len(t, l.output, 0)
 }
 
 func TestCommandSleep(t *testing.T) {
-	l := mockCommandListener{}
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	listener := mocks.NewMockCommandListener(mockCtrl)
 	clock := mockedClock(t)
-	ce := NewCommandExecutor(&l, clock)
+	ce := NewCommandExecutor(listener, clock)
 
 	ctx := context.Background()
-	taskID := TaskID("90e9d656-e201-4ef0-b6b0-c80684fafa27")
+	taskID := "90e9d656-e201-4ef0-b6b0-c80684fafa27"
 	cmd := api.Command{
 		Name:     "sleep",
 		Settings: map[string]interface{}{"duration_in_seconds": 47},
 	}
+
+	listener.EXPECT().LogProduced(gomock.Any(), taskID, "slept 47s")
 
 	timeBefore := clock.Now()
 
@@ -124,9 +97,4 @@ loop:
 	timeAfter := clock.Now()
 	// Within the step size is precise enough. We're testing our implementation, not the precision of `time.After()`.
 	assert.WithinDuration(t, timeBefore.Add(47*time.Second), timeAfter, timeStepSize)
-
-	assert.Len(t, l.log, 1)
-	assert.Equal(t, taskID, l.log[0].taskID)
-	assert.Equal(t, "slept 47s", l.log[0].logLines[0])
-	assert.Len(t, l.output, 0)
 }

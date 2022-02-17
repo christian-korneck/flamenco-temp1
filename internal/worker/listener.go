@@ -2,6 +2,9 @@ package worker
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -31,6 +34,10 @@ import (
 
 var _ CommandListener = (*Listener)(nil)
 var _ TaskExecutionListener = (*Listener)(nil)
+
+var (
+	ErrTaskReassigned = errors.New("task was reassigned to other worker")
+)
 
 // Listener listens to the result of task and command execution, and sends it to the Manager.
 type Listener struct {
@@ -71,26 +78,45 @@ func (l *Listener) Wait() {
 }
 
 // TaskStarted tells the Manager that task execution has started.
-func (l *Listener) TaskStarted(taskID TaskID) error {
-	return nil
+func (l *Listener) TaskStarted(ctx context.Context, taskID string) error {
+	activity := "Started"
+	status := api.TaskStatusActive
+	update := api.TaskUpdateJSONRequestBody{
+		Activity:   &activity,
+		TaskStatus: &status,
+	}
+
+	resp, err := l.client.TaskUpdateWithResponse(ctx, string(taskID), update)
+	if err != nil {
+		return fmt.Errorf("error notifying Manager of task start: %w", err)
+	}
+
+	switch resp.StatusCode() {
+	case http.StatusNoContent:
+		return nil
+	case http.StatusConflict:
+		return ErrTaskReassigned
+	default:
+		return fmt.Errorf("unknown error from Manager: %v", resp.JSONDefault)
+	}
 }
 
 // TaskFailed tells the Manager the task failed for some reason.
-func (l *Listener) TaskFailed(taskID TaskID, reason string) error {
+func (l *Listener) TaskFailed(ctx context.Context, taskID string, reason string) error {
 	return nil
 }
 
 // TaskCompleted tells the Manager the task has been completed.
-func (l *Listener) TaskCompleted(taskID TaskID) error {
+func (l *Listener) TaskCompleted(ctx context.Context, taskID string) error {
 	return nil
 }
 
 // LogProduced sends any logging to whatever service for storing logging.
-func (l *Listener) LogProduced(taskID TaskID, logLines ...string) error {
+func (l *Listener) LogProduced(ctx context.Context, taskID string, logLines ...string) error {
 	return nil
 }
 
 // OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
-func (l *Listener) OutputProduced(taskID TaskID, outputLocation string) error {
+func (l *Listener) OutputProduced(ctx context.Context, taskID string, outputLocation string) error {
 	return nil
 }

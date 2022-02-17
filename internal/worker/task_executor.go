@@ -29,22 +29,23 @@ import (
 )
 
 type CommandRunner interface {
-	Run(ctx context.Context, taskID TaskID, cmd api.Command) error
+	Run(ctx context.Context, taskID string, cmd api.Command) error
 }
 
+// Generate mock implementation of this interface.
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/task_exe_listener.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker TaskExecutionListener
+
+// TaskExecutionListener sends task lifecycle events (start/fail/complete) to the Manager.
 type TaskExecutionListener interface {
 	// TaskStarted tells the Manager that task execution has started.
-	TaskStarted(taskID TaskID) error
+	TaskStarted(ctx context.Context, taskID string) error
 
 	// TaskFailed tells the Manager the task failed for some reason.
-	TaskFailed(taskID TaskID, reason string) error
+	TaskFailed(ctx context.Context, taskID string, reason string) error
 
 	// TaskCompleted tells the Manager the task has been completed.
-	TaskCompleted(taskID TaskID) error
+	TaskCompleted(ctx context.Context, taskID string) error
 }
-
-// TODO: move me to a more appropriate place.
-type TaskID string
 
 type TaskExecutor struct {
 	cmdRunner CommandRunner
@@ -64,9 +65,7 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 	logger := log.With().Str("task", task.Uuid).Logger()
 	logger.Info().Str("taskType", task.TaskType).Msg("starting task")
 
-	taskID := TaskID(task.Uuid)
-
-	if err := te.listener.TaskStarted(taskID); err != nil {
+	if err := te.listener.TaskStarted(ctx, task.Uuid); err != nil {
 		return fmt.Errorf("error sending notification to manager: %w", err)
 	}
 
@@ -80,17 +79,17 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 		default:
 		}
 
-		err := te.cmdRunner.Run(ctx, taskID, cmd)
+		err := te.cmdRunner.Run(ctx, task.Uuid, cmd)
 
 		if err != nil {
-			if err := te.listener.TaskFailed(taskID, err.Error()); err != nil {
+			if err := te.listener.TaskFailed(ctx, task.Uuid, err.Error()); err != nil {
 				return fmt.Errorf("error sending notification to manager: %w", err)
 			}
 			return err
 		}
 	}
 
-	if err := te.listener.TaskCompleted(taskID); err != nil {
+	if err := te.listener.TaskCompleted(ctx, task.Uuid); err != nil {
 		return fmt.Errorf("error sending notification to manager: %w", err)
 	}
 
