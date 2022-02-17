@@ -22,14 +22,11 @@ package main
 
 import (
 	"context"
-	"errors"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/benbjohnson/clock"
-	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
-	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mattn/go-colorable"
@@ -95,21 +92,7 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to get swagger")
 	}
-	validator := oapi_middle.OapiRequestValidatorWithOptions(swagger,
-		&oapi_middle.Options{
-			Options: openapi3filter.Options{
-				AuthenticationFunc: func(ctx context.Context, authInfo *openapi3filter.AuthenticationInput) error {
-					return authenticator(ctx, authInfo, persist)
-				},
-			},
-
-			// Skip OAPI validation when the request is not for the OAPI interface.
-			Skipper: func(e echo.Context) bool {
-				path := e.Path()
-				skip := swagger.Paths.Find(path) == nil
-				return skip
-			},
-		})
+	validator := api_impl.SwaggerValidator(swagger, persist)
 	e.Use(validator)
 
 	// Register routes.
@@ -127,14 +110,4 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 	}
 
 	return e
-}
-
-func authenticator(ctx context.Context, authInfo *openapi3filter.AuthenticationInput, persist api_impl.PersistenceService) error {
-	switch authInfo.SecuritySchemeName {
-	case "worker_auth":
-		return api_impl.WorkerAuth(ctx, authInfo, persist)
-	default:
-		log.Warn().Str("scheme", authInfo.SecuritySchemeName).Msg("unknown security scheme")
-		return errors.New("unknown security scheme")
-	}
 }
