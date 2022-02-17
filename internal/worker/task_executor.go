@@ -66,7 +66,7 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 	logger.Info().Str("taskType", task.TaskType).Msg("starting task")
 
 	if err := te.listener.TaskStarted(ctx, task.Uuid); err != nil {
-		return fmt.Errorf("error sending notification to manager: %w", err)
+		return fmt.Errorf("error sending 'task started' notification to manager: %w", err)
 	}
 
 	for _, cmd := range task.Commands {
@@ -83,14 +83,14 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 
 		if err != nil {
 			if err := te.listener.TaskFailed(ctx, task.Uuid, err.Error()); err != nil {
-				return fmt.Errorf("error sending notification to manager: %w", err)
+				return fmt.Errorf("error sending 'task failed' notification to manager: %w", err)
 			}
 			return err
 		}
 	}
 
 	if err := te.listener.TaskCompleted(ctx, task.Uuid); err != nil {
-		return fmt.Errorf("error sending notification to manager: %w", err)
+		return fmt.Errorf("error sending 'task completed' notification to manager: %w", err)
 	}
 
 	return nil
