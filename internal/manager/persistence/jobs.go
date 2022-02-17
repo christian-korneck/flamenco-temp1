@@ -67,6 +67,7 @@ type Task struct {
 	Dependencies []*Task `gorm:"many2many:task_dependencies;constraint:OnDelete:CASCADE"`
 
 	Commands Commands `gorm:"type:jsonb"`
+	Activity string   `gorm:"type:varchar(255);not null;default:\"\""`
 }
 
 type Commands []Command

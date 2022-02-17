@@ -154,15 +154,13 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 		logger.Warn().Err(err).Msg("bad request received")
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
-	if dbTask.Worker == nil {
+	if dbTask.WorkerID == nil {
 		logger.Warn().
 			Msg("worker trying to update task that's not assigned to any worker")
 		return sendAPIError(e, http.StatusConflict, "task %+v is not assigned to any worker, so also not to you", taskID)
 	}
-	if dbTask.Worker.UUID != worker.UUID {
-		logger.Warn().
-			Str("assignedWorkerID", dbTask.Worker.UUID).
-			Msg("worker trying to update task that's assigned to another worker")
+	if *dbTask.WorkerID != worker.ID {
+		logger.Warn().Msg("worker trying to update task that's assigned to another worker")
 		return sendAPIError(e, http.StatusConflict, "task %+v is not assigned to you", taskID)
 	}
 
@@ -194,7 +192,7 @@ func (f *Flamenco) doTaskUpdate(
 	}
 
 	if update.Activity != nil {
-		dbTask.Worker.LastActivity = *update.Activity
+		dbTask.Activity = *update.Activity
 	}
 
 	if update.Log != nil {

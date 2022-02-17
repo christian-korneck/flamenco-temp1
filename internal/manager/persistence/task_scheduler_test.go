@@ -50,12 +50,18 @@ func TestOneJobOneTask(t *testing.T) {
 
 	task, err := db.ScheduleTask(&w)
 	assert.NoError(t, err)
+
+	// Check the returned task.
 	if task == nil {
 		t.Fatal("task is nil")
 	}
 	assert.Equal(t, job.ID, task.JobID)
+	if task.WorkerID == nil {
+		t.Fatal("no worker assigned to task")
+	}
+	assert.Equal(t, w.ID, *task.WorkerID, "task must be assigned to the requesting worker")
 
-	// Test that the task has been assigned to this worker.
+	// Check the task in the database.
 	dbTask, err := db.FetchTask(context.Background(), authTask.UUID)
 	assert.NoError(t, err)
 	if dbTask == nil {
@@ -64,7 +70,7 @@ func TestOneJobOneTask(t *testing.T) {
 	if dbTask.WorkerID == nil {
 		t.Fatal("no worker assigned to task")
 	}
-	assert.Equal(t, w.ID, *dbTask.WorkerID)
+	assert.Equal(t, w.ID, *dbTask.WorkerID, "task must be assigned to the requesting worker")
 }
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {
