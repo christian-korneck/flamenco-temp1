@@ -61,11 +61,16 @@ func NewTaskExecutor(cmdRunner CommandRunner, listener TaskExecutionListener) *T
 	}
 }
 
+// Run runs a task.
+// Returns ErrTaskReassigned when the task was reassigned to another worker.
 func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 	logger := log.With().Str("task", task.Uuid).Logger()
 	logger.Info().Str("taskType", task.TaskType).Msg("starting task")
 
 	if err := te.listener.TaskStarted(ctx, task.Uuid); err != nil {
+		if err == ErrTaskReassigned {
+			return ErrTaskReassigned
+		}
 		return fmt.Errorf("error sending 'task started' notification to manager: %w", err)
 	}
 
@@ -79,17 +84,26 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 		default:
 		}
 
-		err := te.cmdRunner.Run(ctx, task.Uuid, cmd)
-
-		if err != nil {
-			if err := te.listener.TaskFailed(ctx, task.Uuid, err.Error()); err != nil {
-				return fmt.Errorf("error sending 'task failed' notification to manager: %w", err)
-			}
-			return err
+		runErr := te.cmdRunner.Run(ctx, task.Uuid, cmd)
+		if runErr == nil {
+			// All was fine, go run the next command.
+			continue
 		}
+
+		// Notify Manager that this task failed.
+		if err := te.listener.TaskFailed(ctx, task.Uuid, runErr.Error()); err != nil {
+			if err == ErrTaskReassigned {
+				return ErrTaskReassigned
+			}
+			return fmt.Errorf("error sending 'task failed' notification to manager: %w", err)
+		}
+		return runErr
 	}
 
 	if err := te.listener.TaskCompleted(ctx, task.Uuid); err != nil {
+		if err == ErrTaskReassigned {
+			return ErrTaskReassigned
+		}
 		return fmt.Errorf("error sending 'task completed' notification to manager: %w", err)
 	}
 

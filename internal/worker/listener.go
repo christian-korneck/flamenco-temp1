@@ -36,7 +36,7 @@ var _ CommandListener = (*Listener)(nil)
 var _ TaskExecutionListener = (*Listener)(nil)
 
 var (
-	ErrTaskReassigned = errors.New("task was reassigned to other worker")
+	ErrTaskReassigned = errors.New("task was not assigned to this worker")
 )
 
 // Listener listens to the result of task and command execution, and sends it to the Manager.
@@ -97,7 +97,7 @@ func (l *Listener) TaskStarted(ctx context.Context, taskID string) error {
 	case http.StatusConflict:
 		return ErrTaskReassigned
 	default:
-		return fmt.Errorf("unknown error from Manager: %v", resp.JSONDefault)
+		return fmt.Errorf("unknown error from Manager, code %d: %v", resp.StatusCode(), resp.JSONDefault)
 	}
 }
 
