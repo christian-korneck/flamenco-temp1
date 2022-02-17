@@ -68,8 +68,9 @@ func NewCommandExecutor(listener CommandListener, timeService TimeService) *Comm
 	// switch statement) makes it possible to do things like reporting the list of
 	// supported commands.
 	ce.registry = map[string]commandCallable{
-		"echo":  ce.cmdEcho,
-		"sleep": ce.cmdSleep,
+		"echo":           ce.cmdEcho,
+		"sleep":          ce.cmdSleep,
+		"blender-render": ce.cmdBlenderRender,
 	}
 
 	return ce

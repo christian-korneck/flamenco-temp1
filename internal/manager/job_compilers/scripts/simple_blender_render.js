@@ -93,6 +93,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         const task = author.Task(`render-${chunk}`, "blender");
         const command = author.Command("blender-render", {
             exe: settings.blender_cmd,
+            argsBefore: [],
             blendfile: settings.filepath,
             args: [
                 "--render-output", path.join(renderDir, path.basename(renderOutput)),

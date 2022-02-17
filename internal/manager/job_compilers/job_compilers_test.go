@@ -114,9 +114,10 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	assert.Equal(t, 1, len(t0.Commands))
 	assert.Equal(t, "blender-render", t0.Commands[0].Type)
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"exe":       "{blender}",
-		"blendfile": settings["filepath"].(string),
-		"args":      expectCliArgs,
+		"exe":        "{blender}",
+		"blendfile":  settings["filepath"].(string),
+		"args":       expectCliArgs,
+		"argsBefore": make([]interface{}, 0),
 	}, t0.Commands[0].Parameters)
 
 	tVideo := aj.Tasks[4] // This should be a video encoding task
