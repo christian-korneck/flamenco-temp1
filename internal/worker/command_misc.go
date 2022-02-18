@@ -60,9 +60,11 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 	switch v := sleepTime.(type) {
 	case int:
 		duration = time.Duration(v) * time.Second
+	case float64:
+		duration = time.Duration(v) * time.Second
 	default:
 		log.Warn().Interface("duration_in_seconds", v).Msg("bad type for setting 'duration_in_seconds', expected int")
-		return fmt.Errorf("bad type for setting 'duration_in_seconds', expected int, not %v", v)
+		return fmt.Errorf("bad type for setting 'duration_in_seconds', expected int, not %T", v)
 	}
 
 	log.Info().Str("duration", duration.String()).Msg("sleep")
