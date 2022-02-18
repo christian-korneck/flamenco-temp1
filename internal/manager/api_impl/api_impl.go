@@ -26,6 +26,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
@@ -34,10 +35,11 @@ import (
 type Flamenco struct {
 	jobCompiler JobCompiler
 	persist     PersistenceService
+	logStorage  LogStorage
 }
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -60,13 +62,20 @@ type JobCompiler interface {
 	Compile(ctx context.Context, job api.SubmittedJob) (*job_compilers.AuthoredJob, error)
 }
 
+// LogStorage handles incoming task logs.
+type LogStorage interface {
+	Write(logger zerolog.Logger, jobID, taskID string, logText string) error
+	RotateFile(logger zerolog.Logger, jobID, taskID string)
+}
+
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // NewFlamenco creates a new Flamenco service, using the given JobCompiler.
-func NewFlamenco(jc JobCompiler, jps PersistenceService) *Flamenco {
+func NewFlamenco(jc JobCompiler, jps PersistenceService, ls LogStorage) *Flamenco {
 	return &Flamenco{
 		jobCompiler: jc,
 		persist:     jps,
+		logStorage:  ls,
 	}
 }
 

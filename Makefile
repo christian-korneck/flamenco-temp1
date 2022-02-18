@@ -25,8 +25,8 @@ all: application
 
 # Install generators and build the software.
 with-deps:
-	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen
-	go install github.com/golang/mock/mockgen@v1.6.0
+	go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.0
+	go get github.com/golang/mock/mockgen@v1.6.0
 	make -s application
 
 application: ${RESOURCES} generate flamenco-manager-poc flamenco-worker-poc socketio-poc
