@@ -1,20 +1,5 @@
 package api_impl
 
-import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"net/http"
-	"net/http/httptest"
-
-	"github.com/golang/mock/gomock"
-	"github.com/labstack/echo/v4"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl/mocks"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
-	"gorm.io/gorm"
-)
-
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
  * Original Code Copyright (C) 2022 Blender Foundation.
@@ -34,6 +19,21 @@ import (
  * Flamenco.  If not, see <https://www.gnu.org/licenses/>.
  *
  * ***** END GPL LICENSE BLOCK ***** */
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+
+	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl/mocks"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+	"gorm.io/gorm"
+)
 
 type mockedFlamenco struct {
 	flamenco    *Flamenco
