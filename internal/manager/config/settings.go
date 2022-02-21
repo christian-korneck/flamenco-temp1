@@ -32,8 +32,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
-
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 const (
@@ -59,94 +57,6 @@ var (
 		VariableAudienceAll:     true,
 		VariableAudienceWorkers: true,
 		VariableAudienceUsers:   true,
-	}
-
-	// The default configuration, use DefaultConfig() to obtain a copy.
-	defaultConfig = Conf{
-		Base: Base{
-			Meta: ConfMeta{Version: latestConfigVersion},
-
-			ManagerName:  "Flamenco Manager",
-			Listen:       ":8080",
-			ListenHTTPS:  ":8433",
-			DatabaseDSN:  "host=localhost user=flamenco password=flamenco dbname=flamenco TimeZone=Europe/Amsterdam",
-			TaskLogsPath: "./task-logs",
-			// DownloadTaskSleep:           10 * time.Minute,
-			// DownloadTaskRecheckThrottle: 10 * time.Second,
-			// TaskUpdatePushMaxInterval:   5 * time.Second,
-			// TaskUpdatePushMaxCount:      3000,
-			// CancelTaskFetchInterval:     10 * time.Second,
-			ActiveTaskTimeoutInterval:   10 * time.Minute,
-			ActiveWorkerTimeoutInterval: 1 * time.Minute,
-			// FlamencoStr:                 defaultServerURL,
-
-			// // Days are assumed to be 24 hours long. This is not exactly accurate, but should
-			// // be accurate enough for this type of cleanup.
-			// TaskCleanupMaxAge: 14 * 24 * time.Hour,
-			SSDPDiscovery:  false,                                  // Only enable after SSDP discovery has been improved (avoid finding printers).
-			SSDPDeviceUUID: "64ad4c21-6042-4378-9cdf-478f88b4f990", // UUID specific for Flamenco v3.
-
-			BlacklistThreshold:         3,
-			TaskFailAfterSoftFailCount: 3,
-
-			WorkerCleanupStatus: []string{string(api.WorkerStatusOffline)},
-
-			TestTasks: TestTasks{
-				BlenderRender: BlenderRenderConfig{
-					JobStorage:   "{job_storage}/test-jobs",
-					RenderOutput: "{render}/test-renders",
-				},
-			},
-
-			Shaman: ShamanConfig{
-				Enabled:       true,
-				FileStorePath: defaultShamanFilestorePath,
-				GarbageCollect: ShamanGarbageCollect{
-					Period:            24 * time.Hour,
-					MaxAge:            31 * 24 * time.Hour,
-					ExtraCheckoutDirs: []string{},
-				},
-			},
-
-			// JWT: jwtauth.Config{
-			// 	DownloadKeysInterval: 1 * time.Hour,
-			// },
-		},
-
-		Variables: map[string]Variable{
-			"blender": {
-				Direction: "oneway",
-				Values: VariableValues{
-					VariableValue{Platform: "linux", Value: "/linux/path/to/blender --factory-startup --background"},
-					VariableValue{Platform: "windows", Value: "C:/windows/path/to/blender.exe --factory-startup --background"},
-					VariableValue{Platform: "darwin", Value: "/Volumes/Applications/Blender/blender --factory-startup --background"},
-				},
-			},
-			"ffmpeg": {
-				Direction: "oneway",
-				Values: VariableValues{
-					VariableValue{Platform: "linux", Value: "/usr/bin/ffmpeg"},
-					VariableValue{Platform: "windows", Value: "C:/windows/path/to/ffmpeg.exe"},
-					VariableValue{Platform: "darwin", Value: "/Volumes/Applications/FFmpeg/ffmpeg"},
-				},
-			},
-			"job_storage": {
-				Direction: "twoway",
-				Values: VariableValues{
-					VariableValue{Platform: "linux", Value: "/shared/flamenco/jobs"},
-					VariableValue{Platform: "windows", Value: "S:/flamenco/jobs"},
-					VariableValue{Platform: "darwin", Value: "/Volumes/Shared/flamenco/jobs"},
-				},
-			},
-			"render": {
-				Direction: "twoway",
-				Values: VariableValues{
-					VariableValue{Platform: "linux", Value: "/shared/flamenco/render"},
-					VariableValue{Platform: "windows", Value: "S:/flamenco/render"},
-					VariableValue{Platform: "darwin", Value: "/Volumes/Shared/flamenco/render"},
-				},
-			},
-		},
 	}
 )
 
