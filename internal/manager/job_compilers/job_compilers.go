@@ -202,13 +202,13 @@ func (s *Service) ListJobTypes() api.AvailableJobTypes {
 			continue
 		}
 
-		description, err := compiler.getJobTypeInfo()
+		jobType, err := compiler.getJobTypeInfo()
 		if err != nil {
 			log.Warn().Err(err).Str("jobType", typeName).Msg("unable to determine job type settings")
 			continue
 		}
 
-		jobTypes = append(jobTypes, *description)
+		jobTypes = append(jobTypes, jobType)
 	}
 	return api.AvailableJobTypes{JobTypes: jobTypes}
 }
@@ -231,7 +231,7 @@ func (vm *VM) getCompileJob() (jobCompileFunc, error) {
 	}, nil
 }
 
-func (vm *VM) getJobTypeInfo() (*api.AvailableJobType, error) {
+func (vm *VM) getJobTypeInfo() (api.AvailableJobType, error) {
 	jtValue := vm.runtime.Get("JOB_TYPE")
 
 	var ajt api.AvailableJobType
@@ -242,9 +242,9 @@ func (vm *VM) getJobTypeInfo() (*api.AvailableJobType, error) {
 			Str("jobType", vm.compiler.jobType).
 			Str("script", vm.compiler.filename).
 			Msg("script does not define a proper JOB_TYPE object")
-		return nil, ErrScriptIncomplete
+		return api.AvailableJobType{}, ErrScriptIncomplete
 	}
 
 	ajt.Name = vm.compiler.jobType
-	return &ajt, nil
+	return ajt, nil
 }
