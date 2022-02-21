@@ -6,7 +6,8 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "metadata": {
-    "user.name": "Sybren Stüvel"
+    "project": "Debugging Flamenco",
+    "user.name": "コードモンキー"
   },
   "name": "Talk & Sleep",
   "priority": 50,
