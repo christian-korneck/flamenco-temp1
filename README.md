@@ -35,7 +35,25 @@ Install PostgreSQL, then run:
 
 ```
 sudo -u postgres createuser -D -P flamenco  # give it the password 'flamenco'
-sudo -u postgres createdb flamenco -O flamenco -E utf8
-sudo -u postgres createdb flamenco-test -O flamenco -E utf8
+sudo -u postgres createdb -O flamenco -E utf8 flamenco
+sudo -u postgres createdb -O flamenco -E utf8 flamenco-test
 echo "alter schema public owner to flamenco;" | sudo -u postgres psql flamenco-test
 ```
+
+### Windows
+
+On Windows, add `C:\Program Files\PostgreSQL\14\bin` to your `PATH` environment variable.
+Replace `14` with the version of PostgreSQL you're using. Then run:
+
+
+```
+createuser -U postgres -D -P flamenco  # give it the password 'flamenco'
+createdb -U postgres -O flamenco -E utf8 flamenco
+createdb -U postgres -O flamenco -E utf8 flamenco-test
+psql -c "alter schema public owner to flamenco" flamenco-test postgres
+```
+
+When it asks "Enter password for new role:", give the password "flamenco"
+When it asks "Password:", give the password for the postgres admin user (you chose this during installation of PostgreSQL).
+
+If you're like me, and you use Git Bash, prefix the commands with `winpty`.
