@@ -1,18 +1,5 @@
 package worker
 
-import (
-	"context"
-	"errors"
-	"fmt"
-	"net/http"
-	"strings"
-	"sync"
-	"time"
-
-	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
-)
-
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
  * Original Code Copyright (C) 2022 Blender Foundation.
@@ -32,6 +19,19 @@ import (
  * Flamenco.  If not, see <https://www.gnu.org/licenses/>.
  *
  * ***** END GPL LICENSE BLOCK ***** */
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/rs/zerolog/log"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+)
 
 var _ CommandListener = (*Listener)(nil)
 var _ TaskExecutionListener = (*Listener)(nil)
