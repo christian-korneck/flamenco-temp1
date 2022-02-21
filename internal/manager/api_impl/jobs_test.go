@@ -48,10 +48,13 @@ func TestTaskUpdate(t *testing.T) {
 
 	// Construct the task that's supposed to be updated.
 	taskID := "181eab68-1123-4790-93b1-94309a899411"
+	jobID := "e4719398-7cfa-4877-9bab-97c2d6c158b5"
+	mockJob := persistence.Job{UUID: jobID}
 	mockTask := persistence.Task{
 		UUID:     taskID,
 		Worker:   &worker,
 		WorkerID: &worker.ID,
+		Job:      &mockJob,
 	}
 
 	// Expect the task to be fetched.
@@ -64,6 +67,8 @@ func TestTaskUpdate(t *testing.T) {
 			savedTask = *task
 			return nil
 		})
+	// Expect the log to be written.
+	mf.logStorage.EXPECT().Write(gomock.Any(), jobID, taskID, "line1\nline2\n")
 
 	// Do the call.
 	echoCtx := mf.prepareMockedJSONRequest(&worker, taskUpdate)
