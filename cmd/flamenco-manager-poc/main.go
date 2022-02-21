@@ -22,6 +22,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"net"
 	"net/http"
 	"time"
@@ -43,10 +44,28 @@ import (
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
+var cliArgs struct {
+	version bool
+	initDB  bool
+}
+
 func main() {
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
 	log.Logger = log.Output(output)
 	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v", appinfo.ApplicationName)
+
+	parseCliArgs()
+	if cliArgs.version {
+		return
+	}
+	if cliArgs.initDB {
+		log.Info().Msg("creating databases")
+		err := persistence.InitialSetup()
+		if err != nil {
+			log.Fatal().Err(err).Msg("problem performing initial setup")
+		}
+		return
+	}
 
 	// Open the database.
 	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -112,4 +131,28 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 	}
 
 	return e
+}
+
+func parseCliArgs() {
+	var quiet, debug, trace bool
+
+	flag.BoolVar(&cliArgs.version, "version", false, "Shows the application version, then exits.")
+	flag.BoolVar(&cliArgs.initDB, "initdb", false, "Create the database; requires admin access to PostgreSQL.")
+	flag.BoolVar(&quiet, "quiet", false, "Only log warning-level and worse.")
+	flag.BoolVar(&debug, "debug", false, "Enable debug-level logging.")
+	flag.BoolVar(&trace, "trace", false, "Enable trace-level logging.")
+	flag.Parse()
+
+	var logLevel zerolog.Level
+	switch {
+	case trace:
+		logLevel = zerolog.TraceLevel
+	case debug:
+		logLevel = zerolog.DebugLevel
+	case quiet:
+		logLevel = zerolog.WarnLevel
+	default:
+		logLevel = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(logLevel)
 }
