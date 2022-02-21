@@ -70,7 +70,7 @@ type LogStorage interface {
 }
 
 type ConfigService interface {
-	ExpandVariables(valueToExpand, audience, platform string) string
+	VariableReplacer
 }
 
 var _ api.ServerInterface = (*Flamenco)(nil)

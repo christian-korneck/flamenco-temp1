@@ -20,28 +20,11 @@ package config
  *
  * ***** END GPL LICENSE BLOCK ***** */
 
-// Service provides access to Flamenco Manager configuration.
-type Service struct {
-	config Conf
-}
+const (
+	// The "audience" of task variables.
+	VariableAudienceAll     VariableAudience = "all"
+	VariableAudienceWorkers VariableAudience = "workers"
+	VariableAudienceUsers   VariableAudience = "users"
+)
 
-func NewService() *Service {
-	return &Service{}
-}
-
-func (s *Service) Load() error {
-	config, err := getConf()
-	if err != nil {
-		return err
-	}
-	s.config = config
-	return nil
-}
-
-func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform string) string {
-	return s.config.ExpandVariables(valueToExpand, audience, platform)
-}
-
-func (s *Service) Get() *Conf {
-	return &s.config
-}
+type VariableAudience string

@@ -23,13 +23,14 @@ package api_impl
 import (
 	"reflect"
 
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 )
 
 var stringType = reflect.TypeOf("somestring")
 
 type VariableReplacer interface {
-	ExpandVariables(valueToExpand, audience, platform string) string
+	ExpandVariables(valueToExpand string, audience config.VariableAudience, platform string) string
 }
 
 // replaceTaskVariables performs variable replacement for worker tasks.

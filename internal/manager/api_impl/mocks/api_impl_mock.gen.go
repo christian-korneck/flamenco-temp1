@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	zerolog "github.com/rs/zerolog"
+	config "gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
 	job_compilers "gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	persistence "gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	api "gitlab.com/blender/flamenco-ng-poc/pkg/api"
@@ -293,7 +294,7 @@ func (m *MockConfigService) EXPECT() *MockConfigServiceMockRecorder {
 }
 
 // ExpandVariables mocks base method.
-func (m *MockConfigService) ExpandVariables(arg0, arg1, arg2 string) string {
+func (m *MockConfigService) ExpandVariables(arg0 string, arg1 config.VariableAudience, arg2 string) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExpandVariables", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)

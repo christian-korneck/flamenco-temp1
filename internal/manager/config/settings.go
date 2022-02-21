@@ -54,17 +54,11 @@ var (
 	// ErrBadDirection is returned when a direction doesn't match "oneway" or "twoway"
 	ErrBadDirection = errors.New("variable's direction is invalid")
 
-	// Valid values for the "mode" config variable.
-	validModes = map[string]bool{
-		"develop":    true,
-		"production": true,
-	}
-
 	// Valid values for the "audience" tag of a ConfV2 variable.
-	validAudiences = map[string]bool{
-		"all":     true,
-		"workers": true,
-		"users":   true,
+	validAudiences = map[VariableAudience]bool{
+		VariableAudienceAll:     true,
+		VariableAudienceWorkers: true,
+		VariableAudienceUsers:   true,
 	}
 
 	// The default configuration, use DefaultConfig() to obtain a copy.
@@ -72,7 +66,6 @@ var (
 		Base: Base{
 			Meta: ConfMeta{Version: latestConfigVersion},
 
-			Mode:         "production",
 			ManagerName:  "Flamenco Manager",
 			Listen:       ":8080",
 			ListenHTTPS:  ":8433",
@@ -178,7 +171,6 @@ type ConfMeta struct {
 type Base struct {
 	Meta ConfMeta `yaml:"_meta"`
 
-	Mode         string `yaml:"mode"` // either "develop" or "production"
 	ManagerName  string `yaml:"manager_name"`
 	DatabaseDSN  string `yaml:"database_url"`
 	TaskLogsPath string `yaml:"task_logs_path"`
@@ -254,7 +246,7 @@ type Conf struct {
 	// audience + platform + variable name → variable value.
 	// Used to look up variables for a given platform and audience.
 	// The 'audience' is never "all" or ""; only concrete audiences are stored here.
-	VariablesLookup map[string]map[string]map[string]string `yaml:"-"`
+	VariablesLookup map[VariableAudience]map[string]map[string]string `yaml:"-"`
 }
 
 // Variable defines a configuration variable.
@@ -271,7 +263,7 @@ type VariableValues []VariableValue
 // VariableValue defines which audience and platform see which value.
 type VariableValue struct {
 	// Audience defines who will use this variable, either "all", "workers", or "users". Empty string is "all".
-	Audience string `yaml:"audience,omitempty" json:"audience,omitempty"`
+	Audience VariableAudience `yaml:"audience,omitempty" json:"audience,omitempty"`
 
 	// Platforms that use this value. Only one of "Platform" and "Platforms" may be set.
 	Platform  string   `yaml:"platform,omitempty" json:"platform,omitempty"`
@@ -331,7 +323,6 @@ func loadConf(filename string) (Conf, error) {
 
 	c.constructVariableLookupTable()
 	c.parseURLs()
-	c.checkMode(c.Mode)
 	c.checkDatabase()
 	c.checkVariables()
 	c.checkTLS()
@@ -340,11 +331,11 @@ func loadConf(filename string) (Conf, error) {
 }
 
 func (c *Conf) constructVariableLookupTable() {
-	lookup := map[string]map[string]map[string]string{}
+	lookup := map[VariableAudience]map[string]map[string]string{}
 
 	// Construct a list of all audiences except "" and "all"
-	concreteAudiences := []string{}
-	isWildcard := map[string]bool{"": true, "all": true}
+	concreteAudiences := []VariableAudience{}
+	isWildcard := map[VariableAudience]bool{"": true, VariableAudienceAll: true}
 	for audience := range validAudiences {
 		if isWildcard[audience] {
 			continue
@@ -352,13 +343,13 @@ func (c *Conf) constructVariableLookupTable() {
 		concreteAudiences = append(concreteAudiences, audience)
 	}
 	log.Debug().
-		Strs("concreteAudiences", concreteAudiences).
+		Interface("concreteAudiences", concreteAudiences).
 		Interface("isWildcard", isWildcard).
 		Msg("constructing variable lookup table")
 
 	// setValue expands wildcard audiences into concrete ones.
-	var setValue func(audience, platform, name, value string)
-	setValue = func(audience, platform, name, value string) {
+	var setValue func(audience VariableAudience, platform, name, value string)
+	setValue = func(audience VariableAudience, platform, name, value string) {
 		if isWildcard[audience] {
 			for _, aud := range concreteAudiences {
 				setValue(aud, platform, name, value)
@@ -373,7 +364,7 @@ func (c *Conf) constructVariableLookupTable() {
 			lookup[audience][platform] = map[string]string{}
 		}
 		log.Debug().
-			Str("audience", audience).
+			Str("audience", string(audience)).
 			Str("platform", platform).
 			Str("name", name).
 			Str("value", value).
@@ -396,7 +387,7 @@ func (c *Conf) constructVariableLookupTable() {
 				if strings.Contains(value.Value, "\\") {
 					log.Warn().
 						Str("variable", name).
-						Str("audience", value.Audience).
+						Str("audience", string(value.Audience)).
 						Str("platform", value.Platform).
 						Str("value", value.Value).
 						Msg("Backslash found in variable value. Change paths to use forward slashes instead.")
@@ -420,12 +411,12 @@ func (c *Conf) constructVariableLookupTable() {
 }
 
 // ExpandVariables converts "{variable name}" to the value that belongs to the given audience and platform.
-func (c *Conf) ExpandVariables(valueToExpand, audience, platform string) string {
+func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, platform string) string {
 	audienceMap := c.VariablesLookup[audience]
 	if audienceMap == nil {
 		log.Warn().
 			Str("valueToExpand", valueToExpand).
-			Str("audience", audience).
+			Str("audience", string(audience)).
 			Str("platform", platform).
 			Msg("no variables defined for this audience")
 		return valueToExpand
@@ -435,7 +426,7 @@ func (c *Conf) ExpandVariables(valueToExpand, audience, platform string) string 
 	if platformMap == nil {
 		log.Warn().
 			Str("valueToExpand", valueToExpand).
-			Str("audience", audience).
+			Str("audience", string(audience)).
 			Str("platform", platform).
 			Msg("no variables defined for this platform given this audience")
 		return valueToExpand
@@ -500,7 +491,7 @@ func (c *Conf) checkVariables() error {
 				log.Error().
 					Str("name", name).
 					Interface("value", value).
-					Str("audience", value.Audience).
+					Str("audience", string(value.Audience)).
 					Msg("variable invalid audience")
 			}
 
@@ -571,34 +562,6 @@ func (c *Conf) HasCustomTLS() bool {
 // HasTLS returns true if either a custom certificate or ACME/Let's Encrypt is used.
 func (c *Conf) HasTLS() bool {
 	return c.ACMEDomainName != "" || c.HasCustomTLS()
-}
-
-// OverrideMode checks the mode parameter for validity and logs that it's being overridden.
-func (c *Conf) OverrideMode(mode string) {
-	if mode == c.Mode {
-		log.Warn().Str("mode", mode).Msg("trying to override run mode with current value; ignoring")
-		return
-	}
-	c.checkMode(mode)
-	log.Warn().
-		Str("configured_mode", c.Mode).
-		Str("current_mode", mode).
-		Msg("overriding run mode")
-	c.Mode = mode
-}
-
-func (c *Conf) checkMode(mode string) {
-	// Check mode for validity
-	if !validModes[mode] {
-		keys := make([]string, 0, len(validModes))
-		for k := range validModes {
-			keys = append(keys, k)
-		}
-		log.Error().
-			Strs("valid_values", keys).
-			Str("current_value", mode).
-			Msg("bad value for 'mode' configuration parameter")
-	}
 }
 
 func (c *Conf) checkTLS() {
