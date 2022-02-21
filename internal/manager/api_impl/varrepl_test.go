@@ -26,18 +26,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
-func varreplTestTask() persistence.Task {
-	return persistence.Task{
-		Commands: []persistence.Command{
-			{Name: "echo", Parameters: persistence.StringInterfaceMap{
+func varreplTestTask() api.AssignedTask {
+	return api.AssignedTask{
+		Commands: []api.Command{
+			{Name: "echo", Parameters: map[string]interface{}{
 				"message": "Running Blender from {blender} {blender}"}},
-			{Name: "sleep", Parameters: persistence.StringInterfaceMap{
+			{Name: "sleep", Parameters: map[string]interface{}{
 				"{blender}": 3}},
 			{
 				Name: "blender_render",
-				Parameters: persistence.StringInterfaceMap{
+				Parameters: map[string]interface{}{
 					"filepath":     "{job_storage}/sybren/2017-06-08-181223.625800-sybren-flamenco-test.flamenco/flamenco-test.flamenco.blend",
 					"exe":          "{blender}",
 					"otherpath":    "{hey}/haha",

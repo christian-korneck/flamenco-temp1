@@ -272,5 +272,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		TaskType:    dbTask.Type,
 	}
 
-	return e.JSON(http.StatusOK, apiTask)
+	// Perform variable replacement before sending to the Worker.
+	customisedTask := replaceTaskVariables(f.config, apiTask, *worker)
+	return e.JSON(http.StatusOK, customisedTask)
 }

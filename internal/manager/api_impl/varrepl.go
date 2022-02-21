@@ -25,6 +25,7 @@ import (
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 var stringType = reflect.TypeOf("somestring")
@@ -34,7 +35,7 @@ type VariableReplacer interface {
 }
 
 // replaceTaskVariables performs variable replacement for worker tasks.
-func replaceTaskVariables(replacer VariableReplacer, task persistence.Task, worker persistence.Worker) persistence.Task {
+func replaceTaskVariables(replacer VariableReplacer, task api.AssignedTask, worker persistence.Worker) api.AssignedTask {
 	repl := func(value string) string {
 		return replacer.ExpandVariables(value, "workers", worker.Platform)
 	}
