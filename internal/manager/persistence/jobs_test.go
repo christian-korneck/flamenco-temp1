@@ -80,6 +80,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 	job := job_compilers.AuthoredJob{
 		JobID:    "263fd47e-b9f8-4637-b726-fd7e47ecfdae",
 		Name:     "Test job",
+		Status:   api.JobStatusUnderConstruction,
 		Priority: 50,
 		Settings: job_compilers.JobSettings{
 			"frames":     "1-6",
