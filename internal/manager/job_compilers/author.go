@@ -21,6 +21,8 @@ package job_compilers
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/dop251/goja"
@@ -74,6 +76,15 @@ type AuthoredCommand struct {
 type AuthoredCommandParameters map[string]interface{}
 
 func (a *Author) Task(name string, taskType string) (*AuthoredTask, error) {
+	name = strings.TrimSpace(name)
+	taskType = strings.TrimSpace(taskType)
+	if name == "" {
+		return nil, errors.New("author.Task(name, type): name is required")
+	}
+	if taskType == "" {
+		return nil, errors.New("author.Task(name, type): type is required")
+	}
+
 	at := AuthoredTask{
 		uuid.New().String(),
 		name,

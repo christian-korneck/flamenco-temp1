@@ -120,7 +120,7 @@ function authorCreateVideoTask(settings, renderDir) {
     const stem = path.stem(settings.filepath).replace('.flamenco', '');
     const outfile = path.join(renderDir, `${stem}-${settings.frames}.mp4`);
 
-    const task = author.Task('create-video');
+    const task = author.Task('create-video', 'ffmpeg');
     const command = author.Command("create-video", {
         input_files: path.join(renderDir, `*${settings.output_file_extension}`),
         output_file: outfile,
