@@ -43,8 +43,8 @@ func TestCommandEcho(t *testing.T) {
 	message := "понављај за мном"
 	taskID := "90e9d656-e201-4ef0-b6b0-c80684fafa27"
 	cmd := api.Command{
-		Name:     "echo",
-		Settings: map[string]interface{}{"message": message},
+		Name:       "echo",
+		Parameters: map[string]interface{}{"message": message},
 	}
 
 	listener.EXPECT().LogProduced(gomock.Any(), taskID, "echo: \"понављај за мном\"")
@@ -64,8 +64,8 @@ func TestCommandSleep(t *testing.T) {
 	ctx := context.Background()
 	taskID := "90e9d656-e201-4ef0-b6b0-c80684fafa27"
 	cmd := api.Command{
-		Name:     "sleep",
-		Settings: map[string]interface{}{"duration_in_seconds": 47},
+		Name:       "sleep",
+		Parameters: map[string]interface{}{"duration_in_seconds": 47},
 	}
 
 	listener.EXPECT().LogProduced(gomock.Any(), taskID, "slept 47s")

@@ -164,8 +164,8 @@ type AvailableJobTypes struct {
 
 // Command represents a single command to execute by the Worker.
 type Command struct {
-	Name     string                 `json:"name"`
-	Settings map[string]interface{} `json:"settings"`
+	Name       string                 `json:"name"`
+	Parameters map[string]interface{} `json:"parameters"`
 }
 
 // Error defines model for Error.

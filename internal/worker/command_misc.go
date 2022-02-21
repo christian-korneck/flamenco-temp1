@@ -35,7 +35,7 @@ import (
 
 // cmdEcho executes the "echo" command.
 func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
-	message, ok := cmd.Settings["message"]
+	message, ok := cmd.Parameters["message"]
 	if !ok {
 		return fmt.Errorf("missing 'message' setting")
 	}
@@ -51,7 +51,7 @@ func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, t
 // cmdSleep executes the "sleep" command.
 func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 
-	sleepTime, ok := cmd.Settings["duration_in_seconds"]
+	sleepTime, ok := cmd.Parameters["duration_in_seconds"]
 	if !ok {
 		return errors.New("missing setting 'duration_in_seconds'")
 	}

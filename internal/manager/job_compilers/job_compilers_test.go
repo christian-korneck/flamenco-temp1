@@ -112,7 +112,7 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	assert.NotEmpty(t, t0.UUID)
 	assert.Equal(t, "render-1-3", t0.Name)
 	assert.Equal(t, 1, len(t0.Commands))
-	assert.Equal(t, "blender-render", t0.Commands[0].Type)
+	assert.Equal(t, "blender-render", t0.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
 		"exe":        "{blender}",
 		"blendfile":  settings["filepath"].(string),
@@ -124,7 +124,7 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	assert.NotEmpty(t, tVideo.UUID)
 	assert.Equal(t, "create-video", tVideo.Name)
 	assert.Equal(t, 1, len(tVideo.Commands))
-	assert.Equal(t, "create-video", tVideo.Commands[0].Type)
+	assert.Equal(t, "create-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
 		"input_files": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
 		"output_file": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",

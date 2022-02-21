@@ -73,7 +73,7 @@ type Task struct {
 type Commands []Command
 
 type Command struct {
-	Type       string             `json:"type"`
+	Name       string             `json:"name"`
 	Parameters StringInterfaceMap `json:"parameters"`
 }
 
@@ -119,7 +119,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			UUID:     authoredJob.JobID,
 			Name:     authoredJob.Name,
 			JobType:  authoredJob.JobType,
-			Status:   string(api.JobStatusUnderConstruction),
+			Status:   string(authoredJob.Status),
 			Priority: authoredJob.Priority,
 			Settings: StringInterfaceMap(authoredJob.Settings),
 			Metadata: StringStringMap(authoredJob.Metadata),
@@ -134,7 +134,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			var commands []Command
 			for _, authoredCommand := range authoredTask.Commands {
 				commands = append(commands, Command{
-					Type:       authoredCommand.Type,
+					Name:       authoredCommand.Name,
 					Parameters: StringInterfaceMap(authoredCommand.Parameters),
 				})
 			}

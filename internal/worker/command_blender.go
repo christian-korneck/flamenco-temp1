@@ -41,10 +41,10 @@ type BlenderSettings struct {
 // cmdBlender executes the "blender-render" command.
 func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 	settings := BlenderSettings{
-		exe:        cmd.Settings["exe"].(string),
-		argsBefore: cmd.Settings["argsBefore"].([]string),
-		blendfile:  cmd.Settings["blendfile"].(string),
-		args:       cmd.Settings["args"].([]string),
+		exe:        cmd.Parameters["exe"].(string),
+		argsBefore: cmd.Parameters["argsBefore"].([]string),
+		blendfile:  cmd.Parameters["blendfile"].(string),
+		args:       cmd.Parameters["args"].([]string),
 	}
 	if settings.exe == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'exe' setting")

@@ -70,7 +70,7 @@ type AuthoredTask struct {
 }
 
 type AuthoredCommand struct {
-	Type       string
+	Name       string
 	Parameters AuthoredCommandParameters
 }
 type AuthoredCommandParameters map[string]interface{}
@@ -96,8 +96,8 @@ func (a *Author) Task(name string, taskType string) (*AuthoredTask, error) {
 	return &at, nil
 }
 
-func (a *Author) Command(cmdType string, parameters AuthoredCommandParameters) (*AuthoredCommand, error) {
-	ac := AuthoredCommand{cmdType, parameters}
+func (a *Author) Command(cmdName string, parameters AuthoredCommandParameters) (*AuthoredCommand, error) {
+	ac := AuthoredCommand{cmdName, parameters}
 	return &ac, nil
 }
 

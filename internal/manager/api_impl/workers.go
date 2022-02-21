@@ -256,8 +256,8 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	apiCommands := []api.Command{}
 	for _, cmd := range dbTask.Commands {
 		apiCommands = append(apiCommands, api.Command{
-			Name:     cmd.Type,
-			Settings: cmd.Parameters,
+			Name:       cmd.Name,
+			Parameters: cmd.Parameters,
 		})
 	}
 	apiTask := api.AssignedTask{

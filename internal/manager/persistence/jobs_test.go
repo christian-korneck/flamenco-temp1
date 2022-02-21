@@ -43,7 +43,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 		UUID: "db1f5481-4ef5-4084-8571-8460c547ecaa",
 		Commands: []job_compilers.AuthoredCommand{
 			{
-				Type: "blender-render",
+				Name: "blender-render",
 				Parameters: job_compilers.AuthoredCommandParameters{
 					"exe":       "{blender}",
 					"blendfile": "/path/to/file.blend",
@@ -67,7 +67,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 		UUID: "4915fb05-72f5-463e-a2f4-7efdb2584a1e",
 		Commands: []job_compilers.AuthoredCommand{
 			{
-				Type: "merge-frames-to-video",
+				Name: "merge-frames-to-video",
 				Parameters: job_compilers.AuthoredCommandParameters{
 					"images":       "/path/to/output/######.png",
 					"output":       "/path/to/output/preview.mkv",
