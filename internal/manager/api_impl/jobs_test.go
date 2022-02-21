@@ -1,15 +1,5 @@
 package api_impl
 
-import (
-	"context"
-	"testing"
-
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
-)
-
 /* ***** BEGIN GPL LICENSE BLOCK *****
  *
  * Original Code Copyright (C) 2022 Blender Foundation.
@@ -29,6 +19,16 @@ import (
  * Flamenco.  If not, see <https://www.gnu.org/licenses/>.
  *
  * ***** END GPL LICENSE BLOCK ***** */
+
+import (
+	"context"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
+	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+)
 
 func TestTaskUpdate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
