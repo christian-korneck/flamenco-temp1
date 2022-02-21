@@ -54,6 +54,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	}
 }
 
+// prepareMockedJSONRequest returns an `echo.Context` that has a JSON request body attached to it.
 func (mf *mockedFlamenco) prepareMockedJSONRequest(worker *persistence.Worker, requestBody interface{}) echo.Context {
 	bodyBytes, err := json.MarshalIndent(requestBody, "", "    ")
 	if err != nil {
@@ -66,6 +67,7 @@ func (mf *mockedFlamenco) prepareMockedJSONRequest(worker *persistence.Worker, r
 	return c
 }
 
+// prepareMockedJSONRequest returns an `echo.Context` that has an empty request body attached to it.
 func (mf *mockedFlamenco) prepareMockedRequest(worker *persistence.Worker, body io.Reader) echo.Context {
 	e := echo.New()
 
