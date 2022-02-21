@@ -1,0 +1,60 @@
+# This file is loaded by unit tests.
+_meta:
+  version: 3
+mode: develop
+listen: '[::0]:8083'
+own_url: http://192.168.3.108:8083/
+flamenco: http://localhost:51234/
+manager_id: 5852bc5198377351f95d103e
+manager_secret: SRVwA7wAxPRfudvqTDOLXwPn1cDRIlADz5Ef9kHk7d52Us
+
+task_logs_path: /tmp/flamenco-unittests
+blacklist_threshold: 3
+
+shaman:
+    enabled: false
+
+variables:
+  blender:
+    direction: oneway
+    values:
+      - audience: users
+        platform: linux
+        value: /linux/path/to/blender
+      - audience: workers
+        platform: linux
+        value: /opt/myblenderbuild/blender
+      - platform: windows
+        value: 'c:/temp/blender.exe'
+      - platform: darwin
+        value: /opt/myblenderbuild/blender
+  ffmpeg:
+    direction: oneway
+    values:
+      - platform: linux
+        value: /usr/bin/ffmpeg
+      - platform: windows
+        value: xxx
+      - platform: darwin
+        value: xxx
+  render_long:
+    direction: twoway
+    values:
+      - platform: windows
+        value: s:/flamenco/render/long
+      - platform: linux
+        value: /shared/flamenco/render/long
+      - platform: darwin
+        value: /Volume/shared/flamenco/render/long
+
+  job_storage:
+    direction: twoway
+    values:
+      - platform: windows
+        value: s:/flamenco/jobs
+      - platform: linux
+        value: /shared/flamenco/jobs
+      - platform: darwin
+        value: /Volume/shared/flamenco/jobs
+      - platform: autumn
+        value: hey

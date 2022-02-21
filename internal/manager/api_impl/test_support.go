@@ -39,18 +39,21 @@ type mockedFlamenco struct {
 	flamenco    *Flamenco
 	jobCompiler *mocks.MockJobCompiler
 	persistence *mocks.MockPersistenceService
+	config      *mocks.MockConfigService
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	jc := mocks.NewMockJobCompiler(mockCtrl)
 	ps := mocks.NewMockPersistenceService(mockCtrl)
 	ls := mocks.NewMockLogStorage(mockCtrl)
-	f := NewFlamenco(jc, ps, ls)
+	cs := mocks.NewMockConfigService(mockCtrl)
+	f := NewFlamenco(jc, ps, ls, cs)
 
 	return mockedFlamenco{
 		flamenco:    f,
 		jobCompiler: jc,
 		persistence: ps,
+		config:      cs,
 	}
 }
 

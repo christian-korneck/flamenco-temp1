@@ -36,10 +36,11 @@ type Flamenco struct {
 	jobCompiler JobCompiler
 	persist     PersistenceService
 	logStorage  LogStorage
+	config      ConfigService
 }
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -68,14 +69,19 @@ type LogStorage interface {
 	RotateFile(logger zerolog.Logger, jobID, taskID string)
 }
 
+type ConfigService interface {
+	ExpandVariables(valueToExpand, audience, platform string) string
+}
+
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // NewFlamenco creates a new Flamenco service, using the given JobCompiler.
-func NewFlamenco(jc JobCompiler, jps PersistenceService, ls LogStorage) *Flamenco {
+func NewFlamenco(jc JobCompiler, jps PersistenceService, ls LogStorage, cs ConfigService) *Flamenco {
 	return &Flamenco{
 		jobCompiler: jc,
 		persist:     jps,
 		logStorage:  ls,
+		config:      cs,
 	}
 }
 

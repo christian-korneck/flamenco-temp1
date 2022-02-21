@@ -37,6 +37,7 @@ import (
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/swagger_ui"
@@ -58,6 +59,10 @@ func main() {
 	if cliArgs.version {
 		return
 	}
+
+	// Load configuration.
+	configService := config.NewService()
+
 	if cliArgs.initDB {
 		log.Info().Msg("creating databases")
 		err := persistence.InitialSetup()
@@ -88,7 +93,7 @@ func main() {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
 	logStorage := task_logs.NewStorage("./task-logs") // TODO: load job storage path from configuration.
-	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage)
+	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService)
 	e := buildWebService(flamenco, persist)
 
 	// Start the web server.
