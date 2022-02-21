@@ -53,7 +53,11 @@ var cliArgs struct {
 func main() {
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
 	log.Logger = log.Output(output)
-	log.Info().Str("version", appinfo.ApplicationVersion).Msgf("starting %v", appinfo.ApplicationName)
+	log.Info().
+		Str("version", appinfo.ApplicationVersion).
+		Str("os", runtime.GOOS).
+		Str("arch", runtime.GOARCH).
+		Msgf("starting %v", appinfo.ApplicationName)
 
 	parseCliArgs()
 	if cliArgs.version {
