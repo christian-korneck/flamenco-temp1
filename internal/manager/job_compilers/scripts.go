@@ -61,6 +61,7 @@ func (s *Service) loadScripts() error {
 
 		jobTypeName := filenameToJobType(script.Name())
 		s.compilers[jobTypeName] = Compiler{
+			jobType:  jobTypeName,
 			program:  program,
 			filename: script.Name(),
 		}
