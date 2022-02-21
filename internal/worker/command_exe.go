@@ -87,3 +87,33 @@ func (ce *CommandExecutor) Run(ctx context.Context, taskID string, cmd api.Comma
 
 	return runner(ctx, logger, taskID, cmd)
 }
+
+// cmdSettingAsStrings converts an array setting ([]interface{}) to a []string slice.
+func cmdSettingAsStrings(cmd api.Command, key string) ([]string, bool) {
+	setting, found := cmd.Parameters[key]
+	if !found {
+		return []string{}, false
+	}
+
+	if asStrSlice, ok := setting.([]string); ok {
+		return asStrSlice, true
+	}
+
+	interfSlice, ok := setting.([]interface{})
+	if !ok {
+		return []string{}, false
+	}
+
+	strSlice := make([]string, len(interfSlice))
+	for idx := range interfSlice {
+		switch v := interfSlice[idx].(type) {
+		case string:
+			strSlice[idx] = v
+		case fmt.Stringer:
+			strSlice[idx] = v.String()
+		default:
+			strSlice[idx] = fmt.Sprintf("%v", v)
+		}
+	}
+	return strSlice, true
+}

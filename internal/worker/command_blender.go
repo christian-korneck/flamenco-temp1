@@ -41,18 +41,25 @@ type BlenderSettings struct {
 // cmdBlender executes the "blender-render" command.
 func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 	settings := BlenderSettings{
-		exe:        cmd.Parameters["exe"].(string),
-		argsBefore: cmd.Parameters["argsBefore"].([]string),
-		blendfile:  cmd.Parameters["blendfile"].(string),
-		args:       cmd.Parameters["args"].([]string),
+		exe:       cmd.Parameters["exe"].(string),
+		blendfile: cmd.Parameters["blendfile"].(string),
 	}
+	var ok bool
 	if settings.exe == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'exe' setting")
 		return fmt.Errorf("missing 'exe' setting: %+v", cmd)
 	}
+	if settings.argsBefore, ok = cmdSettingAsStrings(cmd, "argsBefore"); !ok {
+		logger.Warn().Interface("command", cmd).Msg("invalid 'argsBefore' setting")
+		return fmt.Errorf("invalid 'argsBefore' setting: %+v", cmd)
+	}
 	if settings.blendfile == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'blendfile' setting")
 		return fmt.Errorf("missing 'blendfile' setting: %+v", cmd)
+	}
+	if settings.args, ok = cmdSettingAsStrings(cmd, "args"); !ok {
+		logger.Warn().Interface("command", cmd).Msg("invalid 'args' setting")
+		return fmt.Errorf("invalid 'args' setting: %+v", cmd)
 	}
 
 	cliArgs := make([]string, 0)
