@@ -205,7 +205,7 @@ func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
 
 func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
 	dbTask := Task{}
-	findResult := db.gormDB.First(&dbTask, "uuid = ?", taskUUID)
+	findResult := db.gormDB.Joins("Job").First(&dbTask, "tasks.uuid = ?", taskUUID)
 	if findResult.Error != nil {
 		return nil, findResult.Error
 	}

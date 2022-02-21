@@ -180,6 +180,10 @@ func (f *Flamenco) doTaskUpdate(
 	dbTask *persistence.Task,
 	update api.TaskUpdateJSONRequestBody,
 ) error {
+	if dbTask.Job == nil {
+		logger.Panic().Msg("dbTask.Job is nil, unable to continue")
+	}
+
 	if update.TaskStatus != nil {
 		// TODO: check that this status transition is valid.
 		// TODO: process this status transition.
@@ -195,10 +199,18 @@ func (f *Flamenco) doTaskUpdate(
 		dbTask.Activity = *update.Activity
 	}
 
+	// Do the database persistence first, as that's more important than the logging.
+	dbErr := f.persist.SaveTask(ctx, dbTask)
+
 	if update.Log != nil {
-		// TODO: write log to disk.
-		logger.Warn().Msg("task logs are not yet handled")
+		// Errors writing the log to file should be logged in our own logging
+		// system, but shouldn't abort the render. As such, `err` is not returned to
+		// the caller.
+		err := f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID, *update.Log)
+		if err != nil {
+			logger.Error().Err(err).Msg("error writing task log")
+		}
 	}
 
-	return f.persist.SaveTask(ctx, dbTask)
+	return dbErr
 }
