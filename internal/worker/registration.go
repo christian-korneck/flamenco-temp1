@@ -179,7 +179,7 @@ func signOn(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponse
 	}
 	switch {
 	case resp.JSON200 != nil:
-		log.Info().
+		log.Debug().
 			Int("code", resp.StatusCode()).
 			Interface("resp", resp.JSON200).
 			Msg("signed on at Manager")

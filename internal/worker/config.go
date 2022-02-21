@@ -87,16 +87,15 @@ func loadConfig(configWrangler FileConfigWrangler) (WorkerConfig, error) {
 }
 
 func loadCredentials(configWrangler FileConfigWrangler) (WorkerCredentials, error) {
-	logger := log.With().Str("filename", configFilename).Logger()
-	logger.Info().Msg("loading credentials")
-
 	var creds WorkerCredentials
-
 	err := configWrangler.LoadConfig(credentialsFilename, &creds)
 	if err != nil {
 		return WorkerCredentials{}, err
 	}
 
+	log.Info().
+		Str("filename", credentialsFilename).
+		Msg("loaded credentials")
 	return creds, nil
 }
 
