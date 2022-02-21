@@ -297,6 +297,7 @@ func DefaultConfig() Conf {
 
 // loadConf parses the given file and returns its contents as a Conf object.
 func loadConf(filename string) (Conf, error) {
+	log.Info().Str("file", filename).Msg("loading configuration")
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		return DefaultConfig(), err

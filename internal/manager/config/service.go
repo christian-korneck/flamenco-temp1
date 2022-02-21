@@ -26,7 +26,9 @@ type Service struct {
 }
 
 func NewService() *Service {
-	return &Service{}
+	return &Service{
+		config: DefaultConfig(),
+	}
 }
 
 func (s *Service) Load() error {

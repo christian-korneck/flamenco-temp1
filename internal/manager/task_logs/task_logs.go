@@ -24,8 +24,10 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // Storage can write data to task logs, rotate logs, etc.
@@ -35,6 +37,18 @@ type Storage struct {
 
 // NewStorage creates a new log storage rooted at `basePath`.
 func NewStorage(basePath string) *Storage {
+	if !filepath.IsAbs(basePath) {
+		absPath, err := filepath.Abs(basePath)
+		if err != nil {
+			log.Panic().Err(err).Str("path", basePath).Msg("cannot resolve relative path to task logs")
+		}
+		basePath = absPath
+	}
+
+	log.Info().
+		Str("path", basePath).
+		Msg("task logs")
+
 	return &Storage{
 		BasePath: basePath,
 	}

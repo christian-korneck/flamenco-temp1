@@ -29,16 +29,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO : have this configurable from the CLI.
-const dbDSN = "host=localhost user=flamenco password=flamenco dbname=flamenco TimeZone=Europe/Amsterdam"
-
 // DB provides the database interface.
 type DB struct {
 	gormDB *gorm.DB
 }
 
-func OpenDB(ctx context.Context) (*DB, error) {
-	db, err := openDB(ctx, dbDSN)
+func OpenDB(ctx context.Context, dsn string) (*DB, error) {
+	db, err := openDB(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +53,7 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 
 	gormDB, err := gorm.Open(postgres.Open(uri), &gorm.Config{})
 	if err != nil {
-		log.Panic().Err(err).Msg("failed to connect database")
+		return nil, err
 	}
 
 	db := DB{

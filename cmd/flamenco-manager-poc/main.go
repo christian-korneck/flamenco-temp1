@@ -25,6 +25,7 @@ import (
 	"flag"
 	"net"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -66,6 +67,7 @@ func main() {
 
 	// Load configuration.
 	configService := config.NewService()
+	configService.Load()
 
 	if cliArgs.initDB {
 		log.Info().Msg("creating databases")
@@ -76,27 +78,19 @@ func main() {
 		return
 	}
 
-	// Open the database.
-	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer dbCtxCancel()
-	persist, err := persistence.OpenDB(dbCtx)
-	if err != nil {
-		log.Fatal().Err(err).Msg("error opening database")
-	}
-
-	// TODO: load port number from the configuration in the database.
 	// TODO: enable TLS via Let's Encrypt.
-	listen := ":8080"
+	listen := configService.Get().Listen
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
 	// Construct the services.
+	persist := openDB(*configService)
 	timeService := clock.New()
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
-	logStorage := task_logs.NewStorage("./task-logs") // TODO: load job storage path from configuration.
+	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
 	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService)
 	e := buildWebService(flamenco, persist)
 
@@ -164,4 +158,24 @@ func parseCliArgs() {
 		logLevel = zerolog.InfoLevel
 	}
 	zerolog.SetGlobalLevel(logLevel)
+}
+
+// openDB opens the database or dies.
+func openDB(configService config.Service) *persistence.DB {
+	dsn := configService.Get().DatabaseDSN
+	if dsn == "" {
+		log.Fatal().Msg("configure the database in flamenco-manager.yaml")
+	}
+
+	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer dbCtxCancel()
+	persist, err := persistence.OpenDB(dbCtx, dsn)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Str("dsn", dsn).
+			Msg("error opening database")
+	}
+
+	return persist
 }
