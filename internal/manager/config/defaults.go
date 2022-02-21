@@ -82,9 +82,9 @@ var defaultConfig = Conf{
 		"blender": {
 			Direction: "oneway",
 			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "/linux/path/to/blender --factory-startup --background"},
-				VariableValue{Platform: "windows", Value: "C:/windows/path/to/blender.exe --factory-startup --background"},
-				VariableValue{Platform: "darwin", Value: "/Volumes/Applications/Blender/blender --factory-startup --background"},
+				VariableValue{Platform: "linux", Value: "/linux/path/to/blender"},
+				VariableValue{Platform: "windows", Value: "C:/windows/path/to/blender.exe"},
+				VariableValue{Platform: "darwin", Value: "/Volumes/Applications/Blender/blender"},
 			},
 		},
 		"ffmpeg": {
