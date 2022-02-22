@@ -54,3 +54,35 @@ func TestCmdBlenderSimpleCliArgs(t *testing.T) {
 	err := ce.cmdBlenderRender(ctx, zerolog.Nop(), taskID, cmd)
 	assert.Equal(t, ErrNoExecCmd, err, "nil *exec.Cmd should result in ErrNoExecCmd")
 }
+
+func TestCmdBlenderCliArgsInExeParameter(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	ce, mocks := testCommandExecutor(t, mockCtrl)
+
+	ctx := context.Background()
+	taskID := "1d54c6fe-1242-4c8f-bd63-5a09e358d7b6"
+	cmd := api.Command{
+		Name: "blender",
+		Parameters: map[string]interface{}{
+			"exe":        "/path/to/blender --factory-startup --python-expr \"import bpy; print('hello world')\"",
+			"argsBefore": []string{"-no-audio"},
+			"blendfile":  "file with spaces.blend",
+			"args":       []string{"--debug"},
+		},
+	}
+
+	mocks.cli.EXPECT().CommandContext(ctx,
+		"/path/to/blender",                 // from 'exe'
+		"--factory-startup",                // from 'exe'
+		"--python-expr",                    // from 'exe'
+		"import bpy; print('hello world')", // from 'exe'
+		"-no-audio",                        // from 'argsBefore'
+		"file with spaces.blend",           // from 'blendfile'
+		"--debug",                          // from 'args'
+	).Return(nil)
+
+	err := ce.cmdBlenderRender(ctx, zerolog.Nop(), taskID, cmd)
+	assert.Equal(t, ErrNoExecCmd, err, "nil *exec.Cmd should result in ErrNoExecCmd")
+}

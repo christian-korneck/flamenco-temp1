@@ -26,6 +26,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/shlex"
 	"github.com/rs/zerolog"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
@@ -87,6 +88,20 @@ func cmdBlenderRenderParams(logger zerolog.Logger, cmd api.Command) (BlenderPara
 	if parameters.args, ok = cmdParameterAsStrings(cmd, "args"); !ok {
 		logger.Warn().Interface("command", cmd).Msg("invalid 'args' parameter")
 		return parameters, fmt.Errorf("invalid 'args' parameter: %+v", cmd.Parameters)
+	}
+
+	// Move any CLI args from 'exe' to 'argsBefore'.
+	exeArgs, err := shlex.Split(parameters.exe)
+	if err != nil {
+		logger.Warn().Err(err).Interface("command", cmd).Msg("error parsing 'exe' parameter with shlex")
+		return parameters, fmt.Errorf("error parsing 'exe' parameter %q: %w", parameters.exe, err)
+	}
+	if len(exeArgs) > 1 {
+		allArgsBefore := []string{}
+		allArgsBefore = append(allArgsBefore, exeArgs[1:]...)
+		allArgsBefore = append(allArgsBefore, parameters.argsBefore...)
+		parameters.exe = exeArgs[0]
+		parameters.argsBefore = allArgsBefore
 	}
 
 	return parameters, nil
