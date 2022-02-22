@@ -78,22 +78,24 @@ var defaultConfig = Conf{
 	},
 
 	Variables: map[string]Variable{
+		// The default commands assume that the executables are available on $PATH.
 		"blender": {
 			Direction: "oneway",
 			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "/linux/path/to/blender"},
-				VariableValue{Platform: "windows", Value: "C:/windows/path/to/blender.exe"},
-				VariableValue{Platform: "darwin", Value: "/Volumes/Applications/Blender/blender"},
+				VariableValue{Platform: "linux", Value: "blender --factory-startup --background"},
+				VariableValue{Platform: "windows", Value: "blender.exe --factory-startup --background"},
+				VariableValue{Platform: "darwin", Value: "blender --factory-startup --background"},
 			},
 		},
 		"ffmpeg": {
 			Direction: "oneway",
 			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "/usr/bin/ffmpeg"},
-				VariableValue{Platform: "windows", Value: "C:/windows/path/to/ffmpeg.exe"},
-				VariableValue{Platform: "darwin", Value: "/Volumes/Applications/FFmpeg/ffmpeg"},
+				VariableValue{Platform: "linux", Value: "ffmpeg"},
+				VariableValue{Platform: "windows", Value: "ffmpeg.exe"},
+				VariableValue{Platform: "darwin", Value: "ffmpeg"},
 			},
 		},
+		// TODO: determine useful defaults for these.
 		"job_storage": {
 			Direction: "twoway",
 			Values: VariableValues{

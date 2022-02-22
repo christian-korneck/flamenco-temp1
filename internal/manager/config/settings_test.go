@@ -38,7 +38,7 @@ func TestDefaultSettings(t *testing.T) {
 	assert.Contains(t, config.Variables, "job_storage")
 	assert.Contains(t, config.Variables, "render")
 	assert.Equal(t, "oneway", config.Variables["ffmpeg"].Direction)
-	assert.Equal(t, "/usr/bin/ffmpeg", config.Variables["ffmpeg"].Values[0].Value)
+	assert.Equal(t, "ffmpeg", config.Variables["ffmpeg"].Values[0].Value)
 	assert.Equal(t, "linux", config.Variables["ffmpeg"].Values[0].Platform)
 
 	linuxPVars, ok := config.VariablesLookup["workers"]["linux"]
