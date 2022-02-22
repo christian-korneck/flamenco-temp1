@@ -94,7 +94,7 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 
 		logger.Debug().Msg(line)
 
-		timestamp := time.Now().Format(timeFormat)
+		timestamp := ce.timeService.Now().Format(timeFormat)
 		// %35s because trailing zeroes in the nanoseconds aren't output by the
 		// formatted timestamp, and thus it has a variable length. Using a fixed
 		// width in this Sprintf() call ensures the rest of the line aligns visually

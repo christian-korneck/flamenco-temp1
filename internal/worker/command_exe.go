@@ -60,6 +60,7 @@ type CommandListener interface {
 // TimeService is a service that operates on time.
 type TimeService interface {
 	After(duration time.Duration) <-chan time.Time
+	Now() time.Time
 }
 
 //go:generate go run github.com/golang/mock/mockgen -destination mocks/cli_runner.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker CommandLineRunner
