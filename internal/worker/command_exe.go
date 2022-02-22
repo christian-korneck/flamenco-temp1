@@ -22,6 +22,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"time"
@@ -37,6 +38,7 @@ import (
 // CommandListener sends the result of commands (log, output files) to the Manager.
 type CommandListener interface {
 	// LogProduced sends any logging to whatever service for storing logging.
+	// logLines are concatenated.
 	LogProduced(ctx context.Context, taskID string, logLines ...string) error
 	// OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
 	OutputProduced(ctx context.Context, taskID string, outputLocation string) error
@@ -65,6 +67,12 @@ type TimeService interface {
 type CommandLineRunner interface {
 	CommandContext(ctx context.Context, name string, arg ...string) *exec.Cmd
 }
+
+// ErrNoExecCmd means CommandLineRunner.CommandContext() returned nil.
+// This shouldn't happen in production, but can happen in unit tests when the
+// test just wants to check the CLI arguments that are supposed to be executed,
+// without actually executing anything.
+var ErrNoExecCmd = errors.New("no exec.Cmd could be created")
 
 func NewCommandExecutor(cli CommandLineRunner, listener CommandListener, timeService TimeService) *CommandExecutor {
 	ce := &CommandExecutor{
@@ -97,18 +105,19 @@ func (ce *CommandExecutor) Run(ctx context.Context, taskID string, cmd api.Comma
 	return runner(ctx, logger, taskID, cmd)
 }
 
-// cmdSettingAsStrings converts an array setting ([]interface{}) to a []string slice.
-func cmdSettingAsStrings(cmd api.Command, key string) ([]string, bool) {
-	setting, found := cmd.Parameters[key]
+// cmdParameterAsStrings converts an array parameter ([]interface{}) to a []string slice.
+// A missing parameter is ok and returned as empty slice.
+func cmdParameterAsStrings(cmd api.Command, key string) ([]string, bool) {
+	parameter, found := cmd.Parameters[key]
 	if !found {
-		return []string{}, false
+		return []string{}, true
 	}
 
-	if asStrSlice, ok := setting.([]string); ok {
+	if asStrSlice, ok := parameter.([]string); ok {
 		return asStrSlice, true
 	}
 
-	interfSlice, ok := setting.([]interface{})
+	interfSlice, ok := parameter.([]interface{})
 	if !ok {
 		return []string{}, false
 	}
@@ -125,4 +134,16 @@ func cmdSettingAsStrings(cmd api.Command, key string) ([]string, bool) {
 		}
 	}
 	return strSlice, true
+}
+
+// cmdParameter retrieves a single parameter of a certain type.
+func cmdParameter[T any](cmd api.Command, key string) (T, bool) {
+	setting, found := cmd.Parameters[key]
+	if !found {
+		var zeroValue T
+		return zeroValue, false
+	}
+
+	value, ok := setting.(T)
+	return value, ok
 }
