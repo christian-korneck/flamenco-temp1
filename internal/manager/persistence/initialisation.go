@@ -22,6 +22,7 @@ package persistence
 
 import (
 	"bufio"
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -56,23 +57,16 @@ func InitialSetup() error {
 	// Has to be used by the regular Flamenco Manager runs as well, though.
 	username := "flamenco"
 	userPass := "flamenco"
-	// tx := db.Exec("CREATE USER flamenco PASSWORD ? NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN", userPass)
-	// if tx.Error != nil {
-	// 	return fmt.Errorf("unable to create database user '%s': %w", username, tx.Error)
-	// }
-	{
-		sqlDB, err := db.DB()
-		if err != nil {
-			panic(err)
-		}
-		_, err = sqlDB.Exec("CREATE USER flamenco WITH PASSWORD $1::string NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN", userPass)
-		if err != nil {
-			panic(err)
-		}
+
+	tx := db.Exec("CREATE USER @user PASSWORD @pass NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN",
+		sql.Named("user", username),
+		sql.Named("pass", userPass))
+	if tx.Error != nil {
+		return fmt.Errorf("unable to create database user '%s': %w", username, tx.Error)
 	}
 
 	// Create the databases.
-	tx := db.Debug().Exec("CREATE DATABASE flamenco OWNER ? ENCODING 'utf8'", username)
+	tx = db.Debug().Exec("CREATE DATABASE flamenco OWNER ? ENCODING 'utf8'", username)
 	if tx.Error != nil {
 		return fmt.Errorf("unable to create database 'flamenco': %w", tx.Error)
 	}
