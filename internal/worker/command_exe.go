@@ -32,18 +32,6 @@ import (
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
-// Generate mock implementation of this interface.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/command_listener.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker CommandListener
-
-// CommandListener sends the result of commands (log, output files) to the Manager.
-type CommandListener interface {
-	// LogProduced sends any logging to whatever service for storing logging.
-	// logLines are concatenated.
-	LogProduced(ctx context.Context, taskID string, logLines ...string) error
-	// OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
-	OutputProduced(ctx context.Context, taskID string, outputLocation string) error
-}
-
 type CommandExecutor struct {
 	cli         CommandLineRunner
 	listener    CommandListener
@@ -56,6 +44,18 @@ type CommandExecutor struct {
 var _ CommandRunner = (*CommandExecutor)(nil)
 
 type commandCallable func(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error
+
+// Generate mock implementation of this interface.
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/command_listener.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker CommandListener
+
+// CommandListener sends the result of commands (log, output files) to the Manager.
+type CommandListener interface {
+	// LogProduced sends any logging to whatever service for storing logging.
+	// logLines are concatenated.
+	LogProduced(ctx context.Context, taskID string, logLines ...string) error
+	// OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
+	OutputProduced(ctx context.Context, taskID string, outputLocation string) error
+}
 
 // TimeService is a service that operates on time.
 type TimeService interface {
