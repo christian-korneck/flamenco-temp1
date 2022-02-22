@@ -13,7 +13,7 @@ curl -v -X 'POST' \
   "type": "simple-blender-render",
   "settings": {
     "filepath": "flamenco-test.blend",
-    "render_output": "/tmp/flamenco-test-frames",
+    "render_output": "/tmp/flamenco/test-frames",
     "chunk_size": 1,
     "extract_audio": true,
     "format": "PNG",
