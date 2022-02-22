@@ -39,26 +39,9 @@ type BlenderParameters struct {
 
 // cmdBlender executes the "blender-render" command.
 func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
-	var (
-		parameters BlenderParameters
-		ok         bool
-	)
-
-	if parameters.exe, ok = cmdParameter[string](cmd, "exe"); !ok || parameters.exe == "" {
-		logger.Warn().Interface("command", cmd).Msg("missing 'exe' parameter")
-		return fmt.Errorf("missing 'exe' parameter: %+v", cmd.Parameters)
-	}
-	if parameters.argsBefore, ok = cmdParameterAsStrings(cmd, "argsBefore"); !ok {
-		logger.Warn().Interface("command", cmd).Msg("invalid 'argsBefore' parameter")
-		return fmt.Errorf("invalid 'argsBefore' parameter: %+v", cmd.Parameters)
-	}
-	if parameters.blendfile, ok = cmdParameter[string](cmd, "blendfile"); !ok || parameters.blendfile == "" {
-		logger.Warn().Interface("command", cmd).Msg("missing 'blendfile' parameter")
-		return fmt.Errorf("missing 'blendfile' parameter: %+v", cmd.Parameters)
-	}
-	if parameters.args, ok = cmdParameterAsStrings(cmd, "args"); !ok {
-		logger.Warn().Interface("command", cmd).Msg("invalid 'args' parameter")
-		return fmt.Errorf("invalid 'args' parameter: %+v", cmd.Parameters)
+	parameters, err := cmdBlenderRenderParams(logger, cmd)
+	if err != nil {
+		return err
 	}
 
 	cliArgs := make([]string, 0)
@@ -81,4 +64,30 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		return err
 	}
 	return nil
+}
+
+func cmdBlenderRenderParams(logger zerolog.Logger, cmd api.Command) (BlenderParameters, error) {
+	var (
+		parameters BlenderParameters
+		ok         bool
+	)
+
+	if parameters.exe, ok = cmdParameter[string](cmd, "exe"); !ok || parameters.exe == "" {
+		logger.Warn().Interface("command", cmd).Msg("missing 'exe' parameter")
+		return parameters, fmt.Errorf("missing 'exe' parameter: %+v", cmd.Parameters)
+	}
+	if parameters.argsBefore, ok = cmdParameterAsStrings(cmd, "argsBefore"); !ok {
+		logger.Warn().Interface("command", cmd).Msg("invalid 'argsBefore' parameter")
+		return parameters, fmt.Errorf("invalid 'argsBefore' parameter: %+v", cmd.Parameters)
+	}
+	if parameters.blendfile, ok = cmdParameter[string](cmd, "blendfile"); !ok || parameters.blendfile == "" {
+		logger.Warn().Interface("command", cmd).Msg("missing 'blendfile' parameter")
+		return parameters, fmt.Errorf("missing 'blendfile' parameter: %+v", cmd.Parameters)
+	}
+	if parameters.args, ok = cmdParameterAsStrings(cmd, "args"); !ok {
+		logger.Warn().Interface("command", cmd).Msg("invalid 'args' parameter")
+		return parameters, fmt.Errorf("invalid 'args' parameter: %+v", cmd.Parameters)
+	}
+
+	return parameters, nil
 }
