@@ -43,11 +43,11 @@ var (
 // Listener listens to the result of task and command execution, and sends it to the Manager.
 type Listener struct {
 	doneWg *sync.WaitGroup
-	client api.ClientWithResponsesInterface
+	client FlamencoClient
 }
 
 // NewListener creates a new Listener that will send updates to the API client.
-func NewListener(client api.ClientWithResponsesInterface) *Listener {
+func NewListener(client FlamencoClient) *Listener {
 	l := &Listener{
 		doneWg: new(sync.WaitGroup),
 		client: client,

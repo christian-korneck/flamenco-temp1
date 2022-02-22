@@ -13,7 +13,7 @@ type Worker struct {
 	doneChan chan struct{}
 	doneWg   *sync.WaitGroup
 
-	client api.ClientWithResponsesInterface
+	client FlamencoClient
 
 	state         api.WorkerStatus
 	stateStarters map[api.WorkerStatus]StateStarter // gotoStateXXX functions
@@ -30,7 +30,7 @@ type TaskRunner interface {
 
 // NewWorker constructs and returns a new Worker.
 func NewWorker(
-	flamenco api.ClientWithResponsesInterface,
+	flamenco FlamencoClient,
 	taskRunner TaskRunner,
 ) *Worker {
 

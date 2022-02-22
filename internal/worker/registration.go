@@ -44,7 +44,7 @@ var (
 // registerOrSignOn tries to sign on, and if that fails (or there are no credentials) tries to register.
 // Returns an authenticated Flamenco OpenAPI client.
 func RegisterOrSignOn(ctx context.Context, configWrangler FileConfigWrangler) (
-	client api.ClientWithResponsesInterface, startupState api.WorkerStatus,
+	client FlamencoClient, startupState api.WorkerStatus,
 ) {
 	// Load configuration
 	cfg, err := loadConfig(configWrangler)
@@ -93,7 +93,7 @@ func RegisterOrSignOn(ctx context.Context, configWrangler FileConfigWrangler) (
 
 // (Re-)register ourselves at the Manager.
 // Logs a fatal error if unsuccesful.
-func register(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponsesInterface) WorkerCredentials {
+func register(ctx context.Context, cfg WorkerConfig, client FlamencoClient) WorkerCredentials {
 	// Construct our new password.
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
@@ -132,7 +132,7 @@ func register(ctx context.Context, cfg WorkerConfig, client api.ClientWithRespon
 
 // repeatSignOnUntilAnswer tries to sign on, and only returns when it has been able to reach the Manager.
 // Return still doesn't mean that the sign-on was succesful; inspect the returned error.
-func repeatSignOnUntilAnswer(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
+func repeatSignOnUntilAnswer(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.WorkerStatus, error) {
 	waitTime := 0 * time.Second
 	for {
 		select {
@@ -157,7 +157,7 @@ func repeatSignOnUntilAnswer(ctx context.Context, cfg WorkerConfig, client api.C
 }
 
 // signOn tells the Manager we're alive and returns the status the Manager tells us to go to.
-func signOn(ctx context.Context, cfg WorkerConfig, client api.ClientWithResponsesInterface) (api.WorkerStatus, error) {
+func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.WorkerStatus, error) {
 	logger := log.With().Str("manager", cfg.Manager).Logger()
 
 	req := api.SignOnJSONRequestBody{
@@ -206,7 +206,7 @@ func mustHostname() string {
 }
 
 // authenticatedClient constructs a Flamenco client with the given credentials.
-func authenticatedClient(cfg WorkerConfig, creds WorkerCredentials) api.ClientWithResponsesInterface {
+func authenticatedClient(cfg WorkerConfig, creds WorkerCredentials) FlamencoClient {
 	flamenco, err := api.NewClientWithResponses(
 		cfg.Manager,
 
