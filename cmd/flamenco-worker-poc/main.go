@@ -83,9 +83,10 @@ func main() {
 	shutdownComplete = make(chan struct{})
 	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
 
+	cliRunner := worker.NewCLIRunner()
 	listener = worker.NewListener(client)
 	timeService := clock.New()
-	cmdRunner := worker.NewCommandExecutor(listener, timeService)
+	cmdRunner := worker.NewCommandExecutor(cliRunner, listener, timeService)
 	taskRunner := worker.NewTaskExecutor(cmdRunner, listener)
 	w = worker.NewWorker(client, taskRunner)
 

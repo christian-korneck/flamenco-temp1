@@ -23,9 +23,33 @@ package worker
 import (
 	"testing"
 
+	"github.com/benbjohnson/clock"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/blender/flamenco-ng-poc/internal/worker/mocks"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
+
+type CommandExecutorMocks struct {
+	cli      *mocks.MockCommandLineRunner
+	listener *mocks.MockCommandListener
+	clock    *clock.Mock
+}
+
+func testCommandExecutor(t *testing.T, mockCtrl *gomock.Controller) (*CommandExecutor, *CommandExecutorMocks) {
+	cli := mocks.NewMockCommandLineRunner(mockCtrl)
+	listener := mocks.NewMockCommandListener(mockCtrl)
+	clock := mockedClock(t)
+
+	ce := NewCommandExecutor(cli, listener, clock)
+	mocks := CommandExecutorMocks{
+		cli:      cli,
+		listener: listener,
+		clock:    clock,
+	}
+
+	return ce, &mocks
+}
 
 func TestCmdSettingAsStrings(t *testing.T) {
 	cmd := api.Command{
@@ -39,7 +63,7 @@ func TestCmdSettingAsStrings(t *testing.T) {
 	}
 
 	{
-		slice, ok := cmdSettingAsStrings(cmd, "strings")
+		slice, ok := cmdParameterAsStrings(cmd, "strings")
 		if ok {
 			assert.Equal(t, []string{"a", "b"}, slice)
 		} else {
@@ -47,15 +71,15 @@ func TestCmdSettingAsStrings(t *testing.T) {
 		}
 	}
 	{
-		_, ok := cmdSettingAsStrings(cmd, "ints")
+		_, ok := cmdParameterAsStrings(cmd, "ints")
 		assert.False(t, ok, "only []string or []interface{} are expected to work")
 	}
 	{
-		_, ok := cmdSettingAsStrings(cmd, "floats")
+		_, ok := cmdParameterAsStrings(cmd, "floats")
 		assert.False(t, ok, "only []string or []interface{} are expected to work")
 	}
 	{
-		slice, ok := cmdSettingAsStrings(cmd, "mixed")
+		slice, ok := cmdParameterAsStrings(cmd, "mixed")
 		if ok {
 			assert.Equal(t, []string{"a", "47", "0.327"}, slice)
 		} else {
