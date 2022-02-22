@@ -48,8 +48,7 @@ var defaultConfig = Conf{
 		// // Days are assumed to be 24 hours long. This is not exactly accurate, but should
 		// // be accurate enough for this type of cleanup.
 		// TaskCleanupMaxAge: 14 * 24 * time.Hour,
-		SSDPDiscovery:  false,                                  // Only enable after SSDP discovery has been improved (avoid finding printers).
-		SSDPDeviceUUID: "64ad4c21-6042-4378-9cdf-478f88b4f990", // UUID specific for Flamenco v3.
+		SSDPDiscovery: false, // Only enable after SSDP discovery has been improved (avoid finding printers).
 
 		BlacklistThreshold:         3,
 		TaskFailAfterSoftFailCount: 3,

@@ -32,8 +32,8 @@ func TestDefaultSettings(t *testing.T) {
 
 	// The settings should contain the defaults, though.
 	assert.Equal(t, latestConfigVersion, config.Meta.Version)
-	assert.Equal(t, "./task-logs", config.TaskLogsPath)
-	assert.Equal(t, "64ad4c21-6042-4378-9cdf-478f88b4f990", config.SSDPDeviceUUID)
+	assert.Equal(t, defaultConfig.TaskLogsPath, config.TaskLogsPath)
+	assert.Equal(t, defaultConfig.DatabaseDSN, config.DatabaseDSN)
 
 	assert.Contains(t, config.Variables, "job_storage")
 	assert.Contains(t, config.Variables, "render")

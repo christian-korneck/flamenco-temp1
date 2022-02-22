@@ -107,8 +107,7 @@ type Base struct {
 	// (even when there are workers left that could technically retry the task).
 	TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
 
-	SSDPDiscovery  bool   `yaml:"ssdp_discovery"`
-	SSDPDeviceUUID string `yaml:"ssdp_device_uuid"`
+	SSDPDiscovery bool `yaml:"ssdp_discovery"`
 
 	TestTasks TestTasks `yaml:"test_tasks"`
 
