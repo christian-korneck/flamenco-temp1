@@ -23,13 +23,20 @@ package worker
 /* This file contains the commands in the "blender" type group. */
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"os/exec"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
+
+// The buffer size used to read stdout/stderr output from Blender.
+// Effectively this determines the maximum line length that can be handled.
+const StdoutBufferSize = 40 * 1024
 
 type BlenderParameters struct {
 	exe        string   // Expansion of `{blender}`: executable path + its CLI parameters defined by the Manager.
@@ -40,9 +47,77 @@ type BlenderParameters struct {
 
 // cmdBlender executes the "blender-render" command.
 func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
-	parameters, err := cmdBlenderRenderParams(logger, cmd)
+	cmdCtx, cmdCtxCancel := context.WithCancel(ctx)
+	defer cmdCtxCancel()
+
+	execCmd, err := ce.cmdBlenderRenderCommand(cmdCtx, logger, taskID, cmd)
 	if err != nil {
 		return err
+	}
+
+	execCmd.Stderr = execCmd.Stdout // Redirect stderr to stdout.
+	outPipe, err := execCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := execCmd.Start(); err != nil {
+		logger.Error().Err(err).Msg("error starting CLI execution")
+		return err
+	}
+
+	reader := bufio.NewReaderSize(outPipe, StdoutBufferSize)
+
+	for {
+		lineBytes, isPrefix, readErr := reader.ReadLine()
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			logger.Error().Err(err).Msg("error reading stdout/err")
+			return err
+		}
+		line := string(lineBytes)
+		if isPrefix {
+			logger.Warn().
+				Str("line", fmt.Sprintf("%s...", line[:256])).
+				Int("lineLength", len(line)).
+				Msg("unexpectedly long line read, truncating")
+		}
+
+		logger.Debug().Msg(line)
+		// TODO: don't send the log line-by-line, but send in chunks.
+		if err := ce.listener.LogProduced(ctx, taskID, line); err != nil {
+			return err
+		}
+	}
+
+	if err := execCmd.Wait(); err != nil {
+		logger.Error().Err(err).Msg("error in CLI execution")
+		return err
+	}
+
+	if execCmd.ProcessState.Success() {
+		logger.Info().Msg("command exited succesfully")
+	} else {
+		logger.Error().
+			Int("exitCode", execCmd.ProcessState.ExitCode()).
+			Msg("command exited abnormally")
+		return fmt.Errorf("command exited abnormally with code %d", execCmd.ProcessState.ExitCode())
+	}
+
+	return nil
+}
+
+func (ce *CommandExecutor) cmdBlenderRenderCommand(
+	ctx context.Context,
+	logger zerolog.Logger,
+	taskID string,
+	cmd api.Command,
+) (*exec.Cmd, error) {
+	parameters, err := cmdBlenderRenderParams(logger, cmd)
+	if err != nil {
+		return nil, err
 	}
 
 	cliArgs := make([]string, 0)
@@ -54,17 +129,18 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		logger.Error().
 			Str("cmdName", cmd.Name).
 			Msg("unable to create command executor")
-		return ErrNoExecCmd
+		return nil, ErrNoExecCmd
 	}
 	logger.Info().
 		Str("cmdName", cmd.Name).
 		Str("execCmd", execCmd.String()).
 		Msg("going to execute Blender")
 
-	if err := ce.listener.LogProduced(ctx, taskID, fmt.Sprintf("going to run: %s", cliArgs)); err != nil {
-		return err
+	if err := ce.listener.LogProduced(ctx, taskID, fmt.Sprintf("going to run: %s %q", parameters.exe, cliArgs)); err != nil {
+		return nil, err
 	}
-	return nil
+
+	return execCmd, nil
 }
 
 func cmdBlenderRenderParams(logger zerolog.Logger, cmd api.Command) (BlenderParameters, error) {

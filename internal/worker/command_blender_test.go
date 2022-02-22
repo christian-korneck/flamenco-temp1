@@ -36,7 +36,6 @@ func TestCmdBlenderSimpleCliArgs(t *testing.T) {
 
 	ce, mocks := testCommandExecutor(t, mockCtrl)
 
-	ctx := context.Background()
 	taskID := "1d54c6fe-1242-4c8f-bd63-5a09e358d7b6"
 	cmd := api.Command{
 		Name: "blender",
@@ -49,9 +48,9 @@ func TestCmdBlenderSimpleCliArgs(t *testing.T) {
 	}
 
 	cliArgs := []string{"--background", "file.blend", "--render-output", "/frames"}
-	mocks.cli.EXPECT().CommandContext(ctx, "/path/to/blender", cliArgs).Return(nil)
+	mocks.cli.EXPECT().CommandContext(gomock.Any(), "/path/to/blender", cliArgs).Return(nil)
 
-	err := ce.cmdBlenderRender(ctx, zerolog.Nop(), taskID, cmd)
+	err := ce.cmdBlenderRender(context.Background(), zerolog.Nop(), taskID, cmd)
 	assert.Equal(t, ErrNoExecCmd, err, "nil *exec.Cmd should result in ErrNoExecCmd")
 }
 
@@ -61,7 +60,6 @@ func TestCmdBlenderCliArgsInExeParameter(t *testing.T) {
 
 	ce, mocks := testCommandExecutor(t, mockCtrl)
 
-	ctx := context.Background()
 	taskID := "1d54c6fe-1242-4c8f-bd63-5a09e358d7b6"
 	cmd := api.Command{
 		Name: "blender",
@@ -73,7 +71,7 @@ func TestCmdBlenderCliArgsInExeParameter(t *testing.T) {
 		},
 	}
 
-	mocks.cli.EXPECT().CommandContext(ctx,
+	mocks.cli.EXPECT().CommandContext(gomock.Any(),
 		"/path/to/blender",                 // from 'exe'
 		"--factory-startup",                // from 'exe'
 		"--python-expr",                    // from 'exe'
@@ -83,6 +81,6 @@ func TestCmdBlenderCliArgsInExeParameter(t *testing.T) {
 		"--debug",                          // from 'args'
 	).Return(nil)
 
-	err := ce.cmdBlenderRender(ctx, zerolog.Nop(), taskID, cmd)
+	err := ce.cmdBlenderRender(context.Background(), zerolog.Nop(), taskID, cmd)
 	assert.Equal(t, ErrNoExecCmd, err, "nil *exec.Cmd should result in ErrNoExecCmd")
 }

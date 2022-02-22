@@ -34,5 +34,5 @@ func NewCLIRunner() *CLIRunner {
 }
 
 func (cli *CLIRunner) CommandContext(ctx context.Context, name string, arg ...string) *exec.Cmd {
-	return nil
+	return exec.CommandContext(ctx, name, arg...)
 }
