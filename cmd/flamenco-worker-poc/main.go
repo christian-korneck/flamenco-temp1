@@ -43,6 +43,7 @@ import (
 var (
 	w                *worker.Worker
 	listener         *worker.Listener
+	buffer           *worker.UpstreamBufferDB
 	shutdownComplete chan struct{}
 )
 
@@ -83,9 +84,12 @@ func main() {
 	shutdownComplete = make(chan struct{})
 	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
 
-	cliRunner := worker.NewCLIRunner()
-	listener = worker.NewListener(client)
 	timeService := clock.New()
+	buffer = upstreamBufferOrDie(client, timeService)
+	go buffer.Flush(workerCtx) // Immediately try to flush any updates.
+
+	cliRunner := worker.NewCLIRunner()
+	listener = worker.NewListener(client, buffer)
 	cmdRunner := worker.NewCommandExecutor(cliRunner, listener, timeService)
 	taskRunner := worker.NewTaskExecutor(cmdRunner, listener)
 	w = worker.NewWorker(client, taskRunner)
@@ -121,6 +125,9 @@ func shutdown(signum os.Signal) {
 			w.SignOff(shutdownCtx)
 			w.Close()
 			listener.Wait()
+			if err := buffer.Close(shutdownCtx); err != nil {
+				log.Error().Err(err).Msg("closing upstream task buffer")
+			}
 		}
 		close(done)
 	}()
@@ -154,4 +161,21 @@ func parseCliArgs() {
 			log.Fatal().Err(err).Msg("invalid manager URL")
 		}
 	}
+}
+
+func upstreamBufferOrDie(client worker.FlamencoClient, timeService clock.Clock) *worker.UpstreamBufferDB {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	buffer, err := worker.NewUpstreamBuffer(client, timeService)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to create task update queue database")
+	}
+
+	// TODO: make filename configurable?
+	if err := buffer.OpenDB(ctx, "flamenco-worker-queue.db"); err != nil {
+		log.Fatal().Err(err).Msg("unable to open task update queue database")
+	}
+
+	return buffer
 }

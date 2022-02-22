@@ -24,7 +24,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -44,13 +43,20 @@ var (
 type Listener struct {
 	doneWg *sync.WaitGroup
 	client FlamencoClient
+	buffer UpstreamBuffer
+}
+
+// UpstreamBuffer can buffer up-stream task updates, in case the Manager cannot be reached.
+type UpstreamBuffer interface {
+	SendTaskUpdate(ctx context.Context, taskID string, update api.TaskUpdateJSONRequestBody) error
 }
 
 // NewListener creates a new Listener that will send updates to the API client.
-func NewListener(client FlamencoClient) *Listener {
+func NewListener(client FlamencoClient, buffer UpstreamBuffer) *Listener {
 	l := &Listener{
 		doneWg: new(sync.WaitGroup),
 		client: client,
+		buffer: buffer,
 	}
 	l.doneWg.Add(1)
 	return l
@@ -66,7 +72,7 @@ func (l *Listener) Run(ctx context.Context) {
 		case <-time.After(10 * time.Second):
 			// This is just a dummy thing.
 		}
-		log.Debug().Msg("listener is still running")
+		log.Trace().Msg("listener is still running")
 	}
 
 	log.Debug().Msg("listener shutting down")
@@ -120,17 +126,5 @@ func (l *Listener) OutputProduced(ctx context.Context, taskID string, outputLoca
 }
 
 func (l *Listener) sendTaskUpdate(ctx context.Context, taskID string, update api.TaskUpdateJSONRequestBody) error {
-	resp, err := l.client.TaskUpdateWithResponse(ctx, string(taskID), update)
-	if err != nil {
-		return fmt.Errorf("error sending task update: %w", err)
-	}
-
-	switch resp.StatusCode() {
-	case http.StatusNoContent:
-		return nil
-	case http.StatusConflict:
-		return ErrTaskReassigned
-	default:
-		return fmt.Errorf("unknown error from Manager, code %d: %v", resp.StatusCode(), resp.JSONDefault)
-	}
+	return l.buffer.SendTaskUpdate(ctx, taskID, update)
 }
