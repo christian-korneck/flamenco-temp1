@@ -8,14 +8,14 @@ rediscovered.
 
 - [x] OpenAPI implementation that actually runs as a server process
 - [x] Process lifecycle management, clean shutdown
-- [ ] Task Scheduler
-- [ ] Unify command definition (type/parameters in persistence layer, name/settings in API layer)
+- [x] Task Scheduler
+- [x] Unify command definition (type/parameters in persistence layer, name/settings in API layer)
 - [ ] Job status change handling
 - [ ] Task timeout monitoring
 - [ ] Worker Blacklisting & failed task requeueing
 - [ ] Worker timeout monitoring
-- [ ] Variable replacement
-- [ ] Configuration file reading
+- [x] Variable replacement
+- [x] Configuration file reading
 - [ ] Configuration provisioning support
 - [ ] Shaman integration
 - [ ] Worker sleep schedule
@@ -36,8 +36,8 @@ rediscovered.
 
 - [x] OpenAPI client that actually runs as a process
 - [x] Process lifecycle management, clean shutdown
-- [ ] Task executor
-- [ ] Command runner
+- [x] Task executor
+- [x] Command runner
 - [ ] Log uploader
 - [ ] POSIX signal handling (sleep/wake up)
 
@@ -47,10 +47,11 @@ rediscovered.
 - [x] Worker API authentication
 - [x] Worker sign on/off
 - [ ] Worker status change management, including lazy status changes
-- [ ] Task status change handling
+- [x] Task status change handling
 - [ ] Worker test mode
 - [ ] Worker registration secret (to protect the Manager from arbitrary Workers registering)
 - [ ] SSDP/UPnP for automatic Manager finding
+
 ## Blender Add-on
 
 - [ ] User authentication
