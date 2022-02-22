@@ -60,8 +60,7 @@ func TestVariableValidation(t *testing.T) {
 	}
 	c.Variables["blender"] = platformless
 
-	err := c.checkVariables()
-	assert.Equal(t, ErrMissingVariablePlatform, err)
+	c.checkVariables()
 
 	assert.Equal(t, c.Variables["blender"].Values[0].Value, "/path/to/blender")
 	assert.Equal(t, c.Variables["blender"].Values[1].Value, "/valid/path/blender")

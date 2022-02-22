@@ -176,7 +176,7 @@ type VariableValue struct {
 
 	// Platforms that use this value. Only one of "Platform" and "Platforms" may be set.
 	Platform  string   `yaml:"platform,omitempty" json:"platform,omitempty"`
-	Platforms []string `yaml:"platforms,omitempty,flow" json:"platforms,omitempty,flow"`
+	Platforms []string `yaml:"platforms,omitempty,flow" json:"platforms,omitempty"`
 
 	// The actual value of the variable for this audience+platform.
 	Value string `yaml:"value" json:"value"`
@@ -352,11 +352,8 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 }
 
 // checkVariables performs some basic checks on variable definitions.
-// Note that the returned error only reflects the last-found error.
-// All errors are logged, though.
-func (c *Conf) checkVariables() error {
-	var err error
-
+// All errors are logged, not returned.
+func (c *Conf) checkVariables() {
 	directionNames := []string{"oneway", "twoway"}
 	validDirections := map[string]bool{}
 	for _, direction := range directionNames {
@@ -370,7 +367,6 @@ func (c *Conf) checkVariables() error {
 				Str("direction", variable.Direction).
 				Strs("validChoices", directionNames).
 				Msg("variable has invalid direction")
-			err = ErrBadDirection
 		}
 		for valueIndex, value := range variable.Values {
 			// No platforms at all.
@@ -379,7 +375,6 @@ func (c *Conf) checkVariables() error {
 					Str("name", name).
 					Interface("value", value).
 					Msg("variable has a platformless value")
-				err = ErrMissingVariablePlatform
 				continue
 			}
 
@@ -408,8 +403,6 @@ func (c *Conf) checkVariables() error {
 			variable.Values[valueIndex] = value
 		}
 	}
-
-	return err
 }
 
 func (c *Conf) checkDatabase() {
