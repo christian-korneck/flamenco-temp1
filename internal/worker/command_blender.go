@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"time"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
@@ -37,6 +38,8 @@ import (
 // The buffer size used to read stdout/stderr output from Blender.
 // Effectively this determines the maximum line length that can be handled.
 const StdoutBufferSize = 40 * 1024
+
+const timeFormat = time.RFC3339Nano
 
 type BlenderParameters struct {
 	exe        string   // Expansion of `{blender}`: executable path + its CLI parameters defined by the Manager.
@@ -66,7 +69,11 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		return err
 	}
 
+	blenderPID := execCmd.Process.Pid
+	logger = logger.With().Int("pid", blenderPID).Logger()
+
 	reader := bufio.NewReaderSize(outPipe, StdoutBufferSize)
+	logChunker := NewLogChunker(taskID, ce.listener)
 
 	for {
 		lineBytes, isPrefix, readErr := reader.ReadLine()
@@ -86,11 +93,16 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		}
 
 		logger.Debug().Msg(line)
-		// TODO: don't send the log line-by-line, but send in chunks.
-		if err := ce.listener.LogProduced(ctx, taskID, line); err != nil {
-			return err
-		}
+
+		timestamp := time.Now().Format(timeFormat)
+		// %35s because trailing zeroes in the nanoseconds aren't output by the
+		// formatted timestamp, and thus it has a variable length. Using a fixed
+		// width in this Sprintf() call ensures the rest of the line aligns visually
+		// with the preceeding ones.
+		logLine := fmt.Sprintf("%35s: pid=%d > %s", timestamp, blenderPID, line)
+		logChunker.Append(ctx, logLine)
 	}
+	logChunker.Flush(ctx)
 
 	if err := execCmd.Wait(); err != nil {
 		logger.Error().Err(err).Msg("error in CLI execution")
