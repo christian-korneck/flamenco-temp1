@@ -73,7 +73,7 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 	logger = logger.With().Int("pid", blenderPID).Logger()
 
 	reader := bufio.NewReaderSize(outPipe, StdoutBufferSize)
-	logChunker := NewLogChunker(taskID, ce.listener)
+	logChunker := NewLogChunker(taskID, ce.listener, ce.timeService)
 
 	for {
 		lineBytes, isPrefix, readErr := reader.ReadLine()
