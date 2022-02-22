@@ -49,6 +49,7 @@ func (w *Worker) gotoStateAwake(ctx context.Context) {
 // runStateAwake fetches a task and executes it, in an endless loop.
 func (w *Worker) runStateAwake(ctx context.Context) {
 	defer w.doneWg.Done()
+	defer log.Debug().Msg("stopping state 'awake'")
 
 	for {
 		task := w.fetchTask(ctx)
@@ -91,7 +92,8 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 		resp, err := w.client.ScheduleTaskWithResponse(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("error obtaining task")
-			return nil
+			wait = durationFetchFailed
+			continue
 		}
 		switch {
 		case resp.JSON200 != nil:
