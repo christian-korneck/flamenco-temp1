@@ -23,6 +23,7 @@ package worker
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -42,11 +43,12 @@ type CommandListener interface {
 }
 
 type CommandExecutor struct {
-	listener CommandListener
+	cli         CommandLineRunner
+	listener    CommandListener
+	timeService TimeService
+
 	// registry maps a command name to a function that runs that command.
 	registry map[string]commandCallable
-
-	timeService TimeService
 }
 
 var _ CommandRunner = (*CommandExecutor)(nil)
@@ -58,8 +60,15 @@ type TimeService interface {
 	After(duration time.Duration) <-chan time.Time
 }
 
-func NewCommandExecutor(listener CommandListener, timeService TimeService) *CommandExecutor {
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/cli_runner.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker CommandLineRunner
+// CommandLineRunner is an interface around exec.CommandContext().
+type CommandLineRunner interface {
+	CommandContext(ctx context.Context, name string, arg ...string) *exec.Cmd
+}
+
+func NewCommandExecutor(cli CommandLineRunner, listener CommandListener, timeService TimeService) *CommandExecutor {
 	ce := &CommandExecutor{
+		cli:         cli,
 		listener:    listener,
 		timeService: timeService,
 	}
