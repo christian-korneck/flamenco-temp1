@@ -187,10 +187,10 @@ func (f *Flamenco) doTaskUpdate(
 	if update.TaskStatus != nil {
 		// TODO: check that this status transition is valid.
 		// TODO: process this status transition.
-		newStatus := string(*update.TaskStatus)
+		newStatus := *update.TaskStatus
 		logger.Info().
-			Str("oldStatus", dbTask.Status).
-			Str("newStatus", newStatus).
+			Str("oldStatus", string(dbTask.Status)).
+			Str("newStatus", string(newStatus)).
 			Msg("task changing status")
 		dbTask.Status = newStatus
 	}

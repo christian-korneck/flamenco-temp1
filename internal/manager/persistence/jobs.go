@@ -52,12 +52,12 @@ type Task struct {
 	gorm.Model
 	UUID string `gorm:"type:char(36);not null;unique;index"`
 
-	Name     string `gorm:"type:varchar(64);not null"`
-	Type     string `gorm:"type:varchar(32);not null"`
-	JobID    uint   `gorm:"not null"`
-	Job      *Job   `gorm:"foreignkey:JobID;references:ID;constraint:OnDelete:CASCADE;not null"`
-	Priority int    `gorm:"type:smallint;not null"`
-	Status   string `gorm:"type:varchar(16);not null"`
+	Name     string         `gorm:"type:varchar(64);not null"`
+	Type     string         `gorm:"type:varchar(32);not null"`
+	JobID    uint           `gorm:"not null"`
+	Job      *Job           `gorm:"foreignkey:JobID;references:ID;constraint:OnDelete:CASCADE;not null"`
+	Priority int            `gorm:"type:smallint;not null"`
+	Status   api.TaskStatus `gorm:"type:varchar(16);not null"`
 
 	// Which worker is/was working on this.
 	WorkerID *uint
@@ -145,7 +145,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 				UUID:     authoredTask.UUID,
 				Job:      &dbJob,
 				Priority: authoredTask.Priority,
-				Status:   string(api.TaskStatusQueued),
+				Status:   api.TaskStatusQueued,
 				Commands: commands,
 				// dependencies are stored below.
 			}

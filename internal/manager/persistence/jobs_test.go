@@ -122,7 +122,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 	}
 
 	// TODO: test task contents.
-	assert.Equal(t, string(api.TaskStatusQueued), tasks[0].Status)
-	assert.Equal(t, string(api.TaskStatusQueued), tasks[1].Status)
-	assert.Equal(t, string(api.TaskStatusQueued), tasks[2].Status)
+	assert.Equal(t, api.TaskStatusQueued, tasks[0].Status)
+	assert.Equal(t, api.TaskStatusQueued, tasks[1].Status)
+	assert.Equal(t, api.TaskStatusQueued, tasks[2].Status)
 }
