@@ -8,6 +8,8 @@ PACKAGE_PATH := dist/${OUT}-${VERSION}
 LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
+export CGO_ENABLED=0
+
 ifndef PACKAGE_PATH
 # ${PACKAGE_PATH} is used in 'rm' commands, so it's important to check.
 $(error PACKAGE_PATH is not set)
@@ -84,8 +86,8 @@ clean:
 
 # static: vet lint resource.syso
 static: vet lint generate
-	CGO_ENABLED=0 go build -v -o flamenco-manager-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-manager-poc
-	CGO_ENABLED=0 go build -v -o flamenco-worker-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-worker-poc
+	go build -v -o flamenco-manager-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-manager-poc
+	go build -v -o flamenco-worker-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-worker-poc
 
 .gitlabAccessToken:
 	$(error gitlabAccessToken does not exist, visit Visit https://gitlab.com/profile/personal_access_tokens, create a Personal Access Token with API access then save it to the file .gitlabAccessToken)
