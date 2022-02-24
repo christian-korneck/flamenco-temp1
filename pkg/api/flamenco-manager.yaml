@@ -337,7 +337,7 @@ components:
 
     TaskStatus:
       type: string
-      enum: [active, canceled, completed, failed, queued, soft-failed, cancel-requested, fail-requested, paused]
+      enum: [active, canceled, completed, failed, queued, soft-failed, cancel-requested, paused]
 
     Command:
       type: object

@@ -76,8 +76,6 @@ const (
 
 	TaskStatusCompleted TaskStatus = "completed"
 
-	TaskStatusFailRequested TaskStatus = "fail-requested"
-
 	TaskStatusFailed TaskStatus = "failed"
 
 	TaskStatusPaused TaskStatus = "paused"

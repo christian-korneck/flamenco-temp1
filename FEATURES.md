@@ -11,6 +11,7 @@ rediscovered.
 - [x] Task Scheduler
 - [x] Unify command definition (type/parameters in persistence layer, name/settings in API layer)
 - [ ] Job status change handling
+- [ ] Port the old 'fail-requested' task status handling code to the new Manager
 - [ ] Task timeout monitoring
 - [ ] Worker Blacklisting & failed task requeueing
 - [ ] Worker timeout monitoring

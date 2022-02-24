@@ -59,6 +59,12 @@ type PersistenceService interface {
 	ScheduleTask(w *persistence.Worker) (*persistence.Task, error)
 }
 
+// TaskStateMachine interfaces task_state_machine.StateMachine.
+type TaskStateMachine interface {
+	IsTaskStatusChangeValid(task *persistence.Task, newStatus api.TaskStatus) bool
+	TaskStatusChange(ctx context.Context, task *persistence.Task, newStatus api.TaskStatus) error
+}
+
 type JobCompiler interface {
 	ListJobTypes() api.AvailableJobTypes
 	Compile(ctx context.Context, job api.SubmittedJob) (*job_compilers.AuthoredJob, error)
