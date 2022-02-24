@@ -41,7 +41,8 @@ socketio-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
 generate:
-	go generate ${PKG}/...
+	go generate ./pkg/...
+	go generate ./internal/...
 
 # resource.syso: resource/thermogui.ico resource/versioninfo.json
 # 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
@@ -51,6 +52,8 @@ version:
 	@echo "Package: ${PKG}"
 	@echo "Version: ${VERSION}"
 	@echo "Target : ${OUT}"
+	@echo
+	@env | grep GO
 
 list-embedded:
 	@go list -f '{{printf "%10s" .Name}}: {{.EmbedFiles}}' ${PKG}/...
@@ -77,7 +80,7 @@ lint:
 clean:
 	@go clean -i -x
 	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso pkg/api/*.gen.go
-	go generate ./...
+	@$(MAKE) generate
 
 # static: vet lint resource.syso
 static: vet lint generate
