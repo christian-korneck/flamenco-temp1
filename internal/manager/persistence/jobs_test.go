@@ -105,7 +105,7 @@ func TestStoreAuthoredJob(t *testing.T) {
 	assert.Equal(t, job.Name, fetchedJob.Name)
 	assert.Equal(t, job.JobType, fetchedJob.JobType)
 	assert.Equal(t, job.Priority, fetchedJob.Priority)
-	assert.Equal(t, string(api.JobStatusUnderConstruction), fetchedJob.Status)
+	assert.Equal(t, api.JobStatusUnderConstruction, fetchedJob.Status)
 	assert.EqualValues(t, map[string]interface{}(job.Settings), fetchedJob.Settings)
 	assert.EqualValues(t, map[string]string(job.Metadata), fetchedJob.Metadata)
 

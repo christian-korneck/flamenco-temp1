@@ -181,7 +181,7 @@ func constructTestJob(
 	assert.NoError(t, err)
 
 	// Queue the job.
-	dbJob.Status = string(api.JobStatusQueued)
+	dbJob.Status = api.JobStatusQueued
 	err = db.SaveJobStatus(ctx, dbJob)
 	assert.NoError(t, err)
 

@@ -36,10 +36,10 @@ type Job struct {
 	gorm.Model
 	UUID string `gorm:"type:char(36);not null;unique;index"`
 
-	Name     string `gorm:"type:varchar(64);not null"`
-	JobType  string `gorm:"type:varchar(32);not null"`
-	Priority int    `gorm:"type:smallint;not null"`
-	Status   string `gorm:"type:varchar(32);not null"` // See JobStatusXxxx consts in openapi_types.gen.go
+	Name     string        `gorm:"type:varchar(64);not null"`
+	JobType  string        `gorm:"type:varchar(32);not null"`
+	Priority int           `gorm:"type:smallint;not null"`
+	Status   api.JobStatus `gorm:"type:varchar(32);not null"`
 
 	Settings StringInterfaceMap `gorm:"type:jsonb"`
 	Metadata StringStringMap    `gorm:"type:jsonb"`
@@ -119,7 +119,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			UUID:     authoredJob.JobID,
 			Name:     authoredJob.Name,
 			JobType:  authoredJob.JobType,
-			Status:   string(authoredJob.Status),
+			Status:   authoredJob.Status,
 			Priority: authoredJob.Priority,
 			Settings: StringInterfaceMap(authoredJob.Settings),
 			Metadata: StringStringMap(authoredJob.Metadata),
