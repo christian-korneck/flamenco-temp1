@@ -21,14 +21,10 @@ package api_impl
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"reflect"
-
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
-
-var stringType = reflect.TypeOf("somestring")
 
 type VariableReplacer interface {
 	ExpandVariables(valueToExpand string, audience config.VariableAudience, platform string) string
