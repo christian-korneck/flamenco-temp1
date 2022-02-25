@@ -42,7 +42,7 @@ type StateMachine struct {
 // Generate mock implementations of these interfaces.
 //go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine PersistenceService
 
-type PersistenceService interface { // Subset of persistence.DB
+type PersistenceService interface {
 	SaveTask(ctx context.Context, task *persistence.Task) error
 	SaveJobStatus(ctx context.Context, j *persistence.Job) error
 
@@ -58,6 +58,9 @@ type PersistenceService interface { // Subset of persistence.DB
 	UpdateJobsTaskStatusesConditional(ctx context.Context, job *persistence.Job,
 		statusesToUpdate []api.TaskStatus, taskStatus api.TaskStatus, activity string) error
 }
+
+// PersistenceService should be a subset of persistence.DB
+var _ PersistenceService = (*persistence.DB)(nil)
 
 func NewStateMachine(persist PersistenceService) *StateMachine {
 	return &StateMachine{

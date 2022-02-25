@@ -219,3 +219,80 @@ func (db *DB) SaveTask(ctx context.Context, t *Task) error {
 	}
 	return nil
 }
+
+func (db *DB) JobHasTasksInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (bool, error) {
+	var numTasksInStatus int64
+	tx := db.gormDB.Model(&Task{}).
+		Where("job_id", job.ID).
+		Where("status", taskStatus).
+		Count(&numTasksInStatus)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+	return numTasksInStatus > 0, nil
+}
+
+func (db *DB) CountTasksOfJobInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (numInStatus, numTotal int, err error) {
+	type Result struct {
+		Status   api.TaskStatus
+		NumTasks int
+	}
+	var results []Result
+
+	tx := db.gormDB.Debug().Model(&Task{}).
+		Select("status, count(*) as num_tasks").
+		Where("job_id", job.ID).
+		Group("status").
+		Scan(&results)
+
+	if tx.Error != nil {
+		return 0, 0, fmt.Errorf("count tasks of job %s in status %q: %w", job.UUID, taskStatus, tx.Error)
+	}
+
+	for _, result := range results {
+		if result.Status == taskStatus {
+			numInStatus += result.NumTasks
+		}
+		numTotal += result.NumTasks
+	}
+
+	return
+}
+
+// UpdateJobsTaskStatuses updates the status & activity of the tasks of `job`.
+func (db *DB) UpdateJobsTaskStatuses(ctx context.Context, job *Job,
+	taskStatus api.TaskStatus, activity string) error {
+
+	if taskStatus == "" {
+		return errors.New("empty status not allowed")
+	}
+
+	tx := db.gormDB.Model(Task{}).
+		Where("job_Id = ?", job.ID).
+		Updates(Task{Status: taskStatus, Activity: activity})
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+
+// UpdateJobsTaskStatusesConditional updates the status & activity of the tasks of `job`,
+// limited to those tasks with status in `statusesToUpdate`.
+func (db *DB) UpdateJobsTaskStatusesConditional(ctx context.Context, job *Job,
+	statusesToUpdate []api.TaskStatus, taskStatus api.TaskStatus, activity string) error {
+
+	if taskStatus == "" {
+		return errors.New("empty status not allowed")
+	}
+
+	tx := db.gormDB.Debug().Model(Task{}).
+		Where("job_Id = ?", job.ID).
+		Where("status in ?", statusesToUpdate).
+		Updates(Task{Status: taskStatus, Activity: activity})
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
