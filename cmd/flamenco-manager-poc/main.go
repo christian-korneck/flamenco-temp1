@@ -43,6 +43,7 @@ import (
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/swagger_ui"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_logs"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
@@ -91,7 +92,8 @@ func main() {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
-	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService)
+	taskStateMachine := task_state_machine.NewStateMachine(persist)
+	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService, taskStateMachine)
 	e := buildWebService(flamenco, persist)
 
 	// Start the web server.

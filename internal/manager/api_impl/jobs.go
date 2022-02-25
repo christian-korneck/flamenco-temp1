@@ -184,23 +184,25 @@ func (f *Flamenco) doTaskUpdate(
 		logger.Panic().Msg("dbTask.Job is nil, unable to continue")
 	}
 
+	var dbErr error
+
 	if update.TaskStatus != nil {
-		// TODO: check that this status transition is valid.
-		// TODO: process this status transition.
-		newStatus := *update.TaskStatus
-		logger.Info().
-			Str("oldStatus", string(dbTask.Status)).
-			Str("newStatus", string(newStatus)).
-			Msg("task changing status")
-		dbTask.Status = newStatus
+		oldTaskStatus := dbTask.Status
+		err := f.stateMachine.TaskStatusChange(ctx, dbTask, *update.TaskStatus)
+		if err != nil {
+			logger.Error().Err(err).
+				Str("newTaskStatus", string(*update.TaskStatus)).
+				Str("oldTaskStatus", string(oldTaskStatus)).
+				Msg("error changing task status")
+			dbErr = fmt.Errorf("changing status of task %s to %q: %w",
+				dbTask.UUID, *update.TaskStatus, err)
+		}
 	}
 
 	if update.Activity != nil {
 		dbTask.Activity = *update.Activity
+		dbErr = f.persist.SaveTaskActivity(ctx, dbTask)
 	}
-
-	// Do the database persistence first, as that's more important than the logging.
-	dbErr := f.persist.SaveTask(ctx, dbTask)
 
 	if update.Log != nil {
 		// Errors writing the log to file should be logged in our own logging

@@ -220,6 +220,13 @@ func (db *DB) SaveTask(ctx context.Context, t *Task) error {
 	return nil
 }
 
+func (db *DB) SaveTaskActivity(ctx context.Context, t *Task) error {
+	if err := db.gormDB.Model(t).Updates(Task{Activity: t.Activity}).Error; err != nil {
+		return fmt.Errorf("error saving task activity: %w", err)
+	}
+	return nil
+}
+
 func (db *DB) JobHasTasksInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (bool, error) {
 	var numTasksInStatus int64
 	tx := db.gormDB.Model(&Task{}).

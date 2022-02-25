@@ -29,18 +29,22 @@ import (
 	"github.com/rs/zerolog"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
+	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 type Flamenco struct {
-	jobCompiler JobCompiler
-	persist     PersistenceService
-	logStorage  LogStorage
-	config      ConfigService
+	jobCompiler  JobCompiler
+	persist      PersistenceService
+	logStorage   LogStorage
+	config       ConfigService
+	stateMachine TaskStateMachine
 }
 
+var _ api.ServerInterface = (*Flamenco)(nil)
+
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService,TaskStateMachine
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -48,6 +52,7 @@ type PersistenceService interface {
 	// FetchTask fetches the given task and the accompanying job.
 	FetchTask(ctx context.Context, taskID string) (*persistence.Task, error)
 	SaveTask(ctx context.Context, task *persistence.Task) error
+	SaveTaskActivity(ctx context.Context, t *persistence.Task) error
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)
@@ -59,11 +64,18 @@ type PersistenceService interface {
 	ScheduleTask(w *persistence.Worker) (*persistence.Task, error)
 }
 
-// TaskStateMachine interfaces task_state_machine.StateMachine.
+var _ PersistenceService = (*persistence.DB)(nil)
+
 type TaskStateMachine interface {
-	IsTaskStatusChangeValid(task *persistence.Task, newStatus api.TaskStatus) bool
+	// TaskStatusChange gives a Task a new status, and handles the resulting status changes on the job.
 	TaskStatusChange(ctx context.Context, task *persistence.Task, newStatus api.TaskStatus) error
+
+	// JobStatusChange gives a Job a new status, and handles the resulting status changes on its tasks.
+	JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus) error
 }
+
+// TaskStateMachine should be a subset of task_state_machine.StateMachine.
+var _ TaskStateMachine = (*task_state_machine.StateMachine)(nil)
 
 type JobCompiler interface {
 	ListJobTypes() api.AvailableJobTypes
@@ -80,15 +92,20 @@ type ConfigService interface {
 	VariableReplacer
 }
 
-var _ api.ServerInterface = (*Flamenco)(nil)
-
-// NewFlamenco creates a new Flamenco service, using the given JobCompiler.
-func NewFlamenco(jc JobCompiler, jps PersistenceService, ls LogStorage, cs ConfigService) *Flamenco {
+// NewFlamenco creates a new Flamenco service.
+func NewFlamenco(
+	jc JobCompiler,
+	jps PersistenceService,
+	ls LogStorage,
+	cs ConfigService,
+	sm TaskStateMachine,
+) *Flamenco {
 	return &Flamenco{
-		jobCompiler: jc,
-		persist:     jps,
-		logStorage:  ls,
-		config:      cs,
+		jobCompiler:  jc,
+		persist:      jps,
+		logStorage:   ls,
+		config:       cs,
+		stateMachine: sm,
 	}
 }
 

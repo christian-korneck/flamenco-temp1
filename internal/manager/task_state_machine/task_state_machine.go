@@ -212,6 +212,7 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 	}
 }
 
+// JobStatusChange gives a Job a new status, and handles the resulting status changes on its tasks.
 func (sm *StateMachine) JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus) error {
 	// Job status changes can trigger task status changes, which can trigger the
 	// next job status change. Keep looping over these job status changes until
