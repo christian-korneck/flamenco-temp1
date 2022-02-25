@@ -38,80 +38,6 @@ type StateMachineMocks struct {
 	persist *mocks.MockPersistenceService
 }
 
-func mockedTaskStateMachine(mockCtrl *gomock.Controller) (*StateMachine, *StateMachineMocks) {
-	mocks := StateMachineMocks{
-		persist: mocks.NewMockPersistenceService(mockCtrl),
-	}
-	sm := NewStateMachine(mocks.persist)
-	return sm, &mocks
-}
-
-func (m *StateMachineMocks) expectSaveTaskWithStatus(
-	t *testing.T,
-	task *persistence.Task,
-	expectTaskStatus api.TaskStatus,
-) {
-	m.persist.EXPECT().
-		SaveTask(gomock.Any(), task).
-		DoAndReturn(func(ctx context.Context, savedTask *persistence.Task) error {
-			assert.Equal(t, expectTaskStatus, savedTask.Status)
-			return nil
-		})
-}
-
-func (m *StateMachineMocks) expectSaveJobWithStatus(
-	t *testing.T,
-	job *persistence.Job,
-	expectJobStatus api.JobStatus,
-) {
-	m.persist.EXPECT().
-		SaveJobStatus(gomock.Any(), job).
-		DoAndReturn(func(ctx context.Context, savedJob *persistence.Job) error {
-			assert.Equal(t, expectJobStatus, savedJob.Status)
-			return nil
-		})
-}
-
-/* taskWithStatus() creates a task of a certain status, with a job of a certain status. */
-func taskWithStatus(jobStatus api.JobStatus, taskStatus api.TaskStatus) *persistence.Task {
-	job := persistence.Job{
-		Model: gorm.Model{ID: 47},
-		UUID:  "test-job-f3f5-4cef-9cd7-e67eb28eaf3e",
-
-		Status: jobStatus,
-	}
-	task := persistence.Task{
-		Model: gorm.Model{ID: 327},
-		UUID:  "testtask-0001-4e28-aeea-8cbaf2fc96a5",
-
-		JobID: job.ID,
-		Job:   &job,
-
-		Status: taskStatus,
-	}
-
-	return &task
-}
-
-/* taskOfSameJob() creates a task of a certain status, on the same job as the given task. */
-func taskOfSameJob(task *persistence.Task, taskStatus api.TaskStatus) *persistence.Task {
-	newTaskID := task.ID + 1
-	return &persistence.Task{
-		Model:  gorm.Model{ID: newTaskID},
-		UUID:   fmt.Sprintf("testtask-%04d-4e28-aeea-8cbaf2fc96a5", newTaskID),
-		JobID:  task.JobID,
-		Job:    task.Job,
-		Status: taskStatus,
-	}
-}
-
-func taskStateMachineTestFixtures(t *testing.T) (*gomock.Controller, context.Context, *StateMachine, *StateMachineMocks) {
-	mockCtrl := gomock.NewController(t)
-	ctx := context.Background()
-	sm, mocks := mockedTaskStateMachine(mockCtrl)
-	return mockCtrl, ctx, sm, mocks
-}
-
 // In the comments below, "T" indicates the performed task status change, and
 // "J" the expected resulting job status change.
 
@@ -219,4 +145,78 @@ func TestTaskStatusChangeUnknownStatus(t *testing.T) {
 	task := taskWithStatus(api.JobStatusQueued, api.TaskStatusQueued)
 	mocks.expectSaveTaskWithStatus(t, task, api.TaskStatus("borked"))
 	assert.NoError(t, sm.TaskStatusChange(ctx, task, api.TaskStatus("borked")))
+}
+
+func mockedTaskStateMachine(mockCtrl *gomock.Controller) (*StateMachine, *StateMachineMocks) {
+	mocks := StateMachineMocks{
+		persist: mocks.NewMockPersistenceService(mockCtrl),
+	}
+	sm := NewStateMachine(mocks.persist)
+	return sm, &mocks
+}
+
+func (m *StateMachineMocks) expectSaveTaskWithStatus(
+	t *testing.T,
+	task *persistence.Task,
+	expectTaskStatus api.TaskStatus,
+) {
+	m.persist.EXPECT().
+		SaveTask(gomock.Any(), task).
+		DoAndReturn(func(ctx context.Context, savedTask *persistence.Task) error {
+			assert.Equal(t, expectTaskStatus, savedTask.Status)
+			return nil
+		})
+}
+
+func (m *StateMachineMocks) expectSaveJobWithStatus(
+	t *testing.T,
+	job *persistence.Job,
+	expectJobStatus api.JobStatus,
+) {
+	m.persist.EXPECT().
+		SaveJobStatus(gomock.Any(), job).
+		DoAndReturn(func(ctx context.Context, savedJob *persistence.Job) error {
+			assert.Equal(t, expectJobStatus, savedJob.Status)
+			return nil
+		})
+}
+
+/* taskWithStatus() creates a task of a certain status, with a job of a certain status. */
+func taskWithStatus(jobStatus api.JobStatus, taskStatus api.TaskStatus) *persistence.Task {
+	job := persistence.Job{
+		Model: gorm.Model{ID: 47},
+		UUID:  "test-job-f3f5-4cef-9cd7-e67eb28eaf3e",
+
+		Status: jobStatus,
+	}
+	task := persistence.Task{
+		Model: gorm.Model{ID: 327},
+		UUID:  "testtask-0001-4e28-aeea-8cbaf2fc96a5",
+
+		JobID: job.ID,
+		Job:   &job,
+
+		Status: taskStatus,
+	}
+
+	return &task
+}
+
+/* taskOfSameJob() creates a task of a certain status, on the same job as the given task. */
+func taskOfSameJob(task *persistence.Task, taskStatus api.TaskStatus) *persistence.Task {
+	newTaskID := task.ID + 1
+	return &persistence.Task{
+		Model:  gorm.Model{ID: newTaskID},
+		UUID:   fmt.Sprintf("testtask-%04d-4e28-aeea-8cbaf2fc96a5", newTaskID),
+		JobID:  task.JobID,
+		Job:    task.Job,
+		Status: taskStatus,
+	}
+}
+
+func taskStateMachineTestFixtures(t *testing.T) (*gomock.Controller, context.Context, *StateMachine, *StateMachineMocks) {
+	mockCtrl := gomock.NewController(t)
+	ctx := context.Background()
+	sm, mocks := mockedTaskStateMachine(mockCtrl)
+	return mockCtrl, ctx, sm, mocks
 }
