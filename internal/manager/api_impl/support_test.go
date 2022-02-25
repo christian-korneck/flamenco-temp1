@@ -36,11 +36,12 @@ import (
 )
 
 type mockedFlamenco struct {
-	flamenco    *Flamenco
-	jobCompiler *mocks.MockJobCompiler
-	persistence *mocks.MockPersistenceService
-	logStorage  *mocks.MockLogStorage
-	config      *mocks.MockConfigService
+	flamenco     *Flamenco
+	jobCompiler  *mocks.MockJobCompiler
+	persistence  *mocks.MockPersistenceService
+	logStorage   *mocks.MockLogStorage
+	config       *mocks.MockConfigService
+	stateMachine *mocks.MockTaskStateMachine
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
@@ -48,14 +49,16 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	ps := mocks.NewMockPersistenceService(mockCtrl)
 	ls := mocks.NewMockLogStorage(mockCtrl)
 	cs := mocks.NewMockConfigService(mockCtrl)
-	f := NewFlamenco(jc, ps, ls, cs)
+	sm := mocks.NewMockTaskStateMachine(mockCtrl)
+	f := NewFlamenco(jc, ps, ls, cs, sm)
 
 	return mockedFlamenco{
-		flamenco:    f,
-		jobCompiler: jc,
-		persistence: ps,
-		logStorage:  ls,
-		config:      cs,
+		flamenco:     f,
+		jobCompiler:  jc,
+		persistence:  ps,
+		logStorage:   ls,
+		config:       cs,
+		stateMachine: sm,
 	}
 }
 

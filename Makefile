@@ -29,7 +29,7 @@ all: application
 with-deps:
 	go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.0
 	go get github.com/golang/mock/mockgen@v1.6.0
-	make -s application
+	$(MAKE) application
 
 application: ${RESOURCES} generate flamenco-manager-poc flamenco-worker-poc socketio-poc
 
@@ -43,7 +43,7 @@ socketio-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
 generate:
-	go generate ./pkg/...
+	go generate ./pkg/api/...
 	go generate ./internal/...
 
 # resource.syso: resource/thermogui.ico resource/versioninfo.json
@@ -81,7 +81,8 @@ lint:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso pkg/api/*.gen.go
+	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso
+	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
 # static: vet lint resource.syso
@@ -147,4 +148,4 @@ _package_zip: static
 	cd $(dir ${PACKAGE_PATH}) && zip -9 -r -q $(notdir ${PACKAGE_PATH})-${GOOS}.zip $(notdir ${PACKAGE_PATH})
 	rm ${STATIC_OUT}
 
-.PHONY: run application version static vet lint deploy package release prepare flamenco-manager-poc flamenco-worker-poc socketio-poc generate
+.PHONY: run application version static vet lint deploy package release prepare flamenco-manager-poc flamenco-worker-poc socketio-poc generate with-deps
