@@ -22,6 +22,7 @@ package task_state_machine
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -50,6 +51,25 @@ func TestTaskStatusChangeQueuedToActive(t *testing.T) {
 	mocks.expectSaveTaskWithStatus(t, task, api.TaskStatusActive)
 	mocks.expectSaveJobWithStatus(t, task.Job, api.JobStatusActive)
 	assert.NoError(t, sm.TaskStatusChange(ctx, task, api.TaskStatusActive))
+}
+
+func TestTaskStatusChangeSaveTaskAfterJobChangeFailure(t *testing.T) {
+	mockCtrl, ctx, sm, mocks := taskStateMachineTestFixtures(t)
+	defer mockCtrl.Finish()
+
+	// A task status change should be saved, even when triggering the job change errors somehow.
+	task := taskWithStatus(api.JobStatusQueued, api.TaskStatusQueued)
+
+	jobSaveErr := errors.New("hypothetical job save error")
+	mocks.persist.EXPECT().
+		SaveJobStatus(gomock.Any(), task.Job).
+		Return(jobSaveErr)
+
+	// Expect a call to save the task in the persistence layer, regardless of the above error.
+	mocks.expectSaveTaskWithStatus(t, task, api.TaskStatusActive)
+
+	returnedErr := sm.TaskStatusChange(ctx, task, api.TaskStatusActive)
+	assert.ErrorIs(t, returnedErr, jobSaveErr, "the returned error should wrap the persistence layer error")
 }
 
 func TestTaskStatusChangeActiveToCompleted(t *testing.T) {
