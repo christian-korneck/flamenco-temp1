@@ -89,7 +89,7 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 
 func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 	task := Task{}
-	findTaskResult := tx.Debug().
+	findTaskResult := tx.
 		Model(&task).
 		Joins("left join jobs on tasks.job_id = jobs.id").
 		Joins("left join task_dependencies on tasks.id = task_dependencies.task_id").
@@ -116,5 +116,5 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 func assignTaskToWorker(tx *gorm.DB, w *Worker, t *Task) error {
 	// Without the Select() call, Gorm will try and also store task.Job in the
 	// jobs database, which is not what we want.
-	return tx.Debug().Model(t).Select("worker_id").Updates(Task{WorkerID: &w.ID}).Error
+	return tx.Model(t).Select("worker_id").Updates(Task{WorkerID: &w.ID}).Error
 }
