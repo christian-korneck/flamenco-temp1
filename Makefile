@@ -5,6 +5,7 @@ PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
+# Prevent any dependency that requires a C compiler, i.e. only work with pure-Go libraries.
 export CGO_ENABLED=0
 
 all: application
@@ -15,13 +16,13 @@ with-deps:
 	go get github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) application
 
-application: ${RESOURCES} generate flamenco-manager-poc flamenco-worker-poc socketio-poc
+application: ${RESOURCES} generate flamenco-manager flamenco-worker socketio-poc
 
-flamenco-manager-poc:
-	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager-poc
+flamenco-manager:
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
 
-flamenco-worker-poc:
-	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker-poc
+flamenco-worker:
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
 
 socketio-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
@@ -64,12 +65,12 @@ lint:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-poc-v* flamenco*-poc *.exe resource.syso
+	rm -f flamenco*-v* flamenco-manager flamenco-worker socketio-poc *.exe
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
 static: vet lint generate
-	go build -v -o flamenco-manager-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-manager-poc
-	go build -v -o flamenco-worker-poc-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-worker-poc
+	go build -v -o flamenco-manager-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-manager
+	go build -v -o flamenco-worker-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-worker
 
 .PHONY: run application version static vet lint deploy  flamenco-manager flamenco-worker socketio-poc generate with-deps
