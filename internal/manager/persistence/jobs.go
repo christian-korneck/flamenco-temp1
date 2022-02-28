@@ -125,7 +125,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			Metadata: StringStringMap(authoredJob.Metadata),
 		}
 
-		if err := db.gormDB.Create(&dbJob).Error; err != nil {
+		if err := db.gormDB.WithContext(ctx).Create(&dbJob).Error; err != nil {
 			return fmt.Errorf("error storing job: %v", err)
 		}
 
@@ -149,7 +149,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 				Commands: commands,
 				// dependencies are stored below.
 			}
-			if err := db.gormDB.Create(&dbTask).Error; err != nil {
+			if err := db.gormDB.WithContext(ctx).Create(&dbTask).Error; err != nil {
 				return fmt.Errorf("error storing task: %v", err)
 			}
 
@@ -177,7 +177,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			}
 
 			dbTask.Dependencies = deps
-			if err := db.gormDB.Save(dbTask).Error; err != nil {
+			if err := db.gormDB.WithContext(ctx).Save(dbTask).Error; err != nil {
 				return fmt.Errorf("unable to store dependencies of task %q: %w", authoredTask.UUID, err)
 			}
 		}
@@ -188,7 +188,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 
 func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	dbJob := Job{}
-	findResult := db.gormDB.First(&dbJob, "uuid = ?", jobUUID)
+	findResult := db.gormDB.WithContext(ctx).First(&dbJob, "uuid = ?", jobUUID)
 	if findResult.Error != nil {
 		return nil, findResult.Error
 	}
@@ -197,24 +197,28 @@ func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 }
 
 func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
-	if err := db.gormDB.Model(j).Updates(Job{Status: j.Status}).Error; err != nil {
-		return fmt.Errorf("error saving job status: %w", err)
+	tx := db.gormDB.WithContext(ctx).
+		Model(j).
+		Updates(Job{Status: j.Status})
+	if tx.Error != nil {
+		return fmt.Errorf("error saving job status: %w", tx.Error)
 	}
 	return nil
 }
 
 func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
 	dbTask := Task{}
-	findResult := db.gormDB.Joins("Job").First(&dbTask, "tasks.uuid = ?", taskUUID)
-	if findResult.Error != nil {
-		return nil, findResult.Error
+	tx := db.gormDB.WithContext(ctx).
+		Joins("Job").
+		First(&dbTask, "tasks.uuid = ?", taskUUID)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
-
 	return &dbTask, nil
 }
 
 func (db *DB) SaveTask(ctx context.Context, t *Task) error {
-	if err := db.gormDB.Save(t).Error; err != nil {
+	if err := db.gormDB.WithContext(ctx).Save(t).Error; err != nil {
 		return fmt.Errorf("error saving task: %w", err)
 	}
 	return nil
@@ -229,7 +233,8 @@ func (db *DB) SaveTaskActivity(ctx context.Context, t *Task) error {
 
 func (db *DB) JobHasTasksInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (bool, error) {
 	var numTasksInStatus int64
-	tx := db.gormDB.Model(&Task{}).
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Task{}).
 		Where("job_id", job.ID).
 		Where("status", taskStatus).
 		Count(&numTasksInStatus)
@@ -246,7 +251,8 @@ func (db *DB) CountTasksOfJobInStatus(ctx context.Context, job *Job, taskStatus 
 	}
 	var results []Result
 
-	tx := db.gormDB.Debug().Model(&Task{}).
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Task{}).
 		Select("status, count(*) as num_tasks").
 		Where("job_id", job.ID).
 		Group("status").
@@ -274,7 +280,8 @@ func (db *DB) UpdateJobsTaskStatuses(ctx context.Context, job *Job,
 		return errors.New("empty status not allowed")
 	}
 
-	tx := db.gormDB.Model(Task{}).
+	tx := db.gormDB.WithContext(ctx).
+		Model(Task{}).
 		Where("job_Id = ?", job.ID).
 		Updates(Task{Status: taskStatus, Activity: activity})
 
@@ -293,13 +300,10 @@ func (db *DB) UpdateJobsTaskStatusesConditional(ctx context.Context, job *Job,
 		return errors.New("empty status not allowed")
 	}
 
-	tx := db.gormDB.Debug().Model(Task{}).
+	tx := db.gormDB.WithContext(ctx).
+		Model(Task{}).
 		Where("job_Id = ?", job.ID).
 		Where("status in ?", statusesToUpdate).
 		Updates(Task{Status: taskStatus, Activity: activity})
-
-	if tx.Error != nil {
-		return tx.Error
-	}
-	return nil
+	return tx.Error
 }

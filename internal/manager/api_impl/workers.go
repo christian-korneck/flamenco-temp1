@@ -243,7 +243,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Get a task to execute:
-	dbTask, err := f.persist.ScheduleTask(worker)
+	dbTask, err := f.persist.ScheduleTask(e.Request().Context(), worker)
 	if err != nil {
 		logger.Warn().Err(err).Msg("error scheduling task for worker")
 		return sendAPIError(e, http.StatusInternalServerError, "internal error finding a task for you: %v", err)

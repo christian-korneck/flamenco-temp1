@@ -21,6 +21,7 @@ package persistence
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/rs/zerolog/log"
@@ -37,7 +38,7 @@ var (
 // ScheduleTask finds a task to execute by the given worker.
 // If no task is available, (nil, nil) is returned, as this is not an error situation.
 // NOTE: this does not also fetch returnedTask.Worker, but returnedTask.WorkerID is set.
-func (db *DB) ScheduleTask(w *Worker) (*Task, error) {
+func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 	logger := log.With().Str("worker", w.UUID).Logger()
 	logger.Debug().Msg("finding task for worker")
 
@@ -45,7 +46,7 @@ func (db *DB) ScheduleTask(w *Worker) (*Task, error) {
 	// 1. find task, and
 	// 2. assign the task to the worker.
 	var task *Task
-	txErr := db.gormDB.Transaction(func(tx *gorm.DB) error {
+	txErr := db.gormDB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var err error
 		task, err = findTaskForWorker(tx, w)
 		if err == gorm.ErrRecordNotFound {

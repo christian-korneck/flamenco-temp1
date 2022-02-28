@@ -33,22 +33,28 @@ import (
 
 func TestNoTasks(t *testing.T) {
 	db := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer ctxCancel()
+
 	w := linuxWorker(t, db)
 
-	task, err := db.ScheduleTask(&w)
+	task, err := db.ScheduleTask(ctx, &w)
 	assert.Nil(t, task)
 	assert.NoError(t, err)
 }
 
 func TestOneJobOneTask(t *testing.T) {
 	db := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer ctxCancel()
+
 	w := linuxWorker(t, db)
 
 	authTask := authorTestTask("the task", "blender")
 	atj := authorTestJob("b6a1d859-122f-4791-8b78-b943329a9989", "simple-blender-render", authTask)
 	job := constructTestJob(t, db, atj)
 
-	task, err := db.ScheduleTask(&w)
+	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
 
 	// Check the returned task.
@@ -75,6 +81,9 @@ func TestOneJobOneTask(t *testing.T) {
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {
 	db := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer ctxCancel()
+
 	w := linuxWorker(t, db)
 
 	att1 := authorTestTask("1 low-prio task", "blender")
@@ -88,7 +97,7 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 
 	job := constructTestJob(t, db, atj)
 
-	task, err := db.ScheduleTask(&w)
+	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")
@@ -104,6 +113,9 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 
 func TestOneJobThreeTasksByDependencies(t *testing.T) {
 	db := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer ctxCancel()
+
 	w := linuxWorker(t, db)
 
 	att1 := authorTestTask("1 low-prio task", "blender")
@@ -117,7 +129,7 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 		att1, att2, att3)
 	job := constructTestJob(t, db, atj)
 
-	task, err := db.ScheduleTask(&w)
+	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")
@@ -128,6 +140,9 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 
 func TestTwoJobsThreeTasks(t *testing.T) {
 	db := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer ctxCancel()
+
 	w := linuxWorker(t, db)
 
 	att1_1 := authorTestTask("1.1 low-prio task", "blender")
@@ -155,7 +170,7 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 	constructTestJob(t, db, atj1)
 	job2 := constructTestJob(t, db, atj2)
 
-	task, err := db.ScheduleTask(&w)
+	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
 	if task == nil {
 		t.Fatal("task is nil")

@@ -155,18 +155,18 @@ func (mr *MockPersistenceServiceMockRecorder) SaveWorkerStatus(arg0, arg1 interf
 }
 
 // ScheduleTask mocks base method.
-func (m *MockPersistenceService) ScheduleTask(arg0 *persistence.Worker) (*persistence.Task, error) {
+func (m *MockPersistenceService) ScheduleTask(arg0 context.Context, arg1 *persistence.Worker) (*persistence.Task, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScheduleTask", arg0)
+	ret := m.ctrl.Call(m, "ScheduleTask", arg0, arg1)
 	ret0, _ := ret[0].(*persistence.Task)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ScheduleTask indicates an expected call of ScheduleTask.
-func (mr *MockPersistenceServiceMockRecorder) ScheduleTask(arg0 interface{}) *gomock.Call {
+func (mr *MockPersistenceServiceMockRecorder) ScheduleTask(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScheduleTask", reflect.TypeOf((*MockPersistenceService)(nil).ScheduleTask), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScheduleTask", reflect.TypeOf((*MockPersistenceService)(nil).ScheduleTask), arg0, arg1)
 }
 
 // StoreAuthoredJob mocks base method.

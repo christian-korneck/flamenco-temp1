@@ -53,6 +53,7 @@ type PersistenceService interface {
 	FetchTask(ctx context.Context, taskID string) (*persistence.Task, error)
 	SaveTask(ctx context.Context, task *persistence.Task) error
 	SaveTaskActivity(ctx context.Context, t *persistence.Task) error
+	FetchTasksOfWorkerInStatus(context.Context, *persistence.Worker, api.TaskStatus) ([]*persistence.Task, error)
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)
@@ -61,7 +62,7 @@ type PersistenceService interface {
 
 	// ScheduleTask finds a task to execute by the given worker, and assigns it to that worker.
 	// If no task is available, (nil, nil) is returned, as this is not an error situation.
-	ScheduleTask(w *persistence.Worker) (*persistence.Task, error)
+	ScheduleTask(ctx context.Context, w *persistence.Worker) (*persistence.Task, error)
 }
 
 var _ PersistenceService = (*persistence.DB)(nil)

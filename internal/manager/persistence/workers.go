@@ -51,7 +51,7 @@ func (w *Worker) TaskTypes() []string {
 }
 
 func (db *DB) CreateWorker(ctx context.Context, w *Worker) error {
-	if err := db.gormDB.Create(w).Error; err != nil {
+	if err := db.gormDB.WithContext(ctx).Create(w).Error; err != nil {
 		return fmt.Errorf("error creating new worker: %w", err)
 	}
 	return nil
@@ -59,15 +59,16 @@ func (db *DB) CreateWorker(ctx context.Context, w *Worker) error {
 
 func (db *DB) FetchWorker(ctx context.Context, uuid string) (*Worker, error) {
 	w := Worker{}
-	findResult := db.gormDB.First(&w, "uuid = ?", uuid)
-	if findResult.Error != nil {
-		return nil, findResult.Error
+	tx := db.gormDB.WithContext(ctx).
+		First(&w, "uuid = ?", uuid)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
 	return &w, nil
 }
 
 func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
-	err := db.gormDB.
+	err := db.gormDB.WithContext(ctx).
 		Model(w).
 		Select("status", "status_requested").
 		Updates(Worker{
@@ -81,7 +82,7 @@ func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
 }
 
 func (db *DB) SaveWorker(ctx context.Context, w *Worker) error {
-	if err := db.gormDB.Save(w).Error; err != nil {
+	if err := db.gormDB.WithContext(ctx).Save(w).Error; err != nil {
 		return fmt.Errorf("error saving worker: %w", err)
 	}
 	return nil

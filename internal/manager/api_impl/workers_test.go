@@ -21,6 +21,7 @@ package api_impl
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -39,6 +40,8 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf := newMockedFlamenco(mockCtrl)
 	worker := testWorker()
 
+	echo := mf.prepareMockedRequest(&worker, nil)
+
 	// Expect a call into the persistence layer, which should return a scheduled task.
 	job := persistence.Job{
 		UUID: "583a7d59-887a-4c6c-b3e4-a753018f71b0",
@@ -47,13 +50,12 @@ func TestTaskScheduleHappy(t *testing.T) {
 		UUID: "4107c7aa-e86d-4244-858b-6c4fce2af503",
 		Job:  &job,
 	}
-	mf.persistence.EXPECT().ScheduleTask(&worker).Return(&task, nil)
+	mf.persistence.EXPECT().ScheduleTask(echo.Request().Context(), &worker).Return(&task, nil)
 
-	echoCtx := mf.prepareMockedRequest(&worker, nil)
-	err := mf.flamenco.ScheduleTask(echoCtx)
+	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
 
-	resp := echoCtx.Response().Writer.(*httptest.ResponseRecorder)
+	resp := echo.Response().Writer.(*httptest.ResponseRecorder)
 	assert.Equal(t, http.StatusOK, resp.Code)
 	// TODO: check that the returned JSON actually matches what we expect.
 }

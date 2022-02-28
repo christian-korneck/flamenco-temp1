@@ -73,7 +73,8 @@ func TestStoreAuthoredJob(t *testing.T) {
 }
 
 func TestJobHasTasksInStatus(t *testing.T) {
-	ctx, db, job, _ := jobTasksTestFixtures(t)
+	ctx, ctxCancel, db, job, _ := jobTasksTestFixtures(t)
+	defer ctxCancel()
 
 	hasTasks, err := db.JobHasTasksInStatus(ctx, job, api.TaskStatusQueued)
 	assert.NoError(t, err)
@@ -85,7 +86,8 @@ func TestJobHasTasksInStatus(t *testing.T) {
 }
 
 func TestCountTasksOfJobInStatus(t *testing.T) {
-	ctx, db, job, authoredJob := jobTasksTestFixtures(t)
+	ctx, ctxCancel, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer ctxCancel()
 
 	numQueued, numTotal, err := db.CountTasksOfJobInStatus(ctx, job, api.TaskStatusQueued)
 	assert.NoError(t, err)
@@ -115,7 +117,8 @@ func TestCountTasksOfJobInStatus(t *testing.T) {
 }
 
 func TestUpdateJobsTaskStatuses(t *testing.T) {
-	ctx, db, job, authoredJob := jobTasksTestFixtures(t)
+	ctx, ctxCancel, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer ctxCancel()
 
 	err := db.UpdateJobsTaskStatuses(ctx, job, api.TaskStatusSoftFailed, "testing æctivity")
 	assert.NoError(t, err)
@@ -143,7 +146,8 @@ func TestUpdateJobsTaskStatuses(t *testing.T) {
 }
 
 func TestUpdateJobsTaskStatusesConditional(t *testing.T) {
-	ctx, db, job, authoredJob := jobTasksTestFixtures(t)
+	ctx, ctxCancel, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer ctxCancel()
 
 	getTask := func(taskIndex int) *Task {
 		task, err := db.FetchTask(ctx, authoredJob.Tasks[taskIndex].UUID)
@@ -247,11 +251,10 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 	return job
 }
 
-func jobTasksTestFixtures(t *testing.T) (context.Context, *DB, *Job, job_compilers.AuthoredJob) {
+func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *DB, *Job, job_compilers.AuthoredJob) {
 	db := CreateTestDB(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
 
 	authoredJob := createTestAuthoredJobWithTasks()
 	err := db.StoreAuthoredJob(ctx, authoredJob)
@@ -267,5 +270,5 @@ func jobTasksTestFixtures(t *testing.T) (context.Context, *DB, *Job, job_compile
 		t.Fatalf("nil job obtained from DB but with no error!")
 	}
 
-	return ctx, db, dbJob, authoredJob
+	return ctx, cancel, db, dbJob, authoredJob
 }
