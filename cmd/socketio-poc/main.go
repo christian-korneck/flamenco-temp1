@@ -37,7 +37,7 @@ func socketIOServer() *gosocketio.Server {
 	})
 
 	sio.On(gosocketio.OnError, func(c *gosocketio.Channel) {
-		log.Warn().Interface("c", *c).Msg("socketio error")
+		log.Warn().Interface("c", c).Msg("socketio error")
 	})
 
 	// chat socket
