@@ -37,17 +37,28 @@ const (
 
 func (w *Worker) gotoStateAwake(ctx context.Context) {
 	w.stateMutex.Lock()
-	defer w.stateMutex.Unlock()
-
 	w.state = api.WorkerStatusAwake
+	w.stateMutex.Unlock()
 
 	w.doneWg.Add(2)
 	w.ackStateChange(ctx, w.state)
+
 	go w.runStateAwake(ctx)
 }
 
 // runStateAwake fetches a task and executes it, in an endless loop.
 func (w *Worker) runStateAwake(ctx context.Context) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			w.SignOff(ctx)
+			log.Panic().
+				Interface("panic", err).
+				Str("workerStatus", string(w.state)).
+				Msg("panic, so signed off and going to stop")
+		}
+	}()
+
 	defer w.doneWg.Done()
 	defer log.Debug().Msg("stopping state 'awake'")
 
