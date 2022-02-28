@@ -4,6 +4,8 @@ This file lists the features that ought to be implemented at some point in time.
 It will likely be expanded over time while forgotten features of Flamenco v2 are
 rediscovered.
 
+Note that list is **not** in any specific order.
+
 ## Manager
 
 - [x] OpenAPI implementation that actually runs as a server process
@@ -56,7 +58,7 @@ rediscovered.
 
 ## Blender Add-on
 
-- [ ] User authentication
 - [ ] Communication with the Flamenco Manager API
 - [ ] Job construction
 - [ ] BAT-packing & uploading to Shaman
+- [ ] User authentication
