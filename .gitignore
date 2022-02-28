@@ -10,3 +10,9 @@
 /flamenco-worker-credentials.yaml
 node_modules/
 task-logs/
+
+__pycache__
+*.pyc
+.mypy_cache/
+.openapi-generator/
+.openapi-generator-ignore
