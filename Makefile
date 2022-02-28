@@ -69,8 +69,4 @@ clean:
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
-static: vet lint generate
-	go build -v -o flamenco-manager-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-manager
-	go build -v -o flamenco-worker-static -tags netgo -ldflags="-extldflags \"-static\" -w -s ${LDFLAGS}" ${PKG}/cmd/flamenco-worker
-
-.PHONY: run application version static vet lint deploy  flamenco-manager flamenco-worker socketio-poc generate with-deps
+.PHONY: run application version vet lint deploy  flamenco-manager flamenco-worker socketio-poc generate with-deps
