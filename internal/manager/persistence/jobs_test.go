@@ -188,7 +188,42 @@ func TestUpdateJobsTaskStatusesConditional(t *testing.T) {
 	assert.Equal(t, api.TaskStatusCancelRequested, getTask(0).Status)
 	assert.Equal(t, api.TaskStatusCompleted, getTask(1).Status)
 	assert.Equal(t, api.TaskStatusCancelRequested, getTask(2).Status)
+}
 
+func TestTaskAssignToWorker(t *testing.T) {
+	ctx, ctxCancel, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer ctxCancel()
+
+	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
+	assert.NoError(t, err)
+
+	w := createWorker(t, db)
+	assert.NoError(t, db.TaskAssignToWorker(ctx, task, w))
+
+	assert.Equal(t, w, task.Worker)
+	assert.Equal(t, w.ID, *task.WorkerID)
+}
+
+func TestFetchTasksOfWorkerInStatus(t *testing.T) {
+	ctx, ctxCancel, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer ctxCancel()
+
+	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
+	assert.NoError(t, err)
+
+	w := createWorker(t, db)
+	assert.NoError(t, db.TaskAssignToWorker(ctx, task, w))
+
+	tasks, err := db.FetchTasksOfWorkerInStatus(ctx, w, task.Status)
+	assert.NoError(t, err)
+	assert.Len(t, tasks, 1, "worker should have one task in status %q", task.Status)
+	assert.Equal(t, task.ID, tasks[0].ID)
+	assert.Equal(t, task.UUID, tasks[0].UUID)
+
+	assert.NotEqual(t, api.TaskStatusCancelRequested, task.Status)
+	tasks, err = db.FetchTasksOfWorkerInStatus(ctx, w, api.TaskStatusCancelRequested)
+	assert.NoError(t, err)
+	assert.Empty(t, tasks, "worker should have no task in status %q", w)
 }
 
 func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
@@ -271,4 +306,36 @@ func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *D
 	}
 
 	return ctx, cancel, db, dbJob, authoredJob
+}
+
+func createWorker(t *testing.T, db *DB) *Worker {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	w := Worker{
+		UUID:               "f0a123a9-ab05-4ce2-8577-94802cfe74a4",
+		Name:               "дрон",
+		Address:            "fe80::5054:ff:fede:2ad7",
+		LastActivity:       "",
+		Platform:           "linux",
+		Software:           "3.0",
+		Status:             api.WorkerStatusAwake,
+		SupportedTaskTypes: "blender,ffmpeg,file-management",
+	}
+
+	err := db.CreateWorker(ctx, &w)
+	if err != nil {
+		t.Fatalf("error creating worker: %v", err)
+	}
+	assert.NoError(t, err)
+
+	fetchedWorker, err := db.FetchWorker(ctx, w.UUID)
+	if err != nil {
+		t.Fatalf("error fetching worker: %v", err)
+	}
+	if fetchedWorker == nil {
+		t.Fatal("fetched worker is nil, but no error returned")
+	}
+
+	return fetchedWorker
 }

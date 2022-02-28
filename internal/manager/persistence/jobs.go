@@ -231,6 +231,34 @@ func (db *DB) SaveTaskActivity(ctx context.Context, t *Task) error {
 	return nil
 }
 
+func (db *DB) TaskAssignToWorker(ctx context.Context, t *Task, w *Worker) error {
+	tx := db.gormDB.WithContext(ctx).
+		Model(t).Updates(Task{WorkerID: &w.ID})
+	if tx.Error != nil {
+		return fmt.Errorf("assigning task %s to worker %s: %w", t.UUID, w.UUID, tx.Error)
+	}
+
+	// Gorm updates t.WorkerID itself, but not t.Worker (even when it's added to
+	// the Updates() call above).
+	t.Worker = w
+
+	return nil
+}
+
+func (db *DB) FetchTasksOfWorkerInStatus(ctx context.Context, worker *Worker, taskStatus api.TaskStatus) ([]*Task, error) {
+	result := []*Task{}
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Task{}).
+		Joins("Job").
+		Where("tasks.worker_id = ?", worker.ID).
+		Where("tasks.status = ?", taskStatus).
+		Scan(&result)
+	if tx.Error != nil {
+		return nil, fmt.Errorf("finding tasks of worker %s in status %q: %w", worker.UUID, taskStatus, tx.Error)
+	}
+	return result, nil
+}
+
 func (db *DB) JobHasTasksInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (bool, error) {
 	var numTasksInStatus int64
 	tx := db.gormDB.WithContext(ctx).

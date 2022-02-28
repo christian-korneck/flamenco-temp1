@@ -102,3 +102,54 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, worker.StatusRequested, responseBody.StatusRequested)
 }
+
+func TestWorkerSignoffTaskRequeue(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	job := persistence.Job{
+		UUID: "583a7d59-887a-4c6c-b3e4-a753018f71b0",
+	}
+	// Mock that the worker has two active tasks. It shouldn't happen, but even
+	// when it does, both should be requeued when the worker signs off.
+	task1 := persistence.Task{
+		UUID:   "4107c7aa-e86d-4244-858b-6c4fce2af503",
+		Job:    &job,
+		Status: api.TaskStatusActive,
+	}
+	task2 := persistence.Task{
+		UUID:   "beb3f39b-57a5-44bf-a0ad-533e3513a0b6",
+		Job:    &job,
+		Status: api.TaskStatusActive,
+	}
+	workerTasks := []*persistence.Task{&task1, &task2}
+
+	// Signing off should be handled completely, even when the HTTP connection
+	// breaks. This means using a different context than the one passed by Echo.
+	echo := mf.prepareMockedRequest(&worker, nil)
+	expectCtx := gomock.Not(gomock.Eq(echo.Request().Context()))
+
+	// Expect worker's tasks to be re-queued.
+	mf.persistence.EXPECT().
+		FetchTasksOfWorkerInStatus(expectCtx, &worker, api.TaskStatusActive).
+		Return(workerTasks, nil)
+	mf.stateMachine.EXPECT().TaskStatusChange(expectCtx, &task1, api.TaskStatusQueued)
+	mf.stateMachine.EXPECT().TaskStatusChange(expectCtx, &task2, api.TaskStatusQueued)
+
+	// Expect worker to be saved as 'offline'.
+	mf.persistence.EXPECT().
+		SaveWorkerStatus(expectCtx, &worker).
+		Do(func(ctx context.Context, w *persistence.Worker) error {
+			assert.Equal(t, api.WorkerStatusOffline, w.Status)
+			return nil
+		})
+
+	err := mf.flamenco.SignOff(echo)
+	assert.NoError(t, err)
+
+	resp := echo.Response().Writer.(*httptest.ResponseRecorder)
+	assert.Equal(t, http.StatusNoContent, resp.Code)
+}

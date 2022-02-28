@@ -21,12 +21,15 @@ package api_impl
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
@@ -148,10 +151,12 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 		w.StatusRequested = ""
 	}
 
-	// TODO: check whether we should pass the request context here, or a generic
-	// background context, as this should be stored even when the HTTP connection
-	// is aborted.
-	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
+	// Pass a generic background context, as these changes should be stored even
+	// when the HTTP connection is aborted.
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer ctxCancel()
+
+	err = f.persist.SaveWorkerStatus(ctx, w)
 	if err != nil {
 		logger.Warn().
 			Err(err).
@@ -160,7 +165,39 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error storing new status in database")
 	}
 
+	// Re-queue all tasks (should be only one) this worker is now working on.
+	err = f.workerRequeueActiveTasks(ctx, logger, w)
+	if err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "error re-queueing your tasks")
+	}
+
 	return e.String(http.StatusNoContent, "")
+}
+
+// workerRequeueActiveTasks re-queues all active tasks (should be max one) of this worker.
+func (f *Flamenco) workerRequeueActiveTasks(ctx context.Context, logger zerolog.Logger, worker *persistence.Worker) error {
+	// Fetch the tasks to update.
+	tasks, err := f.persist.FetchTasksOfWorkerInStatus(ctx, worker, api.TaskStatusActive)
+	if err != nil {
+		return fmt.Errorf("fetching tasks of worker %s in status %q: %w", worker.UUID, api.TaskStatusActive, err)
+	}
+
+	// Run each task change through the task state machine.
+	var lastErr error
+	for _, task := range tasks {
+		logger.Info().
+			Str("task", task.UUID).
+			Msg("re-queueing task")
+		err := f.stateMachine.TaskStatusChange(ctx, task, api.TaskStatusQueued)
+		if err != nil {
+			logger.Warn().Err(err).
+				Str("task", task.UUID).
+				Msg("error queueing task on worker sign-off")
+			lastErr = err
+		}
+	}
+
+	return lastErr
 }
 
 // (GET /api/worker/state)
