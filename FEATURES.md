@@ -10,11 +10,12 @@ rediscovered.
 - [x] Process lifecycle management, clean shutdown
 - [x] Task Scheduler
 - [x] Unify command definition (type/parameters in persistence layer, name/settings in API layer)
-- [ ] Job status change handling
+- [x] Job status change handling
 - [ ] Port the old 'fail-requested' task status handling code to the new Manager
 - [ ] Task timeout monitoring
 - [ ] Worker Blacklisting & failed task requeueing
 - [ ] Worker timeout monitoring
+- [x] Worker-assigned task re-queueing on sign-off
 - [x] Variable replacement
 - [x] Configuration file reading
 - [ ] Configuration provisioning support
@@ -39,7 +40,7 @@ rediscovered.
 - [x] Process lifecycle management, clean shutdown
 - [x] Task executor
 - [x] Command runner
-- [ ] Log uploader
+- [x] Log uploader
 - [ ] POSIX signal handling (sleep/wake up)
 
 ## Both
