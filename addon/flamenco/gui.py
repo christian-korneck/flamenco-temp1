@@ -21,15 +21,43 @@ import bpy
 
 
 class FLAMENCO_PT_job_submission(bpy.types.Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Export"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "output"
     bl_label = "Flamenco 3"
 
     def draw(self, context: bpy.types.Context) -> None:
+        from . import job_types
+
         layout = self.layout
         col = layout.column(align=True)
-        col.operator("flamenco.fetch_job_types")
+
+        if not job_types.are_job_types_available():
+            col.operator("flamenco.fetch_job_types", icon="FILE_REFRESH")
+            return
+
+        row = col.row(align=True)
+        row.prop(context.window_manager, "flamenco_job_type", text="")
+        row.operator("flamenco.fetch_job_types", text="", icon="FILE_REFRESH")
+        self.draw_job_settings(context, layout)
+
+    def draw_job_settings(
+        self, context: bpy.types.Context, layout: bpy.types.UILayout
+    ) -> None:
+        from . import job_types
+
+        job_type = job_types.active_job_type(context.window_manager)
+        if job_type is None:
+            return
+
+        propgroup = getattr(context.window_manager, "flamenco_job_settings", None)
+        if propgroup is None:
+            return
+
+        for setting in job_type.settings:
+            if not setting.get("visible", True):
+                continue
+            layout.prop(propgroup, setting.key)
 
 
 classes = (FLAMENCO_PT_job_submission,)

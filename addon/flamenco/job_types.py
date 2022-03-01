@@ -16,6 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from inspect import isclass
 import logging
 from typing import TYPE_CHECKING, Callable, Optional
 
@@ -62,6 +63,8 @@ else:
 # Items for a bpy.props.EnumProperty()
 _job_type_enum_items = []
 
+_selected_job_type_propgroup: Optional[JobTypePropertyGroup] = None
+
 
 def fetch_available_job_types(api_client):
     global _available_job_types
@@ -70,23 +73,22 @@ def fetch_available_job_types(api_client):
     from flamenco.manager import ApiClient
     from flamenco.manager.api import jobs_api
     from flamenco.manager.model.available_job_types import AvailableJobTypes
-    from flamenco.manager.model.available_job_type import AvailableJobType
 
     assert isinstance(api_client, ApiClient)
 
     job_api_instance = jobs_api.JobsApi(api_client)
     response: AvailableJobTypes = job_api_instance.get_job_types()
 
-    _available_job_types = response.job_types
+    _clear_available_job_types()
 
-    assert isinstance(_available_job_types, list)
-    if _available_job_types:
-        assert isinstance(_available_job_types[0], AvailableJobType)
+    # Remember the available job types.
+    _available_job_types = response.job_types
 
     # Convert from API response type to list suitable for an EnumProperty.
     _job_type_enum_items = [
         (job_type.name, job_type.label, "") for job_type in _available_job_types
     ]
+    _job_type_enum_items.insert(0, ("", "Select a Job Type", "", 0, 0))
 
 
 def are_job_types_available() -> bool:
@@ -94,7 +96,74 @@ def are_job_types_available() -> bool:
     return bool(_job_type_enum_items)
 
 
+def _update_job_type(
+    window_manager: bpy.types.WindowManager, context: bpy.types.Context
+) -> None:
+    """Called whenever the selected job type changes."""
+    global _selected_job_type_propgroup
+
+    from flamenco.manager.model.available_job_type import AvailableJobType
+
+    job_type = active_job_type(window_manager)
+    assert isinstance(job_type, AvailableJobType), "did not expect type %r" % type(
+        job_type
+    )
+
+    _clear_job_type_propgroup()
+
+    pg = generate_property_group(job_type)
+    pg.register_property_group()
+    _selected_job_type_propgroup = pg
+
+    bpy.types.WindowManager.flamenco_job_settings = bpy.props.PointerProperty(
+        type=pg,
+        name="Job Settings",
+        description="Parameters for the Flamenco job",
+    )
+
+
+def _clear_available_job_types():
+    global _available_job_types
+    global _job_type_enum_items
+
+    _clear_job_type_propgroup()
+
+    _available_job_types = None
+    _job_type_enum_items.clear()
+
+
+def _clear_job_type_propgroup():
+    global _selected_job_type_propgroup
+
+    try:
+        del bpy.types.WindowManager.flamenco_job_settings
+    except AttributeError:
+        pass
+
+    # Make sure there is no old property group reference.
+    if _selected_job_type_propgroup is not None:
+        _selected_job_type_propgroup.unregister_property_group()
+        _selected_job_type_propgroup = None
+
+
+def active_job_type(window_manager: bpy.types.WindowManager):
+    """Return the active job type.
+
+    Returns a flamenco.manager.model.available_job_type.AvailableJobType,
+    or None if there is none.
+    """
+    job_type_name = window_manager.flamenco_job_type
+    for job_type in _available_job_types:
+        if job_type.name == job_type_name:
+            return job_type
+    return None
+
+
 def generate_property_group(job_type):
+    """Create a PropertyGroup for the job type.
+
+    Does not register the property group.
+    """
     from flamenco.manager.model.available_job_type import AvailableJobType
 
     assert isinstance(job_type, AvailableJobType)
@@ -115,8 +184,9 @@ def generate_property_group(job_type):
         prop = _create_property(job_type, setting)
         pg_type.__annotations__[setting.key] = prop
 
-    assert isinstance(pg_type, JobTypePropertyGroup)
-    pg_type.register_property_group()
+    assert issubclass(pg_type, JobTypePropertyGroup), "did not expect type %r" % type(
+        pg_type
+    )
 
     from pprint import pprint
 
@@ -245,14 +315,21 @@ def discard_flamenco_data():
 
 
 def register() -> None:
-    bpy.types.WindowManager.flamenco3_job_types = bpy.props.EnumProperty(
+    bpy.types.WindowManager.flamenco_job_type = bpy.props.EnumProperty(
         name="Job Type",
         items=_get_job_types_enum_items,
+        update=_update_job_type,
     )
 
 
 def unregister() -> None:
-    del bpy.types.WindowManager.flamenco3_job_types
+    del bpy.types.WindowManager.flamenco_job_type
+
+    try:
+        # This property doesn't always exist.
+        del bpy.types.WindowManager.flamenco_job_settings
+    except AttributeError:
+        pass
 
 
 if __name__ == "__main__":
