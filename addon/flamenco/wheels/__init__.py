@@ -23,7 +23,7 @@ from pathlib import Path
 import sys
 import logging
 from types import ModuleType
-from typing import Optional
+from typing import Iterator, Optional
 
 _my_dir = Path(__file__).parent
 _log = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ def load_wheel(module_name: str, fname_prefix: str) -> ModuleType:
             module.__file__,
             fname_prefix,
         )
+        assert isinstance(module, ModuleType)
         return module
 
     wheel = _wheel_filename(fname_prefix)
@@ -64,6 +65,7 @@ def load_wheel(module_name: str, fname_prefix: str) -> ModuleType:
             ) from None
 
     _log.debug("Loaded %s from %s", module_name, module.__file__)
+    assert isinstance(module, ModuleType)
     return module
 
 
@@ -105,7 +107,7 @@ def load_wheel_global(module_name: str, fname_prefix: str) -> ModuleType:
 
 
 @contextlib.contextmanager
-def _sys_path_mod_backup(wheel_file: Path):
+def _sys_path_mod_backup(wheel_file: Path) -> Iterator[None]:
     old_syspath = sys.path[:]
 
     try:
@@ -126,7 +128,7 @@ def _wheel_filename(fname_prefix: str) -> Path:
 
     # If there are multiple wheels that match, load the last-modified one.
     # Alphabetical sorting isn't going to cut it since BAT 1.10 was released.
-    def modtime(filepath: Path) -> int:
+    def modtime(filepath: Path) -> float:
         return filepath.stat().st_mtime
 
     wheels.sort(key=modtime)

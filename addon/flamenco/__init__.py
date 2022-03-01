@@ -45,7 +45,7 @@ import bpy
 
 
 @bpy.app.handlers.persistent
-def discard_global_flamenco_data(_) -> None:
+def discard_global_flamenco_data(_):
     job_types.discard_flamenco_data()
     comms.discard_flamenco_data()
 

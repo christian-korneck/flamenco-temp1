@@ -17,7 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import logging
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 import bpy
 
@@ -52,8 +52,12 @@ _prop_types = {
 }
 
 
-# type: list[flamenco.manager.model.available_job_type.AvailableJobType]
-_available_job_types = None
+if TYPE_CHECKING:
+    from flamenco.manager.model.available_job_type import AvailableJobType
+
+    _available_job_types: Optional[list[AvailableJobType]] = None
+else:
+    _available_job_types = None
 
 # Items for a bpy.props.EnumProperty()
 _job_type_enum_items = []
@@ -111,6 +115,7 @@ def generate_property_group(job_type):
         prop = _create_property(job_type, setting)
         pg_type.__annotations__[setting.key] = prop
 
+    assert isinstance(pg_type, JobTypePropertyGroup)
     pg_type.register_property_group()
 
     from pprint import pprint
@@ -196,11 +201,11 @@ def _job_setting_key_to_label(setting_key: str) -> str:
 
 
 def _set_if_available(
-    some_dict: dict,
-    setting,
+    some_dict: dict[object, object],
+    setting: object,
     key: str,
-    transform: Optional[Callable] = None,
-):
+    transform: Optional[Callable[[object], object]] = None,
+) -> None:
     """some_dict[key] = setting.key, if that key is available.
 
     >>> class Setting:
