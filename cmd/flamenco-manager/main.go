@@ -118,6 +118,12 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 		return c.JSON(http.StatusOK, swagger)
 	})
 
+	// Temporarily redirect the index page to the Swagger UI, so that at least you
+	// can see something.
+	e.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusTemporaryRedirect, "/api/swagger-ui/")
+	})
+
 	// Log available routes
 	routeLogger := log.Level(zerolog.DebugLevel)
 	routeLogger.Debug().Msg("available routes:")
