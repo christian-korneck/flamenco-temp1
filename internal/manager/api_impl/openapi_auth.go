@@ -48,7 +48,7 @@ func SwaggerValidator(swagger *openapi3.T, persist PersistenceService) echo.Midd
 		// Skip OAPI validation when the request is not for the OAPI interface.
 		Skipper: func(e echo.Context) bool {
 			isOapi := isOpenAPIPath(swagger, e.Path())
-			log.Debug().
+			log.Trace().
 				Bool("isOpenAPI", isOapi).
 				Str("path", e.Path()).
 				Msg("checking validation skipperoo")

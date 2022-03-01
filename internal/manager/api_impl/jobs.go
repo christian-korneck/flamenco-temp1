@@ -28,26 +28,25 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func (f *Flamenco) GetJobTypes(e echo.Context) error {
+	logger := requestLogger(e)
+
 	if f.jobCompiler == nil {
-		log.Error().Msg("Flamenco is running without job compiler")
+		logger.Error().Msg("Flamenco is running without job compiler")
 		return sendAPIError(e, http.StatusInternalServerError, "no job types available")
 	}
 
+	logger.Debug().Msg("listing job types")
 	jobTypes := f.jobCompiler.ListJobTypes()
 	return e.JSON(http.StatusOK, &jobTypes)
 }
 
 func (f *Flamenco) SubmitJob(e echo.Context) error {
-	// TODO: move this into some middleware.
-	logger := log.With().
-		Str("ip", e.RealIP()).
-		Logger()
+	logger := requestLogger(e)
 
 	var job api.SubmitJobJSONRequestBody
 	if err := e.Bind(&job); err != nil {
@@ -89,9 +88,8 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 }
 
 func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
-	// TODO: move this into some middleware.
 	logger := requestLogger(e).With().
-		Str("job_id", jobId).
+		Str("job", jobId).
 		Logger()
 
 	if _, err := uuid.Parse(jobId); err != nil {

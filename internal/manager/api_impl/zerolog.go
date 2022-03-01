@@ -27,7 +27,9 @@ import (
 )
 
 func requestLogger(e echo.Context) zerolog.Logger {
-	logCtx := log.With().Str("remoteAddr", e.RealIP())
+	logCtx := log.With().
+		Str("remoteAddr", e.RealIP()).
+		Str("userAgent", e.Request().UserAgent())
 
 	worker := requestWorker(e)
 	if worker != nil {
