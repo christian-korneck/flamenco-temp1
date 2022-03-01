@@ -27,8 +27,9 @@ import (
 	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
 	"golang.org/x/crypto/bcrypt"
+
+	"git.blender.org/flamenco/internal/manager/persistence"
 )
 
 type workerContextKey string

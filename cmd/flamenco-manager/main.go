@@ -36,15 +36,15 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v3"
 
-	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/swagger_ui"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_logs"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+	"git.blender.org/flamenco/internal/appinfo"
+	"git.blender.org/flamenco/internal/manager/api_impl"
+	"git.blender.org/flamenco/internal/manager/config"
+	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/swagger_ui"
+	"git.blender.org/flamenco/internal/manager/task_logs"
+	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 var cliArgs struct {

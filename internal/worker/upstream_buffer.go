@@ -31,9 +31,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
-
 	_ "modernc.org/sqlite"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // TODO: pull the SQLite stuff out of this file into a more global place, so

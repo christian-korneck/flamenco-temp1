@@ -1,4 +1,4 @@
-PKG := gitlab.com/blender/flamenco-ng-poc
+PKG := git.blender.org/flamenco
 VERSION := $(shell git describe --tags --dirty --always)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 

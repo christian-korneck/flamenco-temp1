@@ -29,7 +29,8 @@ import (
 
 	"github.com/benbjohnson/clock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 func exampleSubmittedJob() api.SubmittedJob {

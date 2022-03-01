@@ -7,7 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 /* ***** BEGIN GPL LICENSE BLOCK *****

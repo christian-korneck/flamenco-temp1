@@ -24,9 +24,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/config"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/internal/manager/config"
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 func varreplTestTask() api.AssignedTask {

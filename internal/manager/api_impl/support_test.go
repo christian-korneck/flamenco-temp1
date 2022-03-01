@@ -29,10 +29,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl/mocks"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"gorm.io/gorm"
+
+	"git.blender.org/flamenco/internal/manager/api_impl/mocks"
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 type mockedFlamenco struct {

@@ -1,4 +1,4 @@
-module gitlab.com/blender/flamenco-ng-poc
+module git.blender.org/flamenco
 
 go 1.18
 

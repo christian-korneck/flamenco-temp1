@@ -30,9 +30,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine/mocks"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/task_state_machine/mocks"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 type StateMachineMocks struct {

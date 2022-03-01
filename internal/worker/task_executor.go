@@ -25,7 +25,8 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 type CommandRunner interface {
@@ -33,7 +34,7 @@ type CommandRunner interface {
 }
 
 // Generate mock implementation of this interface.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/task_exe_listener.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker TaskExecutionListener
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/task_exe_listener.gen.go -package mocks git.blender.org/flamenco/internal/worker TaskExecutionListener
 
 // TaskExecutionListener sends task lifecycle events (start/fail/complete) to the Manager.
 type TaskExecutionListener interface {

@@ -25,7 +25,8 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // queryManagerForStateChange asks the Manager whether we should go to another state or not.

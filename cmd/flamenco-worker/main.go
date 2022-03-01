@@ -36,8 +36,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
-	"gitlab.com/blender/flamenco-ng-poc/internal/worker"
+	"git.blender.org/flamenco/internal/appinfo"
+	"git.blender.org/flamenco/internal/worker"
 )
 
 var (

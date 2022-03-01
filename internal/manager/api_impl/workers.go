@@ -32,8 +32,8 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // RegisterWorker registers a new worker and stores it in the database.

@@ -29,7 +29,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 var _ CommandListener = (*Listener)(nil)

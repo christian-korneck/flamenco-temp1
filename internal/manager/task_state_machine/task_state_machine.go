@@ -26,8 +26,9 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // taskFailJobPercentage is the percentage of a job's tasks that need to fail to
@@ -40,7 +41,7 @@ type StateMachine struct {
 }
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine PersistenceService
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/task_state_machine PersistenceService
 
 type PersistenceService interface {
 	SaveTask(ctx context.Context, task *persistence.Task) error

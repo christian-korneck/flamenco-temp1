@@ -9,10 +9,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v3"
-	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
 
 	gosocketio "github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
+
+	"git.blender.org/flamenco/internal/appinfo"
 )
 
 type Message struct {

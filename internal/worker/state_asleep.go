@@ -25,7 +25,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 const durationSleepCheck = 3 * time.Second

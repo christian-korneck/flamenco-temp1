@@ -31,8 +31,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/internal/appinfo"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/internal/appinfo"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 var (

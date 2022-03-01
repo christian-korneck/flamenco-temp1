@@ -26,8 +26,9 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/internal/worker/mocks"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/internal/worker/mocks"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 type CommandExecutorMocks struct {

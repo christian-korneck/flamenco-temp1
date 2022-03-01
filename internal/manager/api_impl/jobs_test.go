@@ -24,10 +24,10 @@ import (
 	"context"
 	"testing"
 
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/pkg/api"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func ptr[T any](value T) *T {

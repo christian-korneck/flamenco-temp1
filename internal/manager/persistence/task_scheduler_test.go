@@ -27,8 +27,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 func TestNoTasks(t *testing.T) {

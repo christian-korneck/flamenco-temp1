@@ -25,8 +25,9 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"gorm.io/gorm"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 var (

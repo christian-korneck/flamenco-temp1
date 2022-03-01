@@ -27,8 +27,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"golang.org/x/net/context"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 func TestCreateFetchWorker(t *testing.T) {

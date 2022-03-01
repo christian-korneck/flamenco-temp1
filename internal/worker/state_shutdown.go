@@ -25,7 +25,8 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 func (w *Worker) gotoStateShutdown(context.Context) {

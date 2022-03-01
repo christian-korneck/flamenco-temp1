@@ -21,11 +21,11 @@ package worker
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // Generate the mock for the client interface.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/client.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/worker FlamencoClient
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/client.gen.go -package mocks git.blender.org/flamenco/internal/worker FlamencoClient
 
 // FlamencoClient is a wrapper for api.ClientWithResponsesInterface so that locally mocks can be created.
 type FlamencoClient interface {

@@ -27,9 +27,10 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 	"gorm.io/gorm"
+
+	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 type Job struct {

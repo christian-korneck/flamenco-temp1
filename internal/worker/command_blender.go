@@ -32,7 +32,8 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // The buffer size used to read stdout/stderr output from Blender.

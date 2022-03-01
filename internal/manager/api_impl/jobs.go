@@ -25,11 +25,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/pkg/api"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 func (f *Flamenco) GetJobTypes(e echo.Context) error {

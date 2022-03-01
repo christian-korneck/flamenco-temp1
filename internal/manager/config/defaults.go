@@ -23,7 +23,7 @@ package config
 import (
 	"time"
 
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // The default configuration, use DefaultConfig() to obtain a copy.

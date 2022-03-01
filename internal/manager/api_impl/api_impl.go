@@ -25,12 +25,12 @@ import (
 	"context"
 	"fmt"
 
+	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/pkg/api"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/job_compilers"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/persistence"
-	"gitlab.com/blender/flamenco-ng-poc/internal/manager/task_state_machine"
-	"gitlab.com/blender/flamenco-ng-poc/pkg/api"
 )
 
 type Flamenco struct {
@@ -44,7 +44,7 @@ type Flamenco struct {
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks gitlab.com/blender/flamenco-ng-poc/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService,TaskStateMachine
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService,TaskStateMachine
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
