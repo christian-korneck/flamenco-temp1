@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 
-import time
-import flamenco3_client
+import flamenco.manager
 from pprint import pprint
-from flamenco3_client.api import jobs_api
-from flamenco3_client.model.available_job_types import AvailableJobTypes
-from flamenco3_client.model.available_job_type import AvailableJobType
-from flamenco3_client.model.error import Error
-from flamenco3_client.model.job import Job
-from flamenco3_client.model.submitted_job import SubmittedJob
+from flamenco.manager.api import jobs_api
+from flamenco.manager.model.available_job_types import AvailableJobTypes
+from flamenco.manager.model.available_job_type import AvailableJobType
+from flamenco.manager.model.error import Error
+from flamenco.manager.model.job import Job
+from flamenco.manager.model.submitted_job import SubmittedJob
 
 # Defining the host is optional and defaults to http://localhost
 # See configuration.py for a list of all supported configuration parameters.
-configuration = flamenco3_client.Configuration(host="http://localhost:8080")
+configuration = flamenco.manager.Configuration(host="http://localhost:8080")
 
 
 # Enter a context with an instance of the API client
-with flamenco3_client.ApiClient(configuration) as api_client:
+with flamenco.manager.ApiClient(configuration) as api_client:
     job_api_instance = jobs_api.JobsApi(api_client)
 
     response: AvailableJobTypes = job_api_instance.get_job_types()
@@ -35,5 +34,5 @@ with flamenco3_client.ApiClient(configuration) as api_client:
     #     # Fetch info about the job.
     #     api_response = job_api_instance.fetch_job(job_id)
     #     pprint(api_response)
-    # except flamenco3_client.ApiException as e:
+    # except flamenco.manager.ApiException as e:
     #     print("Exception when calling JobsApi->fetch_job: %s\n" % e)

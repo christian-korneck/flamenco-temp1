@@ -19,8 +19,8 @@
 # <pep8 compliant>
 
 bl_info = {
-    "name": "Blender Cloud",
-    "author": "Sybren A. Stüvel, Francesco Siddi, Inês Almeida, Antony Riakiotakis",
+    "name": "Flamenco 3",
+    "author": "Sybren A. Stüvel",
     "version": (3, 0),
     "blender": (3, 1, 0),
     "description": "Flamenco client for Blender.",
@@ -29,3 +29,45 @@ bl_info = {
     "category": "System",
     "support": "COMMUNITY",
 }
+
+__is_first_load = "operators" not in locals()
+if __is_first_load:
+    from . import operators, gui, job_types, comms
+else:
+    import importlib
+
+    operators = importlib.reload(operators)
+    gui = importlib.reload(gui)
+    job_types = importlib.reload(job_types)
+    comms = importlib.reload(comms)
+
+import bpy
+
+
+@bpy.app.handlers.persistent
+def discard_global_flamenco_data(_) -> None:
+    job_types.discard_flamenco_data()
+    comms.discard_flamenco_data()
+
+
+def register() -> None:
+    from . import dependencies
+
+    dependencies.preload_modules()
+
+    bpy.app.handlers.load_pre.append(discard_global_flamenco_data)
+    bpy.app.handlers.load_factory_preferences_post.append(discard_global_flamenco_data)
+
+    operators.register()
+    gui.register()
+    job_types.register()
+
+
+def unregister() -> None:
+    discard_global_flamenco_data(None)
+    bpy.app.handlers.load_pre.remove(discard_global_flamenco_data)
+    bpy.app.handlers.load_factory_preferences_post.remove(discard_global_flamenco_data)
+
+    job_types.unregister()
+    gui.unregister()
+    operators.unregister()

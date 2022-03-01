@@ -11,6 +11,11 @@ PKG_NAME=flamenco.manager
 PKG_VERSION=3.0
 
 set -ex
+
+# The generator doesn't consistently overwrite existing files, nor does it
+# remove no-longer-generated files.
+rm -rf ./flamenco/manager
+
 java -jar openapi-generator-cli.jar \
   generate \
   -i ../pkg/api/flamenco-manager.yaml \
