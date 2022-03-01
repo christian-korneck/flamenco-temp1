@@ -23,7 +23,7 @@ package appinfo
 import "fmt"
 
 // ApplicationName contains the application name.
-const ApplicationName = "Flamenco-NG-PoC"
+const ApplicationName = "Flamenco 3"
 
 // ApplicationVersion has the version number, and is set during the build.
 var ApplicationVersion = "set-during-build"
