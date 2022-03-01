@@ -34,7 +34,7 @@ var defaultConfig = Conf{
 		ManagerName:  "Flamenco Manager",
 		Listen:       ":8080",
 		ListenHTTPS:  ":8433",
-		DatabaseDSN:  "host=localhost user=flamenco password=flamenco dbname=flamenco TimeZone=Europe/Amsterdam",
+		DatabaseDSN:  "flamenco-manager.sqlite",
 		TaskLogsPath: "./task-logs",
 		// DownloadTaskSleep:           10 * time.Minute,
 		// DownloadTaskRecheckThrottle: 10 * time.Second,

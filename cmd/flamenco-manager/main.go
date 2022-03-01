@@ -49,7 +49,6 @@ import (
 
 var cliArgs struct {
 	version bool
-	initDB  bool
 }
 
 func main() {
@@ -69,15 +68,6 @@ func main() {
 	// Load configuration.
 	configService := config.NewService()
 	configService.Load()
-
-	if cliArgs.initDB {
-		log.Info().Msg("creating databases")
-		err := persistence.InitialSetup()
-		if err != nil {
-			log.Fatal().Err(err).Msg("problem performing initial setup")
-		}
-		return
-	}
 
 	// TODO: enable TLS via Let's Encrypt.
 	listen := configService.Get().Listen
@@ -142,7 +132,6 @@ func parseCliArgs() {
 	var quiet, debug, trace bool
 
 	flag.BoolVar(&cliArgs.version, "version", false, "Shows the application version, then exits.")
-	flag.BoolVar(&cliArgs.initDB, "initdb", false, "Create the database; requires admin access to PostgreSQL.")
 	flag.BoolVar(&quiet, "quiet", false, "Only log warning-level and worse.")
 	flag.BoolVar(&debug, "debug", false, "Enable debug-level logging.")
 	flag.BoolVar(&trace, "trace", false, "Enable trace-level logging.")

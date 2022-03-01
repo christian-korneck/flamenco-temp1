@@ -100,8 +100,8 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 		Where("tasks.type in ?", w.TaskTypes()).                                   // Supported task types
 		Where("tasks.worker_id = ? or tasks.worker_id is NULL", w.ID).             // assigned to this worker or not assigned at all
 		// TODO: Non-blacklisted
-		Order("jobs.priority desc"). // Highest job priority
-		Order("priority desc").      // Highest task priority
+		Order("jobs.priority desc").  // Highest job priority
+		Order("tasks.priority desc"). // Highest task priority
 		Limit(1).
 		Preload("Job").
 		Find(&task)

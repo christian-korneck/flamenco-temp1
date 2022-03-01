@@ -274,7 +274,7 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 		Priority: 50,
 		Settings: job_compilers.JobSettings{
 			"frames":     "1-6",
-			"chunk_size": 3.0, // The roundtrip to JSON in PostgreSQL can make this a float.
+			"chunk_size": 3.0, // The roundtrip to JSON in the database can make this a float.
 		},
 		Metadata: job_compilers.JobMetadata{
 			"author":  "Sybren",

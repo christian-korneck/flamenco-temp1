@@ -25,8 +25,9 @@ import (
 	"context"
 
 	"github.com/rs/zerolog/log"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	sqlite "gitlab.com/blender/flamenco-ng-poc/pkg/gorm-modernc-sqlite"
 )
 
 // DB provides the database interface.
@@ -51,7 +52,9 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 	// TODO: don't log the password.
 	log.Info().Str("dsn", uri).Msg("opening database")
 
-	gormDB, err := gorm.Open(postgres.Open(uri), &gorm.Config{})
+	connection := sqlite.Open(uri)
+	// connection := postgres.Open(uri)
+	gormDB, err := gorm.Open(connection, &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
