@@ -49,12 +49,12 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 	txErr := db.gormDB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var err error
 		task, err = findTaskForWorker(tx, w)
-		if err == gorm.ErrRecordNotFound {
-			// Not finding a task is not an error.
-			return nil
-		}
 		if err != nil {
 			return fmt.Errorf("error finding task for worker: %w", err)
+		}
+		if task == nil {
+			// No task found, which is fine.
+			return nil
 		}
 
 		// Found a task, now assign it to the requesting worker.
@@ -104,10 +104,14 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 		Order("priority desc").      // Highest task priority
 		Limit(1).
 		Preload("Job").
-		First(&task)
+		Find(&task)
 
 	if findTaskResult.Error != nil {
 		return nil, findTaskResult.Error
+	}
+	if task.ID == 0 {
+		// No task fetched, which doesn't result in an error with Limt(1).Find(&task).
+		return nil, nil
 	}
 
 	return &task, nil
