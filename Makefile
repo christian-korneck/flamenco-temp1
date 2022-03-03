@@ -16,7 +16,7 @@ with-deps:
 	go get github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) application
 
-application: generate flamenco-manager flamenco-worker socketio-poc
+application: flamenco-manager flamenco-worker socketio-poc
 
 flamenco-manager:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
