@@ -35,12 +35,12 @@ import (
 
 type Job struct {
 	gorm.Model
-	UUID string `gorm:"type:char(36);not null;unique;index"`
+	UUID string `gorm:"type:char(36);default:'';unique;index"`
 
-	Name     string        `gorm:"type:varchar(64);not null"`
-	JobType  string        `gorm:"type:varchar(32);not null"`
-	Priority int           `gorm:"type:smallint;not null"`
-	Status   api.JobStatus `gorm:"type:varchar(32);not null"`
+	Name     string        `gorm:"type:varchar(64);default:''"`
+	JobType  string        `gorm:"type:varchar(32);default:''"`
+	Priority int           `gorm:"type:smallint;default:0"`
+	Status   api.JobStatus `gorm:"type:varchar(32);default:''"`
 
 	Settings StringInterfaceMap `gorm:"type:jsonb"`
 	Metadata StringStringMap    `gorm:"type:jsonb"`
@@ -51,14 +51,14 @@ type StringStringMap map[string]string
 
 type Task struct {
 	gorm.Model
-	UUID string `gorm:"type:char(36);not null;unique;index"`
+	UUID string `gorm:"type:char(36);default:'';unique;index"`
 
-	Name     string         `gorm:"type:varchar(64);not null"`
-	Type     string         `gorm:"type:varchar(32);not null"`
-	JobID    uint           `gorm:"not null"`
-	Job      *Job           `gorm:"foreignkey:JobID;references:ID;constraint:OnDelete:CASCADE;not null"`
-	Priority int            `gorm:"type:smallint;not null"`
-	Status   api.TaskStatus `gorm:"type:varchar(16);not null"`
+	Name     string         `gorm:"type:varchar(64);default:''"`
+	Type     string         `gorm:"type:varchar(32);default:''"`
+	JobID    uint           `gorm:"default:0"`
+	Job      *Job           `gorm:"foreignkey:JobID;references:ID;constraint:OnDelete:CASCADE"`
+	Priority int            `gorm:"type:smallint;default:50"`
+	Status   api.TaskStatus `gorm:"type:varchar(16);default:''"`
 
 	// Which worker is/was working on this.
 	WorkerID *uint
@@ -68,7 +68,7 @@ type Task struct {
 	Dependencies []*Task `gorm:"many2many:task_dependencies;constraint:OnDelete:CASCADE"`
 
 	Commands Commands `gorm:"type:jsonb"`
-	Activity string   `gorm:"type:varchar(255);not null;default:\"\""`
+	Activity string   `gorm:"type:varchar(255);default:''"`
 }
 
 type Commands []Command

@@ -32,18 +32,18 @@ import (
 
 type Worker struct {
 	gorm.Model
-	UUID   string `gorm:"type:char(36);not null;unique;index"`
-	Secret string `gorm:"type:varchar(255);not null"`
-	Name   string `gorm:"type:varchar(64);not null"`
+	UUID   string `gorm:"type:char(36);default:'';unique;index;default:''"`
+	Secret string `gorm:"type:varchar(255);default:''"`
+	Name   string `gorm:"type:varchar(64);default:''"`
 
-	Address         string           `gorm:"type:varchar(39);not null;index"` // 39 = max length of IPv6 address.
-	LastActivity    string           `gorm:"type:varchar(255);not null"`
-	Platform        string           `gorm:"type:varchar(16);not null"`
-	Software        string           `gorm:"type:varchar(32);not null"`
-	Status          api.WorkerStatus `gorm:"type:varchar(16);not null"`
-	StatusRequested api.WorkerStatus `gorm:"type:varchar(16);not null;default:''"`
+	Address         string           `gorm:"type:varchar(39);default:'';index"` // 39 = max length of IPv6 address.
+	LastActivity    string           `gorm:"type:varchar(255);default:''"`
+	Platform        string           `gorm:"type:varchar(16);default:''"`
+	Software        string           `gorm:"type:varchar(32);default:''"`
+	Status          api.WorkerStatus `gorm:"type:varchar(16);default:''"`
+	StatusRequested api.WorkerStatus `gorm:"type:varchar(16);default:''"`
 
-	SupportedTaskTypes string `gorm:"type:varchar(255);not null"` // comma-separated list of task types.
+	SupportedTaskTypes string `gorm:"type:varchar(255);default:''"` // comma-separated list of task types.
 }
 
 // TaskTypes returns the worker's supported task types as list of strings.
