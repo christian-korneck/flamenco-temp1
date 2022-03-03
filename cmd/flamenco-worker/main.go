@@ -152,7 +152,8 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.debug, "debug", false, "Enable debug-level logging.")
 	flag.BoolVar(&cliArgs.trace, "trace", false, "Enable trace-level logging.")
 
-	flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
+	// TODO: make this override whatever was stored in the configuration file.
+	// flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
 	flag.BoolVar(&cliArgs.register, "register", false, "(Re-)register at the Manager.")
 
 	flag.Parse()
