@@ -114,7 +114,7 @@ func (js *StringStringMap) Scan(value interface{}) error {
 // StoreJob stores an AuthoredJob and its tasks, and saves it to the database.
 // The job will be in 'under construction' status. It is up to the caller to transition it to its desired initial status.
 func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error {
-	return db.gormDB.Transaction(func(tx *gorm.DB) error {
+	return db.gormDB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// TODO: separate conversion of struct types from storing things in the database.
 		dbJob := Job{
 			UUID:     authoredJob.JobID,
@@ -126,7 +126,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			Metadata: StringStringMap(authoredJob.Metadata),
 		}
 
-		if err := db.gormDB.WithContext(ctx).Create(&dbJob).Error; err != nil {
+		if err := tx.Create(&dbJob).Error; err != nil {
 			return fmt.Errorf("error storing job: %v", err)
 		}
 
@@ -150,7 +150,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 				Commands: commands,
 				// dependencies are stored below.
 			}
-			if err := db.gormDB.WithContext(ctx).Create(&dbTask).Error; err != nil {
+			if err := tx.Create(&dbTask).Error; err != nil {
 				return fmt.Errorf("error storing task: %v", err)
 			}
 
@@ -178,7 +178,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			}
 
 			dbTask.Dependencies = deps
-			if err := db.gormDB.WithContext(ctx).Save(dbTask).Error; err != nil {
+			if err := tx.Save(dbTask).Error; err != nil {
 				return fmt.Errorf("unable to store dependencies of task %q: %w", authoredTask.UUID, err)
 			}
 		}
