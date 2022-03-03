@@ -8,6 +8,7 @@ require (
 	github.com/dop251/goja v0.0.0-20211217115348-3f9136fa235d
 	github.com/dop251/goja_nodejs v0.0.0-20210225215109-d91c329300e7
 	github.com/getkin/kin-openapi v0.88.0
+	github.com/glebarez/sqlite v1.3.5
 	github.com/golang/mock v1.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
@@ -29,7 +30,6 @@ require (
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/glebarez/go-sqlite v1.14.7 // indirect
-	github.com/glebarez/sqlite v1.3.5 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
