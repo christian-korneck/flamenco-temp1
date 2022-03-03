@@ -30,6 +30,11 @@ socketio-poc:
 generate:
 	go generate ./pkg/api/...
 	go generate ./internal/...
+# The generators always produce UNIX line-ends. This creates false file
+# modifications with Git. Convert them to DOS line-ends to avoid this.
+ifeq ($(OS),Windows_NT)
+	git status --porcelain | grep '^ M .*.gen.go' | cut -d' ' -f3 | xargs unix2dos --keepdate
+endif
 
 # resource.syso: resource/thermogui.ico resource/versioninfo.json
 # 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
