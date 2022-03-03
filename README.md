@@ -42,7 +42,3 @@ in this process.
 ## License
 
 Flamenco is licensed under the GPLv3+ license.
-
-Flamenco Manager includes a copy of https://github.com/go-gorm/sqlite.git,
-adjusted to use the pure-Go SQLite from https://modernc.org/sqlite. It is
-licensed under the MIT license by Jinzhu <wosmvp@gmail.com>.

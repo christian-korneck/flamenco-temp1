@@ -27,7 +27,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	sqlite "git.blender.org/flamenco/pkg/gorm-modernc-sqlite"
+	"github.com/glebarez/sqlite"
 )
 
 // DB provides the database interface.
