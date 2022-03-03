@@ -16,7 +16,7 @@ with-deps:
 	go get github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) application
 
-application: ${RESOURCES} generate flamenco-manager flamenco-worker socketio-poc
+application: generate flamenco-manager flamenco-worker socketio-poc
 
 flamenco-manager:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
@@ -35,9 +35,6 @@ generate:
 ifeq ($(OS),Windows_NT)
 	git status --porcelain | grep '^ M .*.gen.go' | cut -d' ' -f3 | xargs unix2dos --keepdate
 endif
-
-# resource.syso: resource/thermogui.ico resource/versioninfo.json
-# 	goversioninfo -icon=resource/thermogui.ico -64 resource/versioninfo.json
 
 version:
 	@echo "OS     : ${OS}"
@@ -60,18 +57,10 @@ swagger-ui:
 test:
 	go test -p 1 -short ${PKG_LIST}
 
-vet:
-	@go vet ${PKG_LIST}
-
-lint:
-	@for file in ${GO_FILES} ;  do \
-		golint $$file ; \
-	done
-
 clean:
 	@go clean -i -x
 	rm -f flamenco*-v* flamenco-manager flamenco-worker socketio-poc *.exe
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
-.PHONY: run application version vet lint deploy  flamenco-manager flamenco-worker socketio-poc generate with-deps
+.PHONY: application version flamenco-manager flamenco-worker socketio-poc generate with-deps swagger-ui list-embedded test clean
