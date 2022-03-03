@@ -21,8 +21,7 @@ package job_compilers
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
-	"path/filepath"
-
+	"git.blender.org/flamenco/pkg/crosspath"
 	"github.com/dop251/goja"
 	"github.com/rs/zerolog/log"
 )
@@ -38,14 +37,8 @@ func PathModule(r *goja.Runtime, module *goja.Object) {
 		}
 	}
 
-	mustExport("basename", filepath.Base)
-	mustExport("dirname", filepath.Dir)
-	mustExport("join", filepath.Join)
-	mustExport("stem", Stem)
-}
-
-func Stem(fpath string) string {
-	base := filepath.Base(fpath)
-	ext := filepath.Ext(base)
-	return base[:len(base)-len(ext)]
+	mustExport("basename", crosspath.Base)
+	mustExport("dirname", crosspath.Dir)
+	mustExport("join", crosspath.Join)
+	mustExport("stem", crosspath.Stem)
 }
