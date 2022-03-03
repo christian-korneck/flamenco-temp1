@@ -48,9 +48,10 @@ var (
 )
 
 var cliArgs struct {
-	version    bool
-	verbose    bool
-	debug      bool
+	version bool
+
+	quiet, debug, trace bool
+
 	managerURL *url.URL
 	manager    string
 	register   bool
@@ -72,6 +73,7 @@ func main() {
 		Str("ARCH", runtime.GOARCH).
 		Int("pid", os.Getpid()).
 		Msgf("starting %v Worker", appinfo.ApplicationName)
+	configLogLevel()
 
 	configWrangler := worker.NewConfigWrangler()
 
@@ -146,8 +148,9 @@ func shutdown(signum os.Signal) {
 
 func parseCliArgs() {
 	flag.BoolVar(&cliArgs.version, "version", false, "Shows the application version, then exits.")
-	flag.BoolVar(&cliArgs.verbose, "verbose", false, "Enable info-level logging.")
+	flag.BoolVar(&cliArgs.quiet, "quiet", false, "Only log warning-level and worse.")
 	flag.BoolVar(&cliArgs.debug, "debug", false, "Enable debug-level logging.")
+	flag.BoolVar(&cliArgs.trace, "trace", false, "Enable trace-level logging.")
 
 	flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
 	flag.BoolVar(&cliArgs.register, "register", false, "(Re-)register at the Manager.")
@@ -161,6 +164,21 @@ func parseCliArgs() {
 			log.Fatal().Err(err).Msg("invalid manager URL")
 		}
 	}
+}
+
+func configLogLevel() {
+	var logLevel zerolog.Level
+	switch {
+	case cliArgs.trace:
+		logLevel = zerolog.TraceLevel
+	case cliArgs.debug:
+		logLevel = zerolog.DebugLevel
+	case cliArgs.quiet:
+		logLevel = zerolog.WarnLevel
+	default:
+		logLevel = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(logLevel)
 }
 
 func upstreamBufferOrDie(client worker.FlamencoClient, timeService clock.Clock) *worker.UpstreamBufferDB {
