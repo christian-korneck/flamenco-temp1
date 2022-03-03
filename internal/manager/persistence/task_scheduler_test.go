@@ -33,7 +33,8 @@ import (
 )
 
 func TestNoTasks(t *testing.T) {
-	db := CreateTestDB(t)
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer ctxCancel()
 
@@ -45,7 +46,8 @@ func TestNoTasks(t *testing.T) {
 }
 
 func TestOneJobOneTask(t *testing.T) {
-	db := CreateTestDB(t)
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer ctxCancel()
 
@@ -81,7 +83,8 @@ func TestOneJobOneTask(t *testing.T) {
 }
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {
-	db := CreateTestDB(t)
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer ctxCancel()
 
@@ -113,7 +116,8 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 }
 
 func TestOneJobThreeTasksByDependencies(t *testing.T) {
-	db := CreateTestDB(t)
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer ctxCancel()
 
@@ -140,7 +144,8 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 }
 
 func TestTwoJobsThreeTasks(t *testing.T) {
-	db := CreateTestDB(t)
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer ctxCancel()
 

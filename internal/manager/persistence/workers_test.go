@@ -33,8 +33,8 @@ import (
 )
 
 func TestCreateFetchWorker(t *testing.T) {
-	db := CreateTestDB(t)
-
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -69,8 +69,8 @@ func TestCreateFetchWorker(t *testing.T) {
 }
 
 func TestSaveWorker(t *testing.T) {
-	db := CreateTestDB(t)
-
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 

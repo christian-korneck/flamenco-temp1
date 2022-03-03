@@ -33,7 +33,8 @@ import (
 )
 
 func TestStoreAuthoredJob(t *testing.T) {
-	db := CreateTestDB(t)
+	db, dbCloser := CreateTestDB(t)
+	defer dbCloser()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -74,8 +75,8 @@ func TestStoreAuthoredJob(t *testing.T) {
 }
 
 func TestJobHasTasksInStatus(t *testing.T) {
-	ctx, ctxCancel, db, job, _ := jobTasksTestFixtures(t)
-	defer ctxCancel()
+	ctx, close, db, job, _ := jobTasksTestFixtures(t)
+	defer close()
 
 	hasTasks, err := db.JobHasTasksInStatus(ctx, job, api.TaskStatusQueued)
 	assert.NoError(t, err)
@@ -87,8 +88,8 @@ func TestJobHasTasksInStatus(t *testing.T) {
 }
 
 func TestCountTasksOfJobInStatus(t *testing.T) {
-	ctx, ctxCancel, db, job, authoredJob := jobTasksTestFixtures(t)
-	defer ctxCancel()
+	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer close()
 
 	numQueued, numTotal, err := db.CountTasksOfJobInStatus(ctx, job, api.TaskStatusQueued)
 	assert.NoError(t, err)
@@ -118,8 +119,8 @@ func TestCountTasksOfJobInStatus(t *testing.T) {
 }
 
 func TestUpdateJobsTaskStatuses(t *testing.T) {
-	ctx, ctxCancel, db, job, authoredJob := jobTasksTestFixtures(t)
-	defer ctxCancel()
+	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer close()
 
 	err := db.UpdateJobsTaskStatuses(ctx, job, api.TaskStatusSoftFailed, "testing æctivity")
 	assert.NoError(t, err)
@@ -147,8 +148,8 @@ func TestUpdateJobsTaskStatuses(t *testing.T) {
 }
 
 func TestUpdateJobsTaskStatusesConditional(t *testing.T) {
-	ctx, ctxCancel, db, job, authoredJob := jobTasksTestFixtures(t)
-	defer ctxCancel()
+	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer close()
 
 	getTask := func(taskIndex int) *Task {
 		task, err := db.FetchTask(ctx, authoredJob.Tasks[taskIndex].UUID)
@@ -192,8 +193,8 @@ func TestUpdateJobsTaskStatusesConditional(t *testing.T) {
 }
 
 func TestTaskAssignToWorker(t *testing.T) {
-	ctx, ctxCancel, db, _, authoredJob := jobTasksTestFixtures(t)
-	defer ctxCancel()
+	ctx, close, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer close()
 
 	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
 	assert.NoError(t, err)
@@ -206,8 +207,8 @@ func TestTaskAssignToWorker(t *testing.T) {
 }
 
 func TestFetchTasksOfWorkerInStatus(t *testing.T) {
-	ctx, ctxCancel, db, _, authoredJob := jobTasksTestFixtures(t)
-	defer ctxCancel()
+	ctx, close, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer close()
 
 	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
 	assert.NoError(t, err)
@@ -288,9 +289,12 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 }
 
 func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *DB, *Job, job_compilers.AuthoredJob) {
-	db := CreateTestDB(t)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	db, dbCloser := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 1*time.Second)
+	cancel := func() {
+		ctxCancel()
+		dbCloser()
+	}
 
 	authoredJob := createTestAuthoredJobWithTasks()
 	err := db.StoreAuthoredJob(ctx, authoredJob)

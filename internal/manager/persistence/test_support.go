@@ -22,33 +22,56 @@ package persistence
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"database/sql"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
+	"github.com/glebarez/sqlite"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
 
-const TestDSN = "flamenco-test.sqlite"
+// Change this to a filename if you want to run a single test and inspect the
+// resulting database.
+const TestDSN = "file::memory:"
 
-func CreateTestDB(t *testing.T) *DB {
-	// Creating a new database should be fast.
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
+func CreateTestDB(t *testing.T) (db *DB, closer func()) {
+	// Delete the SQLite file if it exists on disk.
 	if _, err := os.Stat(TestDSN); err == nil {
-		// File exists.
 		if err := os.Remove(TestDSN); err != nil {
 			t.Fatalf("unable to remove %s: %v", TestDSN, err)
 		}
 	}
 
-	db, err := openDB(ctx, TestDSN)
-	assert.NoError(t, err)
+	var err error
+
+	dblogger := NewDBLogger(log.Level(zerolog.InfoLevel).Output(os.Stdout))
+	sqliteConn, err := sql.Open(sqlite.DriverName, TestDSN)
+	if err != nil {
+		t.Fatalf("opening SQLite connection: %v", err)
+	}
+
+	config := gorm.Config{
+		Logger:   dblogger,
+		ConnPool: sqliteConn,
+	}
+
+	db, err = openDBWithConfig(TestDSN, &config)
+	if err != nil {
+		t.Fatalf("opening DB: %v", err)
+	}
 
 	err = db.migrate()
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatalf("migrating DB: %v", err)
+	}
 
-	return db
+	closer = func() {
+		if err := sqliteConn.Close(); err != nil {
+			t.Fatalf("closing DB: %v", err)
+		}
+	}
+
+	return db, closer
 }
