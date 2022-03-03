@@ -27,6 +27,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
+	// sqlite "git.blender.org/flamenco/pkg/gorm-modernc-sqlite"
 	"github.com/glebarez/sqlite"
 )
 
@@ -36,6 +37,8 @@ type DB struct {
 }
 
 func OpenDB(ctx context.Context, dsn string) (*DB, error) {
+	log.Info().Str("dsn", dsn).Msg("opening database")
+
 	db, err := openDB(ctx, dsn)
 	if err != nil {
 		return nil, err
@@ -44,17 +47,25 @@ func OpenDB(ctx context.Context, dsn string) (*DB, error) {
 	if err := db.migrate(); err != nil {
 		return nil, err
 	}
+	log.Debug().Msg("database automigration succesful")
 
 	return db, nil
 }
 
 func openDB(ctx context.Context, uri string) (*DB, error) {
-	// TODO: don't log the password.
-	log.Info().Str("dsn", uri).Msg("opening database")
+	globalLogLevel := log.Logger.GetLevel()
+	dblogger := NewDBLogger(log.Level(globalLogLevel))
 
-	connection := sqlite.Open(uri)
-	// connection := postgres.Open(uri)
-	gormDB, err := gorm.Open(connection, &gorm.Config{})
+	config := gorm.Config{
+		Logger: dblogger,
+	}
+
+	return openDBWithConfig(uri, &config)
+}
+
+func openDBWithConfig(uri string, config *gorm.Config) (*DB, error) {
+	dialector := sqlite.Open(uri)
+	gormDB, err := gorm.Open(dialector, config)
 	if err != nil {
 		return nil, err
 	}
