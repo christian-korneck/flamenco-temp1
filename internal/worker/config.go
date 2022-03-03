@@ -111,7 +111,7 @@ func NewConfigWrangler() FileConfigWrangler {
 func (fcw FileConfigWrangler) DefaultConfig() WorkerConfig {
 	return WorkerConfig{
 		Manager:   "",
-		TaskTypes: []string{"sleep", "blender", "file-management", "exr-merge", "debug"},
+		TaskTypes: []string{"blender", "file-management", "exr-merge", "misc"},
 	}
 }
 
