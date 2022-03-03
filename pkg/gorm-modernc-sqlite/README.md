@@ -1,6 +1,9 @@
 # GORM Sqlite Driver
 
-![CI](https://github.com/go-gorm/sqlite/workflows/CI/badge.svg)
+This is a clone of the [Gorm SQLite driver](https://github.com/go-gorm/sqlite),
+adjusted by Sybren Stüvel <sybren@blender.org> to use modernc.org/sqlite instead
+of the SQLite C-bindings wrapper.
+
 
 ## USAGE
 
