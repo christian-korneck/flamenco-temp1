@@ -25,7 +25,9 @@ package crosspath
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"fmt"
 	path_module "path" // import under other name so that parameters can be called 'path'
+	"path/filepath"
 	"strings"
 )
 
@@ -77,4 +79,17 @@ func Stem(path string) string {
 // expect `path` to be in platform-native notation.
 func ToSlash(path string) string {
 	return strings.ReplaceAll(path, "\\", "/")
+}
+
+// ToNative replaces all path separators (forward and backward slashes) with the
+// platform-native separator.
+func ToNative(path string) string {
+	switch filepath.Separator {
+	case '/':
+		return ToSlash(path)
+	case '\\':
+		return strings.ReplaceAll(path, "/", "\\")
+	default:
+		panic(fmt.Sprintf("this platform has an unknown path separator: %q", filepath.Separator))
+	}
 }

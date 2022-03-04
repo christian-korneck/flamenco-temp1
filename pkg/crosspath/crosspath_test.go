@@ -22,6 +22,8 @@ package crosspath
 
 import (
 	"path"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,6 +37,7 @@ func TestBase(t *testing.T) {
 		{"justafile.txt", "justafile.txt"},
 		{"with spaces.txt", "/Linux path/with spaces.txt"},
 		{"awésom.tar.gz", "C:\\ünicode\\is\\awésom.tar.gz"},
+		{"Resource with ext.ension", "\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource with ext.ension"},
 	}
 	for _, test := range tests {
 		assert.Equal(t, test.expect, Base(test.input))
@@ -119,4 +122,68 @@ func TestStem(t *testing.T) {
 			test.expect, Stem(test.input),
 			"for input %q", test.input)
 	}
+}
+
+func TestToNative_native_backslash(t *testing.T) {
+	if filepath.Separator != '\\' {
+		t.Skipf("skipping backslash-specific test on %q with path separator %q",
+			runtime.GOOS, filepath.Separator)
+	}
+
+	tests := []struct {
+		expect, input string
+	}{
+		{"", ""},
+		{".", "."},
+		{"\\some\\simple\\path", "/some/simple/path"},
+		{"C:\\path\\to\\file.txt", "C:\\path\\to\\file.txt"},
+		{"C:\\path\\to\\mixed\\slashes\\file.txt", "C:\\path\\to/mixed/slashes/file.txt"},
+		{"\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource with ext.ension",
+			"\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource with ext.ension"},
+		{"\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource with ext.ension",
+			"//?/UNC/ComputerName/SharedFolder/Resource with ext.ension"},
+	}
+	for _, test := range tests {
+		assert.Equal(t,
+			test.expect, ToNative(test.input),
+			"for input %q", test.input)
+	}
+}
+
+func TestToNative_native_slash(t *testing.T) {
+	if filepath.Separator != '/' {
+		t.Skipf("skipping backslash-specific test on %q with path separator %q",
+			runtime.GOOS, filepath.Separator)
+	}
+
+	tests := []struct {
+		expect, input string
+	}{
+		{"", ""},
+		{".", "."},
+		{"/some/simple/path", "/some/simple/path"},
+		{"C:/path/to/file.txt", "C:\\path\\to\\file.txt"},
+		{"C:/path/to/mixed/slashes/file.txt", "C:\\path\\to/mixed/slashes/file.txt"},
+		{"//?/UNC/ComputerName/SharedFolder/Resource with ext.ension",
+			"\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource with ext.ension"},
+		{"//?/UNC/ComputerName/SharedFolder/Resource with ext.ension",
+			"//?/UNC/ComputerName/SharedFolder/Resource with ext.ension"},
+	}
+	for _, test := range tests {
+		assert.Equal(t,
+			test.expect, ToNative(test.input),
+			"for input %q", test.input)
+	}
+}
+
+// This test should be skipped on every platform. It's there just to detect that
+// the above two tests haven't run.
+func TestToNative_unsupported(t *testing.T) {
+	if filepath.Separator == '/' || filepath.Separator == '\\' {
+		t.Skipf("skipping test on %q with path separator %q",
+			runtime.GOOS, filepath.Separator)
+	}
+
+	t.Fatalf("ToNative not supported on this platform %q with path separator %q",
+		runtime.GOOS, filepath.Separator)
 }
