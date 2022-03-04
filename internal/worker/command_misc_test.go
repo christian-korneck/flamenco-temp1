@@ -76,7 +76,7 @@ func TestCommandSleep(t *testing.T) {
 		close(runDone)
 	}()
 
-	timeStepSize := 100 * time.Millisecond
+	timeStepSize := 1 * time.Second
 loop:
 	for {
 		select {
