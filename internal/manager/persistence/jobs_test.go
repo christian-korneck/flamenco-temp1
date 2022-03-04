@@ -199,11 +199,19 @@ func TestTaskAssignToWorker(t *testing.T) {
 	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
 	assert.NoError(t, err)
 
-	w := createWorker(t, db)
+	w := createWorker(ctx, t, db)
 	assert.NoError(t, db.TaskAssignToWorker(ctx, task, w))
 
-	assert.Equal(t, w, task.Worker)
-	assert.Equal(t, w.ID, *task.WorkerID)
+	if task.Worker == nil {
+		t.Error("task.Worker == nil")
+	} else {
+		assert.Equal(t, w, task.Worker)
+	}
+	if task.WorkerID == nil {
+		t.Error("task.WorkerID == nil")
+	} else {
+		assert.Equal(t, w.ID, *task.WorkerID)
+	}
 }
 
 func TestFetchTasksOfWorkerInStatus(t *testing.T) {
@@ -213,7 +221,7 @@ func TestFetchTasksOfWorkerInStatus(t *testing.T) {
 	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
 	assert.NoError(t, err)
 
-	w := createWorker(t, db)
+	w := createWorker(ctx, t, db)
 	assert.NoError(t, db.TaskAssignToWorker(ctx, task, w))
 
 	tasks, err := db.FetchTasksOfWorkerInStatus(ctx, w, task.Status)
@@ -313,10 +321,7 @@ func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *D
 	return ctx, cancel, db, dbJob, authoredJob
 }
 
-func createWorker(t *testing.T, db *DB) *Worker {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
+func createWorker(ctx context.Context, t *testing.T, db *DB) *Worker {
 	w := Worker{
 		UUID:               "f0a123a9-ab05-4ce2-8577-94802cfe74a4",
 		Name:               "дрон",

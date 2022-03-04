@@ -32,10 +32,12 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 )
 
+const testContextTimeout = 100 * time.Millisecond
+
 func TestNoTasks(t *testing.T) {
 	db, dbCloser := CreateTestDB(t)
 	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
 	defer ctxCancel()
 
 	w := linuxWorker(t, db)
@@ -48,14 +50,14 @@ func TestNoTasks(t *testing.T) {
 func TestOneJobOneTask(t *testing.T) {
 	db, dbCloser := CreateTestDB(t)
 	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
 	defer ctxCancel()
 
 	w := linuxWorker(t, db)
 
 	authTask := authorTestTask("the task", "blender")
 	atj := authorTestJob("b6a1d859-122f-4791-8b78-b943329a9989", "simple-blender-render", authTask)
-	job := constructTestJob(t, db, atj)
+	job := constructTestJob(ctx, t, db, atj)
 
 	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
@@ -85,7 +87,7 @@ func TestOneJobOneTask(t *testing.T) {
 func TestOneJobThreeTasksByPrio(t *testing.T) {
 	db, dbCloser := CreateTestDB(t)
 	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
 	defer ctxCancel()
 
 	w := linuxWorker(t, db)
@@ -99,7 +101,7 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 		"simple-blender-render",
 		att1, att2, att3)
 
-	job := constructTestJob(t, db, atj)
+	job := constructTestJob(ctx, t, db, atj)
 
 	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
@@ -118,7 +120,7 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 func TestOneJobThreeTasksByDependencies(t *testing.T) {
 	db, dbCloser := CreateTestDB(t)
 	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
 	defer ctxCancel()
 
 	w := linuxWorker(t, db)
@@ -132,7 +134,7 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 		"1295757b-e668-4c49-8b89-f73db8270e42",
 		"simple-blender-render",
 		att1, att2, att3)
-	job := constructTestJob(t, db, atj)
+	job := constructTestJob(ctx, t, db, atj)
 
 	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
@@ -146,7 +148,7 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 func TestTwoJobsThreeTasks(t *testing.T) {
 	db, dbCloser := CreateTestDB(t)
 	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
 	defer ctxCancel()
 
 	w := linuxWorker(t, db)
@@ -173,8 +175,8 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 		att2_1, att2_2, att2_3)
 	atj2.Priority = 100 // Increase priority over job 1.
 
-	constructTestJob(t, db, atj1)
-	job2 := constructTestJob(t, db, atj2)
+	constructTestJob(ctx, t, db, atj1)
+	job2 := constructTestJob(ctx, t, db, atj2)
 
 	task, err := db.ScheduleTask(ctx, &w)
 	assert.NoError(t, err)
@@ -190,21 +192,24 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 // To test: variable replacement
 
 func constructTestJob(
-	t *testing.T, db *DB, authoredJob job_compilers.AuthoredJob,
+	ctx context.Context, t *testing.T, db *DB, authoredJob job_compilers.AuthoredJob,
 ) *Job {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
 	err := db.StoreAuthoredJob(ctx, authoredJob)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatalf("storing authored job: %v", err)
+	}
 
 	dbJob, err := db.FetchJob(ctx, authoredJob.JobID)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatalf("fetching authored job: %v", err)
+	}
 
 	// Queue the job.
 	dbJob.Status = api.JobStatusQueued
 	err = db.SaveJobStatus(ctx, dbJob)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatalf("queueing job: %v", err)
+	}
 
 	return dbJob
 }
