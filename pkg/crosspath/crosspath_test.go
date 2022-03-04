@@ -57,8 +57,10 @@ func TestDir(t *testing.T) {
 		{"/", "/file-at-root"},
 		{"C:", "C:\\file-at-root"},
 		{"/Linux path", "/Linux path/with spaces.txt"},
+		{"/Mixed path/with", "/Mixed path\\with/slash.txt"},
 		{"C:/ünicode/is", "C:\\ünicode\\is\\awésom.tar.gz"},
 		{"//SERVER/ünicode/is", "\\\\SERVER\\ünicode\\is\\awésom.tar.gz"},
+		{"//?/UNC/ComputerName/SharedFolder", "\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource"},
 	}
 	for _, test := range tests {
 		assert.Equal(t,
@@ -90,6 +92,7 @@ func TestJoin(t *testing.T) {
 		{"/Linux path/with spaces.txt", []string{"/Linux path", "with spaces.txt"}},
 		{"C:/ünicode/is/awésom.tar.gz", []string{"C:\\ünicode", "is\\awésom.tar.gz"}},
 		{"//SERVER/mount/dir/file.txt", []string{"\\\\SERVER", "mount", "dir", "file.txt"}},
+		{"//?/UNC/ComputerName/SharedFolder/Resource", []string{"\\\\?\\UNC\\ComputerName", "SharedFolder\\Resource"}},
 	}
 	for _, test := range tests {
 		assert.Equal(t,
@@ -107,6 +110,9 @@ func TestStem(t *testing.T) {
 		{"stem.tar", "stem.tar.gz"},
 		{"file", "/path/to/file.txt"},
 		{"file", "C:\\path\\to\\file.txt"},
+		{"file", "C:\\path\\to/mixed/slashes/file.txt"},
+		{"file", "C:\\path/to\\mixed/slashes\\file.txt"},
+		{"Resource with ext", "\\\\?\\UNC\\ComputerName\\SharedFolder\\Resource with ext.ension"},
 	}
 	for _, test := range tests {
 		assert.Equal(t,
