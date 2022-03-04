@@ -99,9 +99,18 @@ func TestJoin(t *testing.T) {
 }
 
 func TestStem(t *testing.T) {
-	assert.Equal(t, "", Stem(""))
-	assert.Equal(t, "stem", Stem("stem.txt"))
-	assert.Equal(t, "stem.tar", Stem("stem.tar.gz"))
-	assert.Equal(t, "file", Stem("/path/to/file.txt"))
-	assert.Equal(t, "file", Stem("C:\\path\\to\\file.txt"))
+	tests := []struct {
+		expect, input string
+	}{
+		{"", ""},
+		{"stem", "stem.txt"},
+		{"stem.tar", "stem.tar.gz"},
+		{"file", "/path/to/file.txt"},
+		{"file", "C:\\path\\to\\file.txt"},
+	}
+	for _, test := range tests {
+		assert.Equal(t,
+			test.expect, Stem(test.input),
+			"for input %q", test.input)
+	}
 }
