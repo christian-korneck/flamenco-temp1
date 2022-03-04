@@ -22,10 +22,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -65,6 +70,11 @@ func main() {
 		return
 	}
 
+	// The main context determines the lifetime of the application. All
+	// long-running goroutines need to keep an eye on this, and stop their work
+	// once it closes.
+	mainCtx, mainCtxCancel := context.WithCancel(context.Background())
+
 	// Load configuration.
 	configService := config.NewService()
 	configService.Load()
@@ -76,6 +86,44 @@ func main() {
 
 	// Construct the services.
 	persist := openDB(*configService)
+	flamenco := buildFlamencoAPI(configService, persist)
+	e := buildWebService(flamenco, persist)
+
+	// Handle Ctrl+C
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGTERM)
+	go func() {
+		for signum := range c {
+			log.Info().Str("signal", signum.String()).Msg("signal received, shutting down")
+			mainCtxCancel()
+		}
+	}()
+
+	// All main goroutines should sync with this waitgroup. Once the waitgroup is
+	// done, the main() function will return and the process will stop.
+	wg := new(sync.WaitGroup)
+
+	// Start the web server.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// No matter how this function ends, if the HTTP server goes down, so does
+		// the application.
+		defer mainCtxCancel()
+
+		err := runWebService(mainCtx, e, listen)
+		if err != nil {
+			log.Error().Err(err).Msg("HTTP server error, shutting down the application")
+		}
+	}()
+
+	wg.Wait()
+	log.Info().Msg("shutdown complete")
+}
+
+func buildFlamencoAPI(configService *config.Service, persist *persistence.DB) api.ServerInterface {
 	timeService := clock.New()
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
@@ -84,11 +132,7 @@ func main() {
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
 	taskStateMachine := task_state_machine.NewStateMachine(persist)
 	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService, taskStateMachine)
-	e := buildWebService(flamenco, persist)
-
-	// Start the web server.
-	finalErr := e.Start(listen)
-	log.Warn().Err(finalErr).Msg("shutting down")
+	return flamenco
 }
 
 func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceService) *echo.Echo {
@@ -132,6 +176,54 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 	}
 
 	return e
+}
+
+// runWebService runs the Echo server, shutting it down when the context closes.
+// If there was any other error, it is returned and the entire server should go down.
+func runWebService(ctx context.Context, e *echo.Echo, listen string) error {
+	serverStopped := make(chan struct{})
+	var httpStartErr error = nil
+	var httpShutdownErr error = nil
+
+	go func() {
+		defer close(serverStopped)
+		err := e.Start(listen)
+		if err == http.ErrServerClosed {
+			log.Info().Msg("HTTP server shut down")
+		} else {
+			log.Warn().Err(err).Msg("HTTP server unexpectedly shut down")
+			httpStartErr = err
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Info().Msg("HTTP server stopping because application is shutting down")
+
+		// Do a clean shutdown of the HTTP server.
+		err := e.Shutdown(context.Background())
+		if err != nil {
+			log.Error().Err(err).Msg("error shutting down HTTP server")
+			httpShutdownErr = err
+		}
+
+		// Wait until the above goroutine has stopped.
+		<-serverStopped
+
+		// Return any error that occurred.
+		if httpStartErr != nil {
+			return httpStartErr
+		}
+		return httpShutdownErr
+
+	case <-serverStopped:
+		// The HTTP server stopped before the application shutdown was signalled.
+		// This is unexpected, so take the entire application down with us.
+		if httpStartErr != nil {
+			return httpStartErr
+		}
+		return errors.New("unexpected and unexplained shutdown of HTTP server")
+	}
 }
 
 func parseCliArgs() {
