@@ -27,15 +27,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 
 	"git.blender.org/flamenco/pkg/api"
 )
 
 func TestCreateFetchWorker(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
 	defer cancel()
 
 	w := Worker{
@@ -69,9 +66,7 @@ func TestCreateFetchWorker(t *testing.T) {
 }
 
 func TestSaveWorker(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
 	defer cancel()
 
 	w := Worker{

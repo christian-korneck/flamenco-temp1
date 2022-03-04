@@ -22,9 +22,11 @@ package persistence
  * ***** END GPL LICENSE BLOCK ***** */
 
 import (
+	"context"
 	"database/sql"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"github.com/rs/zerolog"
@@ -77,4 +79,18 @@ func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 	}
 
 	return db, closer
+}
+
+// persistenceTestFixtures creates a test database and returns it and a context.
+// Tests should call the returned cancel function when they're done.
+func persistenceTestFixtures(t *testing.T, testContextTimeout time.Duration) (context.Context, context.CancelFunc, *DB) {
+	db, dbCloser := CreateTestDB(t)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
+
+	cancel := func() {
+		ctxCancel()
+		dbCloser()
+	}
+
+	return ctx, cancel, db
 }

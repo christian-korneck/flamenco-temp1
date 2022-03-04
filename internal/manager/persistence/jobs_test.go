@@ -33,10 +33,7 @@ import (
 )
 
 func TestStoreAuthoredJob(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
 	defer cancel()
 
 	job := createTestAuthoredJobWithTasks()
@@ -297,12 +294,7 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 }
 
 func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *DB, *Job, job_compilers.AuthoredJob) {
-	db, dbCloser := CreateTestDB(t)
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 1*time.Second)
-	cancel := func() {
-		ctxCancel()
-		dbCloser()
-	}
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
 
 	authoredJob := createTestAuthoredJobWithTasks()
 	err := db.StoreAuthoredJob(ctx, authoredJob)

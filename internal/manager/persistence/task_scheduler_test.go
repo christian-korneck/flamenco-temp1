@@ -32,13 +32,11 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 )
 
-const testContextTimeout = 100 * time.Millisecond
+const schedulerTestTimeout = 100 * time.Millisecond
 
 func TestNoTasks(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
-	defer ctxCancel()
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
 
 	w := linuxWorker(t, db)
 
@@ -48,10 +46,8 @@ func TestNoTasks(t *testing.T) {
 }
 
 func TestOneJobOneTask(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
-	defer ctxCancel()
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
 
 	w := linuxWorker(t, db)
 
@@ -85,10 +81,8 @@ func TestOneJobOneTask(t *testing.T) {
 }
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
-	defer ctxCancel()
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
 
 	w := linuxWorker(t, db)
 
@@ -118,10 +112,8 @@ func TestOneJobThreeTasksByPrio(t *testing.T) {
 }
 
 func TestOneJobThreeTasksByDependencies(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
-	defer ctxCancel()
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
 
 	w := linuxWorker(t, db)
 
@@ -146,10 +138,8 @@ func TestOneJobThreeTasksByDependencies(t *testing.T) {
 }
 
 func TestTwoJobsThreeTasks(t *testing.T) {
-	db, dbCloser := CreateTestDB(t)
-	defer dbCloser()
-	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
-	defer ctxCancel()
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
 
 	w := linuxWorker(t, db)
 
