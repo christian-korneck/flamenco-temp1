@@ -89,16 +89,7 @@ func main() {
 	flamenco := buildFlamencoAPI(configService, persist)
 	e := buildWebService(flamenco, persist)
 
-	// Handle Ctrl+C
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
-	go func() {
-		for signum := range c {
-			log.Info().Str("signal", signum.String()).Msg("signal received, shutting down")
-			mainCtxCancel()
-		}
-	}()
+	installSignalHandler(mainCtxCancel)
 
 	// All main goroutines should sync with this waitgroup. Once the waitgroup is
 	// done, the main() function will return and the process will stop.
@@ -267,4 +258,17 @@ func openDB(configService config.Service) *persistence.DB {
 	}
 
 	return persist
+}
+
+// installSignalHandler spawns a goroutine that handles incoming POSIX signals.
+func installSignalHandler(cancelFunc context.CancelFunc) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+	signal.Notify(signals, syscall.SIGTERM)
+	go func() {
+		for signum := range signals {
+			log.Info().Str("signal", signum.String()).Msg("signal received, shutting down")
+			cancelFunc()
+		}
+	}()
 }
