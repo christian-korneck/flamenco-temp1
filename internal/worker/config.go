@@ -66,19 +66,19 @@ func loadConfig(configWrangler FileConfigWrangler) (WorkerConfig, error) {
 		cfg = configWrangler.DefaultConfig()
 		err = configWrangler.WriteConfig(configFilename, "Configuration", cfg)
 		if err != nil {
-			return cfg, fmt.Errorf("error writing default config: %w", err)
+			return cfg, fmt.Errorf("writing default config: %w", err)
 		}
 		err = configWrangler.LoadConfig(configFilename, &cfg)
 	}
 	if err != nil {
-		return cfg, fmt.Errorf("error loading config from %s: %w", configFilename, err)
+		return cfg, fmt.Errorf("loading config from %s: %w", configFilename, err)
 	}
 
 	// Validate the manager URL.
 	if cfg.Manager != "" {
 		_, err := ParseURL(cfg.Manager)
 		if err != nil {
-			return cfg, fmt.Errorf("error parsing manager URL %s: %w", cfg.Manager, err)
+			return cfg, fmt.Errorf("parsing manager URL %s: %w", cfg.Manager, err)
 		}
 		logger.Debug().Str("url", cfg.Manager).Msg("parsed manager URL")
 	}

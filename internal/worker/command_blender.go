@@ -176,7 +176,7 @@ func cmdBlenderRenderParams(logger zerolog.Logger, cmd api.Command) (BlenderPara
 	exeArgs, err := shlex.Split(parameters.exe)
 	if err != nil {
 		logger.Warn().Err(err).Interface("command", cmd).Msg("error parsing 'exe' parameter with shlex")
-		return parameters, fmt.Errorf("error parsing 'exe' parameter %q: %w", parameters.exe, err)
+		return parameters, fmt.Errorf("parsing 'exe' parameter %q: %w", parameters.exe, err)
 	}
 	if len(exeArgs) > 1 {
 		allArgsBefore := []string{}

@@ -413,10 +413,10 @@ func (c *Conf) checkDatabase() {
 func (c *Conf) Overwrite() error {
 	tempFilename := configFilename + "~"
 	if err := c.Write(tempFilename); err != nil {
-		return fmt.Errorf("error writing config to %s: %w", tempFilename, err)
+		return fmt.Errorf("writing config to %s: %w", tempFilename, err)
 	}
 	if err := os.Rename(tempFilename, configFilename); err != nil {
-		return fmt.Errorf("error moving %s to %s: %w", tempFilename, configFilename, err)
+		return fmt.Errorf("moving %s to %s: %w", tempFilename, configFilename, err)
 	}
 
 	log.Info().Str("filename", configFilename).Msg("saved configuration to file")

@@ -66,7 +66,7 @@ func (s *Storage) Write(logger zerolog.Logger, jobID, taskID string, logText str
 
 	if err := os.MkdirAll(path.Dir(filepath), 0755); err != nil {
 		logger.Error().Err(err).Msg("unable to create directory for log file")
-		return fmt.Errorf("error creating directory: %w", err)
+		return fmt.Errorf("creating directory: %w", err)
 	}
 
 	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

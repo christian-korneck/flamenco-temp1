@@ -51,7 +51,7 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 		var err error
 		task, err = findTaskForWorker(tx, w)
 		if err != nil {
-			return fmt.Errorf("error finding task for worker: %w", err)
+			return fmt.Errorf("finding task for worker: %w", err)
 		}
 		if task == nil {
 			// No task found, which is fine.
@@ -65,7 +65,7 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 				Str("taskID", task.UUID).
 				Err(err).
 				Msg("error assigning task to worker")
-			return fmt.Errorf("error assigning task to worker: %w", err)
+			return fmt.Errorf("assigning task to worker: %w", err)
 		}
 
 		return nil
@@ -73,7 +73,7 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 
 	if txErr != nil {
 		logger.Error().Err(txErr).Msg("error finding task for worker")
-		return nil, fmt.Errorf("error finding task for worker: %w", txErr)
+		return nil, fmt.Errorf("finding task for worker: %w", txErr)
 	}
 
 	if task == nil {

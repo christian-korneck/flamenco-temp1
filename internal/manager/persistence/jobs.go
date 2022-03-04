@@ -127,7 +127,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 		}
 
 		if err := tx.Create(&dbJob).Error; err != nil {
-			return fmt.Errorf("error storing job: %v", err)
+			return fmt.Errorf("storing job: %v", err)
 		}
 
 		uuidToTask := make(map[string]*Task)
@@ -151,7 +151,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 				// dependencies are stored below.
 			}
 			if err := tx.Create(&dbTask).Error; err != nil {
-				return fmt.Errorf("error storing task: %v", err)
+				return fmt.Errorf("storing task: %v", err)
 			}
 
 			uuidToTask[authoredTask.UUID] = &dbTask
@@ -172,7 +172,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			for i, t := range authoredTask.Dependencies {
 				depTask, ok := uuidToTask[t.UUID]
 				if !ok {
-					return fmt.Errorf("error finding task with UUID %q; a task depends on a task that is not part of this job", t.UUID)
+					return fmt.Errorf("finding task with UUID %q; a task depends on a task that is not part of this job", t.UUID)
 				}
 				deps[i] = depTask
 			}
@@ -202,7 +202,7 @@ func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
 		Model(j).
 		Updates(Job{Status: j.Status})
 	if tx.Error != nil {
-		return fmt.Errorf("error saving job status: %w", tx.Error)
+		return fmt.Errorf("saving job status: %w", tx.Error)
 	}
 	return nil
 }
@@ -220,14 +220,14 @@ func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
 
 func (db *DB) SaveTask(ctx context.Context, t *Task) error {
 	if err := db.gormDB.WithContext(ctx).Save(t).Error; err != nil {
-		return fmt.Errorf("error saving task: %w", err)
+		return fmt.Errorf("saving task: %w", err)
 	}
 	return nil
 }
 
 func (db *DB) SaveTaskActivity(ctx context.Context, t *Task) error {
 	if err := db.gormDB.Model(t).Updates(Task{Activity: t.Activity}).Error; err != nil {
-		return fmt.Errorf("error saving task activity: %w", err)
+		return fmt.Errorf("saving task activity: %w", err)
 	}
 	return nil
 }

@@ -79,11 +79,11 @@ func (ub *UpstreamBufferDB) OpenDB(ctx context.Context, databaseFilename string)
 
 	db, err := sql.Open("sqlite", databaseFilename)
 	if err != nil {
-		return fmt.Errorf("error opening %s: %w", databaseFilename, err)
+		return fmt.Errorf("opening %s: %w", databaseFilename, err)
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		return fmt.Errorf("error accessing %s: %w", databaseFilename, err)
+		return fmt.Errorf("accessing %s: %w", databaseFilename, err)
 	}
 
 	ub.db = db
@@ -325,7 +325,7 @@ func (ub *UpstreamBufferDB) discardRow(ctx context.Context, tx *sql.Tx, rowID in
 
 	_, err := tx.ExecContext(ctx, stmt, rowID)
 	if err != nil {
-		return fmt.Errorf("error un-queueing task update: %w", err)
+		return fmt.Errorf("un-queueing task update: %w", err)
 	}
 	return nil
 }

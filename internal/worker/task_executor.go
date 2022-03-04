@@ -72,7 +72,7 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 		if err == ErrTaskReassigned {
 			return ErrTaskReassigned
 		}
-		return fmt.Errorf("error sending 'task started' notification to manager: %w", err)
+		return fmt.Errorf("sending 'task started' notification to manager: %w", err)
 	}
 
 	for _, cmd := range task.Commands {
@@ -96,7 +96,7 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 			if err == ErrTaskReassigned {
 				return ErrTaskReassigned
 			}
-			return fmt.Errorf("error sending 'task failed' notification to manager: %w", err)
+			return fmt.Errorf("sending 'task failed' notification to manager: %w", err)
 		}
 		return runErr
 	}
@@ -105,7 +105,7 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 		if err == ErrTaskReassigned {
 			return ErrTaskReassigned
 		}
-		return fmt.Errorf("error sending 'task completed' notification to manager: %w", err)
+		return fmt.Errorf("sending 'task completed' notification to manager: %w", err)
 	}
 
 	return nil

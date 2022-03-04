@@ -53,7 +53,7 @@ func (w *Worker) TaskTypes() []string {
 
 func (db *DB) CreateWorker(ctx context.Context, w *Worker) error {
 	if err := db.gormDB.WithContext(ctx).Create(w).Error; err != nil {
-		return fmt.Errorf("error creating new worker: %w", err)
+		return fmt.Errorf("creating new worker: %w", err)
 	}
 	return nil
 }
@@ -77,14 +77,14 @@ func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
 			StatusRequested: w.StatusRequested,
 		}).Error
 	if err != nil {
-		return fmt.Errorf("error saving worker: %w", err)
+		return fmt.Errorf("saving worker: %w", err)
 	}
 	return nil
 }
 
 func (db *DB) SaveWorker(ctx context.Context, w *Worker) error {
 	if err := db.gormDB.WithContext(ctx).Save(w).Error; err != nil {
-		return fmt.Errorf("error saving worker: %w", err)
+		return fmt.Errorf("saving worker: %w", err)
 	}
 	return nil
 }

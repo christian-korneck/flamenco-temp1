@@ -94,10 +94,10 @@ func (sm *StateMachine) TaskStatusChange(
 	logger.Debug().Msg("task state changed")
 
 	if err := sm.persist.SaveTask(ctx, task); err != nil {
-		return fmt.Errorf("error saving task to database: %w", err)
+		return fmt.Errorf("saving task to database: %w", err)
 	}
 	if err := sm.updateJobAfterTaskStatusChange(ctx, task, oldTaskStatus); err != nil {
-		return fmt.Errorf("error updating job after task status change: %w", err)
+		return fmt.Errorf("updating job after task status change: %w", err)
 	}
 	return nil
 }
@@ -253,14 +253,14 @@ func (sm *StateMachine) JobStatusChange(ctx context.Context, job *persistence.Jo
 		// Persist the new job status.
 		err = sm.persist.SaveJobStatus(ctx, job)
 		if err != nil {
-			return fmt.Errorf("error saving job status change %q to %q to database: %w",
+			return fmt.Errorf("saving job status change %q to %q to database: %w",
 				oldJobStatus, newJobStatus, err)
 		}
 
 		// Handle the status change.
 		newJobStatus, err = sm.updateTasksAfterJobStatusChange(ctx, logger, job, oldJobStatus)
 		if err != nil {
-			return fmt.Errorf("error updating job's tasks after job status change: %w", err)
+			return fmt.Errorf("updating job's tasks after job status change: %w", err)
 		}
 	}
 
@@ -326,7 +326,7 @@ func (sm *StateMachine) cancelTasks(
 		fmt.Sprintf("Manager cancelled this task because the job got status %q.", job.Status),
 	)
 	if err != nil {
-		return "", fmt.Errorf("error cancelling tasks of job %s: %w", job.UUID, err)
+		return "", fmt.Errorf("cancelling tasks of job %s: %w", job.UUID, err)
 	}
 
 	// If cancellation was requested, it has now happened, so the job can transition.
@@ -380,7 +380,7 @@ func (sm *StateMachine) requeueTasks(
 	}
 
 	if err != nil {
-		return "", fmt.Errorf("error queueing tasks of job %s: %w", job.UUID, err)
+		return "", fmt.Errorf("queueing tasks of job %s: %w", job.UUID, err)
 	}
 
 	// TODO: also reset the 'failed by workers' blacklist.
