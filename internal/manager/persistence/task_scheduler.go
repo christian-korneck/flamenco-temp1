@@ -60,7 +60,6 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 		}
 
 		// Found a task, now assign it to the requesting worker.
-		// Without the Select() call, Gorm will try and also store task.Job in the jobs database, which is not what we want.
 		if err := assignTaskToWorker(tx, w, task); err != nil {
 			logger.Warn().
 				Str("taskID", task.UUID).

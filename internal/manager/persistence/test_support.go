@@ -47,6 +47,9 @@ func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 	var err error
 
 	dblogger := NewDBLogger(log.Level(zerolog.InfoLevel).Output(os.Stdout))
+
+	// Open the database ourselves, so that we have a low-level connection that
+	// can be closed when the unit test is done running.
 	sqliteConn, err := sql.Open(sqlite.DriverName, TestDSN)
 	if err != nil {
 		t.Fatalf("opening SQLite connection: %v", err)
