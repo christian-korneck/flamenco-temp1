@@ -49,6 +49,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/swagger_ui"
 	"git.blender.org/flamenco/internal/manager/task_logs"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/internal/upnp_ssdp"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -84,6 +85,13 @@ func main() {
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
+	ssdp, err := upnp_ssdp.NewServer(log.Logger)
+	if err != nil {
+		log.Error().Err(err).Msg("error creating UPnP/SSDP server")
+	} else {
+		ssdp.AddAdvertisement(listen) // TODO: convert this to an entire URL.
+	}
+
 	// Construct the services.
 	persist := openDB(*configService)
 	flamenco := buildFlamencoAPI(configService, persist)
@@ -118,6 +126,15 @@ func main() {
 			log.Error().Err(err).Msg("HTTP server error, shutting down the application")
 		}
 	}()
+
+	// Start the UPnP/SSDP server.
+	if ssdp != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			ssdp.Run(mainCtx)
+		}()
+	}
 
 	wg.Wait()
 	log.Info().Msg("shutdown complete")
