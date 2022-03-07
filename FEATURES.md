@@ -62,3 +62,9 @@ Note that list is **not** in any specific order.
 - [ ] Job construction
 - [ ] BAT-packing & uploading to Shaman
 - [ ] User authentication
+
+
+## Nice to have / new features
+
+- [ ] Notification system to push "job done" messages to. Ideally would be in a form/shape that allows sending a message to Rocket.Chat, Matrix, Telegram, Discord, email, webbrowser, push URL-encoded/JSON/XML to some URL, stuff like that. Idea by Dan McLaughlin.
+- [ ] Notification client inside Blender itself, so that you get a message when your job is done.

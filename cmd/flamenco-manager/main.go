@@ -1,24 +1,6 @@
 package main
 
-/* ***** BEGIN GPL LICENSE BLOCK *****
- *
- * Original Code Copyright (C) 2022 Blender Foundation.
- *
- * This file is part of Flamenco.
- *
- * Flamenco is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * Flamenco is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Flamenco.  If not, see <https://www.gnu.org/licenses/>.
- *
- * ***** END GPL LICENSE BLOCK ***** */
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
 	"context"
@@ -97,16 +79,7 @@ func main() {
 	flamenco := buildFlamencoAPI(configService, persist)
 	e := buildWebService(flamenco, persist)
 
-	// Handle Ctrl+C
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
-	go func() {
-		for signum := range c {
-			log.Info().Str("signal", signum.String()).Msg("signal received, shutting down")
-			mainCtxCancel()
-		}
-	}()
+	installSignalHandler(mainCtxCancel)
 
 	// All main goroutines should sync with this waitgroup. Once the waitgroup is
 	// done, the main() function will return and the process will stop.
@@ -284,4 +257,17 @@ func openDB(configService config.Service) *persistence.DB {
 	}
 
 	return persist
+}
+
+// installSignalHandler spawns a goroutine that handles incoming POSIX signals.
+func installSignalHandler(cancelFunc context.CancelFunc) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+	signal.Notify(signals, syscall.SIGTERM)
+	go func() {
+		for signum := range signals {
+			log.Info().Str("signal", signum.String()).Msg("signal received, shutting down")
+			cancelFunc()
+		}
+	}()
 }
