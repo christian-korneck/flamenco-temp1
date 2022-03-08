@@ -37,8 +37,9 @@ type Client struct {
 	log        *zerolog.Logger
 	wrappedLog *ssdpLogger
 
-	mutex *sync.Mutex
-	urls  []string
+	mutex    *sync.Mutex
+	urls     []string        // Preserves order
+	seenURLs map[string]bool // Removes duplicates
 }
 
 func NewClient(logger zerolog.Logger) (*Client, error) {
@@ -47,8 +48,9 @@ func NewClient(logger zerolog.Logger) (*Client, error) {
 		log:        &logger,
 		wrappedLog: wrap,
 
-		mutex: new(sync.Mutex),
-		urls:  make([]string, 0),
+		mutex:    new(sync.Mutex),
+		urls:     make([]string, 0),
+		seenURLs: make(map[string]bool),
 	}
 
 	ssdp, err := gossdp.NewSsdpClientWithLogger(&client, wrap)
@@ -111,7 +113,15 @@ func (c *Client) appendURLs(location string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	c.urls = append(c.urls, urls...)
+	// Only append URLs that we haven't seen yet.
+	for _, url := range urls {
+		if c.seenURLs[url] {
+			continue
+		}
+		c.urls = append(c.urls, url)
+		c.seenURLs[url] = true
+	}
+
 	c.log.Debug().
 		Int("new", len(urls)).
 		Int("total", len(c.urls)).
