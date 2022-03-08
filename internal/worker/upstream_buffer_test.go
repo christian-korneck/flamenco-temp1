@@ -17,7 +17,7 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 )
 
-const testBufferDBFilename = "test-flamenco-worker.db"
+const testBufferDBFilename = ":memory:"
 
 type UpstreamBufferDBMocks struct {
 	client *mocks.MockFlamencoClient
