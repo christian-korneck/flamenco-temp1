@@ -80,14 +80,8 @@ func networkInterfaces(includeLinkLocal, includeLocalhost bool) ([]net.IP, error
 			switch {
 			case ip.IsMulticast():
 				logger.Debug().Msg("    - skipping multicast")
-			case ip.IsMulticast():
-				logger.Debug().Msg("    - skipping multicast")
 			case ip.IsUnspecified():
 				logger.Debug().Msg("    - skipping unspecified")
-			case !includeLinkLocal && ip.IsLinkLocalUnicast():
-				logger.Debug().Msg("    - skipping link-local")
-			case !includeLocalhost && ip.IsLoopback():
-				logger.Debug().Msg("    - skipping localhost")
 			default:
 				logger.Debug().Msg("    - usable")
 				ifaceAddresses = append(ifaceAddresses, ip)
@@ -104,26 +98,69 @@ func networkInterfaces(includeLinkLocal, includeLocalhost bool) ([]net.IP, error
 	return usableAddresses, nil
 }
 
-// filterAddresses removes "privacy extension" addresses.
-// It assumes the list of addresses belong to the same network interface, and
-// that the OS reports preferred (i.e. private/random) addresses before
-// non-random ones.
+// filterAddresses reduces the number of IPv6 addresses.
+// It prefers link-local addresses; if these are in the list, all the other IPv6
+// addresses will be removed. Link-local addresses are stable and meant for
+// same-network connections, which is exactly what Flamenco needs.
+// Loopback addresses (localhost) are always filtered out, unless they're the only addresses available.
 func filterAddresses(addrs []net.IP) []net.IP {
-	keep := make([]net.IP, 0)
+	keepAddrs := make([]net.IP, 0)
 
-	var lastSeenIP net.IP
+	if hasOnlyLoopback(addrs) {
+		return addrs
+	}
+
+	var keepLinkLocalv6 = hasLinkLocalv6(addrs)
+	var keepLinkLocalv4 = hasLinkLocalv4(addrs)
+
+	var keep bool
 	for _, addr := range addrs {
-		if addr.To4() != nil {
-			// IPv4 addresses are always kept.
-			keep = append(keep, addr)
+		if addr.IsLoopback() {
 			continue
 		}
 
-		lastSeenIP = addr
-	}
-	if len(lastSeenIP) > 0 {
-		keep = append(keep, lastSeenIP)
+		isv4 := isIPv4(addr)
+		if isv4 {
+			keep = keepLinkLocalv4 == addr.IsLinkLocalUnicast()
+		} else {
+			keep = keepLinkLocalv6 == addr.IsLinkLocalUnicast()
+		}
+
+		if keep {
+			keepAddrs = append(keepAddrs, addr)
+		}
 	}
 
-	return keep
+	return keepAddrs
+}
+
+func isIPv4(addr net.IP) bool {
+	return addr.To4() != nil
+}
+
+func hasLinkLocalv6(addrs []net.IP) bool {
+	for _, addr := range addrs {
+		if !isIPv4(addr) && addr.IsLinkLocalUnicast() {
+			return true
+		}
+	}
+	return false
+}
+
+func hasLinkLocalv4(addrs []net.IP) bool {
+	for _, addr := range addrs {
+		if isIPv4(addr) && addr.IsLinkLocalUnicast() {
+			return true
+		}
+	}
+	return false
+}
+
+func hasOnlyLoopback(addrs []net.IP) bool {
+	for _, addr := range addrs {
+		if !addr.IsLoopback() {
+			return false
+		}
+	}
+	return true
 }
