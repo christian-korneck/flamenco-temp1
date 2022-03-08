@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sync"
 	"syscall"
 	"time"
 
@@ -226,29 +227,53 @@ func autodiscoverManager(ctx context.Context) (string, error) {
 	}
 
 	// Try out the URLs to see which one responds.
-	// TODO: parallelise this.
-	usableURLs := make([]string, 0)
+	startTime := time.Now()
+	numUsableURLs := 0
+	wg := new(sync.WaitGroup)
+	wg.Add(len(urls))
+	mutex := new(sync.Mutex)
+	for idx, url := range urls {
+		go func(idx int, url string) {
+			defer wg.Done()
+			ok := pingManager(ctx, url)
+
+			mutex.Lock()
+			defer mutex.Unlock()
+
+			if ok {
+				numUsableURLs++
+			} else {
+				// Erase the URL from the usable list.
+				urls[idx] = ""
+			}
+		}(idx, url)
+	}
+	wg.Wait()
+	log.Debug().Str("pingTime", time.Since(startTime).String()).Msg("pinging all Manager URLs done")
+
+	if numUsableURLs == 0 {
+		return "", fmt.Errorf("autodetected %d URLs, but none were usable", len(urls))
+	}
+
+	// Find the first usable URL.
+	var firstURL string
 	for _, url := range urls {
-		if pingManager(ctx, url) {
-			usableURLs = append(usableURLs, url)
+		if url != "" {
+			firstURL = url
+			break
 		}
 	}
 
-	switch len(usableURLs) {
-	case 0:
-		return "", fmt.Errorf("autodetected %d URLs, but none were usable", len(urls))
-
-	case 1:
-		log.Info().Str("url", usableURLs[0]).Msg("found Manager")
-		return usableURLs[0], nil
-
-	default:
+	if numUsableURLs == 1 {
+		log.Info().Str("url", firstURL).Msg("found Manager")
+	} else {
 		log.Info().
-			Strs("urls", usableURLs).
-			Str("url", usableURLs[0]).
+			Strs("urls", urls).
+			Str("url", firstURL).
 			Msg("found multiple usable URLs, using the first one")
-		return usableURLs[0], nil
 	}
+
+	return firstURL, nil
 }
 
 // pingManager connects to a Manager and returns true if it responds.
