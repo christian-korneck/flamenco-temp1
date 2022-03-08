@@ -73,7 +73,7 @@ func main() {
 	// Construct the services.
 	persist := openDB(*configService)
 	flamenco := buildFlamencoAPI(configService, persist)
-	e := buildWebService(flamenco, persist)
+	e := buildWebService(flamenco, persist, ssdp)
 
 	installSignalHandler(mainCtxCancel)
 
@@ -121,7 +121,11 @@ func buildFlamencoAPI(configService *config.Service, persist *persistence.DB) ap
 	return flamenco
 }
 
-func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceService) *echo.Echo {
+func buildWebService(
+	flamenco api.ServerInterface,
+	persist api_impl.PersistenceService,
+	ssdp *upnp_ssdp.Server,
+) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -153,6 +157,13 @@ func buildWebService(flamenco api.ServerInterface, persist api_impl.PersistenceS
 	e.GET("/", func(c echo.Context) error {
 		return c.Redirect(http.StatusTemporaryRedirect, "/api/swagger-ui/")
 	})
+
+	// Serve UPnP service descriptions.
+	if ssdp != nil {
+		e.GET(ssdp.DescriptionPath(), func(c echo.Context) error {
+			return c.XMLPretty(http.StatusOK, ssdp.Description(), "  ")
+		})
+	}
 
 	// Log available routes
 	routeLogger := log.Level(zerolog.DebugLevel)

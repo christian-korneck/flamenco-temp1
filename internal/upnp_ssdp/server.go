@@ -22,8 +22,11 @@ package upnp_ssdp
 
 import (
 	"context"
+	"fmt"
 	"net/url"
+	"path"
 
+	"git.blender.org/flamenco/internal/appinfo"
 	"github.com/fromkeith/gossdp"
 	"github.com/rs/zerolog"
 )
@@ -60,8 +63,9 @@ func (s *Server) AddAdvertisement(serviceLocation string) {
 
 // AddAdvertisementURLs constructs a service location from the given URLs, and
 // adds the advertisement for it.
-func (s *Server) AddAdvertisementURLs(urls []url.URL) {
-	for _, url := range urls {
+func (s *Server) AddAdvertisementURLs(baseURLs []url.URL) {
+	for _, url := range baseURLs {
+		url.Path = path.Join(url.Path, serviceDescriptionPath)
 		s.AddAdvertisement(url.String())
 	}
 }
@@ -98,4 +102,27 @@ func (s *Server) Run(ctx context.Context) {
 	s.wrappedLog.zlog = s.log
 
 	s.log.Info().Msg("UPnP/SSDP advertisement stopped")
+}
+
+func (s *Server) Description() Description {
+	return Description{
+		SpecVersion: SpecVersion{1, 0},
+		URLBase:     "/",
+		Device: Device{
+			DeviceType:       FlamencoServiceType,
+			FriendlyName:     appinfo.FormattedApplicationInfo(),
+			ModelName:        appinfo.ApplicationName,
+			ModelDescription: "Flamenco render farm, Manager component",
+			ModelURL:         "https://flamenco.io/",
+			UDN:              fmt.Sprintf("uuid:%s", FlamencoUUID),
+			Manufacturer:     "Blender",
+			ManufacturerURL:  "https://www.blender.org/",
+			ServiceList:      []string{},
+			PresentationURL:  "/",
+		},
+	}
+}
+
+func (s *Server) DescriptionPath() string {
+	return serviceDescriptionPath
 }

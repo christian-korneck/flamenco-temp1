@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"sync"
 	"time"
 
@@ -76,14 +77,28 @@ func autodiscoverManager(ctx context.Context) (string, error) {
 	return usableURLs[0], nil
 }
 
-// pingManager connects to a Manager and returns true if it responds.
-func pingManager(ctx context.Context, url string) bool {
-	logger := log.With().Str("manager", url).Logger()
+// pingManager connects to a Manager and returns the service URL if it responds.
+func pingManager(ctx context.Context, descriptionURL string) string {
+	var err error
+	parsedURL, err := url.Parse(descriptionURL)
+	if err != nil {
+		log.Warn().
+			Str("description", descriptionURL).
+			Err(err).
+			Msg("received invalid URL from autodiscovery, ignoring")
+		return ""
+	}
 
-	client, err := api.NewClientWithResponses(url)
+	// TODO: actually get the description XML from Flamenco Manager and use the path in there.
+	// For now, just assume it's on the root.
+	parsedURL.Path = "/"
+	serviceURL := parsedURL.String()
+
+	logger := log.With().Str("url", serviceURL).Logger()
+	client, err := api.NewClientWithResponses(serviceURL)
 	if err != nil {
 		logger.Warn().Err(err).Msg("unable to create API client with this URL")
-		return false
+		return ""
 	}
 
 	resp, err := client.GetVersionWithResponse(ctx)
@@ -91,21 +106,21 @@ func pingManager(ctx context.Context, url string) bool {
 		// It is expected that some URLs will not work. Showing the error message at
 		// info/warn level will likely confuse people, so leave it at debug level.
 		logger.Debug().Err(err).Msg("unable to get Flamenco version from Manager")
-		return false
+		return ""
 	}
 
 	if resp.JSON200 == nil {
 		logger.Warn().
 			Int("httpStatus", resp.StatusCode()).
 			Msg("unable to get Flamenco version, unexpected reply")
-		return false
+		return ""
 	}
 
 	logger.Info().
 		Str("version", resp.JSON200.Version).
 		Str("name", resp.JSON200.Name).
 		Msg("found Flamenco Manager")
-	return true
+	return serviceURL
 }
 
 // pingManagers pings all URLs in parallel, returning only those that responded.
@@ -116,19 +131,16 @@ func pingManagers(ctx context.Context, urls []string) []string {
 	wg.Add(len(urls))
 	mutex := new(sync.Mutex)
 
-	pingURL := func(idx int, url string) {
+	pingURL := func(idx int, descriptionURL string) {
 		defer wg.Done()
-		ok := pingManager(ctx, url)
+		serviceURL := pingManager(ctx, descriptionURL)
 
 		mutex.Lock()
 		defer mutex.Unlock()
 
-		if !ok {
-			// Erase the URL from the usable list.
-			// Modifying the original slice instead of appending to a new one ensures
-			// the original order is maintained.
-			urls[idx] = ""
-		}
+		// This is either the actual service URL, or an empty string if the
+		// description URL couldn't be reached/parsed.
+		urls[idx] = serviceURL
 	}
 
 	for idx, url := range urls {

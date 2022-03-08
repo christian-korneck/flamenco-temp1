@@ -24,4 +24,30 @@ package upnp_ssdp
 const (
 	FlamencoUUID        = "aa80bc5f-d0af-46b8-8630-23bd7e80ec4d"
 	FlamencoServiceType = "urn:flamenco:manager:0"
+
+	serviceDescriptionPath = "/upnp/description.xml"
 )
+
+// SSDP Service description, usually served on some URL ending in `/description.xml`.
+type Description struct {
+	XMLName     string      `xml:"urn:schemas-upnp-org:device-1-0 root"`
+	SpecVersion SpecVersion `xml:"specVersion"`
+	URLBase     string      `xml:"URLBase"`
+	Device      Device      `xml:"device"`
+}
+type SpecVersion struct {
+	Major int `xml:"major"`
+	Minor int `xml:"minor"`
+}
+type Device struct {
+	DeviceType       string   `xml:"deviceType"`
+	FriendlyName     string   `xml:"friendlyName"`
+	Manufacturer     string   `xml:"manufacturer"`
+	ManufacturerURL  string   `xml:"manufacturerURL"`
+	ModelDescription string   `xml:"modelDescription"`
+	ModelName        string   `xml:"modelName"`
+	ModelURL         string   `xml:"modelURL"`
+	UDN              string   `xml:"UDN"`
+	ServiceList      []string `xml:"serviceList"` // not []string, but since the list is empty, it doesn't matter.
+	PresentationURL  string   `xml:"presentationURL"`
+}
