@@ -33,22 +33,24 @@ import (
 )
 
 type Client struct {
-	ssdp *gossdp.ClientSsdp
-	log  *zerolog.Logger
+	ssdp       *gossdp.ClientSsdp
+	log        *zerolog.Logger
+	wrappedLog *ssdpLogger
 
 	mutex *sync.Mutex
 	urls  []string
 }
 
 func NewClient(logger zerolog.Logger) (*Client, error) {
+	wrap := wrappedLogger(&logger)
 	client := Client{
-		log: &logger,
+		log:        &logger,
+		wrappedLog: wrap,
 
 		mutex: new(sync.Mutex),
 		urls:  make([]string, 0),
 	}
 
-	wrap := wrappedLogger(&logger)
 	ssdp, err := gossdp.NewSsdpClientWithLogger(&client, wrap)
 	if err != nil {
 		return nil, fmt.Errorf("create UPnP/SSDP client: %w", err)
@@ -59,7 +61,7 @@ func NewClient(logger zerolog.Logger) (*Client, error) {
 }
 
 func (c *Client) Run(ctx context.Context) ([]string, error) {
-	defer c.ssdp.Stop()
+	defer c.stopCleanly()
 
 	log.Debug().Msg("waiting for UPnP/SSDP answer")
 	go c.ssdp.Start()
@@ -124,4 +126,19 @@ func (c *Client) receivedURLs() []string {
 	urls := make([]string, len(c.urls))
 	copy(urls, c.urls)
 	return urls
+}
+
+// stopCleanly tries to stop the SSDP client cleanly, without spurious logging.
+func (c *Client) stopCleanly() {
+
+	c.log.Trace().Msg("UPnP/SSDP client stopping")
+
+	// Sneakily disable warnings when shutting down, otherwise the read operation
+	// from the UDP socket will cause a warning.
+	tempLog := c.log.Level(zerolog.ErrorLevel)
+	c.wrappedLog.zlog = &tempLog
+	c.ssdp.Stop()
+	c.wrappedLog.zlog = c.log
+
+	c.log.Debug().Msg("UPnP/SSDP client stopped")
 }
