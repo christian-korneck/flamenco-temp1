@@ -54,7 +54,7 @@ Note that list is **not** in any specific order.
 - [x] Task status change handling
 - [ ] Worker test mode
 - [ ] Worker registration secret (to protect the Manager from arbitrary Workers registering)
-- [ ] SSDP/UPnP for automatic Manager finding
+- [x] UPnP/SSDP for automatic Manager finding
 
 ## Blender Add-on
 
