@@ -23,7 +23,6 @@ package upnp_ssdp
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -104,26 +103,21 @@ func (c *Client) Response(message gossdp.ResponseMessage) {
 	}
 
 	logger.Debug().Msg("UPnP/SSDP message received")
-	c.appendURLs(message.Location)
+	c.appendURL(message.Location)
 }
 
-func (c *Client) appendURLs(location string) {
-	urls := strings.Split(location, LocationSeparator)
-
+func (c *Client) appendURL(url string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	// Only append URLs that we haven't seen yet.
-	for _, url := range urls {
-		if c.seenURLs[url] {
-			continue
-		}
-		c.urls = append(c.urls, url)
-		c.seenURLs[url] = true
+	if c.seenURLs[url] {
+		return
 	}
+	c.urls = append(c.urls, url)
+	c.seenURLs[url] = true
 
 	c.log.Debug().
-		Int("new", len(urls)).
 		Int("total", len(c.urls)).
 		Msg("new URLs received")
 }

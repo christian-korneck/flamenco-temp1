@@ -24,6 +24,4 @@ package upnp_ssdp
 const (
 	FlamencoUUID        = "aa80bc5f-d0af-46b8-8630-23bd7e80ec4d"
 	FlamencoServiceType = "urn:flamenco:manager:0"
-
-	LocationSeparator = ";"
 )

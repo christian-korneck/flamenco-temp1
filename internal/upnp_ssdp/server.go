@@ -23,7 +23,6 @@ package upnp_ssdp
 import (
 	"context"
 	"net/url"
-	"strings"
 
 	"github.com/fromkeith/gossdp"
 	"github.com/rs/zerolog"
@@ -62,12 +61,9 @@ func (s *Server) AddAdvertisement(serviceLocation string) {
 // AddAdvertisementURLs constructs a service location from the given URLs, and
 // adds the advertisement for it.
 func (s *Server) AddAdvertisementURLs(urls []url.URL) {
-	urlStrings := make([]string, len(urls))
-	for idx := range urls {
-		urlStrings[idx] = urls[idx].String()
+	for _, url := range urls {
+		s.AddAdvertisement(url.String())
 	}
-	location := strings.Join(urlStrings, LocationSeparator)
-	s.AddAdvertisement(location)
 }
 
 // Run starts the advertisement, and blocks until the context is closed.
