@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -26,7 +27,13 @@ const (
 // WorkerConfig represents the configuration of a single worker.
 // It does not include authentication credentials.
 type WorkerConfig struct {
-	Manager   string   `yaml:"manager_url"`
+	// ConfiguredManager is the Manager URL that's in the configuration file.
+	ConfiguredManager string `yaml:"manager_url"`
+
+	// ManagerURL is the Manager URL to use by the Worker. It could come from the
+	// configuration file, but also from autodiscovery via UPnP/SSDP.
+	ManagerURL string `yaml:"-"`
+
 	TaskTypes []string `yaml:"task_types"`
 }
 
@@ -35,42 +42,59 @@ type WorkerCredentials struct {
 	Secret   string `yaml:"worker_secret"`
 }
 
-func loadConfig(configWrangler FileConfigWrangler) (WorkerConfig, error) {
-	logger := log.With().Str("filename", configFilename).Logger()
-
-	var cfg WorkerConfig
-
-	err := configWrangler.LoadConfig(configFilename, &cfg)
-
-	// If the configuration file doesn't exist, write the defaults & retry loading them.
-	if os.IsNotExist(err) {
-		logger.Info().Msg("writing default configuration file")
-		cfg = configWrangler.DefaultConfig()
-		err = configWrangler.WriteConfig(configFilename, "Configuration", cfg)
-		if err != nil {
-			return cfg, fmt.Errorf("writing default config: %w", err)
-		}
-		err = configWrangler.LoadConfig(configFilename, &cfg)
-	}
-	if err != nil {
-		return cfg, fmt.Errorf("loading config from %s: %w", configFilename, err)
-	}
-
-	// Validate the manager URL.
-	if cfg.Manager != "" {
-		_, err := ParseURL(cfg.Manager)
-		if err != nil {
-			return cfg, fmt.Errorf("parsing manager URL %s: %w", cfg.Manager, err)
-		}
-		logger.Debug().Str("url", cfg.Manager).Msg("parsed manager URL")
-	}
-
-	return cfg, nil
+// FileConfigWrangler is the default config wrangler that actually reads & writes files.
+type FileConfigWrangler struct {
+	// In-memory copy of the worker configuration.
+	wc    *WorkerConfig
+	creds *WorkerCredentials
 }
 
-func loadCredentials(configWrangler FileConfigWrangler) (WorkerCredentials, error) {
+// NewConfigWrangler returns ConfigWrangler that reads files.
+func NewConfigWrangler() FileConfigWrangler {
+	return FileConfigWrangler{}
+}
+
+// WorkerConfig returns the worker configuration, or the default config if
+// there is no config file. Configuration is only loaded from disk once;
+// subsequent calls return the same config.
+func (fcw *FileConfigWrangler) WorkerConfig() (WorkerConfig, error) {
+	if fcw.wc != nil {
+		return *fcw.wc, nil
+	}
+
+	wc := WorkerConfig{}
+	err := fcw.loadConfig(configFilename, &wc)
+
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return WorkerConfig{}, err
+		}
+
+		// The config file not existing is fine; just use the defaults.
+		wc = fcw.DefaultConfig()
+	}
+
+	fcw.wc = &wc
+
+	man := strings.TrimSpace(wc.ConfiguredManager)
+	if man != "" {
+		fcw.SetManagerURL(man)
+	}
+
+	return wc, nil
+}
+
+func (fcw *FileConfigWrangler) SaveConfig() error {
+	err := fcw.writeConfig(configFilename, "Configuration", fcw.wc)
+	if err != nil {
+		return fmt.Errorf("writing to %s: %w", configFilename, err)
+	}
+	return nil
+}
+
+func (fcw *FileConfigWrangler) WorkerCredentials() (WorkerCredentials, error) {
 	var creds WorkerCredentials
-	err := configWrangler.LoadConfig(credentialsFilename, &creds)
+	err := fcw.loadConfig(credentialsFilename, &creds)
 	if err != nil {
 		return WorkerCredentials{}, err
 	}
@@ -81,24 +105,34 @@ func loadCredentials(configWrangler FileConfigWrangler) (WorkerCredentials, erro
 	return creds, nil
 }
 
-// FileConfigWrangler is the default config wrangler that actually reads & writes files.
-type FileConfigWrangler struct{}
+func (fcw *FileConfigWrangler) SaveCredentials(creds WorkerCredentials) error {
+	fcw.creds = &creds
 
-// NewConfigWrangler returns ConfigWrangler that reads files.
-func NewConfigWrangler() FileConfigWrangler {
-	return FileConfigWrangler{}
+	err := fcw.writeConfig(credentialsFilename, "Credentials", creds)
+	if err != nil {
+		return fmt.Errorf("writing to %s: %w", credentialsFilename, err)
+	}
+	return nil
+}
+
+// SetManagerURL overwrites the Manager URL in the cached configuration.
+// This is an in-memory change only, and will not be written to the config file.
+// Returns a new copy of the WorkerConfig with the Manager URL updated.
+func (fcw *FileConfigWrangler) SetManagerURL(managerURL string) WorkerConfig {
+	fcw.wc.ManagerURL = managerURL
+	return *fcw.wc
 }
 
 // DefaultConfig returns a fairly sane default configuration.
 func (fcw FileConfigWrangler) DefaultConfig() WorkerConfig {
 	return WorkerConfig{
-		Manager:   "",
-		TaskTypes: []string{"blender", "file-management", "exr-merge", "misc"},
+		ConfiguredManager: "", // Auto-detect by default.
+		TaskTypes:         []string{"blender", "file-management", "exr-merge", "misc"},
 	}
 }
 
 // WriteConfig stores a struct as YAML file.
-func (fcw FileConfigWrangler) WriteConfig(filename string, filetype string, config interface{}) error {
+func (fcw FileConfigWrangler) writeConfig(filename string, filetype string, config interface{}) error {
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return err
@@ -144,7 +178,7 @@ func (fcw FileConfigWrangler) WriteConfig(filename string, filetype string, conf
 }
 
 // LoadConfig loads a YAML configuration file into 'config'
-func (fcw FileConfigWrangler) LoadConfig(filename string, config interface{}) error {
+func (fcw FileConfigWrangler) loadConfig(filename string, config interface{}) error {
 	log.Debug().Str("filename", filename).Msg("loading config file")
 	f, err := os.OpenFile(filename, os.O_RDONLY, 0)
 	if err != nil {

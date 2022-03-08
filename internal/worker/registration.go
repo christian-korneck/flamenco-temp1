@@ -30,19 +30,18 @@ func RegisterOrSignOn(ctx context.Context, configWrangler FileConfigWrangler) (
 	client FlamencoClient, startupState api.WorkerStatus,
 ) {
 	// Load configuration
-	cfg, err := loadConfig(configWrangler)
+	cfg, err := configWrangler.WorkerConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("loading configuration")
 	}
 
 	log.Info().Interface("config", cfg).Msg("loaded configuration")
-
-	if cfg.Manager == "" {
-		log.Fatal().Msg("no manager configured")
+	if cfg.ManagerURL == "" {
+		log.Fatal().Msg("no Manager configured")
 	}
 
 	// Load credentials
-	creds, err := loadCredentials(configWrangler)
+	creds, err := configWrangler.WorkerCredentials()
 	if err == nil {
 		// Credentials can be loaded just fine, try to sign on with them.
 		client = authenticatedClient(cfg, creds)
@@ -58,17 +57,16 @@ func RegisterOrSignOn(ctx context.Context, configWrangler FileConfigWrangler) (
 	creds = register(ctx, cfg, client)
 
 	// store ID and secretKey in config file when registration is complete.
-	err = configWrangler.WriteConfig(credentialsFilename, "Credentials", creds)
+	err = configWrangler.SaveCredentials(creds)
 	if err != nil {
-		log.Fatal().Err(err).Str("file", credentialsFilename).
-			Msg("unable to write credentials configuration file")
+		log.Fatal().Err(err).Msg("unable to write credentials file")
 	}
 
 	// Sign-on should work now.
 	client = authenticatedClient(cfg, creds)
 	startupState, err = signOn(ctx, cfg, client)
 	if err != nil {
-		log.Fatal().Err(err).Str("manager", cfg.Manager).Msg("unable to sign on after registering")
+		log.Fatal().Err(err).Str("manager", cfg.ManagerURL).Msg("unable to sign on after registering")
 	}
 
 	return
@@ -141,7 +139,7 @@ func repeatSignOnUntilAnswer(ctx context.Context, cfg WorkerConfig, client Flame
 
 // signOn tells the Manager we're alive and returns the status the Manager tells us to go to.
 func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.WorkerStatus, error) {
-	logger := log.With().Str("manager", cfg.Manager).Logger()
+	logger := log.With().Str("manager", cfg.ManagerURL).Logger()
 
 	req := api.SignOnJSONRequestBody{
 		Nickname:           mustHostname(),
@@ -191,7 +189,7 @@ func mustHostname() string {
 // authenticatedClient constructs a Flamenco client with the given credentials.
 func authenticatedClient(cfg WorkerConfig, creds WorkerCredentials) FlamencoClient {
 	flamenco, err := api.NewClientWithResponses(
-		cfg.Manager,
+		cfg.ManagerURL,
 
 		// Add a Basic HTTP authentication header to every request to Flamenco Manager.
 		api.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
