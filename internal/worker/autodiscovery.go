@@ -88,7 +88,9 @@ func pingManager(ctx context.Context, url string) bool {
 
 	resp, err := client.GetVersionWithResponse(ctx)
 	if err != nil {
-		logger.Warn().Err(err).Msg("unable to get Flamenco version from Manager")
+		// It is expected that some URLs will not work. Showing the error message at
+		// info/warn level will likely confuse people, so leave it at debug level.
+		logger.Debug().Err(err).Msg("unable to get Flamenco version from Manager")
 		return false
 	}
 
