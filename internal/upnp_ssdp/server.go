@@ -81,7 +81,8 @@ func (s *Server) Run(ctx context.Context) {
 		defer func() {
 			if isStopping {
 				// Only capture a panic when we expect one.
-				recover()
+				value := recover()
+				s.log.Debug().Interface("value", value).Msg("recovered from panic in SSDP library")
 			}
 		}()
 
