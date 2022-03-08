@@ -7,6 +7,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.9.0
 	github.com/dop251/goja v0.0.0-20211217115348-3f9136fa235d
 	github.com/dop251/goja_nodejs v0.0.0-20210225215109-d91c329300e7
+	github.com/fromkeith/gossdp v0.0.0-20180102154144-1b2c43f6886e
 	github.com/getkin/kin-openapi v0.88.0
 	github.com/glebarez/sqlite v1.3.5
 	github.com/golang/mock v1.6.0
@@ -28,7 +29,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
-	github.com/fromkeith/gossdp v0.0.0-20180102154144-1b2c43f6886e // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/glebarez/go-sqlite v1.14.7 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
