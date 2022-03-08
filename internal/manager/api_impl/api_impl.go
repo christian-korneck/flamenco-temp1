@@ -6,7 +6,9 @@ package api_impl
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"git.blender.org/flamenco/internal/appinfo"
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
@@ -105,4 +107,11 @@ func sendAPIError(e echo.Context, code int, message string, args ...interface{})
 		Message: message,
 	}
 	return e.JSON(code, petErr)
+}
+
+func (f *Flamenco) GetVersion(e echo.Context) error {
+	return e.JSON(http.StatusOK, api.FlamencoVersion{
+		Version: appinfo.ApplicationVersion,
+		Name:    appinfo.ApplicationName,
+	})
 }

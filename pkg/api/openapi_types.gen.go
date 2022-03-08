@@ -172,6 +172,12 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// FlamencoVersion defines model for FlamencoVersion.
+type FlamencoVersion struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
 // Job defines model for Job.
 type Job struct {
 	// Embedded struct due to allOf(#/components/schemas/SubmittedJob)
@@ -330,7 +336,7 @@ func (a *JobMetadata) UnmarshalJSON(b []byte) error {
 			var fieldVal string
 			err := json.Unmarshal(fieldBuf, &fieldVal)
 			if err != nil {
-				return fmt.Errorf("unmarshaling field %s: %w", fieldName, err)
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 			}
 			a.AdditionalProperties[fieldName] = fieldVal
 		}
@@ -346,7 +352,7 @@ func (a JobMetadata) MarshalJSON() ([]byte, error) {
 	for fieldName, field := range a.AdditionalProperties {
 		object[fieldName], err = json.Marshal(field)
 		if err != nil {
-			return nil, fmt.Errorf("marshaling '%s': %w", fieldName, err)
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
 		}
 	}
 	return json.Marshal(object)
@@ -383,7 +389,7 @@ func (a *JobSettings) UnmarshalJSON(b []byte) error {
 			var fieldVal interface{}
 			err := json.Unmarshal(fieldBuf, &fieldVal)
 			if err != nil {
-				return fmt.Errorf("unmarshaling field %s: %w", fieldName, err)
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 			}
 			a.AdditionalProperties[fieldName] = fieldVal
 		}
@@ -399,7 +405,7 @@ func (a JobSettings) MarshalJSON() ([]byte, error) {
 	for fieldName, field := range a.AdditionalProperties {
 		object[fieldName], err = json.Marshal(field)
 		if err != nil {
-			return nil, fmt.Errorf("marshaling '%s': %w", fieldName, err)
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
 		}
 	}
 	return json.Marshal(object)

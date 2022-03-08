@@ -12,6 +12,19 @@ info:
 servers:
   - url: /
 paths:
+  /api/version:
+    summary: Workers can use this to check this is actually a Flamenco server.
+    get:
+      summary: Get the Flamenco version of this Manager
+      operationId: getVersion
+      responses:
+        "200":
+          description: normal response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlamencoVersion"
+
   /api/worker/register-worker:
     summary: Registration of new workers
     post:
@@ -254,6 +267,13 @@ tags:
 
 components:
   schemas:
+    FlamencoVersion:
+      type: object
+      required: [version, name]
+      properties:
+        version: { type: string }
+        name: { type: string }
+
     WorkerRegistration:
       type: object
       required: [secret, platform, supported_task_types, nickname]

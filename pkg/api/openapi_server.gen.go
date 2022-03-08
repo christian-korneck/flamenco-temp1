@@ -22,6 +22,9 @@ type ServerInterface interface {
 	// Fetch info about the job.
 	// (GET /api/jobs/{job_id})
 	FetchJob(ctx echo.Context, jobId string) error
+	// Get the Flamenco version of this Manager
+	// (GET /api/version)
+	GetVersion(ctx echo.Context) error
 	// Register a new worker
 	// (POST /api/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
@@ -81,6 +84,15 @@ func (w *ServerInterfaceWrapper) FetchJob(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.FetchJob(ctx, jobId)
+	return err
+}
+
+// GetVersion converts echo context to params.
+func (w *ServerInterfaceWrapper) GetVersion(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetVersion(ctx)
 	return err
 }
 
@@ -197,6 +209,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/jobs", wrapper.SubmitJob)
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
+	router.GET(baseURL+"/api/version", wrapper.GetVersion)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/worker/sign-off", wrapper.SignOff)
 	router.POST(baseURL+"/api/worker/sign-on", wrapper.SignOn)
