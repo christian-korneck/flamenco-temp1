@@ -36,8 +36,8 @@ var (
 )
 
 // networkInterfaces returns a list of interface addresses.
-// Only those addresses that can be eached by a unicast TCP/IP connection are returned.
-func networkInterfaces(includeLinkLocal, includeLocalhost bool) ([]net.IP, error) {
+// Only those addresses that can be reached by a unicast TCP/IP connection are returned.
+func networkInterfaces() ([]net.IP, error) {
 	log.Debug().Msg("iterating over all network interfaces")
 
 	interfaces, err := net.Interfaces()

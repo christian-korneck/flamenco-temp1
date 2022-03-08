@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
 	defer cancel()
 
 	// Handle Ctrl+C
@@ -38,7 +38,10 @@ func main() {
 		}
 	}()
 
-	urls, err := own_url.AvailableURLs(ctx, "http", ":8080", false)
+	urls, err := own_url.AvailableURLs("http", ":8080")
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to construct list of URLs")
+	}
 	urlStrings := []string{}
 	for _, url := range urls {
 		urlStrings = append(urlStrings, url.String())
