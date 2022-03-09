@@ -62,7 +62,7 @@ Note that list is **not** in any specific order.
 - [ ] Job construction
 - [ ] BAT-packing & uploading to Shaman
 - [ ] User authentication
-
+- [ ] Editable job names (for rendering multiple jobs from the same filename)
 
 ## Nice to have / new features
 
