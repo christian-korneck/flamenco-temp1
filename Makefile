@@ -5,6 +5,9 @@ PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
+# Package name of the generated Python code for the Flamenco API.
+PY_API_PKG_NAME=flamenco.manager
+
 # Prevent any dependency that requires a C compiler, i.e. only work with pure-Go libraries.
 export CGO_ENABLED=0
 
@@ -27,7 +30,9 @@ flamenco-worker:
 socketio-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
-generate:
+generate: generate-go generate-py
+
+generate-go:
 	go generate ./pkg/api/...
 	go generate ./internal/...
 # The generators always produce UNIX line-ends. This creates false file
@@ -35,6 +40,27 @@ generate:
 ifeq ($(OS),Windows_NT)
 	git status --porcelain | grep '^ M .*.gen.go' | cut -d' ' -f3 | xargs unix2dos --keepdate
 endif
+
+generate-py:
+# The generator doesn't consistently overwrite existing files, nor does it
+# remove no-longer-generated files.
+	rm -rf addon/flamenco/manager
+
+	java -jar addon/openapi-generator-cli.jar \
+		generate \
+		-i pkg/api/flamenco-manager.yaml \
+		-g python \
+		-o addon/ \
+		--skip-validate-spec \
+		--package-name "${PY_API_PKG_NAME}" \
+		--http-user-agent "Flamenco/${VERSION} (Blender add-on)" \
+		-p generateSourceCodeOnly=true \
+		-p projectName=Flamenco \
+		-p packageVersion="${VERSION}"
+
+# The generator outputs files so that we can write our own tests. We don't,
+# though, so it's better to just remove those placeholders.
+	rm -rf addon/flamenco/manager/test
 
 version:
 	@echo "OS     : ${OS}"
@@ -63,4 +89,4 @@ clean:
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
-.PHONY: application version flamenco-manager flamenco-worker socketio-poc generate with-deps swagger-ui list-embedded test clean
+.PHONY: application version flamenco-manager flamenco-worker socketio-poc generate generate-go generate-py with-deps swagger-ui list-embedded test clean
