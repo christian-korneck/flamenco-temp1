@@ -19,6 +19,7 @@ from flamenco.manager.model.command import Command
 from flamenco.manager.model.configuration import Configuration
 from flamenco.manager.model.configuration_meta import ConfigurationMeta
 from flamenco.manager.model.error import Error
+from flamenco.manager.model.flamenco_version import FlamencoVersion
 from flamenco.manager.model.job import Job
 from flamenco.manager.model.job_all_of import JobAllOf
 from flamenco.manager.model.job_metadata import JobMetadata
