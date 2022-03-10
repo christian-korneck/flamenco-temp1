@@ -349,7 +349,7 @@ components:
       properties:
         taskStatus: {$ref: "#/components/schemas/TaskStatus", description: The new task status.}
         activity: {type: string, description: One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.}
-        log: {type: string, description: Log lines for this task, will be appended to logs sent earlier.}
+        log: {type: string, description: "Log lines for this task, will be appended to logs sent earlier."}
 
     JobStatus:
       type: string

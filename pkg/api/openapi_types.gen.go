@@ -242,7 +242,7 @@ type TaskUpdate struct {
 	// One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.
 	Activity *string `json:"activity,omitempty"`
 
-	// Log lines for this task
+	// Log lines for this task, will be appended to logs sent earlier.
 	Log        *string     `json:"log,omitempty"`
 	TaskStatus *TaskStatus `json:"taskStatus,omitempty"`
 }
