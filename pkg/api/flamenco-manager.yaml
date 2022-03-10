@@ -17,6 +17,7 @@ paths:
     get:
       summary: Get the Flamenco version of this Manager
       operationId: getVersion
+      tags: [meta]
       responses:
         "200":
           description: normal response
@@ -260,6 +261,8 @@ paths:
               schema: {$ref: "#/components/schemas/Job"}
 
 tags:
+  - name: meta
+    description: Info about the Flamenco Manager itself.
   - name: jobs
     description: Blablabla for users to get job metadata balbla
   - name: worker
