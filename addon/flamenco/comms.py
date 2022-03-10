@@ -4,13 +4,11 @@
 
 import logging
 
-import bpy
-
 _flamenco_client = None
 _log = logging.getLogger(__name__)
 
 
-def flamenco_api_client(manager_url="http://localhost:8080"):
+def flamenco_api_client(manager_url: str):
     """Returns an API client for communicating with a Manager."""
     global _flamenco_client
 

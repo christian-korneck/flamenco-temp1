@@ -16,7 +16,7 @@ bl_info = {
 
 __is_first_load = "operators" not in locals()
 if __is_first_load:
-    from . import operators, gui, job_types, comms
+    from . import operators, gui, job_types, comms, preferences
 else:
     import importlib
 
@@ -24,6 +24,7 @@ else:
     gui = importlib.reload(gui)
     job_types = importlib.reload(job_types)
     comms = importlib.reload(comms)
+    preferences = importlib.reload(preferences)
 
 import bpy
 
@@ -42,6 +43,11 @@ def register() -> None:
     bpy.app.handlers.load_pre.append(discard_global_flamenco_data)
     bpy.app.handlers.load_factory_preferences_post.append(discard_global_flamenco_data)
 
+    # Placeholder to contain the result of a 'ping' to Flamenco Manager,
+    # so that it can be shown in the preferences panel.
+    bpy.types.WindowManager.flamenco_status_ping = bpy.props.StringProperty()
+
+    preferences.register()
     operators.register()
     gui.register()
     job_types.register()
@@ -55,3 +61,4 @@ def unregister() -> None:
     job_types.unregister()
     gui.unregister()
     operators.unregister()
+    preferences.unregister()
