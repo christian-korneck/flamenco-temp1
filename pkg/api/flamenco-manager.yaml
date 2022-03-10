@@ -264,7 +264,7 @@ tags:
   - name: meta
     description: Info about the Flamenco Manager itself.
   - name: jobs
-    description: Blablabla for users to get job metadata balbla
+    description: Job & task queries, submission, and management.
   - name: worker
     description: API for Flamenco Workers to communicate with Flamenco Manager.
 
