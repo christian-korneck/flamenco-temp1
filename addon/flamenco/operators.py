@@ -30,7 +30,8 @@ class FLAMENCO_OT_fetch_job_types(FlamencoOpMixin, bpy.types.Operator):
         from flamenco.manager import ApiException
         from . import job_types
 
-        old_job_type_name = getattr(context.window_manager, "flamenco_job_type", "")
+        scene = context.scene
+        old_job_type_name = getattr(scene, "flamenco_job_type", "")
 
         try:
             job_types.fetch_available_job_types(api_client)
@@ -40,8 +41,9 @@ class FLAMENCO_OT_fetch_job_types(FlamencoOpMixin, bpy.types.Operator):
 
         if old_job_type_name:
             # TODO: handle cases where the old job type no longer exists.
-            context.window_manager.flamenco_job_type = old_job_type_name
+            scene.flamenco_job_type = old_job_type_name
 
+        job_types.update_job_type_properties(scene)
         return {"FINISHED"}
 
 

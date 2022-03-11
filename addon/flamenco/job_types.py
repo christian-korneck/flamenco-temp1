@@ -84,15 +84,19 @@ def are_job_types_available() -> bool:
     return bool(_job_type_enum_items)
 
 
-def _update_job_type(
-    window_manager: bpy.types.WindowManager, context: bpy.types.Context
-) -> None:
+def _update_job_type(scene: bpy.types.Scene, context: bpy.types.Context) -> None:
     """Called whenever the selected job type changes."""
+    update_job_type_properties(scene)
+
+
+def update_job_type_properties(scene: bpy.types.Scene) -> None:
+    """(Re)construct the PropertyGroup for the currently selected job type."""
+
     global _selected_job_type_propgroup
 
     from flamenco.manager.model.available_job_type import AvailableJobType
 
-    job_type = active_job_type(window_manager)
+    job_type = active_job_type(scene)
     assert isinstance(job_type, AvailableJobType), "did not expect type %r" % type(
         job_type
     )
@@ -103,7 +107,7 @@ def _update_job_type(
     pg.register_property_group()
     _selected_job_type_propgroup = pg
 
-    bpy.types.WindowManager.flamenco_job_settings = bpy.props.PointerProperty(
+    bpy.types.Scene.flamenco_job_settings = bpy.props.PointerProperty(
         type=pg,
         name="Job Settings",
         description="Parameters for the Flamenco job",
@@ -142,9 +146,7 @@ else:
     _AvailableJobType = object
 
 
-def active_job_type(
-    window_manager: bpy.types.WindowManager,
-) -> Optional[_AvailableJobType]:
+def active_job_type(scene: bpy.types.Scene) -> Optional[_AvailableJobType]:
     """Return the active job type.
 
     Returns a flamenco.manager.model.available_job_type.AvailableJobType,
@@ -153,7 +155,7 @@ def active_job_type(
     if _available_job_types is None:
         return None
 
-    job_type_name = window_manager.flamenco_job_type
+    job_type_name = scene.flamenco_job_type
     for job_type in _available_job_types:
         if job_type.name == job_type_name:
             return job_type
@@ -317,7 +319,7 @@ def discard_flamenco_data():
 
 
 def register() -> None:
-    bpy.types.WindowManager.flamenco_job_type = bpy.props.EnumProperty(
+    bpy.types.Scene.flamenco_job_type = bpy.props.EnumProperty(
         name="Job Type",
         items=_get_job_types_enum_items,
         update=_update_job_type,
@@ -325,11 +327,11 @@ def register() -> None:
 
 
 def unregister() -> None:
-    del bpy.types.WindowManager.flamenco_job_type
+    del bpy.types.Scene.flamenco_job_type
 
     try:
         # This property doesn't always exist.
-        del bpy.types.WindowManager.flamenco_job_settings
+        del bpy.types.Scene.flamenco_job_settings
     except AttributeError:
         pass
 

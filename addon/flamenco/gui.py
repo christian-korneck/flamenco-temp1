@@ -21,7 +21,7 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
             return
 
         row = col.row(align=True)
-        row.prop(context.window_manager, "flamenco_job_type", text="")
+        row.prop(context.scene, "flamenco_job_type", text="")
         row.operator("flamenco.fetch_job_types", text="", icon="FILE_REFRESH")
         self.draw_job_settings(context, layout)
 
@@ -30,11 +30,11 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
     ) -> None:
         from . import job_types
 
-        job_type = job_types.active_job_type(context.window_manager)
+        job_type = job_types.active_job_type(context.scene)
         if job_type is None:
             return
 
-        propgroup = getattr(context.window_manager, "flamenco_job_settings", None)
+        propgroup = getattr(context.scene, "flamenco_job_settings", None)
         if propgroup is None:
             return
 
