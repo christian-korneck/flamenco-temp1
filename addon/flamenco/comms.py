@@ -3,12 +3,18 @@
 # <pep8 compliant>
 
 import logging
+from typing import TYPE_CHECKING
 
 _flamenco_client = None
 _log = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from flamenco.manager import ApiClient as _ApiClient
+else:
+    _ApiClient = object
 
-def flamenco_api_client(manager_url: str):
+
+def flamenco_api_client(manager_url: str) -> _ApiClient:
     """Returns an API client for communicating with a Manager."""
     global _flamenco_client
 

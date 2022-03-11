@@ -2,7 +2,7 @@
 
 from inspect import isclass
 import logging
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
 import bpy
 
@@ -45,7 +45,9 @@ else:
     _available_job_types = None
 
 # Items for a bpy.props.EnumProperty()
-_job_type_enum_items = []
+_job_type_enum_items: list[
+    Union[tuple[str, str, str], tuple[str, str, str, int, int]]
+] = []
 
 _selected_job_type_propgroup: Optional[JobTypePropertyGroup] = None
 
@@ -67,11 +69,13 @@ def fetch_available_job_types(api_client):
 
     # Remember the available job types.
     _available_job_types = response.job_types
-
-    # Convert from API response type to list suitable for an EnumProperty.
-    _job_type_enum_items = [
-        (job_type.name, job_type.label, "") for job_type in _available_job_types
-    ]
+    if _available_job_types is None:
+        _job_type_enum_items = []
+    else:
+        # Convert from API response type to list suitable for an EnumProperty.
+        _job_type_enum_items = [
+            (job_type.name, job_type.label, "") for job_type in _available_job_types
+        ]
     _job_type_enum_items.insert(0, ("", "Select a Job Type", "", 0, 0))
 
 
@@ -130,12 +134,25 @@ def _clear_job_type_propgroup():
         _selected_job_type_propgroup = None
 
 
-def active_job_type(window_manager: bpy.types.WindowManager):
+if TYPE_CHECKING:
+    from flamenco.manager.model.available_job_type import (
+        AvailableJobType as _AvailableJobType,
+    )
+else:
+    _AvailableJobType = object
+
+
+def active_job_type(
+    window_manager: bpy.types.WindowManager,
+) -> Optional[_AvailableJobType]:
     """Return the active job type.
 
     Returns a flamenco.manager.model.available_job_type.AvailableJobType,
     or None if there is none.
     """
+    if _available_job_types is None:
+        return None
+
     job_type_name = window_manager.flamenco_job_type
     for job_type in _available_job_types:
         if job_type.name == job_type_name:

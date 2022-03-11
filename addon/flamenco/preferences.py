@@ -37,7 +37,7 @@ def manager_url(context: bpy.types.Context) -> str:
     assert isinstance(
         prefs, FlamencoPreferences
     ), "Expected FlamencoPreferences, got %s instead" % (type(prefs))
-    return prefs.manager_url
+    return str(prefs.manager_url)
 
 
 classes = (FlamencoPreferences,)
