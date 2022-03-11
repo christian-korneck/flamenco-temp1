@@ -27,7 +27,7 @@ func MaybeAutodiscoverManager(ctx context.Context, configWrangler *FileConfigWra
 		return nil
 	}
 
-	foundManager, err := autodiscoverManager(ctx)
+	foundManager, err := AutodiscoverManager(ctx)
 	if err != nil {
 		return err
 	}
@@ -36,8 +36,8 @@ func MaybeAutodiscoverManager(ctx context.Context, configWrangler *FileConfigWra
 	return nil
 }
 
-// autodiscoverManager uses UPnP/SSDP to find a Manager, and returns its URL if found.
-func autodiscoverManager(ctx context.Context) (string, error) {
+// AutodiscoverManager uses UPnP/SSDP to find a Manager, and returns its URL if found.
+func AutodiscoverManager(ctx context.Context) (string, error) {
 	c, err := upnp_ssdp.NewClient(log.Logger)
 	if err != nil {
 		return "", fmt.Errorf("unable to create UPnP/SSDP client: %w", err)

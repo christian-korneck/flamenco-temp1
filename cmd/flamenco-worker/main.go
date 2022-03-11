@@ -35,9 +35,11 @@ var cliArgs struct {
 
 	quiet, debug, trace bool
 
-	managerURL *url.URL
-	manager    string
-	register   bool
+	managerURL  *url.URL
+	findManager bool
+
+	manager  string
+	register bool
 }
 
 func main() {
@@ -58,6 +60,19 @@ func main() {
 		Msgf("starting %v Worker", appinfo.ApplicationName)
 	configLogLevel()
 
+	if cliArgs.findManager {
+		// TODO: move this to a more suitable place.
+		discoverTimeout := 1 * time.Minute
+		discoverCtx, discoverCancel := context.WithTimeout(context.Background(), discoverTimeout)
+		defer discoverCancel()
+		managerURL, err := worker.AutodiscoverManager(discoverCtx)
+		if err != nil {
+			logFatalManagerDiscoveryError(err, discoverTimeout)
+		}
+		log.Info().Str("manager", managerURL).Msg("found Manager")
+		return
+	}
+
 	configWrangler := worker.NewConfigWrangler()
 
 	// Give the auto-discovery some time to find a Manager.
@@ -65,11 +80,7 @@ func main() {
 	discoverCtx, discoverCancel := context.WithTimeout(context.Background(), discoverTimeout)
 	defer discoverCancel()
 	if err := worker.MaybeAutodiscoverManager(discoverCtx, &configWrangler); err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			log.Fatal().Str("timeout", discoverTimeout.String()).Msg("could not discover Manager in time")
-		} else {
-			log.Fatal().Err(err).Msg("auto-discovery error")
-		}
+		logFatalManagerDiscoveryError(err, discoverTimeout)
 	}
 
 	// Startup can take arbitrarily long, as it only ends when the Manager can be
@@ -150,6 +161,7 @@ func parseCliArgs() {
 	// TODO: make this override whatever was stored in the configuration file.
 	// flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
 	flag.BoolVar(&cliArgs.register, "register", false, "(Re-)register at the Manager.")
+	flag.BoolVar(&cliArgs.findManager, "find-manager", false, "Autodiscover a Manager, then quit.")
 
 	flag.Parse()
 
@@ -192,4 +204,12 @@ func upstreamBufferOrDie(client worker.FlamencoClient, timeService clock.Clock) 
 	}
 
 	return buffer
+}
+
+func logFatalManagerDiscoveryError(err error, discoverTimeout time.Duration) {
+	if errors.Is(err, context.DeadlineExceeded) {
+		log.Fatal().Str("timeout", discoverTimeout.String()).Msg("could not discover Manager in time")
+	} else {
+		log.Fatal().Err(err).Msg("auto-discovery error")
+	}
 }
