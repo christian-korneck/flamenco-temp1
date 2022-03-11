@@ -7,6 +7,7 @@ package job_compilers
 import (
 	"context"
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/dop251/goja"
@@ -193,6 +194,9 @@ func (s *Service) ListJobTypes() api.AvailableJobTypes {
 
 		jobTypes = append(jobTypes, jobType)
 	}
+
+	sort.Slice(jobTypes, func(i, j int) bool { return jobTypes[i].Name < jobTypes[j].Name })
+
 	return api.AvailableJobTypes{JobTypes: jobTypes}
 }
 
