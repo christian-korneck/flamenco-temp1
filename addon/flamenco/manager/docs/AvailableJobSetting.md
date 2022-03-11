@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **type** | [**AvailableJobSettingType**](AvailableJobSettingType.md) |  | 
 **subtype** | [**AvailableJobSettingSubtype**](AvailableJobSettingSubtype.md) |  | [optional] 
 **choices** | **[str]** | When given, limit the valid values to these choices. Only usable with string type. | [optional] 
+**description** | **bool, date, datetime, dict, float, int, list, str, none_type** | The description/tooltip shown in the user interface. | [optional] 
 **default** | **bool, date, datetime, dict, float, int, list, str, none_type** | The default value shown to the user when determining this setting. | [optional] 
 **visible** | **bool** | Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to &#x60;false&#x60; when it is an internal setting that shouldn&#39;t be shown to end users.  | [optional]  if omitted the server will use the default value of True
 **required** | **bool** | Whether to immediately reject a job definition, of this type, without this particular setting.  | [optional]  if omitted the server will use the default value of False

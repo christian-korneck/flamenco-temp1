@@ -403,6 +403,8 @@ components:
           description: When given, limit the valid values to these choices. Only usable with string type.
           type: array
           items: {type: string}
+        "description":
+          description: The description/tooltip shown in the user interface.
         "default":
           description: The default value shown to the user when determining this setting.
         "visible":

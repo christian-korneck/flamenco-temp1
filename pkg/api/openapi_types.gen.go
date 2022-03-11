@@ -123,6 +123,9 @@ type AvailableJobSetting struct {
 	// The default value shown to the user when determining this setting.
 	Default *interface{} `json:"default,omitempty"`
 
+	// The description/tooltip shown in the user interface.
+	Description *interface{} `json:"description,omitempty"`
+
 	// Whether to allow editing this setting after the job has been submitted. Would imply deleting all existing tasks for this job, and recompiling it.
 	Editable *bool `json:"editable,omitempty"`
 

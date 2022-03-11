@@ -4,8 +4,8 @@ const JOB_TYPE = {
     label: "Simple Blender Render",
     settings: [
         { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
-        { key: "filepath", type: "string", subtype: "file_path", required: true },
-        { key: "chunk_size", type: "int32", default: 1 },
+        { key: "filepath", type: "string", subtype: "file_path", required: true, description: "Blend file to render", visible: false },
+        { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
         { key: "frames", type: "string", required: true },
         { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
         { key: "fps", type: "int32" },

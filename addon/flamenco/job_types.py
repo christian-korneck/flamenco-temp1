@@ -210,6 +210,7 @@ def _create_property(job_type, setting):
 
     assert isinstance(setting.type, ModelSimple)
     value_coerce = _value_coerce[setting.type.to_str()]
+    _set_if_available(prop_kwargs, setting, "description")
     _set_if_available(prop_kwargs, setting, "default", transform=value_coerce)
     _set_if_available(prop_kwargs, setting, "subtype", transform=_transform_subtype)
     print()

@@ -93,6 +93,7 @@ class AvailableJobSetting(ModelNormal):
             'type': (AvailableJobSettingType,),  # noqa: E501
             'subtype': (AvailableJobSettingSubtype,),  # noqa: E501
             'choices': ([str],),  # noqa: E501
+            'description': (bool, date, datetime, dict, float, int, list, str, none_type,),  # noqa: E501
             'default': (bool, date, datetime, dict, float, int, list, str, none_type,),  # noqa: E501
             'visible': (bool,),  # noqa: E501
             'required': (bool,),  # noqa: E501
@@ -109,6 +110,7 @@ class AvailableJobSetting(ModelNormal):
         'type': 'type',  # noqa: E501
         'subtype': 'subtype',  # noqa: E501
         'choices': 'choices',  # noqa: E501
+        'description': 'description',  # noqa: E501
         'default': 'default',  # noqa: E501
         'visible': 'visible',  # noqa: E501
         'required': 'required',  # noqa: E501
@@ -162,6 +164,7 @@ class AvailableJobSetting(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             subtype (AvailableJobSettingSubtype): [optional]  # noqa: E501
             choices ([str]): When given, limit the valid values to these choices. Only usable with string type.. [optional]  # noqa: E501
+            description (bool, date, datetime, dict, float, int, list, str, none_type): The description/tooltip shown in the user interface.. [optional]  # noqa: E501
             default (bool, date, datetime, dict, float, int, list, str, none_type): The default value shown to the user when determining this setting.. [optional]  # noqa: E501
             visible (bool): Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users. . [optional] if omitted the server will use the default value of True  # noqa: E501
             required (bool): Whether to immediately reject a job definition, of this type, without this particular setting. . [optional] if omitted the server will use the default value of False  # noqa: E501
@@ -255,6 +258,7 @@ class AvailableJobSetting(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             subtype (AvailableJobSettingSubtype): [optional]  # noqa: E501
             choices ([str]): When given, limit the valid values to these choices. Only usable with string type.. [optional]  # noqa: E501
+            description (bool, date, datetime, dict, float, int, list, str, none_type): The description/tooltip shown in the user interface.. [optional]  # noqa: E501
             default (bool, date, datetime, dict, float, int, list, str, none_type): The default value shown to the user when determining this setting.. [optional]  # noqa: E501
             visible (bool): Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users. . [optional] if omitted the server will use the default value of True  # noqa: E501
             required (bool): Whether to immediately reject a job definition, of this type, without this particular setting. . [optional] if omitted the server will use the default value of False  # noqa: E501
