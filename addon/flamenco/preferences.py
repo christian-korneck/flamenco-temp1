@@ -6,7 +6,7 @@ import bpy
 
 def discard_flamenco_client(prefs, context):
     """Discard any cached Flamenco client after the Manager URL changes."""
-    from flamenco import comms
+    from . import comms
 
     comms.discard_flamenco_data()
 

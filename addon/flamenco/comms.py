@@ -25,7 +25,7 @@ def flamenco_api_client(manager_url: str) -> _ApiClient:
 
     dependencies.preload_modules()
 
-    from flamenco import manager
+    from . import manager
 
     configuration = manager.Configuration(host=manager_url.rstrip("/"))
     _flamenco_client = manager.ApiClient(configuration)

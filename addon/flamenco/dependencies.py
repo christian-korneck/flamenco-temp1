@@ -8,7 +8,7 @@ def preload_modules() -> None:
     if "dateutil" in sys.modules:
         return
 
-    from flamenco import wheels
+    from . import wheels
 
     wheels.load_wheel_global("six", "six")
     wheels.load_wheel_global("dateutil", "python_dateutil")
