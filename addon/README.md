@@ -11,8 +11,5 @@ poetry install
 
 ## Generating the OpenAPI client
 
-Start Flamenco Manager, then run:
-
-```
-openapi-python-client generate --url http://localhost:8080/api/openapi3.json
-```
+1. Make sure Java is installed (so `java --version` shows something sensible).
+2. In the root directory of the repository, run `make generate-py`
