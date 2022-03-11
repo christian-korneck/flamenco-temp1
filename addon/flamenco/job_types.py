@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from inspect import isclass
 import logging
+import uuid
 from typing import TYPE_CHECKING, Callable, Optional, Union
 
 import bpy
@@ -38,10 +38,12 @@ _prop_types = {
 
 
 if TYPE_CHECKING:
-    from flamenco.manager.model.available_job_type import AvailableJobType
+    from flamenco.manager.models import AvailableJobType, SubmittedJob, JobSettings
 
     _available_job_types: Optional[list[AvailableJobType]] = None
 else:
+    SubmittedJob = object
+    JobSettings = object
     _available_job_types = None
 
 # Items for a bpy.props.EnumProperty()
@@ -112,6 +114,41 @@ def update_job_type_properties(scene: bpy.types.Scene) -> None:
         name="Job Settings",
         description="Parameters for the Flamenco job",
     )
+
+
+def get_job_settings(scene: bpy.types.Scene) -> Optional[JobSettings]:
+    job_settings = getattr(scene, "flamenco_job_settings", None)
+    if job_settings is None:
+        return None
+    assert isinstance(job_settings, JobSettings), "expected JobSettings, got %s" % (
+        type(job_settings)
+    )
+    return job_settings
+
+
+def job_for_scene(scene: bpy.types.Scene) -> Optional[SubmittedJob]:
+    from flamenco.manager.models import SubmittedJob, JobSettings, JobMetadata
+
+    settings_propgroup = get_job_settings(scene)
+    if settings_propgroup is None:
+        return None
+
+    # TODO: convert settings_propgroup to JobSettings.
+    # dict(settings_propgroup) only includes the user-modified items, which
+    # isn't enough; the JobSettings() object should also have explicit values
+    # for the still-default ones.
+    settings = JobSettings()
+    metadata = JobMetadata()
+
+    job = SubmittedJob(
+        name=scene.flamenco_job_name,
+        type=settings_propgroup.job_type.name,
+        priority=50,
+        id=str(uuid.uuid4()),
+        settings=settings,
+        metadata=metadata,
+    )
+    return job
 
 
 def _clear_available_job_types():
