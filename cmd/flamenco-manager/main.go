@@ -61,7 +61,10 @@ func main() {
 
 	// Load configuration.
 	configService := config.NewService()
-	configService.Load()
+	err := configService.Load()
+	if err != nil {
+		log.Error().Err(err).Msg("loading configuration")
+	}
 
 	// TODO: enable TLS via Let's Encrypt.
 	listen := configService.Get().Listen

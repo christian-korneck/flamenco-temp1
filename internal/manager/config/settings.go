@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -191,6 +192,13 @@ func loadConf(filename string) (Conf, error) {
 	log.Info().Str("file", filename).Msg("loading configuration")
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
+		var level zerolog.Level
+		if os.IsNotExist(err) {
+			level = zerolog.DebugLevel
+		} else {
+			level = zerolog.WarnLevel
+		}
+		log.WithLevel(level).Err(err).Msg("unable to load configuration, using defaults")
 		return DefaultConfig(), err
 	}
 
