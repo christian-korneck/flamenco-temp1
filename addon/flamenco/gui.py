@@ -25,6 +25,12 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         row.operator("flamenco.fetch_job_types", text="", icon="FILE_REFRESH")
         self.draw_job_settings(context, layout)
 
+        layout.separator()
+        col = layout.column(align=True)
+        col.prop(context.scene, "flamenco_job_name", text="Job Name")
+
+        self.draw_flamenco_status(context, layout)
+
     def draw_job_settings(
         self, context: bpy.types.Context, layout: bpy.types.UILayout
     ) -> None:
@@ -42,6 +48,42 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
             if not setting.get("visible", True):
                 continue
             layout.prop(propgroup, setting.key)
+
+    def draw_flamenco_status(
+        self, context: bpy.types.Context, layout: bpy.types.UILayout
+    ) -> None:
+        # Show current status of Flamenco.
+        flamenco_status = context.window_manager.flamenco_bat_status
+        if flamenco_status in {"IDLE", "ABORTED", "DONE"}:
+            ui = layout
+            props = ui.operator(
+                "flamenco.submit_job",
+                text="Submit to Flamenco",
+                icon="RENDER_ANIMATION",
+            )
+            props.job_name = context.scene.flamenco_job_name
+        elif flamenco_status == "INVESTIGATING":
+            row = layout.row(align=True)
+            row.label(text="Investigating your files")
+            # row.operator(FLAMENCO_OT_abort.bl_idname, text="", icon="CANCEL")
+        elif flamenco_status == "COMMUNICATING":
+            layout.label(text="Communicating with Flamenco Server")
+        elif flamenco_status == "ABORTING":
+            row = layout.row(align=True)
+            row.label(text="Aborting, please wait.")
+            # row.operator(FLAMENCO_OT_abort.bl_idname, text="", icon="CANCEL")
+        if flamenco_status == "TRANSFERRING":
+            row = layout.row(align=True)
+            row.prop(
+                context.window_manager,
+                "flamenco_bat_progress",
+                text=context.window_manager.flamenco_bat_status_txt,
+            )
+            # row.operator(FLAMENCO_OT_abort.bl_idname, text="", icon="CANCEL")
+        elif (
+            flamenco_status != "IDLE" and context.window_manager.flamenco_bat_status_txt
+        ):
+            layout.label(text=context.window_manager.flamenco_bat_status_txt)
 
 
 classes = (FLAMENCO_PT_job_submission,)

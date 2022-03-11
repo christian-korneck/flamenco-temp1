@@ -35,6 +35,12 @@ def discard_global_flamenco_data(_):
     comms.discard_flamenco_data()
 
 
+def redraw(self, context):
+    if context.area is None:
+        return
+    context.area.tag_redraw()
+
+
 def register() -> None:
     from . import dependencies
 
@@ -42,6 +48,46 @@ def register() -> None:
 
     bpy.app.handlers.load_pre.append(discard_global_flamenco_data)
     bpy.app.handlers.load_factory_preferences_post.append(discard_global_flamenco_data)
+
+    bpy.types.WindowManager.flamenco_bat_status = bpy.props.EnumProperty(
+        items=[
+            ("IDLE", "IDLE", "Not doing anything."),
+            ("SAVING", "SAVING", "Saving your file."),
+            ("INVESTIGATING", "INVESTIGATING", "Finding all dependencies."),
+            ("TRANSFERRING", "TRANSFERRING", "Transferring all dependencies."),
+            ("COMMUNICATING", "COMMUNICATING", "Communicating with Flamenco Server."),
+            ("DONE", "DONE", "Not doing anything, but doing something earlier."),
+            ("ABORTING", "ABORTING", "User requested we stop doing something."),
+            ("ABORTED", "ABORTED", "We stopped doing something."),
+        ],
+        name="flamenco_status",
+        default="IDLE",
+        description="Current status of the Flamenco add-on",
+        update=redraw,
+    )
+
+    bpy.types.WindowManager.flamenco_bat_status_txt = bpy.props.StringProperty(
+        name="Flamenco Status",
+        default="",
+        description="Textual description of what Flamenco is doing",
+        update=redraw,
+    )
+
+    bpy.types.WindowManager.flamenco_bat_progress = bpy.props.IntProperty(
+        name="Flamenco Progress",
+        default=0,
+        description="File transfer progress",
+        subtype="PERCENTAGE",
+        min=0,
+        max=100,
+        update=redraw,
+    )
+
+    bpy.types.Scene.flamenco_job_name = bpy.props.StringProperty(
+        name="Flamenco Job Name",
+        default="",
+        description="Name of the Flamenco job; an empty name will use the blend file name as job name",
+    )
 
     # Placeholder to contain the result of a 'ping' to Flamenco Manager,
     # so that it can be shown in the preferences panel.

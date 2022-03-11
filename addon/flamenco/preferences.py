@@ -31,12 +31,18 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
         col.label(text=context.window_manager.flamenco_status_ping)
 
 
-def manager_url(context: bpy.types.Context) -> str:
-    """Returns the configured Manager URL."""
+def get(context: bpy.types.Context) -> FlamencoPreferences:
+    """Return the add-on preferences."""
     prefs = context.preferences.addons["flamenco"].preferences
     assert isinstance(
         prefs, FlamencoPreferences
     ), "Expected FlamencoPreferences, got %s instead" % (type(prefs))
+    return prefs
+
+
+def manager_url(context: bpy.types.Context) -> str:
+    """Returns the configured Manager URL."""
+    prefs = get(context)
     return str(prefs.manager_url)
 
 
