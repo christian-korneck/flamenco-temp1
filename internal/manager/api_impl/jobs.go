@@ -66,7 +66,9 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 		logger.Error().Err(err).Msg("unable to retrieve just-stored job from database")
 		return sendAPIError(e, http.StatusInternalServerError, "error retrieving job from database")
 	}
-	return e.JSON(http.StatusOK, dbJob)
+
+	apiJob := jobDBtoAPI(dbJob)
+	return e.JSON(http.StatusOK, apiJob)
 }
 
 func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
@@ -88,22 +90,7 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobId))
 	}
 
-	apiJob := api.Job{
-		SubmittedJob: api.SubmittedJob{
-			Name:     dbJob.Name,
-			Priority: dbJob.Priority,
-			Type:     dbJob.JobType,
-		},
-
-		Id:      dbJob.UUID,
-		Created: dbJob.CreatedAt,
-		Updated: dbJob.UpdatedAt,
-		Status:  api.JobStatus(dbJob.Status),
-	}
-
-	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}
-	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
-
+	apiJob := jobDBtoAPI(dbJob)
 	return e.JSON(http.StatusOK, apiJob)
 }
 
@@ -195,4 +182,24 @@ func (f *Flamenco) doTaskUpdate(
 	}
 
 	return dbErr
+}
+
+func jobDBtoAPI(dbJob *persistence.Job) api.Job {
+	apiJob := api.Job{
+		SubmittedJob: api.SubmittedJob{
+			Name:     dbJob.Name,
+			Priority: dbJob.Priority,
+			Type:     dbJob.JobType,
+		},
+
+		Id:      dbJob.UUID,
+		Created: dbJob.CreatedAt,
+		Updated: dbJob.UpdatedAt,
+		Status:  api.JobStatus(dbJob.Status),
+	}
+
+	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}
+	apiJob.Metadata = &api.JobMetadata{AdditionalProperties: dbJob.Metadata}
+
+	return apiJob
 }

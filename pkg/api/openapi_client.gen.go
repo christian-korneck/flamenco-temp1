@@ -792,7 +792,7 @@ type ClientWithResponsesInterface interface {
 type SubmitJobResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *SubmittedJob
+	JSON200      *Job
 	JSONDefault  *Error
 }
 
@@ -1191,7 +1191,7 @@ func ParseSubmitJobResponse(rsp *http.Response) (*SubmitJobResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest SubmittedJob
+		var dest Job
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

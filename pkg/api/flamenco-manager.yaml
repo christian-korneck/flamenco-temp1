@@ -235,7 +235,7 @@ paths:
           description: Job was succesfully compiled into individual tasks.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/SubmittedJob"}
+              schema: {$ref: "#/components/schemas/Job"}
         default:
           description: Error message
           content:

@@ -136,7 +136,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **submit_job**
-> SubmittedJob submit_job(submitted_job)
+> Job submit_job(submitted_job)
 
 Submit a new job for Flamenco Manager to execute.
 
@@ -149,6 +149,7 @@ import flamenco.manager
 from flamenco.manager.api import jobs_api
 from flamenco.manager.model.submitted_job import SubmittedJob
 from flamenco.manager.model.error import Error
+from flamenco.manager.model.job import Job
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost
 # See configuration.py for a list of all supported configuration parameters.
@@ -189,7 +190,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**SubmittedJob**](SubmittedJob.md)
+[**Job**](Job.md)
 
 ### Authorization
 

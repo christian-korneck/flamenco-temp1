@@ -131,7 +131,7 @@ class JobsApi(object):
         )
         self.submit_job_endpoint = _Endpoint(
             settings={
-                'response_type': (SubmittedJob,),
+                'response_type': (Job,),
                 'auth': [],
                 'endpoint_path': '/api/jobs',
                 'operation_id': 'submit_job',
@@ -374,7 +374,7 @@ class JobsApi(object):
             async_req (bool): execute request asynchronously
 
         Returns:
-            SubmittedJob
+            Job
                 If the method is called asynchronously, returns the request
                 thread.
         """
