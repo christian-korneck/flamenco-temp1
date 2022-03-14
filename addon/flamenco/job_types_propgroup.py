@@ -38,6 +38,15 @@ class JobTypePropertyGroup:
     def unregister_property_group(cls):
         bpy.utils.unregister_class(cls)
 
+    def as_jobsettings(self) -> _JobSettings:
+        from flamenco.manager.models import JobSettings
+
+        js: JobSettings = JobSettings()
+        for setting in self.job_type.settings:
+            js[setting.key] = getattr(self, setting.key)
+
+        return js
+
 
 # Mapping from AvailableJobType.setting.type to a callable that converts a value
 # to the appropriate type. This is necessary due to the ambiguity between floats

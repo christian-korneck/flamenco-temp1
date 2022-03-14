@@ -12,6 +12,7 @@ from . import job_types_propgroup
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from flamenco.manager import ApiClient as _ApiClient
     from flamenco.manager.models import (
         AvailableJobType as _AvailableJobType,
         AvailableJobTypes as _AvailableJobTypes,
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
         JobSettings as _JobSettings,
     )
 else:
+    _ApiClient = object
     _AvailableJobTypes = object
     _AvailableJobType = object
     _SubmittedJob = object
@@ -131,35 +133,20 @@ def update_job_type_properties(scene: bpy.types.Scene) -> None:
     )
 
 
-def get_job_settings(scene: bpy.types.Scene) -> Optional[_JobSettings]:
-    from flamenco.manager.models import JobSettings
-
-    job_settings = getattr(scene, "flamenco_job_settings", None)
-    if job_settings is None:
-        return None
-    assert isinstance(job_settings, JobSettings), "expected JobSettings, got %s" % (
-        type(job_settings)
-    )
-    return job_settings
-
-
 def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
-    from flamenco.manager.models import SubmittedJob, JobSettings, JobMetadata
+    from flamenco.manager.models import SubmittedJob, JobMetadata
 
-    settings_propgroup = get_job_settings(scene)
-    if settings_propgroup is None:
-        return None
+    propgroup = getattr(scene, "flamenco_job_settings", None)
+    assert isinstance(
+        propgroup, job_types_propgroup.JobTypePropertyGroup
+    ), "did not expect %s" % (type(propgroup))
 
-    # TODO: convert settings_propgroup to JobSettings.
-    # dict(settings_propgroup) only includes the user-modified items, which
-    # isn't enough; the JobSettings() object should also have explicit values
-    # for the still-default ones.
-    settings = JobSettings()
+    settings = propgroup.as_jobsettings()
     metadata = JobMetadata()
 
     job: SubmittedJob = SubmittedJob(
         name=scene.flamenco_job_name,
-        type=settings_propgroup.job_type.name,
+        type=propgroup.job_type.name,
         priority=50,
         id=str(uuid.uuid4()),
         settings=settings,

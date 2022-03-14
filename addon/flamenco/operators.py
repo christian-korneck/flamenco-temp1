@@ -7,16 +7,18 @@ from typing import Optional, TYPE_CHECKING
 
 import bpy
 
-from . import preferences
+from . import job_submission
 
 if TYPE_CHECKING:
     from .bat_interface import (
         PackThread as _PackThread,
         Message as _Message,
     )
+    from .manager.models import SubmittedJob as _SubmittedJob
 else:
     _PackThread = object
     _Message = object
+    _SubmittedJob = object
 
 _log = logging.getLogger(__name__)
 
@@ -110,6 +112,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     bl_options = {"REGISTER"}  # No UNDO.
 
     job_name: bpy.props.StringProperty(name="Job Name")  # type: ignore
+    job: Optional[_SubmittedJob] = None
 
     timer: Optional[bpy.types.Timer] = None
     packthread: Optional[_PackThread] = None
@@ -118,6 +121,15 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
         filepath = self._save_blendfile(context)
+
+        # Construct the Job locally before trying to pack. If any validations fail, better fail early.
+        from . import job_types
+
+        self.job = job_types.job_for_scene(context.scene)
+        if self.job is None:
+            self.report({"ERROR"}, "Unable to create job")
+            return {"CANCELLED"}
+
         return self._bat_pack(context, filepath)
 
     def modal(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
@@ -212,7 +224,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         if isinstance(msg, bat_interface.MsgDone):
             self.report({"INFO"}, "BAT pack is done")
-            # TODO: actually send the job to Flamenco!
+            self._submit_job(context)
             return self._quit(context)
 
         if isinstance(msg, bat_interface.MsgException):
@@ -228,6 +240,15 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             setattr(wm, msg.attribute_name, msg.value)
 
         return {"RUNNING_MODAL"}
+
+    def _submit_job(self, context: bpy.types.Context) -> None:
+        """Use the Flamenco API to submit the new Job."""
+        assert self.job is not None
+
+        api_client = self.get_api_client(context)
+        job = job_submission.submit_job(self.job, api_client)
+
+        self.report({"INFO"}, "Job submitted")
 
     def _quit(self, context: bpy.types.Context) -> set[str]:
         """Stop any timer and return a 'FINISHED' status.
