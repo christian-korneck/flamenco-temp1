@@ -58,9 +58,10 @@ Note that list is **not** in any specific order.
 
 ## Blender Add-on
 
-- [ ] Communication with the Flamenco Manager API
+- [x] Communication with the Flamenco Manager API
 - [ ] Job construction
-- [ ] BAT-packing & uploading to Shaman
+- [x] BAT-packing
+- [ ] uploading to Shaman
 - [ ] User authentication
 - [ ] Editable job names (for rendering multiple jobs from the same filename)
 - [ ] Add `options={'HIDDEN'}` to the Flamenco RNA properties.

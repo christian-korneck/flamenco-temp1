@@ -2,8 +2,7 @@
 
 import json
 import logging
-import uuid
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import bpy
 
@@ -131,28 +130,6 @@ def update_job_type_properties(scene: bpy.types.Scene) -> None:
         name="Job Settings",
         description="Parameters for the Flamenco job",
     )
-
-
-def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
-    from flamenco.manager.models import SubmittedJob, JobMetadata
-
-    propgroup = getattr(scene, "flamenco_job_settings", None)
-    assert isinstance(
-        propgroup, job_types_propgroup.JobTypePropertyGroup
-    ), "did not expect %s" % (type(propgroup))
-
-    settings = propgroup.as_jobsettings()
-    metadata = JobMetadata()
-
-    job: SubmittedJob = SubmittedJob(
-        name=scene.flamenco_job_name,
-        type=propgroup.job_type.name,
-        priority=50,
-        id=str(uuid.uuid4()),
-        settings=settings,
-        metadata=metadata,
-    )
-    return job
 
 
 def _clear_available_job_types(scene: bpy.types.Scene) -> None:

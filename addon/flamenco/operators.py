@@ -7,7 +7,7 @@ from typing import Optional, TYPE_CHECKING
 
 import bpy
 
-from . import job_submission
+from . import job_types, job_submission
 
 if TYPE_CHECKING:
     from .bat_interface import (
@@ -111,6 +111,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     bl_description = "Pack the current blend file and send it to Flamenco"
     bl_options = {"REGISTER"}  # No UNDO.
 
+    blendfile_on_farm: Optional[Path] = None
     job_name: bpy.props.StringProperty(name="Job Name")  # type: ignore
     job: Optional[_SubmittedJob] = None
 
@@ -123,9 +124,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         filepath = self._save_blendfile(context)
 
         # Construct the Job locally before trying to pack. If any validations fail, better fail early.
-        from . import job_types
-
-        self.job = job_types.job_for_scene(context.scene)
+        self.job = job_submission.job_for_scene(context.scene)
         if self.job is None:
             self.report({"ERROR"}, "Unable to create job")
             return {"CANCELLED"}
@@ -202,13 +201,17 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             return {"CANCELLED"}
 
         # Determine where the render output will be stored.
-        render_output = Path("/render/_flamenco/tests/renders") / self.job_name
-        self.log.info("Will output render files to %s", render_output)
+        pack_target_dir = Path("/render/_flamenco/tests/renders") / self.job_name
+
+        # TODO: this should take the blendfile location relative to the project path into account.
+        pack_target_file = pack_target_dir / blendfile.name
+        self.log.info("Will store blend file at %s", pack_target_file)
+        self.blendfile_on_farm = pack_target_file
 
         self.packthread = bat_interface.copy(
             base_blendfile=blendfile,
             project=project_path,
-            target=render_output,
+            target=pack_target_dir,
             exclusion_filter="",  # TODO: get from GUI.
             relative_only=True,  # TODO: get from GUI.
         )
@@ -223,7 +226,6 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         from . import bat_interface
 
         if isinstance(msg, bat_interface.MsgDone):
-            self.report({"INFO"}, "BAT pack is done")
             self._submit_job(context)
             return self._quit(context)
 
@@ -245,10 +247,13 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         """Use the Flamenco API to submit the new Job."""
         assert self.job is not None
 
+        job_type = job_types.active_job_type(context.scene)
+        job_submission.set_blend_file(job_type, self.job, self.blendfile_on_farm)
+
         api_client = self.get_api_client(context)
         job = job_submission.submit_job(self.job, api_client)
 
-        self.report({"INFO"}, "Job submitted")
+        self.report({"INFO"}, "Job %s submitted" % job.name)
 
     def _quit(self, context: bpy.types.Context) -> set[str]:
         """Stop any timer and return a 'FINISHED' status.

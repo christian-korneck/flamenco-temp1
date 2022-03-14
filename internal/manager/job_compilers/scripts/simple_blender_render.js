@@ -4,7 +4,7 @@ const JOB_TYPE = {
     label: "Simple Blender Render",
     settings: [
         { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
-        { key: "filepath", type: "string", subtype: "file_path", required: true, description: "Blend file to render", visible: false },
+        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
         { key: "frames", type: "string", required: true },
         { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
@@ -76,7 +76,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
         const command = author.Command("blender-render", {
             exe: settings.blender_cmd,
             argsBefore: [],
-            blendfile: settings.filepath,
+            blendfile: settings.blendfile,
             args: [
                 "--render-output", path.join(renderDir, path.basename(renderOutput)),
                 "--render-format", settings.format,
@@ -99,7 +99,7 @@ function authorCreateVideoTask(settings, renderDir) {
         return;
     }
 
-    const stem = path.stem(settings.filepath).replace('.flamenco', '');
+    const stem = path.stem(settings.blendfile).replace('.flamenco', '');
     const outfile = path.join(renderDir, `${stem}-${settings.frames}.mp4`);
 
     const task = author.Task('create-video', 'ffmpeg');
