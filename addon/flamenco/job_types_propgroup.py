@@ -178,7 +178,7 @@ def _job_setting_key_to_label(setting_key: str) -> str:
 
 
 def _set_if_available(
-    some_dict: dict[object, object],
+    some_dict: dict[Any, Any],
     setting: object,
     key: str,
     transform: Optional[Callable[[object], object]] = None,

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 import logging
 import queue
 import threading
@@ -19,10 +19,10 @@ shaman = wheels.load_wheel("blender_asset_tracer.pack.shaman")
 
 log = logging.getLogger(__name__)
 
-# For using in other parts of the add-on, so only this file imports BAT.
-Aborted = pack.Aborted
-FileTransferError = transfer.FileTransferError
-parse_shaman_endpoint = shaman.parse_endpoint
+# # For using in other parts of the add-on, so only this file imports BAT.
+# Aborted = pack.Aborted
+# FileTransferError = transfer.FileTransferError
+# parse_shaman_endpoint = shaman.parse_endpoint
 
 
 class Message:
@@ -57,26 +57,27 @@ class MsgDone(Message):
     missing_files: list[Path]
 
 
-class BatProgress(progress.Callback):
+# MyPy doesn't understand the way BAT subpackages are imported.
+class BatProgress(progress.Callback):  # type: ignore
     """Report progress of BAT Packing to the given queue."""
 
-    def __init__(self, queue: queue.Queue[Message]) -> None:
+    def __init__(self, queue: queue.SimpleQueue[Message]) -> None:
         super().__init__()
         self.queue = queue
 
-    def _set_attr(self, attr: str, value):
+    def _set_attr(self, attr: str, value: Any) -> None:
         msg = MsgSetWMAttribute(attr, value)
         self.queue.put(msg)
 
-    def _txt(self, msg: str):
+    def _txt(self, msg: str) -> None:
         """Set a text in a thread-safe way."""
         self._set_attr("flamenco_bat_status_txt", msg)
 
-    def _status(self, status: str):
+    def _status(self, status: str) -> None:
         """Set the flamenco_bat_status property in a thread-safe way."""
         self._set_attr("flamenco_bat_status", status)
 
-    def _progress(self, progress: int):
+    def _progress(self, progress: int) -> None:
         """Set the flamenco_bat_progress property in a thread-safe way."""
         self._set_attr("flamenco_bat_progress", progress)
         msg = MsgProgress(percentage=progress)
@@ -93,7 +94,7 @@ class BatProgress(progress.Callback):
         else:
             self._txt("Pack of %s done" % output_blendfile.name)
 
-    def pack_aborted(self, reason: str):
+    def pack_aborted(self, reason: str) -> None:
         self._txt("Aborted: %s" % reason)
         self._status("ABORTED")
 
@@ -157,9 +158,10 @@ class BatProgress(progress.Callback):
 
 
 class PackThread(threading.Thread):
-    queue: queue.Queue[Message]
+    queue: queue.SimpleQueue[Message]
 
-    def __init__(self, packer: pack.Packer) -> None:
+    # MyPy doesn't understand the way BAT subpackages are imported.
+    def __init__(self, packer: pack.Packer) -> None:  # type: ignore
         # Quitting Blender should abort the transfer (instead of hanging until
         # the transfer is done), hence daemon=True.
         super().__init__(daemon=True, name="PackThread")
@@ -221,15 +223,15 @@ _running_packthread: typing.Optional[PackThread] = None
 _packer_lock = threading.RLock()
 
 
-def copy(
+def copy(  # type: ignore
     base_blendfile: Path,
     project: Path,
     target: str,
     exclusion_filter: str,
     *,
     relative_only: bool,
-    packer_class=pack.Packer,
-    **packer_args
+    packer_class=pack.Packer,  # type: ignore
+    **packer_args: dict[Any, Any],
 ) -> PackThread:
     """Use BAT to copy the given file and dependencies to the target location.
 
@@ -248,7 +250,7 @@ def copy(
         target,
         compress=True,
         relative_only=relative_only,
-        **packer_args
+        **packer_args,
     )
     if exclusion_filter:
         filter_parts = exclusion_filter.strip().split(" ")

@@ -109,18 +109,18 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     bl_description = "Pack the current blend file and send it to Flamenco"
     bl_options = {"REGISTER"}  # No UNDO.
 
-    job_name: bpy.props.StringProperty(name="Job Name")
+    job_name: bpy.props.StringProperty(name="Job Name")  # type: ignore
 
     timer: Optional[bpy.types.Timer] = None
     packthread: Optional[_PackThread] = None
 
     log = _log.getChild(bl_idname)
 
-    def invoke(self, context: bpy.types.Context, event) -> set[str]:
+    def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
         filepath = self._save_blendfile(context)
         return self._bat_pack(context, filepath)
 
-    def modal(self, context: bpy.types.Context, event) -> set[str]:
+    def modal(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
         # This function is called for TIMER events to poll the BAT pack thread.
         if event.type != "TIMER":
             return {"PASS_THROUGH"}
@@ -177,7 +177,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         if bat_interface.is_packing():
             self.report({"ERROR"}, "Another packing operation is running")
-            self._quit()
+            self._quit(context)
             return {"CANCELLED"}
 
         # TODO: get project path from addon preferences / project definition on Manager.

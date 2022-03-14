@@ -31,10 +31,12 @@ _job_type_enum_items: list[
     Union[tuple[str, str, str], tuple[str, str, str, int, int]]
 ] = []
 
-_selected_job_type_propgroup: Optional[job_types_propgroup.JobTypePropertyGroup] = None
+_selected_job_type_propgroup: Optional[
+    type[job_types_propgroup.JobTypePropertyGroup]
+] = None
 
 
-def fetch_available_job_types(api_client, scene: bpy.types.Scene):
+def fetch_available_job_types(api_client: _ApiClient, scene: bpy.types.Scene) -> None:
     from flamenco.manager import ApiClient
     from flamenco.manager.api import jobs_api
     from flamenco.manager.model.available_job_types import AvailableJobTypes
@@ -155,7 +157,7 @@ def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
     settings = JobSettings()
     metadata = JobMetadata()
 
-    job = SubmittedJob(
+    job: SubmittedJob = SubmittedJob(
         name=scene.flamenco_job_name,
         type=settings_propgroup.job_type.name,
         priority=50,
@@ -166,7 +168,7 @@ def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
     return job
 
 
-def _clear_available_job_types(scene: bpy.types.Scene):
+def _clear_available_job_types(scene: bpy.types.Scene) -> None:
     global _available_job_types
     global _job_type_enum_items
 
@@ -177,7 +179,7 @@ def _clear_available_job_types(scene: bpy.types.Scene):
     scene.flamenco_available_job_types_json = ""
 
 
-def _clear_job_type_propgroup():
+def _clear_job_type_propgroup() -> None:
     global _selected_job_type_propgroup
 
     try:
