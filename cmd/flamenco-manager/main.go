@@ -62,7 +62,7 @@ func main() {
 	// Load configuration.
 	configService := config.NewService()
 	err := configService.Load()
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		log.Error().Err(err).Msg("loading configuration")
 	}
 

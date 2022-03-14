@@ -192,13 +192,13 @@ func loadConf(filename string) (Conf, error) {
 	log.Info().Str("file", filename).Msg("loading configuration")
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
-		var level zerolog.Level
+		var evt *zerolog.Event
 		if os.IsNotExist(err) {
-			level = zerolog.DebugLevel
+			evt = log.Debug()
 		} else {
-			level = zerolog.WarnLevel
+			evt = log.Warn().Err(err)
 		}
-		log.WithLevel(level).Err(err).Msg("unable to load configuration, using defaults")
+		evt.Msg("unable to load configuration, using defaults")
 		return DefaultConfig(), err
 	}
 
