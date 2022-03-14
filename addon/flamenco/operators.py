@@ -105,6 +105,21 @@ class FLAMENCO_OT_ping_manager(FlamencoOpMixin, bpy.types.Operator):
         return {"FINISHED"}
 
 
+class FLAMENCO_OT_eval_setting(FlamencoOpMixin, bpy.types.Operator):
+    bl_idname = "flamenco.eval_setting"
+    bl_label = "Flamenco: Evalutate Setting Value"
+    bl_description = "Automatically determine a suitable value"
+    bl_options = {"REGISTER", "INTERNAL"}  # No UNDO.
+
+    setting_key: bpy.props.StringProperty(name="Setting Key")  # type: ignore
+    setting_eval: bpy.props.StringProperty(name="Python Expression")  # type: ignore
+
+    def execute(self, context: bpy.types.Context) -> set[str]:
+        propgroup = context.scene.flamenco_job_settings
+        propgroup.eval_setting(context, self.setting_key, self.setting_eval)
+        return {"FINISHED"}
+
+
 class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     bl_idname = "flamenco.submit_job"
     bl_label = "Flamenco: Submit Job"
@@ -269,6 +284,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 classes = (
     FLAMENCO_OT_fetch_job_types,
     FLAMENCO_OT_ping_manager,
+    FLAMENCO_OT_eval_setting,
     FLAMENCO_OT_submit_job,
 )
 register, unregister = bpy.utils.register_classes_factory(classes)

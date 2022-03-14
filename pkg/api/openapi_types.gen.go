@@ -129,6 +129,9 @@ type AvailableJobSetting struct {
 	// Whether to allow editing this setting after the job has been submitted. Would imply deleting all existing tasks for this job, and recompiling it.
 	Editable *bool `json:"editable,omitempty"`
 
+	// Python expression to be evaluated in order to determine the default value for this setting.
+	Eval *string `json:"eval,omitempty"`
+
 	// Identifier for the setting, must be unique within the job type.
 	Key string `json:"key"`
 

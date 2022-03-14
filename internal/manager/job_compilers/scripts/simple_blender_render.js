@@ -6,9 +6,9 @@ const JOB_TYPE = {
         { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
         { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
-        { key: "frames", type: "string", required: true },
+        { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'"},
         { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
-        { key: "fps", type: "int32" },
+        { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base" },
         { key: "extract_audio", type: "bool", default: true },
         {
             key: "images_or_video",
@@ -16,8 +16,9 @@ const JOB_TYPE = {
             required: true,
             choices: ["images", "video"],
             visible: false,
+            eval: "'video' if C.scene.render.image_settings.file_format in {'FFMPEG', 'AVI_RAW', 'AVI_JPEG'} else 'image'"
         },
-        { key: "format", type: "string", required: true },
+        { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format" },
         { key: "output_file_extension", type: "string", required: true },
     ]
 };

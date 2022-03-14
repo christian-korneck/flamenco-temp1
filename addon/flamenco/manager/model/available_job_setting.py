@@ -95,6 +95,7 @@ class AvailableJobSetting(ModelNormal):
             'choices': ([str],),  # noqa: E501
             'description': (bool, date, datetime, dict, float, int, list, str, none_type,),  # noqa: E501
             'default': (bool, date, datetime, dict, float, int, list, str, none_type,),  # noqa: E501
+            'eval': (str,),  # noqa: E501
             'visible': (bool,),  # noqa: E501
             'required': (bool,),  # noqa: E501
             'editable': (bool,),  # noqa: E501
@@ -112,6 +113,7 @@ class AvailableJobSetting(ModelNormal):
         'choices': 'choices',  # noqa: E501
         'description': 'description',  # noqa: E501
         'default': 'default',  # noqa: E501
+        'eval': 'eval',  # noqa: E501
         'visible': 'visible',  # noqa: E501
         'required': 'required',  # noqa: E501
         'editable': 'editable',  # noqa: E501
@@ -166,6 +168,7 @@ class AvailableJobSetting(ModelNormal):
             choices ([str]): When given, limit the valid values to these choices. Only usable with string type.. [optional]  # noqa: E501
             description (bool, date, datetime, dict, float, int, list, str, none_type): The description/tooltip shown in the user interface.. [optional]  # noqa: E501
             default (bool, date, datetime, dict, float, int, list, str, none_type): The default value shown to the user when determining this setting.. [optional]  # noqa: E501
+            eval (str): Python expression to be evaluated in order to determine the default value for this setting.. [optional]  # noqa: E501
             visible (bool): Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users. . [optional] if omitted the server will use the default value of True  # noqa: E501
             required (bool): Whether to immediately reject a job definition, of this type, without this particular setting. . [optional] if omitted the server will use the default value of False  # noqa: E501
             editable (bool): Whether to allow editing this setting after the job has been submitted. Would imply deleting all existing tasks for this job, and recompiling it. . [optional] if omitted the server will use the default value of False  # noqa: E501
@@ -260,6 +263,7 @@ class AvailableJobSetting(ModelNormal):
             choices ([str]): When given, limit the valid values to these choices. Only usable with string type.. [optional]  # noqa: E501
             description (bool, date, datetime, dict, float, int, list, str, none_type): The description/tooltip shown in the user interface.. [optional]  # noqa: E501
             default (bool, date, datetime, dict, float, int, list, str, none_type): The default value shown to the user when determining this setting.. [optional]  # noqa: E501
+            eval (str): Python expression to be evaluated in order to determine the default value for this setting.. [optional]  # noqa: E501
             visible (bool): Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users. . [optional] if omitted the server will use the default value of True  # noqa: E501
             required (bool): Whether to immediately reject a job definition, of this type, without this particular setting. . [optional] if omitted the server will use the default value of False  # noqa: E501
             editable (bool): Whether to allow editing this setting after the job has been submitted. Would imply deleting all existing tasks for this job, and recompiling it. . [optional] if omitted the server will use the default value of False  # noqa: E501

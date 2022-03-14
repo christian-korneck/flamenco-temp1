@@ -47,6 +47,16 @@ class JobTypePropertyGroup:
 
         return js
 
+    def eval_setting(
+        self, context: bpy.types.Context, setting_key: str, setting_eval: str
+    ) -> None:
+        eval_globals = {
+            "bpy": bpy,
+            "C": context,
+        }
+        value = eval(setting_eval, eval_globals, {})
+        setattr(self, setting_key, value)
+
 
 # Mapping from AvailableJobType.setting.type to a callable that converts a value
 # to the appropriate type. This is necessary due to the ambiguity between floats

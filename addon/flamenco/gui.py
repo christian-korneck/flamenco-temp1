@@ -47,7 +47,15 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         for setting in job_type.settings:
             if not setting.get("visible", True):
                 continue
-            layout.prop(propgroup, setting.key)
+            row = layout.row(align=True)
+            row.prop(propgroup, setting.key)
+            setting_eval = setting.get("eval", "")
+            if setting_eval:
+                props = row.operator(
+                    "flamenco.eval_setting", text="", icon="SCRIPTPLUGINS"
+                )
+                props.setting_key = setting.key
+                props.setting_eval = setting_eval
 
     def draw_flamenco_status(
         self, context: bpy.types.Context, layout: bpy.types.UILayout

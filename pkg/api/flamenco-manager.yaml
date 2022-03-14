@@ -407,6 +407,9 @@ components:
           description: The description/tooltip shown in the user interface.
         "default":
           description: The default value shown to the user when determining this setting.
+        "eval":
+          type: string
+          description: Python expression to be evaluated in order to determine the default value for this setting.
         "visible":
           type: boolean
           description: >
