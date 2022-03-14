@@ -8,8 +8,6 @@ import queue
 import threading
 import typing
 
-import bpy
-
 from . import wheels
 
 pack = wheels.load_wheel("blender_asset_tracer.pack")

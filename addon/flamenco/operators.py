@@ -2,7 +2,7 @@
 # <pep8 compliant>
 
 import logging
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import Optional, TYPE_CHECKING
 
 import bpy
