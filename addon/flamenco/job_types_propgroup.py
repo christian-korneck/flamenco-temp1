@@ -77,7 +77,6 @@ def generate(job_type: _AvailableJobType) -> type[JobTypePropertyGroup]:
     )
     pg_type.__annotations__ = {}
 
-    print(f"\033[38;5;214m{job_type.label}\033[0m ({job_type.name})")
     for setting in job_type.settings:
         prop = _create_property(job_type, setting)
         pg_type.__annotations__[setting.key] = prop
@@ -85,11 +84,6 @@ def generate(job_type: _AvailableJobType) -> type[JobTypePropertyGroup]:
     assert issubclass(pg_type, JobTypePropertyGroup), "did not expect type %r" % type(
         pg_type
     )
-
-    from pprint import pprint
-
-    print(pg_type)
-    pprint(pg_type.__annotations__)
 
     return pg_type
 
@@ -104,8 +98,6 @@ def _create_property(job_type: _AvailableJobType, setting: _AvailableJobSetting)
 
     assert isinstance(setting, AvailableJobSetting)
 
-    print(f"  - {setting.key:23}  type: {setting.type!r:10}", end="")
-
     # Special case: a string property with 'choices' setting. This should translate to an EnumProperty
     prop_type, prop_kwargs = _find_prop_type(job_type, setting)
 
@@ -114,7 +106,6 @@ def _create_property(job_type: _AvailableJobType, setting: _AvailableJobSetting)
     _set_if_available(prop_kwargs, setting, "description")
     _set_if_available(prop_kwargs, setting, "default", transform=value_coerce)
     _set_if_available(prop_kwargs, setting, "subtype", transform=_transform_subtype)
-    print()
 
     prop_name = _job_setting_key_to_label(setting.key)
     prop = prop_type(name=prop_name, **prop_kwargs)
