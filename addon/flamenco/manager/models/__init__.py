@@ -16,8 +16,6 @@ from flamenco.manager.model.available_job_setting_type import AvailableJobSettin
 from flamenco.manager.model.available_job_type import AvailableJobType
 from flamenco.manager.model.available_job_types import AvailableJobTypes
 from flamenco.manager.model.command import Command
-from flamenco.manager.model.configuration import Configuration
-from flamenco.manager.model.configuration_meta import ConfigurationMeta
 from flamenco.manager.model.error import Error
 from flamenco.manager.model.flamenco_version import FlamencoVersion
 from flamenco.manager.model.job import Job
