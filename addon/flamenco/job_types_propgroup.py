@@ -10,10 +10,15 @@ import bpy
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from flamenco.manager.models import AvailableJobType, AvailableJobSetting
+    from flamenco.manager.models import (
+        AvailableJobType as _AvailableJobType,
+        AvailableJobSetting as _AvailableJobSetting,
+        JobSettings as _JobSettings,
+    )
 else:
-    AvailableJobType = object
-    AvailableJobSetting = object
+    _AvailableJobType = object
+    _AvailableJobSetting = object
+    _JobSettings = object
 
 
 class JobTypePropertyGroup:
@@ -22,7 +27,7 @@ class JobTypePropertyGroup:
     Use `generate(job_type: AvailableJobType)` to create such a subclass.
     """
 
-    job_type: AvailableJobType
+    job_type: _AvailableJobType
     """The job type passed to `generate(job_type)`."""
 
     @classmethod
@@ -52,7 +57,7 @@ _prop_types = {
 }
 
 
-def generate(job_type: AvailableJobType) -> type[JobTypePropertyGroup]:
+def generate(job_type: _AvailableJobType) -> type[JobTypePropertyGroup]:
     """Create a PropertyGroup for the job type.
 
     Does not register the property group.
@@ -89,7 +94,7 @@ def generate(job_type: AvailableJobType) -> type[JobTypePropertyGroup]:
     return pg_type
 
 
-def _create_property(job_type: AvailableJobType, setting: AvailableJobSetting) -> Any:
+def _create_property(job_type: _AvailableJobType, setting: _AvailableJobSetting) -> Any:
     """Create a bpy.props property for the given job setting.
 
     Depending on the setting, will be a StringProperty, EnumProperty, FloatProperty, etc.
@@ -117,7 +122,7 @@ def _create_property(job_type: AvailableJobType, setting: AvailableJobSetting) -
 
 
 def _find_prop_type(
-    job_type: AvailableJobType, setting: AvailableJobSetting
+    job_type: _AvailableJobType, setting: _AvailableJobSetting
 ) -> tuple[Any, dict[str, Any]]:
     """Return a tuple (bpy.props.XxxProperty, kwargs for construction)."""
 

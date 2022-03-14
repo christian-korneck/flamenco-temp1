@@ -23,9 +23,9 @@ The result is that sometimes there are some strange hoops to jump through. The m
 
 ```
 if TYPE_CHECKING:
-    from .bat_interface import PackThread
+    from .bat_interface import _PackThread
 else:
-    PackThread = object
+    _PackThread = object
 ```
 
-This makes it possible to declare a function with `def func() -> PackThread`, without having to load `bat_interface` immediately at import time.
+This makes it possible to declare a function with `def func() -> _PackThread`, without having to load `bat_interface` immediately at import time.

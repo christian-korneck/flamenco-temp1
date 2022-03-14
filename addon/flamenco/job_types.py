@@ -13,18 +13,18 @@ _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from flamenco.manager.models import (
-        AvailableJobType,
-        AvailableJobTypes,
-        SubmittedJob,
-        JobSettings,
+        AvailableJobType as _AvailableJobType,
+        AvailableJobTypes as _AvailableJobTypes,
+        SubmittedJob as _SubmittedJob,
+        JobSettings as _JobSettings,
     )
 else:
-    AvailableJobTypes = object
-    AvailableJobType = object
-    SubmittedJob = object
-    JobSettings = object
+    _AvailableJobTypes = object
+    _AvailableJobType = object
+    _SubmittedJob = object
+    _JobSettings = object
 
-_available_job_types: Optional[list[AvailableJobType]] = None
+_available_job_types: Optional[list[_AvailableJobType]] = None
 
 # Items for a bpy.props.EnumProperty()
 _job_type_enum_items: list[
@@ -54,7 +54,7 @@ def fetch_available_job_types(api_client, scene: bpy.types.Scene):
     _store_available_job_types(response)
 
 
-def _store_available_job_types(available_job_types: AvailableJobTypes) -> None:
+def _store_available_job_types(available_job_types: _AvailableJobTypes) -> None:
     global _available_job_types
     global _job_type_enum_items
 
@@ -129,7 +129,9 @@ def update_job_type_properties(scene: bpy.types.Scene) -> None:
     )
 
 
-def get_job_settings(scene: bpy.types.Scene) -> Optional[JobSettings]:
+def get_job_settings(scene: bpy.types.Scene) -> Optional[_JobSettings]:
+    from flamenco.manager.models import JobSettings
+
     job_settings = getattr(scene, "flamenco_job_settings", None)
     if job_settings is None:
         return None
@@ -139,7 +141,7 @@ def get_job_settings(scene: bpy.types.Scene) -> Optional[JobSettings]:
     return job_settings
 
 
-def job_for_scene(scene: bpy.types.Scene) -> Optional[SubmittedJob]:
+def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
     from flamenco.manager.models import SubmittedJob, JobSettings, JobMetadata
 
     settings_propgroup = get_job_settings(scene)
@@ -189,7 +191,7 @@ def _clear_job_type_propgroup():
         _selected_job_type_propgroup = None
 
 
-def active_job_type(scene: bpy.types.Scene) -> Optional[AvailableJobType]:
+def active_job_type(scene: bpy.types.Scene) -> Optional[_AvailableJobType]:
     """Return the active job type.
 
     Returns a flamenco.manager.model.available_job_type.AvailableJobType,

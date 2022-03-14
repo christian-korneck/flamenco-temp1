@@ -10,10 +10,13 @@ import bpy
 from . import preferences
 
 if TYPE_CHECKING:
-    from .bat_interface import PackThread, Message
+    from .bat_interface import (
+        PackThread as _PackThread,
+        Message as _Message,
+    )
 else:
-    PackThread = object
-    Message = object
+    _PackThread = object
+    _Message = object
 
 _log = logging.getLogger(__name__)
 
@@ -109,7 +112,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     job_name: bpy.props.StringProperty(name="Job Name")
 
     timer: Optional[bpy.types.Timer] = None
-    packthread: Optional[PackThread] = None
+    packthread: Optional[_PackThread] = None
 
     log = _log.getChild(bl_idname)
 
@@ -204,7 +207,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         return {"RUNNING_MODAL"}
 
-    def _on_bat_pack_msg(self, context: bpy.types.Context, msg: Message) -> set[str]:
+    def _on_bat_pack_msg(self, context: bpy.types.Context, msg: _Message) -> set[str]:
         from . import bat_interface
 
         if isinstance(msg, bat_interface.MsgDone):
