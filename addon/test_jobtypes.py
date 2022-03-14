@@ -8,7 +8,7 @@ sys.path.append(str(my_dir))
 
 
 import atexit
-from flamenco import dependencies, job_types
+from flamenco import dependencies, job_types_propgroup as jt_propgroup
 
 dependencies.preload_modules()
 
@@ -33,4 +33,4 @@ except flamenco.manager.ApiException as ex:
     raise SystemExit("Exception when calling JobsApi->fetch_job: %s" % ex)
 
 job_type = next(jt for jt in response.job_types if jt.name == "simple-blender-render")
-pg = job_types.generate_property_group(job_type)
+pg = jt_propgroup.generate(job_type)
