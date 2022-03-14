@@ -109,7 +109,7 @@ class FLAMENCO_OT_eval_setting(FlamencoOpMixin, bpy.types.Operator):
     bl_idname = "flamenco.eval_setting"
     bl_label = "Flamenco: Evalutate Setting Value"
     bl_description = "Automatically determine a suitable value"
-    bl_options = {"REGISTER", "INTERNAL"}  # No UNDO.
+    bl_options = {"REGISTER", "INTERNAL", "UNDO"}
 
     setting_key: bpy.props.StringProperty(name="Setting Key")  # type: ignore
     setting_eval: bpy.props.StringProperty(name="Python Expression")  # type: ignore
