@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import json
 import logging
 import uuid
 from typing import TYPE_CHECKING, Callable, Optional, Union
@@ -11,13 +12,19 @@ from . import job_types_propgroup
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from flamenco.manager.models import AvailableJobType, SubmittedJob, JobSettings
-
-    _available_job_types: Optional[list[AvailableJobType]] = None
+    from flamenco.manager.models import (
+        AvailableJobType,
+        AvailableJobTypes,
+        SubmittedJob,
+        JobSettings,
+    )
 else:
+    AvailableJobTypes = object
+    AvailableJobType = object
     SubmittedJob = object
     JobSettings = object
-    _available_job_types = None
+
+_available_job_types: Optional[list[AvailableJobType]] = None
 
 # Items for a bpy.props.EnumProperty()
 _job_type_enum_items: list[
@@ -27,10 +34,7 @@ _job_type_enum_items: list[
 _selected_job_type_propgroup: Optional[job_types_propgroup.JobTypePropertyGroup] = None
 
 
-def fetch_available_job_types(api_client):
-    global _available_job_types
-    global _job_type_enum_items
-
+def fetch_available_job_types(api_client, scene: bpy.types.Scene):
     from flamenco.manager import ApiClient
     from flamenco.manager.api import jobs_api
     from flamenco.manager.model.available_job_types import AvailableJobTypes
@@ -40,18 +44,51 @@ def fetch_available_job_types(api_client):
     job_api_instance = jobs_api.JobsApi(api_client)
     response: AvailableJobTypes = job_api_instance.get_job_types()
 
-    _clear_available_job_types()
+    _clear_available_job_types(scene)
+
+    # Store the response JSON on the scene. This is used when the blend file is
+    # loaded (and thus the _available_job_types global variable is still empty)
+    # to generate the PropertyGroup of the selected job type.
+    scene.flamenco_available_job_types_json = json.dumps(response.to_dict())
+
+    _store_available_job_types(response)
+
+
+def _store_available_job_types(available_job_types: AvailableJobTypes) -> None:
+    global _available_job_types
+    global _job_type_enum_items
+
+    job_types = available_job_types.job_types
 
     # Remember the available job types.
-    _available_job_types = response.job_types
+    _available_job_types = job_types
     if _available_job_types is None:
         _job_type_enum_items = []
     else:
         # Convert from API response type to list suitable for an EnumProperty.
         _job_type_enum_items = [
-            (job_type.name, job_type.label, "") for job_type in _available_job_types
+            (job_type.name, job_type.label, "") for job_type in job_types
         ]
     _job_type_enum_items.insert(0, ("", "Select a Job Type", "", 0, 0))
+
+
+def _available_job_types_from_json(job_types_json: str) -> None:
+    """Convert JSON to AvailableJobTypes object, and update global variables for it."""
+    from flamenco.manager.models import AvailableJobTypes
+    from flamenco.manager.configuration import Configuration
+    from flamenco.manager.model_utils import validate_and_convert_types
+
+    json_dict = json.loads(job_types_json)
+
+    dummy_cfg = Configuration()
+    job_types = validate_and_convert_types(
+        json_dict, (AvailableJobTypes,), ["job_types"], True, True, dummy_cfg
+    )
+
+    assert isinstance(
+        job_types, AvailableJobTypes
+    ), "expected AvailableJobTypes, got %s" % type(job_types)
+    _store_available_job_types(job_types)
 
 
 def are_job_types_available() -> bool:
@@ -127,7 +164,7 @@ def job_for_scene(scene: bpy.types.Scene) -> Optional[SubmittedJob]:
     return job
 
 
-def _clear_available_job_types():
+def _clear_available_job_types(scene: bpy.types.Scene):
     global _available_job_types
     global _job_type_enum_items
 
@@ -135,13 +172,14 @@ def _clear_available_job_types():
 
     _available_job_types = None
     _job_type_enum_items.clear()
+    scene.flamenco_available_job_types_json = ""
 
 
 def _clear_job_type_propgroup():
     global _selected_job_type_propgroup
 
     try:
-        del bpy.types.WindowManager.flamenco_job_settings
+        del bpy.types.Scene.flamenco_job_settings
     except AttributeError:
         pass
 
@@ -151,15 +189,7 @@ def _clear_job_type_propgroup():
         _selected_job_type_propgroup = None
 
 
-if TYPE_CHECKING:
-    from flamenco.manager.model.available_job_type import (
-        AvailableJobType as _AvailableJobType,
-    )
-else:
-    _AvailableJobType = object
-
-
-def active_job_type(scene: bpy.types.Scene) -> Optional[_AvailableJobType]:
+def active_job_type(scene: bpy.types.Scene) -> Optional[AvailableJobType]:
     """Return the active job type.
 
     Returns a flamenco.manager.model.available_job_type.AvailableJobType,
@@ -179,6 +209,17 @@ def _get_job_types_enum_items(dummy1, dummy2):
     return _job_type_enum_items
 
 
+@bpy.app.handlers.persistent
+def restore_available_job_types(dummy1, dummy2):
+    scene = bpy.context.scene
+    job_types_json = getattr(scene, "flamenco_available_job_types_json", "")
+    if not job_types_json:
+        _clear_available_job_types(scene)
+        return
+    _available_job_types_from_json(job_types_json)
+    update_job_type_properties(scene)
+
+
 def discard_flamenco_data():
     if _available_job_types:
         _available_job_types.clear()
@@ -194,18 +235,24 @@ def register() -> None:
     )
 
     bpy.types.Scene.flamenco_available_job_types_json = bpy.props.StringProperty(
-        name="Available Job Types",
+        name="Available Job Types, stored as JSON string",
     )
+
+    bpy.app.handlers.load_factory_startup_post.append(restore_available_job_types)
+    bpy.app.handlers.load_post.append(restore_available_job_types)
 
 
 def unregister() -> None:
-    del bpy.types.Scene.flamenco_job_type
-
-    try:
-        # This property doesn't always exist.
-        del bpy.types.Scene.flamenco_job_settings
-    except AttributeError:
-        pass
+    to_del = (
+        (bpy.types.Scene, "flamenco_job_type"),
+        (bpy.types.Scene, "flamenco_job_settings"),
+        (bpy.types.Scene, "flamenco_available_job_types_json"),
+    )
+    for ob, attr in to_del:
+        try:
+            delattr(ob, attr)
+        except AttributeError:
+            pass
 
 
 if __name__ == "__main__":

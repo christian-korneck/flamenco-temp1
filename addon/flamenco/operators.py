@@ -48,7 +48,7 @@ class FLAMENCO_OT_fetch_job_types(FlamencoOpMixin, bpy.types.Operator):
         old_job_type_name = getattr(scene, "flamenco_job_type", "")
 
         try:
-            job_types.fetch_available_job_types(api_client)
+            job_types.fetch_available_job_types(api_client, scene)
         except ApiException as ex:
             self.report({"ERROR"}, "Error getting job types: %s" % ex)
             return {"CANCELLED"}
