@@ -18,16 +18,17 @@ import (
 func exampleSubmittedJob() api.SubmittedJob {
 	settings := api.JobSettings{
 		AdditionalProperties: map[string]interface{}{
-			"blender_cmd":           "{blender}",
-			"blendfile":             "/render/sf/jobs/scene123.blend",
-			"chunk_size":            3,
-			"extract_audio":         true,
-			"format":                "PNG",
-			"fps":                   24,
-			"frames":                "1-10",
-			"images_or_video":       "images",
-			"output_file_extension": ".png",
-			"render_output":         "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2/######",
+			"blender_cmd":            "{blender}",
+			"blendfile":              "/render/sf/jobs/scene123.blend",
+			"chunk_size":             3,
+			"extract_audio":          true,
+			"format":                 "PNG",
+			"fps":                    24.0,
+			"frames":                 "1-10",
+			"images_or_video":        "images",
+			"image_file_extension":   ".png",
+			"video_container_format": "",
+			"render_output":          "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2/######",
 		}}
 	metadata := api.JobMetadata{
 		AdditionalProperties: map[string]string{

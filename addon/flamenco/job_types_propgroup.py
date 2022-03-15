@@ -47,15 +47,23 @@ class JobTypePropertyGroup:
 
         return js
 
-    def eval_setting(
+    def eval_and_assign(
         self, context: bpy.types.Context, setting_key: str, setting_eval: str
     ) -> None:
+        """Evaluate `setting_eval` and assign the result to the job setting."""
+        value = self.eval_setting(context, setting_eval)
+        setattr(self, setting_key, value)
+
+    @staticmethod
+    def eval_setting(context: bpy.types.Context, setting_eval: str) -> Any:
+        """Evaluate `setting_eval` and return the result."""
+
         eval_globals = {
             "bpy": bpy,
             "C": context,
         }
         value = eval(setting_eval, eval_globals, {})
-        setattr(self, setting_key, value)
+        return value
 
 
 # Mapping from AvailableJobType.setting.type to a callable that converts a value

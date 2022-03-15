@@ -116,7 +116,7 @@ class FLAMENCO_OT_eval_setting(FlamencoOpMixin, bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> set[str]:
         propgroup = context.scene.flamenco_job_settings
-        propgroup.eval_setting(context, self.setting_key, self.setting_eval)
+        propgroup.eval_and_assign(context, self.setting_key, self.setting_eval)
         return {"FINISHED"}
 
 
@@ -261,11 +261,15 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     def _submit_job(self, context: bpy.types.Context) -> None:
         """Use the Flamenco API to submit the new Job."""
         assert self.job is not None
-
-        job_type = job_types.active_job_type(context.scene)
-        job_submission.set_blend_file(job_type, self.job, self.blendfile_on_farm)
+        assert self.blendfile_on_farm is not None
 
         api_client = self.get_api_client(context)
+
+        job_type = job_types.active_job_type(context.scene)
+        assert job_type is not None  # If we're here, the job type should be known.
+
+        job_submission.set_blend_file(job_type, self.job, self.blendfile_on_farm)
+        job_submission.eval_hidden_settings(context, job_type, self.job)
         job = job_submission.submit_job(self.job, api_client)
 
         self.report({"INFO"}, "Job %s submitted" % job.name)

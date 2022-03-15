@@ -3,13 +3,15 @@
 const JOB_TYPE = {
     label: "Simple Blender Render",
     settings: [
-        { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
-        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
+        // Settings for artists to determine:
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
         { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'"},
         { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
-        { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base" },
-        { key: "extract_audio", type: "bool", default: true },
+
+        // Automatically evaluated settings:
+        { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
+        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
+        { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base", visible: false },
         {
             key: "images_or_video",
             type: "string",
@@ -18,8 +20,11 @@ const JOB_TYPE = {
             visible: false,
             eval: "'video' if C.scene.render.image_settings.file_format in {'FFMPEG', 'AVI_RAW', 'AVI_JPEG'} else 'image'"
         },
-        { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format" },
-        { key: "output_file_extension", type: "string", required: true },
+        { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format", visible: false },
+        { key: "image_file_extension", type: "string", required: true, eval: "C.scene.render.file_extension", visible: false,
+          description: "File extension used when rendering images; ignored when images_or_video='video'" },
+        { key: "video_container_format", type: "string", required: true, eval: "C.scene.render.ffmpeg.format", visible: false,
+          description: "Container format used when rendering video; ignored when images_or_video='images'" },
     ]
 };
 
@@ -32,6 +37,17 @@ const ffmpegIncompatibleImageFormats = new Set([
     "OPEN_EXR",
     "OPEN_EXR_MULTILAYER", // DNA values for these formats.
 ]);
+
+// Mapping from video container (scene.render.ffmpeg.format) to the file name
+// extension typically used to store those videos.
+const videoContainerToExtension = {
+    "QUICKTIME": ".mov",
+    "MPEG1": ".mpg",
+    "MPEG2": ".dvd",
+    "MPEG4": ".mp4",
+    "OGG": ".ogv",
+    "FLASH": ".flv",
+};
 
 function compileJob(job) {
     print("Blender Render job submitted");
@@ -91,21 +107,25 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
 }
 
 function authorCreateVideoTask(settings, renderDir) {
+    if (settings.images_or_video == "video") {
+        print("Not authoring video task, render output is already a video");
+    }
     if (ffmpegIncompatibleImageFormats.has(settings.format)) {
         print("Not authoring video task, FFmpeg-incompatible render output")
         return;
     }
-    if (!settings.fps || !settings.output_file_extension) {
-        print("Not authoring video task, no FPS or output file extension setting:", settings)
+    if (!settings.fps) {
+        print("Not authoring video task, no FPS known:", settings);
         return;
     }
 
     const stem = path.stem(settings.blendfile).replace('.flamenco', '');
     const outfile = path.join(renderDir, `${stem}-${settings.frames}.mp4`);
+    const outfileExt = guessOutputFileExtension(settings);
 
     const task = author.Task('create-video', 'ffmpeg');
     const command = author.Command("create-video", {
-        input_files: path.join(renderDir, `*${settings.output_file_extension}`),
+        input_files: path.join(renderDir, `*${outfileExt}`),
         output_file: outfile,
         fps: settings.fps,
     });
@@ -113,4 +133,17 @@ function authorCreateVideoTask(settings, renderDir) {
 
     print(`Creating output video for ${settings.format}`);
     return task;
+}
+
+// Return file name extension, including period, like '.png' or '.mkv'.
+function guessOutputFileExtension(settings) {
+    if (settings.images_or_video == "images") {
+        return settings.image_file_extension;
+    }
+
+    container = scene.render.ffmpeg.format
+    if (container in videoContainerToExtension) {
+        return videoContainerToExtension[container];
+    }
+    return "." + container.lower();
 }
