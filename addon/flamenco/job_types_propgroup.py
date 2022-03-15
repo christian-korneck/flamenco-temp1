@@ -134,6 +134,9 @@ def _create_property(job_type: _AvailableJobType, setting: _AvailableJobSetting)
     _set_if_available(prop_kwargs, setting, "default", transform=value_coerce)
     _set_if_available(prop_kwargs, setting, "subtype", transform=_transform_subtype)
 
+    # Remove the 'ANIMATABLE' option.
+    prop_kwargs.setdefault("options", set())
+
     prop_name = _job_setting_key_to_label(setting.key)
     prop = prop_type(name=prop_name, **prop_kwargs)
     return prop
