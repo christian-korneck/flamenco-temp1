@@ -78,7 +78,9 @@ class JobTypePropertyGroup:
 
     def label(self, setting_key: str) -> str:
         """Return the UI label for this setting."""
-        return self.bl_rna.properties[setting_key].name
+        # MyPy doesn't understand the Blender RNA magic.
+        label: str = self.bl_rna.properties[setting_key].name  # type: ignore
+        return label
 
     def eval_and_assign(
         self,
