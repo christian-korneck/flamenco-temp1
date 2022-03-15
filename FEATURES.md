@@ -44,6 +44,8 @@ Note that list is **not** in any specific order.
 - [x] Command runner
 - [x] Log uploader
 - [ ] POSIX signal handling (sleep/wake up)
+- [ ] Implement `create-video` command.
+- [ ] Implement `move-to-final` command.
 
 ## Both
 
