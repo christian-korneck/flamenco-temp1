@@ -115,6 +115,31 @@ class JobTypePropertyGroup:
             raise SettingEvalError(setting_key, setting_eval, eval_locals, ex) from ex
         return value
 
+    def eval_hidden_settings_of_job(
+        self, context: bpy.types.Context, job: _SubmittedJob
+    ) -> None:
+        """Assign values to settings hidden from the UI.
+
+        If the setting has an `eval` property, it'll be evaluated and used as the
+        setting value. Otherwise the default is used.
+        """
+        for setting in self.job_type.settings:
+            if setting.get("visible", True):
+                # Skip those settings that will be visible in the GUI.
+                continue
+
+            setting_eval = setting.get("eval", "")
+            if setting_eval:
+                value = self.eval_setting(context, setting.key, setting_eval)
+            elif "default" in setting:
+                value = setting.default
+            else:
+                # No way to get a default value, so just don't bother overwriting
+                # anything.
+                continue
+
+            job.settings[setting.key] = value
+
     @staticmethod
     def last_n_dir_parts(n: int, filepath: Union[str, Path, None] = None) -> Path:
         """Return the last `n` parts of the directory of `filepath`.

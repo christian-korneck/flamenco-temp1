@@ -68,34 +68,6 @@ def set_blend_file(
     job.settings[BLENDFILE_SETTING_KEY] = str(blendfile)
 
 
-def eval_hidden_settings(
-    context: bpy.types.Context, job_type: _AvailableJobType, job: _SubmittedJob
-) -> None:
-    """Assign values to settings hidden from the UI.
-
-    If the setting has an `eval` property, it'll be evaluated and used as the
-    setting value. Otherwise the default is used.
-    """
-    for setting in job_type.settings:
-        if setting.get("visible", True):
-            # Skip those settings that will be visible in the GUI.
-            continue
-
-        setting_eval = setting.get("eval", "")
-        if setting_eval:
-            value = JobTypePropertyGroup.eval_setting(
-                context, job, setting.key, setting_eval
-            )
-        elif "default" in setting:
-            value = setting.default
-        else:
-            # No way to get a default value, so just don't bother overwriting
-            # anything.
-            continue
-
-        job.settings[setting.key] = value
-
-
 def submit_job(job: _SubmittedJob, api_client: _ApiClient) -> _Job:
     """Send the given job to Flamenco Manager."""
     from flamenco.manager import ApiClient

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # <pep8 compliant>
 
+import datetime
 import logging
 from pathlib import Path
 from typing import Optional, TYPE_CHECKING
@@ -226,8 +227,12 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             self.report({"ERROR"}, "Project path %s does not exist" % project_path)
             return {"CANCELLED"}
 
-        # Determine where the render output will be stored.
-        pack_target_dir = Path("/render/_flamenco/tests/renders") / self.job_name
+        # Determine where the blend file will be stored.
+        unique_dir = "%s-%s" % (
+            datetime.datetime.now().isoformat("-").replace(":", ""),
+            self.job_name,
+        )
+        pack_target_dir = Path(context.scene.flamenco_job_storage) / unique_dir
 
         # TODO: this should take the blendfile location relative to the project path into account.
         pack_target_file = pack_target_dir / blendfile.name
@@ -237,7 +242,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         self.packthread = bat_interface.copy(
             base_blendfile=blendfile,
             project=project_path,
-            target=pack_target_dir,
+            target=str(pack_target_dir),
             exclusion_filter="",  # TODO: get from GUI.
             relative_only=True,  # TODO: get from GUI.
         )
@@ -276,14 +281,18 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         api_client = self.get_api_client(context)
 
-        job_type = job_types.active_job_type(context.scene)
-        assert job_type is not None  # If we're here, the job type should be known.
+        propgroup = getattr(context.scene, "flamenco_job_settings", None)
+        assert isinstance(propgroup, JobTypePropertyGroup), "did not expect %s" % (
+            type(propgroup)
+        )
+        propgroup.eval_hidden_settings_of_job(context, self.job)
 
-        job_submission.set_blend_file(job_type, self.job, self.blendfile_on_farm)
-        job_submission.eval_hidden_settings(context, job_type, self.job)
-        job = job_submission.submit_job(self.job, api_client)
+        job_submission.set_blend_file(
+            propgroup.job_type, self.job, self.blendfile_on_farm
+        )
 
-        self.report({"INFO"}, "Job %s submitted" % job.name)
+        submitted_job = job_submission.submit_job(self.job, api_client)
+        self.report({"INFO"}, "Job %s submitted" % submitted_job.name)
 
     def _quit(self, context: bpy.types.Context) -> set[str]:
         """Stop any timer and return a 'FINISHED' status.

@@ -11,6 +11,13 @@ def discard_flamenco_client(prefs, context):
     comms.discard_flamenco_data()
 
 
+def _update_default_job_storage(
+    prefs: "FlamencoPreferences", context: bpy.types.Context
+) -> None:
+    _unregister_rna_props()
+    _register_rna_props(prefs)
+
+
 class FlamencoPreferences(bpy.types.AddonPreferences):
     bl_idname = "flamenco"
 
@@ -21,14 +28,27 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
         update=discard_flamenco_client,
     )
 
+    job_storage: bpy.props.StringProperty(  # type: ignore
+        name="Job Storage Directory",
+        subtype="DIR_PATH",
+        default="",
+        description="Directory where blend files are stored, when submitting them to Flamenco",
+        update=_update_default_job_storage,
+    )
+
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
 
         col = layout.column()
+        col.use_property_split = True
+
         row = col.row(align=True)
         row.prop(self, "manager_url")
-        row.operator("flamenco.ping_manager", text="Test Connection")
-        col.label(text=context.window_manager.flamenco_status_ping)
+        row.operator("flamenco.ping_manager", text="", icon="CHECKMARK")
+        if context.window_manager.flamenco_status_ping:
+            col.label(text=context.window_manager.flamenco_status_ping)
+
+        col.prop(self, "job_storage")
 
 
 def get(context: bpy.types.Context) -> FlamencoPreferences:
@@ -46,5 +66,30 @@ def manager_url(context: bpy.types.Context) -> str:
     return str(prefs.manager_url)
 
 
+def _register_rna_props(prefs: FlamencoPreferences) -> None:
+    """RNA properties that have their defaults set in the preferences get registered here."""
+
+    bpy.types.Scene.flamenco_job_storage = bpy.props.StringProperty(
+        name="Flamenco Job Storage",
+        subtype="DIR_PATH",
+        default=prefs.job_storage,
+        description="Directory where blend files are stored, when submitting them to Flamenco",
+    )
+
+
+def _unregister_rna_props() -> None:
+    del bpy.types.Scene.flamenco_job_storage
+
+
 classes = (FlamencoPreferences,)
-register, unregister = bpy.utils.register_classes_factory(classes)
+_register, _unregister = bpy.utils.register_classes_factory(classes)
+
+
+def register():
+    _register()
+    _register_rna_props(get(bpy.context))
+
+
+def unregister():
+    _unregister_rna_props()
+    _unregister()

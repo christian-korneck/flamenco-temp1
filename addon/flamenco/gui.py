@@ -39,6 +39,8 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
 
         col = layout.column(align=True)
         col.prop(context.scene, "flamenco_job_name", text="Job Name")
+        row = col.row(align=True)
+        row.prop(context.scene, "flamenco_job_storage", text="Job Storage")
 
         layout.separator()
 
