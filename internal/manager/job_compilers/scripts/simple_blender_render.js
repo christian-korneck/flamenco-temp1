@@ -5,7 +5,8 @@ const JOB_TYPE = {
     settings: [
         // Settings for artists to determine:
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
-        { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'"},
+        { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'",
+          description: "Frame range to render. Examples: '47', '1-30', '3, 5-10, 47-327'" },
         { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
 
         // Automatically evaluated settings:
