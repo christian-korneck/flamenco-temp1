@@ -123,59 +123,6 @@ func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJo
 	return &aj, nil
 }
 
-func (s *Service) Run(jobTypeName string) error {
-	vm, err := s.compilerForJobType(jobTypeName)
-	if err != nil {
-		return err
-	}
-
-	compileJob, err := vm.getCompileJob()
-	if err != nil {
-		return err
-	}
-
-	created, err := time.Parse(time.RFC3339, "2022-01-03T18:53:00+01:00")
-	if err != nil {
-		panic("hard-coded timestamp is wrong")
-	}
-
-	job := AuthoredJob{
-		JobID:    uuid.New().String(),
-		JobType:  "blender-render",
-		Priority: 50,
-		Name:     "190_0030_A.lighting",
-		Created:  created,
-		Settings: JobSettings{
-			"blender_cmd":           "{blender}",
-			"chunk_size":            5,
-			"frames":                "101-172",
-			"render_output":         "{render}/sprites/farm_output/shots/190_credits/190_0030_A/190_0030_A.lighting/######",
-			"fps":                   24.0,
-			"extract_audio":         false,
-			"images_or_video":       "images",
-			"format":                "JPG",
-			"output_file_extension": ".jpg",
-			"filepath":              "{shaman}/65/61672427b63a96392cd72d65/pro/shots/190_credits/190_0030_A/190_0030_A.lighting.flamenco.blend",
-		},
-		Metadata: JobMetadata{
-			"user":    "Sybren A. Stüvel <sybren@blender.org>",
-			"project": "Sprøte Frøte",
-		},
-	}
-
-	if err := compileJob(&job); err != nil {
-		return err
-	}
-
-	log.Info().
-		Int("tasks", len(job.Tasks)).
-		Str("name", job.Name).
-		Str("jobtype", job.JobType).
-		Msg("job created")
-
-	return nil
-}
-
 //  ListJobTypes returns the list of available job types.
 func (s *Service) ListJobTypes() api.AvailableJobTypes {
 	jobTypes := make([]api.AvailableJobType, 0)
