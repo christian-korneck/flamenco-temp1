@@ -141,7 +141,7 @@ function guessOutputFileExtension(settings) {
         return settings.image_file_extension;
     }
 
-    container = scene.render.ffmpeg.format
+    const container = settings.video_container_format;
     if (container in videoContainerToExtension) {
         return videoContainerToExtension[container];
     }
