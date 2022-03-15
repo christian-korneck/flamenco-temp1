@@ -14,7 +14,7 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         from . import job_types
 
         layout = self.layout
-        col = layout.column(align=True)
+        col = layout.column()
 
         if not job_types.are_job_types_available():
             col.operator("flamenco.fetch_job_types", icon="FILE_REFRESH")
@@ -23,7 +23,8 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, "flamenco_job_type", text="")
         row.operator("flamenco.fetch_job_types", text="", icon="FILE_REFRESH")
-        self.draw_job_settings(context, layout)
+
+        self.draw_job_settings(context, layout.column(align=True))
 
         layout.separator()
         col = layout.column(align=True)
@@ -44,6 +45,8 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         if propgroup is None:
             return
 
+        layout.label(text="Job Settings:")
+        layout.use_property_split = True
         for setting in job_type.settings:
             if not setting.get("visible", True):
                 continue
