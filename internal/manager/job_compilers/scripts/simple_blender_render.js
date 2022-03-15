@@ -4,9 +4,9 @@ const JOB_TYPE = {
     label: "Simple Blender Render",
     settings: [
         // Settings for artists to determine:
-        { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
         { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'",
           description: "Frame range to render. Examples: '47', '1-30', '3, 5-10, 47-327'" },
+        { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
 
         // render_output_root + add_path_components determine the value of render_output_path.
         { key: "render_output_root", type: "string", subtype: "dir_path", required: true,
