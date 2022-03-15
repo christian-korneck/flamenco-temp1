@@ -4,12 +4,12 @@
 import logging
 from pathlib import Path
 from typing import Optional, TYPE_CHECKING
-
-from flamenco.job_types_propgroup import JobTypePropertyGroup
+from urllib3.exceptions import HTTPError, MaxRetryError
 
 import bpy
 
 from . import job_types, job_submission
+from .job_types_propgroup import JobTypePropertyGroup
 
 if TYPE_CHECKING:
     from .bat_interface import (
@@ -59,6 +59,11 @@ class FLAMENCO_OT_fetch_job_types(FlamencoOpMixin, bpy.types.Operator):
         except ApiException as ex:
             self.report({"ERROR"}, "Error getting job types: %s" % ex)
             return {"CANCELLED"}
+        except MaxRetryError as ex:
+            # This is the common error, when for example the port number is
+            # incorrect and nothing is listening.
+            self.report({"ERROR"}, "Unable to reach Manager")
+            return {"CANCELLED"}
 
         if old_job_type_name:
             # TODO: handle cases where the old job type no longer exists.
@@ -80,7 +85,6 @@ class FLAMENCO_OT_ping_manager(FlamencoOpMixin, bpy.types.Operator):
         from flamenco.manager import ApiException
         from flamenco.manager.apis import MetaApi
         from flamenco.manager.models import FlamencoVersion
-        from urllib3.exceptions import HTTPError, MaxRetryError
 
         context.window_manager.flamenco_status_ping = "..."
 
