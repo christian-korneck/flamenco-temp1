@@ -7,11 +7,14 @@ const JOB_TYPE = {
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
         { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'",
           description: "Frame range to render. Examples: '47', '1-30', '3, 5-10, 47-327'" },
-        { key: "render_output", type: "string", subtype: "hashed_file_path", required: true },
+        { key: "render_output_root", type: "string", subtype: "dir_path", required: true,
+          description: "Base directory of where render output is stored. Will have some job-specific parts appended to it"},
 
         // Automatically evaluated settings:
         { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
         { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
+        { key: "render_output_path", type: "string", subtype: "file_path", visible: false,
+          description: "Final file path of where render output is stored, set by the job compiler"},
         { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base", visible: false },
         {
             key: "images_or_video",
@@ -19,7 +22,7 @@ const JOB_TYPE = {
             required: true,
             choices: ["images", "video"],
             visible: false,
-            eval: "'video' if C.scene.render.image_settings.file_format in {'FFMPEG', 'AVI_RAW', 'AVI_JPEG'} else 'image'"
+            eval: "'video' if C.scene.render.image_settings.file_format in {'FFMPEG', 'AVI_RAW', 'AVI_JPEG'} else 'images'"
         },
         { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format", visible: false },
         { key: "image_file_extension", type: "string", required: true, eval: "C.scene.render.file_extension", visible: false,
@@ -52,17 +55,15 @@ const videoContainerToExtension = {
 
 function compileJob(job) {
     print("Blender Render job submitted");
+
+    const renderOutput = renderOutputPath(job);
+    job.settings.render_output_path = renderOutput;
     print("job: ", job);
 
-    const settings = job.settings;
-
-    // The render path contains a filename pattern, most likely '######' or
-    // something similar. This has to be removed, so that we end up with
-    // the directory that will contain the frames.
-    const renderOutput = settings.render_output;
     const finalDir = path.dirname(renderOutput);
     const renderDir = intermediatePath(job, finalDir);
 
+    const settings = job.settings;
     const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
     const videoTask = authorCreateVideoTask(settings, renderDir);
 
@@ -76,6 +77,19 @@ function compileJob(job) {
         }
         job.addTask(videoTask);
     }
+}
+
+// Return the intended render output path.
+function renderOutputPath(job) {
+    // {DIR}/{job name}/{date and time of job submission}/######.{extension}
+    const pathSafeJobName = job.name.replace(/[/\\:?*]/, "-");
+    const extension = guessOutputFileExtension(job.settings);
+    return path.join(
+        job.settings.render_output_root,
+        pathSafeJobName,
+        formatTimestampLocal(job.created),
+        `######${extension}`
+    );
 }
 
 // Determine the intermediate render output path.
@@ -138,13 +152,16 @@ function authorCreateVideoTask(settings, renderDir) {
 
 // Return file name extension, including period, like '.png' or '.mkv'.
 function guessOutputFileExtension(settings) {
-    if (settings.images_or_video == "images") {
+    switch (settings.images_or_video) {
+    case "images":
         return settings.image_file_extension;
+    case "video":
+        const container = settings.video_container_format;
+        if (container in videoContainerToExtension) {
+            return videoContainerToExtension[container];
+        }
+        return "." + container.lower();
+    default:
+        throw `invalid setting images_or_video: "${settings.images_or_video}"`
     }
-
-    const container = settings.video_container_format;
-    if (container in videoContainerToExtension) {
-        return videoContainerToExtension[container];
-    }
-    return "." + container.lower();
 }
