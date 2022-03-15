@@ -14,7 +14,7 @@ const JOB_TYPE = {
         { key: "add_path_components", type: "int32", required: true, default: 0, propargs: {min: 0, max: 32},
           description: "Number of path components of the current blend file to use in the render output path"},
         { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
-          eval: "str(Path(settings.render_output_root) / last_n_dir_parts(settings.add_path_components) / jobname / '{timestamp}' / '######.{ext}')",
+          eval: "str(Path(settings.render_output_root) / last_n_dir_parts(settings.add_path_components) / jobname / '{timestamp}' / '######')",
           description: "Final file path of where render output will be saved"},
 
         // Automatically evaluated settings:
@@ -62,12 +62,14 @@ function compileJob(job) {
     print("Blender Render job submitted");
     print("job: ", job);
 
-    const settings = job.settings;
 
-    const renderOutput = settings.render_output_path;
+    const renderOutput = renderOutputPath(job);
+    job.settings.render_output_path = renderOutput;
+
     const finalDir = path.dirname(renderOutput);
     const renderDir = intermediatePath(job, finalDir);
 
+    const settings = job.settings;
     const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
     const videoTask = authorCreateVideoTask(settings, renderDir);
 
@@ -81,6 +83,19 @@ function compileJob(job) {
         }
         job.addTask(videoTask);
     }
+}
+
+// Do field replacement on the render output path.
+function renderOutputPath(job) {
+    let path = job.settings.render_output_path;
+    return path.replace(/{([^}]+)}/g, (match, group0) => {
+        switch (group0) {
+        case "timestamp":
+            return formatTimestampLocal(job.created);
+        default:
+            return match;
+        }
+    });
 }
 
 // Determine the intermediate render output path.

@@ -196,3 +196,51 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 		"fps":         int64(24),
 	}, tVideo.Commands[0].Parameters)
 }
+
+func TestSimpleBlenderRenderOutputPathFieldReplacement(t *testing.T) {
+	c := mockedClock(t)
+
+	s, err := Load(c)
+	assert.NoError(t, err)
+
+	// Compiling a job should be really fast.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	sj := exampleSubmittedJob()
+	sj.Settings.AdditionalProperties["render_output_path"] = "/root/{timestamp}/jobname/######"
+
+	aj, err := s.Compile(ctx, sj)
+	if err != nil {
+		t.Fatalf("job compiler failed: %v", err)
+	}
+	if aj == nil {
+		t.Fatalf("job compiler returned nil but no error")
+	}
+
+	// The job compiler should have replaced the {timestamp} and {ext} fields.
+	assert.Equal(t, "/root/2006-01-02_090405/jobname/######", aj.Settings["render_output_path"])
+
+	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding
+	assert.Equal(t, 5, len(aj.Tasks))
+	t0 := aj.Tasks[0]
+	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
+		"--render-output", "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/######",
+		"--render-format", sj.Settings.AdditionalProperties["format"].(string),
+		"--render-frame", "1-3",
+	}
+	assert.EqualValues(t, AuthoredCommandParameters{
+		"exe":        "{blender}",
+		"blendfile":  sj.Settings.AdditionalProperties["blendfile"].(string),
+		"args":       expectCliArgs,
+		"argsBefore": make([]interface{}, 0),
+	}, t0.Commands[0].Parameters)
+
+	tVideo := aj.Tasks[4] // This should be a video encoding task
+	assert.EqualValues(t, AuthoredCommandParameters{
+		"input_files": "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/*.png",
+		"output_file": "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/scene123-1-10.mp4",
+		"fps":         int64(24),
+	}, tVideo.Commands[0].Parameters)
+
+}
