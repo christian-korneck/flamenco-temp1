@@ -19,9 +19,9 @@ func exampleSubmittedJob() api.SubmittedJob {
 	settings := api.JobSettings{
 		AdditionalProperties: map[string]interface{}{
 			"blender_cmd":           "{blender}",
+			"blendfile":             "/render/sf/jobs/scene123.blend",
 			"chunk_size":            3,
 			"extract_audio":         true,
-			"filepath":              "/render/sf/jobs/scene123.blend",
 			"format":                "PNG",
 			"fps":                   24,
 			"frames":                "1-10",
@@ -95,7 +95,7 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	assert.Equal(t, "blender-render", t0.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
 		"exe":        "{blender}",
-		"blendfile":  settings["filepath"].(string),
+		"blendfile":  settings["blendfile"].(string),
 		"args":       expectCliArgs,
 		"argsBefore": make([]interface{}, 0),
 	}, t0.Commands[0].Parameters)
@@ -142,7 +142,7 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 	sj := exampleSubmittedJob()
 
 	// Adjust the job to get paths in Windows notation.
-	sj.Settings.AdditionalProperties["filepath"] = "R:\\sf\\jobs\\scene123.blend"
+	sj.Settings.AdditionalProperties["blendfile"] = "R:\\sf\\jobs\\scene123.blend"
 	sj.Settings.AdditionalProperties["render_output"] = "R:\\sprites\\farm_output\\promo\\square_ellie\\square_ellie.lighting_light_breakdown2\\######"
 
 	aj, err := s.Compile(ctx, sj)
