@@ -83,7 +83,9 @@ def eval_hidden_settings(
 
         setting_eval = setting.get("eval", "")
         if setting_eval:
-            value = JobTypePropertyGroup.eval_setting(context, setting_eval)
+            value = JobTypePropertyGroup.eval_setting(
+                context, job, setting.key, setting_eval
+            )
         elif "default" in setting:
             value = setting.default
         else:

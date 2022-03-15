@@ -7,14 +7,19 @@ const JOB_TYPE = {
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
         { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'",
           description: "Frame range to render. Examples: '47', '1-30', '3, 5-10, 47-327'" },
+
+        // render_output_root + add_path_components determine the value of render_output_path.
         { key: "render_output_root", type: "string", subtype: "dir_path", required: true,
           description: "Base directory of where render output is stored. Will have some job-specific parts appended to it"},
+        { key: "add_path_components", type: "int32", required: true, default: 0, propargs: {min: 0, max: 32},
+          description: "Number of path components of the current blend file to use in the render output path"},
+        { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
+          eval: "str(Path(settings.render_output_root) / last_n_dir_parts(settings.add_path_components) / jobname / '{timestamp}' / '######.{ext}')",
+          description: "Final file path of where render output will be saved"},
 
         // Automatically evaluated settings:
         { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
         { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
-        { key: "render_output_path", type: "string", subtype: "file_path", visible: false,
-          description: "Final file path of where render output is stored, set by the job compiler"},
         { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base", visible: false },
         {
             key: "images_or_video",
@@ -55,15 +60,14 @@ const videoContainerToExtension = {
 
 function compileJob(job) {
     print("Blender Render job submitted");
-
-    const renderOutput = renderOutputPath(job);
-    job.settings.render_output_path = renderOutput;
     print("job: ", job);
 
+    const settings = job.settings;
+
+    const renderOutput = settings.render_output_path;
     const finalDir = path.dirname(renderOutput);
     const renderDir = intermediatePath(job, finalDir);
 
-    const settings = job.settings;
     const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
     const videoTask = authorCreateVideoTask(settings, renderDir);
 
@@ -77,19 +81,6 @@ function compileJob(job) {
         }
         job.addTask(videoTask);
     }
-}
-
-// Return the intended render output path.
-function renderOutputPath(job) {
-    // {DIR}/{job name}/{date and time of job submission}/######.{extension}
-    const pathSafeJobName = job.name.replace(/[/\\:?*]/, "-");
-    const extension = guessOutputFileExtension(job.settings);
-    return path.join(
-        job.settings.render_output_root,
-        pathSafeJobName,
-        formatTimestampLocal(job.created),
-        `######${extension}`
-    );
 }
 
 // Determine the intermediate render output path.

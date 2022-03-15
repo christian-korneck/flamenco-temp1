@@ -135,6 +135,9 @@ type AvailableJobSetting struct {
 	// Identifier for the setting, must be unique within the job type.
 	Key string `json:"key"`
 
+	// Any extra arguments to the bpy.props.SomeProperty() call used to create this property.
+	Propargs *map[string]interface{} `json:"propargs,omitempty"`
+
 	// Whether to immediately reject a job definition, of this type, without this particular setting.
 	Required *bool `json:"required,omitempty"`
 

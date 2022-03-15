@@ -403,6 +403,9 @@ components:
           description: When given, limit the valid values to these choices. Only usable with string type.
           type: array
           items: {type: string}
+        "propargs":
+          description: Any extra arguments to the bpy.props.SomeProperty() call used to create this property.
+          type: object
         "description":
           description: The description/tooltip shown in the user interface.
         "default":

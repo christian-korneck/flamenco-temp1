@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
-from typing import TYPE_CHECKING, Callable, Optional, Any
+import pprint
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable, Optional, Any, Union
 
 import bpy
 
@@ -14,11 +16,38 @@ if TYPE_CHECKING:
         AvailableJobType as _AvailableJobType,
         AvailableJobSetting as _AvailableJobSetting,
         JobSettings as _JobSettings,
+        SubmittedJob as _SubmittedJob,
     )
 else:
     _AvailableJobType = object
     _AvailableJobSetting = object
     _JobSettings = object
+    _SubmittedJob = object
+
+
+class SettingEvalError(Exception):
+    """Raised when the evaluation of a setting fails."""
+
+    def __init__(
+        self,
+        setting_key: str,
+        setting_eval: str,
+        eval_locals: dict[str, Any],
+        exception: Exception,
+    ) -> None:
+        self.setting_key = setting_key
+        self.setting_eval = setting_eval
+        self.locals = eval_locals.copy()
+        self.exception = exception
+
+        print("Evaluation error of setting %r:" % setting_key)
+        print("Expression: %s" % setting_eval)
+        print("Local variables:")
+        pprint.pprint(eval_locals)
+        print("Exception: %s" % exception)
+
+        msg = "Evaluation error of setting %r: %s" % (setting_key, exception)
+        super().__init__(msg)
 
 
 class JobTypePropertyGroup:
@@ -47,23 +76,73 @@ class JobTypePropertyGroup:
 
         return js
 
+    def label(self, setting_key: str) -> str:
+        """Return the UI label for this setting."""
+        return self.bl_rna.properties[setting_key].name
+
     def eval_and_assign(
-        self, context: bpy.types.Context, setting_key: str, setting_eval: str
+        self,
+        context: bpy.types.Context,
+        job: _SubmittedJob,
+        setting_key: str,
+        setting_eval: str,
     ) -> None:
         """Evaluate `setting_eval` and assign the result to the job setting."""
-        value = self.eval_setting(context, setting_eval)
+        value = self.eval_setting(context, setting_key, setting_eval)
         setattr(self, setting_key, value)
 
-    @staticmethod
-    def eval_setting(context: bpy.types.Context, setting_eval: str) -> Any:
+    def eval_setting(
+        self,
+        context: bpy.types.Context,
+        setting_key: str,
+        setting_eval: str,
+    ) -> Any:
         """Evaluate `setting_eval` and return the result."""
 
-        eval_globals = {
+        eval_locals = {
             "bpy": bpy,
             "C": context,
+            "jobname": context.scene.flamenco_job_name,
+            "Path": Path,
+            "last_n_dir_parts": self.last_n_dir_parts,
+            "settings": self,
         }
-        value = eval(setting_eval, eval_globals, {})
+        try:
+            value = eval(setting_eval, {}, eval_locals)
+        except Exception as ex:
+            raise SettingEvalError(setting_key, setting_eval, eval_locals, ex) from ex
         return value
+
+    @staticmethod
+    def last_n_dir_parts(n: int, filepath: Union[str, Path, None] = None) -> Path:
+        """Return the last `n` parts of the directory of `filepath`.
+
+        If `n` is 0, returns an empty `Path()`.
+        If `filepath` is None, uses bpy.data.filepath instead.
+
+        >>> str(lastNDirParts(2, "/path/to/some/file.blend"))
+        "to/some"
+
+        Always returns a relative path:
+        >>> str(lastNDirParts(200, "C:\\path\\to\\some\\file.blend"))
+        "path\\to\\some"
+        """
+
+        if n <= 0:
+            return Path()
+
+        if filepath is None:
+            filepath = Path(bpy.data.filepath)
+        elif isinstance(filepath, str):
+            filepath = Path(filepath)
+
+        dirpath = filepath.parent
+        if n >= len(dirpath.parts):
+            all_parts = dirpath.relative_to(dirpath.anchor)
+            return all_parts
+
+        subset = Path(*dirpath.parts[-n:])
+        return subset
 
 
 # Mapping from AvailableJobType.setting.type to a callable that converts a value
@@ -136,6 +215,19 @@ def _create_property(job_type: _AvailableJobType, setting: _AvailableJobSetting)
 
     # Remove the 'ANIMATABLE' option.
     prop_kwargs.setdefault("options", set())
+
+    # Add any extra arguments.
+    propargs = setting.get("propargs", {})
+    coerce_keys = {"min", "max"}
+    for key, value in propargs.items():
+        if key in coerce_keys:
+            propargs[key] = value_coerce(value)
+    prop_kwargs.update(propargs)
+
+    # Construct a getter if it's a non-editable property. By having a getter and
+    # not a setter, the property automatically becomes read-only in the UI.
+    if not setting.get("editable", True):
+        prop_kwargs["get"] = _create_prop_getter(job_type, setting)
 
     prop_name = _job_setting_key_to_label(setting.key)
     prop = prop_type(name=prop_name, **prop_kwargs)
@@ -229,3 +321,22 @@ def _set_if_available(
         some_dict[key] = value
     else:
         some_dict[key] = transform(value)
+
+
+def _create_prop_getter(
+    job_type: _AvailableJobType, setting: _AvailableJobSetting
+) -> Callable[[JobTypePropertyGroup], Any]:
+    def evaluate_setting(propgroup: JobTypePropertyGroup) -> Any:
+        value = propgroup.eval_setting(
+            bpy.context,
+            setting.key,
+            setting.eval,
+        )
+        return value
+
+    def default_value(propgroup: JobTypePropertyGroup) -> Any:
+        return setting.default
+
+    if setting.get("eval"):
+        return evaluate_setting
+    return default_value

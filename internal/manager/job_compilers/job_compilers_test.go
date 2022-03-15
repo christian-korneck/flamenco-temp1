@@ -28,7 +28,9 @@ func exampleSubmittedJob() api.SubmittedJob {
 			"images_or_video":        "images",
 			"image_file_extension":   ".png",
 			"video_container_format": "",
-			"render_output":          "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2/######",
+			"render_output_root":     "/render/sprites/farm_output/promo/square_ellie",
+			"add_path_components":    1,
+			"render_output_path":     "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2/######",
 		}}
 	metadata := api.JobMetadata{
 		AdditionalProperties: map[string]string{
@@ -144,7 +146,7 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 
 	// Adjust the job to get paths in Windows notation.
 	sj.Settings.AdditionalProperties["blendfile"] = "R:\\sf\\jobs\\scene123.blend"
-	sj.Settings.AdditionalProperties["render_output"] = "R:\\sprites\\farm_output\\promo\\square_ellie\\square_ellie.lighting_light_breakdown2\\######"
+	sj.Settings.AdditionalProperties["render_output_path"] = "R:\\sprites\\farm_output\\promo\\square_ellie\\square_ellie.lighting_light_breakdown2\\######"
 
 	aj, err := s.Compile(ctx, sj)
 	if err != nil {

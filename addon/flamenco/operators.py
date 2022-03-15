@@ -5,6 +5,8 @@ import logging
 from pathlib import Path
 from typing import Optional, TYPE_CHECKING
 
+from flamenco.job_types_propgroup import JobTypePropertyGroup
+
 import bpy
 
 from . import job_types, job_submission
@@ -115,8 +117,13 @@ class FLAMENCO_OT_eval_setting(FlamencoOpMixin, bpy.types.Operator):
     setting_eval: bpy.props.StringProperty(name="Python Expression")  # type: ignore
 
     def execute(self, context: bpy.types.Context) -> set[str]:
-        propgroup = context.scene.flamenco_job_settings
-        propgroup.eval_and_assign(context, self.setting_key, self.setting_eval)
+        job = job_submission.job_for_scene(context.scene)
+        if job is None:
+            self.report({"ERROR"}, "This Scene has no Flamenco job")
+            return {"CANCELLED"}
+
+        propgroup: JobTypePropertyGroup = context.scene.flamenco_job_settings
+        propgroup.eval_and_assign(context, job, self.setting_key, self.setting_eval)
         return {"FINISHED"}
 
 

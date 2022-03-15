@@ -93,6 +93,7 @@ class AvailableJobSetting(ModelNormal):
             'type': (AvailableJobSettingType,),  # noqa: E501
             'subtype': (AvailableJobSettingSubtype,),  # noqa: E501
             'choices': ([str],),  # noqa: E501
+            'propargs': ({str: (bool, date, datetime, dict, float, int, list, str, none_type)},),  # noqa: E501
             'description': (bool, date, datetime, dict, float, int, list, str, none_type,),  # noqa: E501
             'default': (bool, date, datetime, dict, float, int, list, str, none_type,),  # noqa: E501
             'eval': (str,),  # noqa: E501
@@ -111,6 +112,7 @@ class AvailableJobSetting(ModelNormal):
         'type': 'type',  # noqa: E501
         'subtype': 'subtype',  # noqa: E501
         'choices': 'choices',  # noqa: E501
+        'propargs': 'propargs',  # noqa: E501
         'description': 'description',  # noqa: E501
         'default': 'default',  # noqa: E501
         'eval': 'eval',  # noqa: E501
@@ -166,6 +168,7 @@ class AvailableJobSetting(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             subtype (AvailableJobSettingSubtype): [optional]  # noqa: E501
             choices ([str]): When given, limit the valid values to these choices. Only usable with string type.. [optional]  # noqa: E501
+            propargs ({str: (bool, date, datetime, dict, float, int, list, str, none_type)}): Any extra arguments to the bpy.props.SomeProperty() call used to create this property.. [optional]  # noqa: E501
             description (bool, date, datetime, dict, float, int, list, str, none_type): The description/tooltip shown in the user interface.. [optional]  # noqa: E501
             default (bool, date, datetime, dict, float, int, list, str, none_type): The default value shown to the user when determining this setting.. [optional]  # noqa: E501
             eval (str): Python expression to be evaluated in order to determine the default value for this setting.. [optional]  # noqa: E501
@@ -261,6 +264,7 @@ class AvailableJobSetting(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             subtype (AvailableJobSettingSubtype): [optional]  # noqa: E501
             choices ([str]): When given, limit the valid values to these choices. Only usable with string type.. [optional]  # noqa: E501
+            propargs ({str: (bool, date, datetime, dict, float, int, list, str, none_type)}): Any extra arguments to the bpy.props.SomeProperty() call used to create this property.. [optional]  # noqa: E501
             description (bool, date, datetime, dict, float, int, list, str, none_type): The description/tooltip shown in the user interface.. [optional]  # noqa: E501
             default (bool, date, datetime, dict, float, int, list, str, none_type): The default value shown to the user when determining this setting.. [optional]  # noqa: E501
             eval (str): Python expression to be evaluated in order to determine the default value for this setting.. [optional]  # noqa: E501

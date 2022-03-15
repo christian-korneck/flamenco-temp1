@@ -1,7 +1,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-
 # <pep8 compliant>
+
+from typing import Optional, TYPE_CHECKING
+
+from flamenco import job_submission
+from flamenco.job_types_propgroup import JobTypePropertyGroup
+
 import bpy
+
+if TYPE_CHECKING:
+    from flamenco.manager.models import (
+        AvailableJobSetting as _AvailableJobSetting,
+        SubmittedJob as _SubmittedJob,
+    )
+else:
+    _AvailableJobSetting = object
+    _SubmittedJob = object
 
 
 class FLAMENCO_PT_job_submission(bpy.types.Panel):
@@ -9,6 +23,10 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "output"
     bl_label = "Flamenco 3"
+
+    # A temporary job can be constructed so that dynamic, read-only properties can be evaluated.
+    # This is only scoped to a single draw() call.
+    job: Optional[_SubmittedJob] = None
 
     def draw(self, context: bpy.types.Context) -> None:
         from . import job_types
@@ -24,13 +42,19 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         row.prop(context.scene, "flamenco_job_type", text="")
         row.operator("flamenco.fetch_job_types", text="", icon="FILE_REFRESH")
 
+        layout.separator()
+
+        col = layout.column(align=True)
+        col.prop(context.scene, "flamenco_job_name", text="Job Name")
+        layout.separator()
+
         self.draw_job_settings(context, layout.column(align=True))
 
         layout.separator()
-        col = layout.column(align=True)
-        col.prop(context.scene, "flamenco_job_name", text="Job Name")
 
         self.draw_flamenco_status(context, layout)
+
+        self.job = None
 
     def draw_job_settings(
         self, context: bpy.types.Context, layout: bpy.types.UILayout
@@ -48,17 +72,47 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         layout.label(text="Job Settings:")
         layout.use_property_split = True
         for setting in job_type.settings:
-            if not setting.get("visible", True):
-                continue
-            row = layout.row(align=True)
-            row.prop(propgroup, setting.key)
-            setting_eval = setting.get("eval", "")
-            if setting_eval:
-                props = row.operator(
-                    "flamenco.eval_setting", text="", icon="SCRIPTPLUGINS"
-                )
-                props.setting_key = setting.key
-                props.setting_eval = setting_eval
+            self.draw_setting(context, layout, propgroup, setting)
+
+    def draw_setting(
+        self,
+        context: bpy.types.Context,
+        layout: bpy.types.UILayout,
+        propgroup: JobTypePropertyGroup,
+        setting: _AvailableJobSetting,
+    ) -> None:
+        if not setting.get("visible", True):
+            return
+
+        if setting.get("editable", True):
+            self.draw_setting_editable(layout, propgroup, setting)
+        else:
+            self.draw_setting_readonly(context, layout, propgroup, setting)
+
+    def draw_setting_editable(
+        self,
+        layout: bpy.types.UILayout,
+        propgroup: JobTypePropertyGroup,
+        setting: _AvailableJobSetting,
+    ) -> None:
+        row = layout.row(align=True)
+        row.prop(propgroup, setting.key)
+        setting_eval = setting.get("eval", "")
+        if not setting_eval:
+            return
+
+        props = row.operator("flamenco.eval_setting", text="", icon="SCRIPTPLUGINS")
+        props.setting_key = setting.key
+        props.setting_eval = setting_eval
+
+    def draw_setting_readonly(
+        self,
+        context: bpy.types.Context,
+        layout: bpy.types.UILayout,
+        propgroup: JobTypePropertyGroup,
+        setting: _AvailableJobSetting,
+    ) -> None:
+        layout.prop(propgroup, setting.key)
 
     def draw_flamenco_status(
         self, context: bpy.types.Context, layout: bpy.types.UILayout

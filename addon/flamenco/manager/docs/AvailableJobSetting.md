@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **type** | [**AvailableJobSettingType**](AvailableJobSettingType.md) |  | 
 **subtype** | [**AvailableJobSettingSubtype**](AvailableJobSettingSubtype.md) |  | [optional] 
 **choices** | **[str]** | When given, limit the valid values to these choices. Only usable with string type. | [optional] 
+**propargs** | **{str: (bool, date, datetime, dict, float, int, list, str, none_type)}** | Any extra arguments to the bpy.props.SomeProperty() call used to create this property. | [optional] 
 **description** | **bool, date, datetime, dict, float, int, list, str, none_type** | The description/tooltip shown in the user interface. | [optional] 
 **default** | **bool, date, datetime, dict, float, int, list, str, none_type** | The default value shown to the user when determining this setting. | [optional] 
 **eval** | **str** | Python expression to be evaluated in order to determine the default value for this setting. | [optional] 
