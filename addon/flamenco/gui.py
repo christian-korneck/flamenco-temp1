@@ -41,6 +41,8 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         col.prop(context.scene, "flamenco_job_name", text="Job Name")
         row = col.row(align=True)
         row.prop(context.scene, "flamenco_job_storage", text="Job Storage")
+        prop = row.operator("flamenco3.explore_file_path", text="", icon="WINDOW")
+        prop.path = context.scene.flamenco_job_storage
 
         layout.separator()
 
@@ -88,10 +90,19 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         if not setting.get("visible", True):
             return
 
+        row = layout.row(align=True)
         if setting.get("editable", True):
-            self.draw_setting_editable(layout, propgroup, setting)
+            self.draw_setting_editable(row, propgroup, setting)
         else:
-            self.draw_setting_readonly(context, layout, propgroup, setting)
+            self.draw_setting_readonly(context, row, propgroup, setting)
+
+        if str(setting.type) == "string" and str(setting.get("subtype", "")) in {
+            "dir_path",
+            "file_path",
+            "hashed_file_path",
+        }:
+            op = row.operator("flamenco3.explore_file_path", text="", icon="WINDOW")
+            op.path = getattr(propgroup, setting.key)
 
     def draw_setting_editable(
         self,
@@ -99,13 +110,12 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         propgroup: JobTypePropertyGroup,
         setting: _AvailableJobSetting,
     ) -> None:
-        row = layout.row(align=True)
-        row.prop(propgroup, setting.key)
+        layout.prop(propgroup, setting.key)
         setting_eval = setting.get("eval", "")
         if not setting_eval:
             return
 
-        props = row.operator("flamenco.eval_setting", text="", icon="SCRIPTPLUGINS")
+        props = layout.operator("flamenco.eval_setting", text="", icon="SCRIPTPLUGINS")
         props.setting_key = setting.key
         props.setting_eval = setting_eval
 

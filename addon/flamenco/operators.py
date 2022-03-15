@@ -305,10 +305,60 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         return {"FINISHED"}
 
 
+class FLAMENCO3_OT_explore_file_path(bpy.types.Operator):
+    """Opens the given path in a file explorer.
+
+    If the path cannot be found, this operator tries to open its parent.
+    """
+
+    bl_idname = "flamenco3.explore_file_path"
+    bl_label = "Open in file explorer"
+    bl_description = __doc__.rstrip(".")
+
+    path: bpy.props.StringProperty(
+        name="Path", description="Path to explore", subtype="DIR_PATH"
+    )
+
+    def execute(self, context):
+        import platform
+        import pathlib
+
+        # Possibly open a parent of the path
+        to_open = pathlib.Path(self.path)
+        while to_open.parent != to_open:  # while we're not at the root
+            if to_open.exists():
+                break
+            to_open = to_open.parent
+        else:
+            self.report(
+                {"ERROR"}, "Unable to open %s or any of its parents." % self.path
+            )
+            return {"CANCELLED"}
+        to_open = str(to_open)
+
+        if platform.system() == "Windows":
+            import os
+
+            os.startfile(to_open)
+
+        elif platform.system() == "Darwin":
+            import subprocess
+
+            subprocess.Popen(["open", to_open])
+
+        else:
+            import subprocess
+
+            subprocess.Popen(["xdg-open", to_open])
+
+        return {"FINISHED"}
+
+
 classes = (
     FLAMENCO_OT_fetch_job_types,
     FLAMENCO_OT_ping_manager,
     FLAMENCO_OT_eval_setting,
     FLAMENCO_OT_submit_job,
+    FLAMENCO3_OT_explore_file_path,
 )
 register, unregister = bpy.utils.register_classes_factory(classes)
