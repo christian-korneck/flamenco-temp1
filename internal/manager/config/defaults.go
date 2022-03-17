@@ -51,7 +51,6 @@ var defaultConfig = Conf{
 	Variables: map[string]Variable{
 		// The default commands assume that the executables are available on $PATH.
 		"blender": {
-			Direction: "oneway",
 			Values: VariableValues{
 				VariableValue{Platform: "linux", Value: "blender --factory-startup --background"},
 				VariableValue{Platform: "windows", Value: "blender.exe --factory-startup --background"},
@@ -59,7 +58,6 @@ var defaultConfig = Conf{
 			},
 		},
 		"ffmpeg": {
-			Direction: "oneway",
 			Values: VariableValues{
 				VariableValue{Platform: "linux", Value: "ffmpeg"},
 				VariableValue{Platform: "windows", Value: "ffmpeg.exe"},
@@ -68,7 +66,7 @@ var defaultConfig = Conf{
 		},
 		// TODO: determine useful defaults for these.
 		// "job_storage": {
-		// 	Direction: "twoway",
+		// 	IsTwoWay: true,
 		// 	Values: VariableValues{
 		// 		VariableValue{Platform: "linux", Value: "/shared/flamenco/jobs"},
 		// 		VariableValue{Platform: "windows", Value: "S:/flamenco/jobs"},
@@ -76,7 +74,7 @@ var defaultConfig = Conf{
 		// 	},
 		// },
 		// "render": {
-		// 	Direction: "twoway",
+		// 	IsTwoWay: true,
 		// 	Values: VariableValues{
 		// 		VariableValue{Platform: "linux", Value: "/shared/flamenco/render"},
 		// 		VariableValue{Platform: "windows", Value: "S:/flamenco/render"},

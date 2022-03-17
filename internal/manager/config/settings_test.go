@@ -17,19 +17,9 @@ func TestDefaultSettings(t *testing.T) {
 	assert.Equal(t, defaultConfig.TaskLogsPath, config.TaskLogsPath)
 	assert.Equal(t, defaultConfig.DatabaseDSN, config.DatabaseDSN)
 
-	assert.Contains(t, config.Variables, "job_storage")
-	assert.Contains(t, config.Variables, "render")
-	assert.Equal(t, "oneway", config.Variables["ffmpeg"].Direction)
+	assert.Equal(t, false, config.Variables["ffmpeg"].IsTwoWay)
 	assert.Equal(t, "ffmpeg", config.Variables["ffmpeg"].Values[0].Value)
 	assert.Equal(t, "linux", config.Variables["ffmpeg"].Values[0].Platform)
-
-	linuxPVars, ok := config.VariablesLookup["workers"]["linux"]
-	assert.True(t, ok, "workers/linux should have variables: %v", config.VariablesLookup)
-	assert.Equal(t, "/shared/flamenco/jobs", linuxPVars["job_storage"])
-
-	winPVars, ok := config.VariablesLookup["users"]["windows"]
-	assert.True(t, ok)
-	assert.Equal(t, "S:/flamenco/jobs", winPVars["job_storage"])
 }
 
 func TestVariableValidation(t *testing.T) {
@@ -47,3 +37,6 @@ func TestVariableValidation(t *testing.T) {
 	assert.Equal(t, c.Variables["blender"].Values[0].Value, "/path/to/blender")
 	assert.Equal(t, c.Variables["blender"].Values[1].Value, "/valid/path/blender")
 }
+
+// TODO: Test two-way variables. Even though they're not currently in the
+// default configuration, they should work.

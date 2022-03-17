@@ -145,8 +145,7 @@ type Conf struct {
 
 // Variable defines a configuration variable.
 type Variable struct {
-	// Either "oneway" or "twoway"
-	Direction string `yaml:"direction" json:"direction"`
+	IsTwoWay bool `yaml:"is_twoway,omitempty" json:"is_twoway,omitempty"`
 	// Mapping from variable value to audience/platform definition.
 	Values VariableValues `yaml:"values" json:"values"`
 }
@@ -285,7 +284,7 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 			// Two-way values should not end in path separator.
 			// Given a variable 'apps' with value '/path/to/apps',
 			// '/path/to/apps/blender' should be remapped to '{apps}/blender'.
-			if variable.Direction == "twoway" {
+			if variable.IsTwoWay {
 				if strings.Contains(value.Value, "\\") {
 					log.Warn().
 						Str("variable", name).
@@ -346,20 +345,7 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 // checkVariables performs some basic checks on variable definitions.
 // All errors are logged, not returned.
 func (c *Conf) checkVariables() {
-	directionNames := []string{"oneway", "twoway"}
-	validDirections := map[string]bool{}
-	for _, direction := range directionNames {
-		validDirections[direction] = true
-	}
-
 	for name, variable := range c.Variables {
-		if !validDirections[variable.Direction] {
-			log.Error().
-				Str("name", name).
-				Str("direction", variable.Direction).
-				Strs("validChoices", directionNames).
-				Msg("variable has invalid direction")
-		}
 		for valueIndex, value := range variable.Values {
 			// No platforms at all.
 			if value.Platform == "" && len(value.Platforms) == 0 {
