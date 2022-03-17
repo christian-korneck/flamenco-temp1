@@ -12,16 +12,18 @@ curl -v -X 'POST' \
   "name": "Test Render",
   "type": "simple-blender-render",
   "settings": {
-    "filepath": "flamenco-test.blend",
-    "render_output": "/tmp/flamenco/test-frames",
-    "chunk_size": 1,
-    "extract_audio": true,
+    "add_path_components": 0,
+    "blender_cmd": "{blender}",
+    "blendfile": "/render/_flamenco/tests/jobs/2022-03-15-191442.471681-Demo for Peoples/flamenco-test.flamenco.blend",
+    "chunk_size": 30,
     "format": "PNG",
-    "output_file_extension": ".png",
     "fps": 24,
-    "frames": "1-10",
+    "frames": "1-60",
+    "image_file_extension": ".png",
     "images_or_video": "images",
-    "blender_cmd": "{blender}"
+    "render_output_path": "/render/_flamenco/tests/renders/sybren/Demo for Peoples/2022-03-15_191444/######",
+    "render_output_root": "/render/_flamenco/tests/renders/sybren/",
+    "video_container_format": "MPEG1"
   },
   "priority": 50
 }'
