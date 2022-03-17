@@ -1,5 +1,7 @@
 package config
 
+import "github.com/rs/zerolog/log"
+
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Service provides access to Flamenco Manager configuration.
@@ -28,4 +30,16 @@ func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudienc
 
 func (s *Service) Get() *Conf {
 	return &s.config
+}
+
+// Save writes the in-memory configuration to the config file.
+func (s *Service) Save() error {
+	err := s.config.Write(configFilename)
+	if err != nil {
+		return err
+	}
+
+	// Do the logging here, as our caller doesn't know `configFilename``.
+	log.Info().Str("filename", configFilename).Msg("configuration file written")
+	return nil
 }

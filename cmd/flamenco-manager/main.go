@@ -37,7 +37,8 @@ import (
 )
 
 var cliArgs struct {
-	version bool
+	version     bool
+	writeConfig bool
 }
 
 func main() {
@@ -64,6 +65,15 @@ func main() {
 	err := configService.Load()
 	if err != nil && !os.IsNotExist(err) {
 		log.Error().Err(err).Msg("loading configuration")
+	}
+
+	if cliArgs.writeConfig {
+		err := configService.Save()
+		if err != nil {
+			log.Error().Err(err).Msg("could not write configuration file")
+			os.Exit(1)
+		}
+		return
 	}
 
 	// TODO: enable TLS via Let's Encrypt.
@@ -235,6 +245,8 @@ func parseCliArgs() {
 	flag.BoolVar(&quiet, "quiet", false, "Only log warning-level and worse.")
 	flag.BoolVar(&debug, "debug", false, "Enable debug-level logging.")
 	flag.BoolVar(&trace, "trace", false, "Enable trace-level logging.")
+	flag.BoolVar(&cliArgs.writeConfig, "write-config", false, "Writes configuration to flamenco-manager.yaml, then exits.")
+
 	flag.Parse()
 
 	var logLevel zerolog.Level
