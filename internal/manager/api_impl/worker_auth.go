@@ -33,7 +33,7 @@ func WorkerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInpu
 
 	// Fetch username & password from the HTTP header.
 	u, p, ok := req.BasicAuth()
-	logger.Debug().Interface("scheme", authInfo.SecuritySchemeName).Str("user", u).Msg("authenticator")
+	logger.Trace().Interface("scheme", authInfo.SecuritySchemeName).Str("user", u).Msg("authenticator")
 	if !ok {
 		return authInfo.NewError(errors.New("no auth header found"))
 	}

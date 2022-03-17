@@ -23,7 +23,7 @@ var (
 // NOTE: this does not also fetch returnedTask.Worker, but returnedTask.WorkerID is set.
 func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 	logger := log.With().Str("worker", w.UUID).Logger()
-	logger.Debug().Msg("finding task for worker")
+	logger.Trace().Msg("finding task for worker")
 
 	// Run two queries in one transaction:
 	// 1. find task, and
