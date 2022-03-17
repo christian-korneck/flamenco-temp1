@@ -139,7 +139,9 @@ def unregister() -> None:
     bpy.app.handlers.load_pre.remove(discard_global_flamenco_data)
     bpy.app.handlers.load_factory_preferences_post.remove(discard_global_flamenco_data)
 
-    _unset_flamenco_job_name()
+    bpy.app.handlers.load_post.remove(_set_flamenco_job_name)
+    bpy.app.handlers.save_pre.remove(_unset_flamenco_job_name)
+    bpy.app.handlers.save_post.remove(_set_flamenco_job_name)
 
     job_types.unregister()
     gui.unregister()
