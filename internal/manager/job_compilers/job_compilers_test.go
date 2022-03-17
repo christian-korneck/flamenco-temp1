@@ -90,7 +90,7 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
 		"--render-output", "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/######",
 		"--render-format", settings["format"].(string),
-		"--render-frame", "1-3",
+		"--render-frame", "1..3",
 	}
 	assert.NotEmpty(t, t0.UUID)
 	assert.Equal(t, "render-1-3", t0.Name)
@@ -172,7 +172,7 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 		// The render output is constructed by the job compiler, and thus transforms to forward slashes.
 		"--render-output", "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/######",
 		"--render-format", settings["format"].(string),
-		"--render-frame", "1-3",
+		"--render-frame", "1..3",
 	}
 	assert.NotEmpty(t, t0.UUID)
 	assert.Equal(t, "render-1-3", t0.Name)
@@ -227,7 +227,7 @@ func TestSimpleBlenderRenderOutputPathFieldReplacement(t *testing.T) {
 	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
 		"--render-output", "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/######",
 		"--render-format", sj.Settings.AdditionalProperties["format"].(string),
-		"--render-frame", "1-3",
+		"--render-frame", "1..3",
 	}
 	assert.EqualValues(t, AuthoredCommandParameters{
 		"exe":        "{blender}",
