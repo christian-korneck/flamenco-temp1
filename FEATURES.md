@@ -69,6 +69,7 @@ Note that list is **not** in any specific order.
 - [ ] Add `options={'HIDDEN'}` to the Flamenco RNA properties.
 - [ ] Add eTag-like checksum to the job types. The aim is to prevent artists from sending in a new job with an old job. This can happen when the job type is changed on the Manager, but in Blender the "refresh" button wasn't pressed yet. This should only cover the job settings, not the rest of the compiler script.
 - [ ] Frame Range: allow automatically syncing with scene frame start/end.
+- [ ] Don't take output settings from the current scene, but have separate settings for Flamenco. To be fleshed out still.
 
 ## Nice to have / new features
 
