@@ -89,4 +89,12 @@ clean:
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
+package: flamenco-manager flamenco-worker
+	mkdir -p dist
+	rsync -a flamenco-manager flamenco-worker dist/
+	rsync -a addon/flamenco dist/ --exclude __pycache__ --exclude '*.pyc' --prune-empty-dirs --exclude .mypy_cache --exclude manager/docs  --delete --delete-excluded
+	cd dist; zip -r -9 flamenco-${VERSION}-addon.zip flamenco
+	rm -rf dist/flamenco
+
+
 .PHONY: application version flamenco-manager flamenco-worker socketio-poc generate generate-go generate-py with-deps swagger-ui list-embedded test clean
