@@ -2,57 +2,46 @@ package config
 
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import (
-	"time"
-
-	"git.blender.org/flamenco/pkg/api"
-)
-
 // The default configuration, use DefaultConfig() to obtain a copy.
 var defaultConfig = Conf{
 	Base: Base{
 		Meta: ConfMeta{Version: latestConfigVersion},
 
-		ManagerName:  "Flamenco Manager",
-		Listen:       ":8080",
-		ListenHTTPS:  ":8433",
-		DatabaseDSN:  "flamenco-manager.sqlite",
-		TaskLogsPath: "./task-logs",
-		// DownloadTaskSleep:           10 * time.Minute,
-		// DownloadTaskRecheckThrottle: 10 * time.Second,
-		// TaskUpdatePushMaxInterval:   5 * time.Second,
-		// TaskUpdatePushMaxCount:      3000,
-		// CancelTaskFetchInterval:     10 * time.Second,
-		ActiveTaskTimeoutInterval:   10 * time.Minute,
-		ActiveWorkerTimeoutInterval: 1 * time.Minute,
-		// FlamencoStr:                 defaultServerURL,
+		ManagerName: "Flamenco Manager",
+		Listen:      ":8080",
+		// ListenHTTPS:   ":8433",
+		DatabaseDSN:   "flamenco-manager.sqlite",
+		TaskLogsPath:  "./task-logs",
+		SSDPDiscovery: true,
+
+		// ActiveTaskTimeoutInterval:   10 * time.Minute,
+		// ActiveWorkerTimeoutInterval: 1 * time.Minute,
 
 		// // Days are assumed to be 24 hours long. This is not exactly accurate, but should
 		// // be accurate enough for this type of cleanup.
 		// TaskCleanupMaxAge: 14 * 24 * time.Hour,
-		SSDPDiscovery: false, // Only enable after SSDP discovery has been improved (avoid finding printers).
 
-		BlacklistThreshold:         3,
-		TaskFailAfterSoftFailCount: 3,
+		// BlacklistThreshold:         3,
+		// TaskFailAfterSoftFailCount: 3,
 
-		WorkerCleanupStatus: []string{string(api.WorkerStatusOffline)},
+		// WorkerCleanupStatus: []string{string(api.WorkerStatusOffline)},
 
-		TestTasks: TestTasks{
-			BlenderRender: BlenderRenderConfig{
-				JobStorage:   "{job_storage}/test-jobs",
-				RenderOutput: "{render}/test-renders",
-			},
-		},
+		// TestTasks: TestTasks{
+		// 	BlenderRender: BlenderRenderConfig{
+		// 		JobStorage:   "{job_storage}/test-jobs",
+		// 		RenderOutput: "{render}/test-renders",
+		// 	},
+		// },
 
-		Shaman: ShamanConfig{
-			Enabled:       true,
-			FileStorePath: defaultShamanFilestorePath,
-			GarbageCollect: ShamanGarbageCollect{
-				Period:            24 * time.Hour,
-				MaxAge:            31 * 24 * time.Hour,
-				ExtraCheckoutDirs: []string{},
-			},
-		},
+		// Shaman: ShamanConfig{
+		// 	Enabled:       true,
+		// 	FileStorePath: defaultShamanFilestorePath,
+		// 	GarbageCollect: ShamanGarbageCollect{
+		// 		Period:            24 * time.Hour,
+		// 		MaxAge:            31 * 24 * time.Hour,
+		// 		ExtraCheckoutDirs: []string{},
+		// 	},
+		// },
 
 		// JWT: jwtauth.Config{
 		// 	DownloadKeysInterval: 1 * time.Hour,
@@ -78,21 +67,21 @@ var defaultConfig = Conf{
 			},
 		},
 		// TODO: determine useful defaults for these.
-		"job_storage": {
-			Direction: "twoway",
-			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "/shared/flamenco/jobs"},
-				VariableValue{Platform: "windows", Value: "S:/flamenco/jobs"},
-				VariableValue{Platform: "darwin", Value: "/Volumes/Shared/flamenco/jobs"},
-			},
-		},
-		"render": {
-			Direction: "twoway",
-			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "/shared/flamenco/render"},
-				VariableValue{Platform: "windows", Value: "S:/flamenco/render"},
-				VariableValue{Platform: "darwin", Value: "/Volumes/Shared/flamenco/render"},
-			},
-		},
+		// "job_storage": {
+		// 	Direction: "twoway",
+		// 	Values: VariableValues{
+		// 		VariableValue{Platform: "linux", Value: "/shared/flamenco/jobs"},
+		// 		VariableValue{Platform: "windows", Value: "S:/flamenco/jobs"},
+		// 		VariableValue{Platform: "darwin", Value: "/Volumes/Shared/flamenco/jobs"},
+		// 	},
+		// },
+		// "render": {
+		// 	Direction: "twoway",
+		// 	Values: VariableValues{
+		// 		VariableValue{Platform: "linux", Value: "/shared/flamenco/render"},
+		// 		VariableValue{Platform: "windows", Value: "S:/flamenco/render"},
+		// 		VariableValue{Platform: "darwin", Value: "/Volumes/Shared/flamenco/render"},
+		// 	},
+		// },
 	},
 }

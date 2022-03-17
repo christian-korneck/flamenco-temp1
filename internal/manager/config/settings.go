@@ -62,45 +62,46 @@ type ConfMeta struct {
 }
 
 // Base contains those settings that are shared by all configuration versions.
+// Various settings are commented out, because they were brought in from
+// Flamenco 2 but not implemented yet.
 type Base struct {
 	Meta ConfMeta `yaml:"_meta"`
 
 	ManagerName  string `yaml:"manager_name"`
-	DatabaseDSN  string `yaml:"database_url"`
+	DatabaseDSN  string `yaml:"database"`
 	TaskLogsPath string `yaml:"task_logs_path"`
 	Listen       string `yaml:"listen"`
-	ListenHTTPS  string `yaml:"listen_https"`
-	OwnURL       string `yaml:"own_url"` // sent to workers via SSDP/UPnP
+	// ListenHTTPS  string `yaml:"listen_https"`
 
 	// TLS certificate management. TLSxxx has priority over ACME.
-	TLSKey         string `yaml:"tlskey"`
-	TLSCert        string `yaml:"tlscert"`
-	ACMEDomainName string `yaml:"acme_domain_name"` // for the ACME Let's Encrypt client
+	// TLSKey         string `yaml:"tlskey"`
+	// TLSCert        string `yaml:"tlscert"`
+	// ACMEDomainName string `yaml:"acme_domain_name"` // for the ACME Let's Encrypt client
 
-	ActiveTaskTimeoutInterval   time.Duration `yaml:"active_task_timeout_interval"`
-	ActiveWorkerTimeoutInterval time.Duration `yaml:"active_worker_timeout_interval"`
+	// ActiveTaskTimeoutInterval   time.Duration `yaml:"active_task_timeout_interval"`
+	// ActiveWorkerTimeoutInterval time.Duration `yaml:"active_worker_timeout_interval"`
 
-	WorkerCleanupMaxAge time.Duration `yaml:"worker_cleanup_max_age"`
-	WorkerCleanupStatus []string      `yaml:"worker_cleanup_status"`
+	// WorkerCleanupMaxAge time.Duration `yaml:"worker_cleanup_max_age"`
+	// WorkerCleanupStatus []string      `yaml:"worker_cleanup_status"`
 
 	/* This many failures (on a given job+task type combination) will ban a worker
 	 * from that task type on that job. */
-	BlacklistThreshold int `yaml:"blacklist_threshold"`
+	// BlacklistThreshold int `yaml:"blacklist_threshold"`
 
 	// When this many workers have tried the task and failed, it will be hard-failed
 	// (even when there are workers left that could technically retry the task).
-	TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
+	// TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
 
-	SSDPDiscovery bool `yaml:"ssdp_discovery"`
+	SSDPDiscovery bool `yaml:"autodiscoverable"`
 
-	TestTasks TestTasks `yaml:"test_tasks"`
+	// TestTasks TestTasks `yaml:"test_tasks"`
 
 	// Shaman configuration settings.
-	Shaman ShamanConfig `yaml:"shaman"`
+	// Shaman ShamanConfig `yaml:"shaman"`
 
 	// Authentication settings.
 	// JWT                      jwtauth.Config `yaml:"user_authentication"`
-	WorkerRegistrationSecret string `yaml:"worker_registration_secret"`
+	// WorkerRegistrationSecret string `yaml:"worker_registration_secret"`
 
 	// Dynamic worker pools (Azure Batch, Google Compute, AWS, that sort).
 	// DynamicPoolPlatforms *dppoller.Config `yaml:"dynamic_pool_platforms,omitempty"`
@@ -453,32 +454,34 @@ func (c *Conf) Write(filename string) error {
 
 // HasCustomTLS returns true if both the TLS certificate and key files are configured.
 func (c *Conf) HasCustomTLS() bool {
-	return c.TLSCert != "" && c.TLSKey != ""
+	// return c.TLSCert != "" && c.TLSKey != ""
+	return false
 }
 
 // HasTLS returns true if either a custom certificate or ACME/Let's Encrypt is used.
 func (c *Conf) HasTLS() bool {
-	return c.ACMEDomainName != "" || c.HasCustomTLS()
+	// return c.ACMEDomainName != "" || c.HasCustomTLS()
+	return false
 }
 
 func (c *Conf) checkTLS() {
-	hasTLS := c.HasCustomTLS()
+	// hasTLS := c.HasCustomTLS()
 
-	if hasTLS && c.ListenHTTPS == "" {
-		c.ListenHTTPS = c.Listen
-		c.Listen = ""
-	}
+	// if hasTLS && c.ListenHTTPS == "" {
+	// 	c.ListenHTTPS = c.Listen
+	// 	c.Listen = ""
+	// }
 
-	if !hasTLS || c.ACMEDomainName == "" {
-		return
-	}
+	// if !hasTLS || c.ACMEDomainName == "" {
+	// 	return
+	// }
 
-	log.Warn().
-		Str("tlscert", c.TLSCert).
-		Str("tlskey", c.TLSKey).
-		Str("acme_domain_name", c.ACMEDomainName).
-		Msg("ACME/Let's Encrypt will not be used because custom certificate is specified")
-	c.ACMEDomainName = ""
+	// log.Warn().
+	// 	Str("tlscert", c.TLSCert).
+	// 	Str("tlskey", c.TLSKey).
+	// 	Str("acme_domain_name", c.ACMEDomainName).
+	// 	Msg("ACME/Let's Encrypt will not be used because custom certificate is specified")
+	// c.ACMEDomainName = ""
 }
 
 func (c *Conf) parseURLs() {
