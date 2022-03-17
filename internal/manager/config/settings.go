@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"git.blender.org/flamenco/internal/appinfo"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
@@ -424,13 +425,16 @@ func (c *Conf) Write(filename string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(f, "# Configuration file for Flamenco Manager.")
+	fmt.Fprintf(f, "# Configuration file for %s.\n", appinfo.ApplicationName)
 	fmt.Fprintln(f, "# For an explanation of the fields, refer to flamenco-manager-example.yaml")
 	fmt.Fprintln(f, "#")
 	fmt.Fprintln(f, "# NOTE: this file will be overwritten by Flamenco Manager's web-based configuration system.")
 	fmt.Fprintln(f, "#")
 	now := time.Now()
-	fmt.Fprintf(f, "# This file was written on %s\n\n", now.Format("2006-01-02 15:04:05 -07:00"))
+	fmt.Fprintf(f, "# This file was written on %s by %s\n\n",
+		now.Format("2006-01-02 15:04:05 -07:00"),
+		appinfo.FormattedApplicationInfo(),
+	)
 
 	n, err := f.Write(data)
 	if err != nil {
