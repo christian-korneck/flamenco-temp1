@@ -85,7 +85,12 @@ func main() {
 
 	// Construct the services.
 	persist := openDB(*configService)
-	go persist.PeriodicMaintenanceLoop(mainCtx)
+
+	// Disabled for now. `VACUUM` locks the database, which means that other
+	// queries can fail with a "database is locked (5) (SQLITE_BUSY)" error. This
+	// situation should be handled gracefully before reinstating the vacuum loop.
+	//
+	// go persist.PeriodicMaintenanceLoop(mainCtx)
 
 	flamenco := buildFlamencoAPI(configService, persist)
 	e := buildWebService(flamenco, persist, ssdp)
