@@ -108,7 +108,9 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 				Msg("access denied")
 			wait = durationFetchFailed
 		case resp.StatusCode() == http.StatusNoContent:
-			log.Info().Msg("no task available")
+			log.Debug().Msg("no task available")
+			// TODO: implement gradual back-off, to avoid too frequent checks when the
+			// farm is idle.
 			wait = durationNoTask
 		default:
 			log.Warn().
