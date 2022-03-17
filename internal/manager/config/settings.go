@@ -183,7 +183,7 @@ func getConf() (Conf, error) {
 func DefaultConfig() Conf {
 	c := defaultConfig
 	c.Meta.Version = latestConfigVersion
-	c.constructVariableLookupTable()
+	c.constructVariableLookupTable(zerolog.TraceLevel)
 	return c
 }
 
@@ -221,7 +221,7 @@ func loadConf(filename string) (Conf, error) {
 		return c, fmt.Errorf("unable to parse %s: %w", filename, err)
 	}
 
-	c.constructVariableLookupTable()
+	c.constructVariableLookupTable(zerolog.DebugLevel)
 	c.parseURLs()
 	c.checkDatabase()
 	c.checkVariables()
@@ -230,7 +230,7 @@ func loadConf(filename string) (Conf, error) {
 	return c, nil
 }
 
-func (c *Conf) constructVariableLookupTable() {
+func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 	lookup := map[VariableAudience]map[string]map[string]string{}
 
 	// Construct a list of all audiences except "" and "all"
@@ -242,7 +242,7 @@ func (c *Conf) constructVariableLookupTable() {
 		}
 		concreteAudiences = append(concreteAudiences, audience)
 	}
-	log.Debug().
+	log.Trace().
 		Interface("concreteAudiences", concreteAudiences).
 		Interface("isWildcard", isWildcard).
 		Msg("constructing variable lookup table")
@@ -263,7 +263,7 @@ func (c *Conf) constructVariableLookupTable() {
 		if lookup[audience][platform] == nil {
 			lookup[audience][platform] = map[string]string{}
 		}
-		log.Debug().
+		log.Trace().
 			Str("audience", string(audience)).
 			Str("platform", platform).
 			Str("name", name).
@@ -274,7 +274,7 @@ func (c *Conf) constructVariableLookupTable() {
 
 	// Construct the lookup table for each audience+platform+name
 	for name, variable := range c.Variables {
-		log.Debug().
+		log.WithLevel(logLevel).
 			Str("name", name).
 			Interface("variable", variable).
 			Msg("handling variable")
@@ -303,7 +303,7 @@ func (c *Conf) constructVariableLookupTable() {
 			}
 		}
 	}
-	log.Debug().
+	log.Trace().
 		Interface("variables", c.Variables).
 		Interface("lookup", lookup).
 		Msg("constructed lookup table")
