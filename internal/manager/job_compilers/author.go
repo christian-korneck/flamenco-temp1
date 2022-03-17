@@ -49,7 +49,7 @@ type AuthoredTask struct {
 	Commands []AuthoredCommand
 
 	// Dependencies are tasks that need to be completed before this one can run.
-	Dependencies []*AuthoredTask
+	Dependencies []*AuthoredTask `json:"omitempty" yaml:"omitempty"`
 }
 
 type AuthoredCommand struct {
@@ -102,7 +102,23 @@ func AuthorModule(r *goja.Runtime, module *goja.Object) {
 }
 
 func (aj *AuthoredJob) AddTask(at *AuthoredTask) {
-	log.Debug().Str("job", at.Name).Interface("task", at).Msg("add task")
+	// Construct a task without dependencies, and a separate list of dependency
+	// UUIDs, just for logging. Simply logging `at` would recursively include all
+	// dependent tasks, which gets way too big to log.
+	if log.Debug().Enabled() {
+		deps := make([]string, len(at.Dependencies))
+		for i := range at.Dependencies {
+			deps[i] = at.Dependencies[i].UUID
+		}
+		logTask := *at
+		logTask.Dependencies = nil
+
+		log.Debug().
+			Str("job", aj.Name).
+			Strs("depTaskIDs", deps).
+			Interface("task", logTask).Msg("add task")
+	}
+
 	aj.Tasks = append(aj.Tasks, *at)
 }
 

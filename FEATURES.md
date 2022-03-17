@@ -35,7 +35,6 @@ Note that list is **not** in any specific order.
 - [ ] Shaman/Job settings: Distinction between "can be auto-deleted" jobs and "must be kept around" jobs.
 - [ ] Sending data upstream to Flamenco Overwatch
 - [ ] Job archival / task cleanup
-- [ ] The "add task" debug log entry contains the entire task, including the entire list of dependencies (recursively). This is already getting big for tiny debug jobs, so will be prohibitively big for real jobs.
 
 ## Worker
 
