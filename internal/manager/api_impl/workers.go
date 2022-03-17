@@ -239,7 +239,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
-	logger.Info().Msg("worker requesting task")
+	logger.Debug().Msg("worker requesting task")
 
 	// Check that this worker is actually allowed to do work.
 	requiredStatusToGetTask := api.WorkerStatusAwake
