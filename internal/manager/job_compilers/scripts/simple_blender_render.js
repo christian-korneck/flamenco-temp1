@@ -72,8 +72,10 @@ function compileJob(job) {
     const settings = job.settings;
     const renderTasks = authorRenderTasks(settings, renderDir, renderOutput);
     const videoTask = authorCreateVideoTask(settings, renderDir);
+    const cleanupTask = authorCleanupTask(finalDir, renderDir);
 
     for (const rt of renderTasks) {
+        cleanupTask.addDependency(rt);
         job.addTask(rt);
     }
     if (videoTask) {
@@ -81,8 +83,10 @@ function compileJob(job) {
         for (const rt of renderTasks) {
             videoTask.addDependency(rt);
         }
+        cleanupTask.addDependency(videoTask);
         job.addTask(videoTask);
     }
+    job.addTask(cleanupTask);
 }
 
 // Do field replacement on the render output path.
@@ -153,6 +157,16 @@ function authorCreateVideoTask(settings, renderDir) {
     task.addCommand(command);
 
     print(`Creating output video for ${settings.format}`);
+    return task;
+}
+
+function authorCleanupTask(finalDir, renderDir) {
+    const task = author.Task("move-to-final", "file-management");
+    const command = author.Command("move-directory", {
+        src: renderDir,
+        dest: finalDir,
+    });
+    task.addCommand(command);
     return task;
 }
 

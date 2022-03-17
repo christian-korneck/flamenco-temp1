@@ -84,8 +84,8 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 
 	settings := sj.Settings.AdditionalProperties
 
-	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding
-	assert.Equal(t, 5, len(aj.Tasks))
+	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding, and cleanup
+	assert.Len(t, aj.Tasks, 6)
 	t0 := aj.Tasks[0]
 	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
 		"--render-output", "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/######",
@@ -165,8 +165,8 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 
 	settings := sj.Settings.AdditionalProperties
 
-	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding
-	assert.Equal(t, 5, len(aj.Tasks))
+	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding, and cleanup
+	assert.Len(t, aj.Tasks, 6)
 	t0 := aj.Tasks[0]
 	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
 		// The render output is constructed by the job compiler, and thus transforms to forward slashes.
@@ -221,8 +221,8 @@ func TestSimpleBlenderRenderOutputPathFieldReplacement(t *testing.T) {
 	// The job compiler should have replaced the {timestamp} and {ext} fields.
 	assert.Equal(t, "/root/2006-01-02_090405/jobname/######", aj.Settings["render_output_path"])
 
-	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding
-	assert.Equal(t, 5, len(aj.Tasks))
+	// Tasks should have been created to render the frames: 1-3, 4-6, 7-9, 10, video-encoding, and cleanup
+	assert.Len(t, aj.Tasks, 6)
 	t0 := aj.Tasks[0]
 	expectCliArgs := []interface{}{ // They are strings, but Goja doesn't know that and will produce an []interface{}.
 		"--render-output", "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/######",
