@@ -199,7 +199,7 @@ func upstreamBufferOrDie(client worker.FlamencoClient, timeService clock.Clock) 
 	}
 
 	// TODO: make filename configurable?
-	if err := buffer.OpenDB(ctx, "flamenco-worker-queue.db"); err != nil {
+	if err := buffer.OpenDB(ctx, "flamenco-worker.sqlite"); err != nil {
 		log.Fatal().Err(err).Msg("unable to open task update queue database")
 	}
 
