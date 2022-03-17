@@ -14,7 +14,7 @@ import (
 
 const (
 	// How long to wait to fetch another task...
-	durationNoTask      = 5 * time.Second  // ... if there is no task now.
+	durationNoTask      = 2 * time.Second  // ... if there is no task now.
 	durationFetchFailed = 10 * time.Second // ... if fetching failed somehow.
 )
 
