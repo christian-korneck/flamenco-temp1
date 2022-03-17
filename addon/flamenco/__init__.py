@@ -14,6 +14,8 @@ bl_info = {
     "support": "COMMUNITY",
 }
 
+from pathlib import Path
+
 __is_first_load = "operators" not in locals()
 if __is_first_load:
     from . import operators, gui, job_types, comms, preferences
@@ -41,6 +43,35 @@ def redraw(self, context):
     context.area.tag_redraw()
 
 
+def _redraw_the_world(context):
+    for window in context.window_manager.windows:
+        for area in window.screen.areas:
+            area.tag_redraw()
+
+
+def _default_job_name() -> str:
+    if not bpy.data.filepath:
+        return ""
+    return Path(bpy.data.filepath).stem
+
+
+@bpy.app.handlers.persistent
+def _set_flamenco_job_name(a, b) -> None:
+    scene = bpy.context.scene
+    if scene.flamenco_job_name:
+        return
+    scene.flamenco_job_name = _default_job_name()
+    _redraw_the_world(bpy.context)
+
+
+@bpy.app.handlers.persistent
+def _unset_flamenco_job_name(a, b) -> None:
+    scene = bpy.context.scene
+    if scene.flamenco_job_name != _default_job_name():
+        return
+    scene.flamenco_job_name = ""
+
+
 def register() -> None:
     from . import dependencies
 
@@ -48,6 +79,10 @@ def register() -> None:
 
     bpy.app.handlers.load_pre.append(discard_global_flamenco_data)
     bpy.app.handlers.load_factory_preferences_post.append(discard_global_flamenco_data)
+
+    bpy.app.handlers.load_post.append(_set_flamenco_job_name)
+    bpy.app.handlers.save_pre.append(_unset_flamenco_job_name)
+    bpy.app.handlers.save_post.append(_set_flamenco_job_name)
 
     bpy.types.WindowManager.flamenco_bat_status = bpy.props.EnumProperty(
         items=[
@@ -83,15 +118,15 @@ def register() -> None:
         update=redraw,
     )
 
+    # Placeholder to contain the result of a 'ping' to Flamenco Manager,
+    # so that it can be shown in the preferences panel.
+    bpy.types.WindowManager.flamenco_status_ping = bpy.props.StringProperty()
+
     bpy.types.Scene.flamenco_job_name = bpy.props.StringProperty(
         name="Flamenco Job Name",
         default="",
         description="Name of the Flamenco job; an empty name will use the blend file name as job name",
     )
-
-    # Placeholder to contain the result of a 'ping' to Flamenco Manager,
-    # so that it can be shown in the preferences panel.
-    bpy.types.WindowManager.flamenco_status_ping = bpy.props.StringProperty()
 
     preferences.register()
     operators.register()
@@ -103,6 +138,8 @@ def unregister() -> None:
     discard_global_flamenco_data(None)
     bpy.app.handlers.load_pre.remove(discard_global_flamenco_data)
     bpy.app.handlers.load_factory_preferences_post.remove(discard_global_flamenco_data)
+
+    _unset_flamenco_job_name()
 
     job_types.unregister()
     gui.unregister()
