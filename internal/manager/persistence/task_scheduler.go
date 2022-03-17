@@ -71,16 +71,25 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 
 func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 	task := Task{}
+
+	// Produce the 'current task ID' by selecting all its incomplete dependencies.
+	// This can then be used in a subquery to filter out such tasks.
+	// `tasks.id` is the task ID from the outer query.
+	incompleteDepsQuery := tx.Table("tasks as tasks2").
+		Select("tasks2.id").
+		Joins("left join task_dependencies td on tasks2.id = td.task_id").
+		Joins("left join tasks dep on dep.id = td.dependency_id").
+		Where("tasks2.id = tasks.id").
+		Where("dep.status is not NULL and dep.status != ?", api.TaskStatusCompleted)
+
 	findTaskResult := tx.
 		Model(&task).
 		Joins("left join jobs on tasks.job_id = jobs.id").
-		Joins("left join task_dependencies on tasks.id = task_dependencies.task_id").
-		Joins("left join tasks as tdeps on tdeps.id = task_dependencies.dependency_id").
-		Where("tasks.status in ?", schedulableTaskStatuses).                       // Schedulable task statuses
-		Where("tdeps.status in ? or tdeps.status is NULL", completedTaskStatuses). // Dependencies completed
-		Where("jobs.status in ?", schedulableJobStatuses).                         // Schedulable job statuses
-		Where("tasks.type in ?", w.TaskTypes()).                                   // Supported task types
-		Where("tasks.worker_id = ? or tasks.worker_id is NULL", w.ID).             // assigned to this worker or not assigned at all
+		Where("tasks.status in ?", schedulableTaskStatuses).           // Schedulable task statuses
+		Where("jobs.status in ?", schedulableJobStatuses).             // Schedulable job statuses
+		Where("tasks.type in ?", w.TaskTypes()).                       // Supported task types
+		Where("tasks.worker_id = ? or tasks.worker_id is NULL", w.ID). // assigned to this worker or not assigned at all
+		Where("tasks.id not in (?)", incompleteDepsQuery).             // Dependencies completed
 		// TODO: Non-blacklisted
 		Order("jobs.priority desc").  // Highest job priority
 		Order("tasks.priority desc"). // Highest task priority

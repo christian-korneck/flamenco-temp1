@@ -159,6 +159,32 @@ func TestTwoJobsThreeTasks(t *testing.T) {
 	assert.Equal(t, att2_3.Name, task.Name, "the 3rd task of the 2nd job should have been chosen")
 }
 
+func TestSomeButNotAllDependenciesCompleted(t *testing.T) {
+	// There was a bug in the task scheduler query, where it would schedule a task
+	// if any of its dependencies was completed (instead of all dependencies).
+	// This test reproduces that problematic scenario.
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
+
+	att1 := authorTestTask("1.1 completed task", "blender")
+	att2 := authorTestTask("1.2 queued task of unsupported type", "unsupported")
+	att3 := authorTestTask("1.3 queued task with queued dependency", "ffmpeg")
+	att3.Dependencies = []*job_compilers.AuthoredTask{&att1, &att2}
+
+	atj := authorTestJob("1295757b-e668-4c49-8b89-f73db8270e42", "simple-blender-render", att1, att2, att3)
+	constructTestJob(ctx, t, db, atj)
+
+	// Complete the first task. The other two are still `queued`.
+	setTaskStatus(t, db, att1.UUID, api.TaskStatusCompleted)
+
+	w := linuxWorker(t, db)
+	task, err := db.ScheduleTask(ctx, &w)
+	assert.NoError(t, err)
+	if task != nil {
+		t.Fatalf("there should not be any task assigned, but received %q", task.Name)
+	}
+}
+
 // To test: blacklists
 
 // To test: variable replacement
@@ -209,6 +235,21 @@ func authorTestTask(name, taskType string, dependencies ...*job_compilers.Author
 		Dependencies: dependencies,
 	}
 	return task
+}
+
+func setTaskStatus(t *testing.T, db *DB, taskUUID string, status api.TaskStatus) {
+	ctx := context.Background()
+	task, err := db.FetchTask(ctx, taskUUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	task.Status = status
+
+	err = db.SaveTask(ctx, task)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func linuxWorker(t *testing.T, db *DB) Worker {
