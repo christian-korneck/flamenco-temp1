@@ -5,6 +5,7 @@ package persistence
 
 import (
 	"context"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -12,6 +13,8 @@ import (
 	// sqlite "git.blender.org/flamenco/pkg/gorm-modernc-sqlite"
 	"github.com/glebarez/sqlite"
 )
+
+const vacuumPeriod = 1 * time.Hour
 
 // DB provides the database interface.
 type DB struct {
@@ -56,4 +59,28 @@ func openDBWithConfig(uri string, config *gorm.Config) (*DB, error) {
 		gormDB: gormDB,
 	}
 	return &db, nil
+}
+
+// PeriodicMaintenanceLoop periodically vacuums the database.
+// This function only returns when the context is done.
+func (db *DB) PeriodicMaintenanceLoop(ctx context.Context) {
+	log.Debug().Msg("periodic database maintenance loop starting")
+	defer log.Debug().Msg("periodic database maintenance loop stopping")
+
+	var waitTime time.Duration
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(waitTime):
+			waitTime = vacuumPeriod
+		}
+
+		log.Debug().Msg("vacuuming database")
+		tx := db.gormDB.Exec("vacuum")
+		if tx.Error != nil {
+			log.Error().Err(tx.Error).Msg("error vacuuming database")
+		}
+	}
 }

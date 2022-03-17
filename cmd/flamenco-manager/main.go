@@ -75,6 +75,8 @@ func main() {
 
 	// Construct the services.
 	persist := openDB(*configService)
+	go persist.PeriodicMaintenanceLoop(mainCtx)
+
 	flamenco := buildFlamencoAPI(configService, persist)
 	e := buildWebService(flamenco, persist, ssdp)
 
