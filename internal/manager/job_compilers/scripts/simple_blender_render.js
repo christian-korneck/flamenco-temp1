@@ -148,11 +148,20 @@ function authorCreateVideoTask(settings, renderDir) {
     const outfile = path.join(renderDir, `${stem}-${settings.frames}.mp4`);
     const outfileExt = guessOutputFileExtension(settings);
 
-    const task = author.Task('create-video', 'ffmpeg');
-    const command = author.Command("create-video", {
-        input_files: path.join(renderDir, `*${outfileExt}`),
-        output_file: outfile,
-        fps: settings.fps,
+    const task = author.Task('preview-video', 'ffmpeg');
+    const command = author.Command("frames-to-video", {
+        exe: "{ffmpeg}",
+        inputGlob: path.join(renderDir, `*${outfileExt}`),
+        outputFile: outfile,
+        args: [
+            "-c:v", "h264",
+            "-crf", "20",
+            "-g", "18",
+            "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+            "-pix_fmt", "yuv420p",
+            "-r", settings.fps,
+            "-y", // Be sure to always pass either "-n" or "-y".
+        ],
     });
     task.addCommand(command);
 

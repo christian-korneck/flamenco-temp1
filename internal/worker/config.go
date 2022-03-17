@@ -24,6 +24,11 @@ const (
 	configFilename      = "flamenco-worker.yaml"
 )
 
+var defaultConfig = WorkerConfig{
+	ConfiguredManager: "", // Auto-detect by default.
+	TaskTypes:         []string{"blender", "ffmpeg", "file-management", "misc"},
+}
+
 // WorkerConfig represents the configuration of a single worker.
 // It does not include authentication credentials.
 type WorkerConfig struct {
@@ -125,10 +130,7 @@ func (fcw *FileConfigWrangler) SetManagerURL(managerURL string) WorkerConfig {
 
 // DefaultConfig returns a fairly sane default configuration.
 func (fcw FileConfigWrangler) DefaultConfig() WorkerConfig {
-	return WorkerConfig{
-		ConfiguredManager: "", // Auto-detect by default.
-		TaskTypes:         []string{"blender", "file-management", "exr-merge", "misc"},
-	}
+	return defaultConfig
 }
 
 // WriteConfig stores a struct as YAML file.

@@ -76,6 +76,9 @@ func NewCommandExecutor(cli CommandLineRunner, listener CommandListener, timeSer
 		// blender
 		"blender-render": ce.cmdBlenderRender,
 
+		// ffmpeg
+		"frames-to-video": ce.cmdFramesToVideo,
+
 		// file-management
 		"move-directory": ce.cmdMoveDirectory,
 	}

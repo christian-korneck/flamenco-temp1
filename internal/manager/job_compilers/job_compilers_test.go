@@ -15,6 +15,11 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 )
 
+// The example job is expected to result in these arguments for FFmpeg.
+var expectedFramesToVideoArgs = []interface{}{
+	"-c:v", "h264", "-crf", "20", "-g", "18", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", "-pix_fmt", "yuv420p", "-r", int64(24), "-y",
+}
+
 func exampleSubmittedJob() api.SubmittedJob {
 	settings := api.JobSettings{
 		AdditionalProperties: map[string]interface{}{
@@ -109,9 +114,10 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	assert.Equal(t, 1, len(tVideo.Commands))
 	assert.Equal(t, "create-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"input_files": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
-		"output_file": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
-		"fps":         int64(24),
+		"exe":        "{ffmpeg}",
+		"inputGlob":  "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
+		"outputFile": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
+		"args":       expectedFramesToVideoArgs,
 	}, tVideo.Commands[0].Parameters)
 
 	for index, task := range aj.Tasks {
@@ -191,9 +197,10 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 	assert.Equal(t, 1, len(tVideo.Commands))
 	assert.Equal(t, "create-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"input_files": "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
-		"output_file": "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
-		"fps":         int64(24),
+		"exe":        "{ffmpeg}",
+		"inputGlob":  "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
+		"outputFile": "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
+		"args":       expectedFramesToVideoArgs,
 	}, tVideo.Commands[0].Parameters)
 }
 
@@ -238,9 +245,10 @@ func TestSimpleBlenderRenderOutputPathFieldReplacement(t *testing.T) {
 
 	tVideo := aj.Tasks[4] // This should be a video encoding task
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"input_files": "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/*.png",
-		"output_file": "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/scene123-1-10.mp4",
-		"fps":         int64(24),
+		"exe":        "{ffmpeg}",
+		"inputGlob":  "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/*.png",
+		"outputFile": "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/scene123-1-10.mp4",
+		"args":       expectedFramesToVideoArgs,
 	}, tVideo.Commands[0].Parameters)
 
 }
