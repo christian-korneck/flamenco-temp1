@@ -85,7 +85,7 @@ func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJo
 
 	// Create an AuthoredJob from this SubmittedJob.
 	aj := AuthoredJob{
-		JobID:    uuid.New().String(), // Ignore the submitted ID.
+		JobID:    uuid.New().String(),
 		Created:  s.timeService.Now(),
 		Name:     sj.Name,
 		JobType:  sj.Type,
