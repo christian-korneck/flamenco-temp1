@@ -110,9 +110,9 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 
 	tVideo := aj.Tasks[4] // This should be a video encoding task
 	assert.NotEmpty(t, tVideo.UUID)
-	assert.Equal(t, "create-video", tVideo.Name)
+	assert.Equal(t, "preview-video", tVideo.Name)
 	assert.Equal(t, 1, len(tVideo.Commands))
-	assert.Equal(t, "create-video", tVideo.Commands[0].Name)
+	assert.Equal(t, "frames-to-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
 		"exe":        "{ffmpeg}",
 		"inputGlob":  "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
@@ -193,9 +193,9 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 
 	tVideo := aj.Tasks[4] // This should be a video encoding task
 	assert.NotEmpty(t, tVideo.UUID)
-	assert.Equal(t, "create-video", tVideo.Name)
+	assert.Equal(t, "preview-video", tVideo.Name)
 	assert.Equal(t, 1, len(tVideo.Commands))
-	assert.Equal(t, "create-video", tVideo.Commands[0].Name)
+	assert.Equal(t, "frames-to-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
 		"exe":        "{ffmpeg}",
 		"inputGlob":  "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
