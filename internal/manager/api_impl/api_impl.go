@@ -6,6 +6,7 @@ package api_impl
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 
 	"git.blender.org/flamenco/internal/appinfo"
@@ -23,12 +24,13 @@ type Flamenco struct {
 	logStorage   LogStorage
 	config       ConfigService
 	stateMachine TaskStateMachine
+	shaman       Shaman
 }
 
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService,TaskStateMachine
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -75,6 +77,26 @@ type LogStorage interface {
 
 type ConfigService interface {
 	VariableReplacer
+}
+
+type Shaman interface {
+	// Checkout creates a directory, and symlinks the required files into it. The
+	// files must all have been uploaded to Shaman before calling this.
+	Checkout(ctx context.Context, checkoutID string, checkout api.ShamanCheckout) error
+
+	// Requirements checks a Shaman Requirements file, and returns the subset
+	// containing the unknown files.
+	Requirements(ctx context.Context, requirements api.ShamanRequirements) (api.ShamanRequirements, error)
+
+	// Check the status of a file on the Shaman server.
+	// TODO: instead of an integer, return a constant that indicates the actual
+	// status (stored, currently being uploaded, unknown).
+	FileStoreCheck(ctx context.Context, checksum string, filesize int64) (int, error)
+
+	// Store a new file on the Shaman server. Note that the Shaman server can
+	// return early when another client finishes uploading the exact same file, to
+	// prevent double uploads.
+	FileStore(ctx context.Context, file io.ReadCloser, checksum string, filesize int64, canDefer bool, originalFilename string) error
 }
 
 // NewFlamenco creates a new Flamenco service.

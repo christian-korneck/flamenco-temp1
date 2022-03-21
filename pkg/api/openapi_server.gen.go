@@ -46,6 +46,18 @@ type ServerInterface interface {
 	// Update the task, typically to indicate progress, completion, or failure.
 	// (POST /api/worker/task/{task_id})
 	TaskUpdate(ctx echo.Context, taskId string) error
+	// Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
+	// (POST /shaman/checkout/create/{checkoutID})
+	ShamanCheckout(ctx echo.Context, checkoutID string) error
+	// Checks a Shaman Requirements file, and reports which files are unknown.
+	// (POST /shaman/checkout/requirements)
+	ShamanCheckoutRequirements(ctx echo.Context) error
+	// Check the status of a file on the Shaman server.
+	// (OPTIONS /shaman/files/{checksum}/{filesize})
+	ShamanFileStoreCheck(ctx echo.Context, checksum string, filesize int) error
+	// Store a new file on the Shaman server. Note that the Shaman server can forcibly close the HTTP connection when another client finishes uploading the exact same file, to prevent double uploads.
+	// (POST /shaman/files/{checksum}/{filesize})
+	ShamanFileStore(ctx echo.Context, checksum string, filesize int, params ShamanFileStoreParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -178,6 +190,114 @@ func (w *ServerInterfaceWrapper) TaskUpdate(ctx echo.Context) error {
 	return err
 }
 
+// ShamanCheckout converts echo context to params.
+func (w *ServerInterfaceWrapper) ShamanCheckout(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "checkoutID" -------------
+	var checkoutID string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "checkoutID", runtime.ParamLocationPath, ctx.Param("checkoutID"), &checkoutID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter checkoutID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.ShamanCheckout(ctx, checkoutID)
+	return err
+}
+
+// ShamanCheckoutRequirements converts echo context to params.
+func (w *ServerInterfaceWrapper) ShamanCheckoutRequirements(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.ShamanCheckoutRequirements(ctx)
+	return err
+}
+
+// ShamanFileStoreCheck converts echo context to params.
+func (w *ServerInterfaceWrapper) ShamanFileStoreCheck(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "checksum" -------------
+	var checksum string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "checksum", runtime.ParamLocationPath, ctx.Param("checksum"), &checksum)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter checksum: %s", err))
+	}
+
+	// ------------- Path parameter "filesize" -------------
+	var filesize int
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "filesize", runtime.ParamLocationPath, ctx.Param("filesize"), &filesize)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter filesize: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.ShamanFileStoreCheck(ctx, checksum, filesize)
+	return err
+}
+
+// ShamanFileStore converts echo context to params.
+func (w *ServerInterfaceWrapper) ShamanFileStore(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "checksum" -------------
+	var checksum string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "checksum", runtime.ParamLocationPath, ctx.Param("checksum"), &checksum)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter checksum: %s", err))
+	}
+
+	// ------------- Path parameter "filesize" -------------
+	var filesize int
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "filesize", runtime.ParamLocationPath, ctx.Param("filesize"), &filesize)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter filesize: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ShamanFileStoreParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Shaman-Can-Defer-Upload" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Shaman-Can-Defer-Upload")]; found {
+		var XShamanCanDeferUpload bool
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Shaman-Can-Defer-Upload, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "X-Shaman-Can-Defer-Upload", runtime.ParamLocationHeader, valueList[0], &XShamanCanDeferUpload)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Shaman-Can-Defer-Upload: %s", err))
+		}
+
+		params.XShamanCanDeferUpload = &XShamanCanDeferUpload
+	}
+	// ------------- Optional header parameter "X-Shaman-Original-Filename" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Shaman-Original-Filename")]; found {
+		var XShamanOriginalFilename string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Shaman-Original-Filename, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "X-Shaman-Original-Filename", runtime.ParamLocationHeader, valueList[0], &XShamanOriginalFilename)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Shaman-Original-Filename: %s", err))
+		}
+
+		params.XShamanOriginalFilename = &XShamanOriginalFilename
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.ShamanFileStore(ctx, checksum, filesize, params)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -217,5 +337,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/worker/state-changed", wrapper.WorkerStateChanged)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
 	router.POST(baseURL+"/api/worker/task/:task_id", wrapper.TaskUpdate)
+	router.POST(baseURL+"/shaman/checkout/create/:checkoutID", wrapper.ShamanCheckout)
+	router.POST(baseURL+"/shaman/checkout/requirements", wrapper.ShamanCheckoutRequirements)
+	router.OPTIONS(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStoreCheck)
+	router.POST(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStore)
 
 }

@@ -233,6 +233,31 @@ type SecurityError struct {
 	Message string `json:"message"`
 }
 
+// Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
+type ShamanCheckout struct {
+	Req []struct {
+		// SHA256 checksum of the file
+		C string `json:"c"`
+
+		// File checkout path
+		P string `json:"p"`
+
+		// File size in bytes
+		S int `json:"s"`
+	} `json:"req"`
+}
+
+// Set of files with their SHA256 checksum and size in bytes.
+type ShamanRequirements struct {
+	Req []struct {
+		// SHA256 checksum of the file
+		C string `json:"c"`
+
+		// File size in bytes
+		S int `json:"s"`
+	} `json:"req"`
+}
+
 // Job definition submitted to Flamenco.
 type SubmittedJob struct {
 	// Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
@@ -299,6 +324,21 @@ type WorkerStateChangedJSONBody WorkerStateChanged
 // TaskUpdateJSONBody defines parameters for TaskUpdate.
 type TaskUpdateJSONBody TaskUpdate
 
+// ShamanCheckoutJSONBody defines parameters for ShamanCheckout.
+type ShamanCheckoutJSONBody ShamanCheckout
+
+// ShamanCheckoutRequirementsJSONBody defines parameters for ShamanCheckoutRequirements.
+type ShamanCheckoutRequirementsJSONBody ShamanRequirements
+
+// ShamanFileStoreParams defines parameters for ShamanFileStore.
+type ShamanFileStoreParams struct {
+	// The client indicates that it can defer uploading this file. The "208" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file.
+	XShamanCanDeferUpload *bool `json:"X-Shaman-Can-Defer-Upload,omitempty"`
+
+	// The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging.
+	XShamanOriginalFilename *string `json:"X-Shaman-Original-Filename,omitempty"`
+}
+
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody
 
@@ -313,6 +353,12 @@ type WorkerStateChangedJSONRequestBody WorkerStateChangedJSONBody
 
 // TaskUpdateJSONRequestBody defines body for TaskUpdate for application/json ContentType.
 type TaskUpdateJSONRequestBody TaskUpdateJSONBody
+
+// ShamanCheckoutJSONRequestBody defines body for ShamanCheckout for application/json ContentType.
+type ShamanCheckoutJSONRequestBody ShamanCheckoutJSONBody
+
+// ShamanCheckoutRequirementsJSONRequestBody defines body for ShamanCheckoutRequirements for application/json ContentType.
+type ShamanCheckoutRequirementsJSONRequestBody ShamanCheckoutRequirementsJSONBody
 
 // Getter for additional properties for JobMetadata. Returns the specified
 // element and whether it was found

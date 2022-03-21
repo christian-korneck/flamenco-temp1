@@ -132,6 +132,22 @@ type ClientInterface interface {
 	TaskUpdateWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ShamanCheckout request with any body
+	ShamanCheckoutWithBody(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ShamanCheckout(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ShamanCheckoutRequirements request with any body
+	ShamanCheckoutRequirementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ShamanCheckoutRequirements(ctx context.Context, body ShamanCheckoutRequirementsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ShamanFileStoreCheck request
+	ShamanFileStoreCheck(ctx context.Context, checksum string, filesize int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ShamanFileStore request with any body
+	ShamanFileStoreWithBody(ctx context.Context, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) SubmitJobWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -316,6 +332,78 @@ func (c *Client) TaskUpdateWithBody(ctx context.Context, taskId string, contentT
 
 func (c *Client) TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTaskUpdateRequest(c.Server, taskId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ShamanCheckoutWithBody(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanCheckoutRequestWithBody(c.Server, checkoutID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ShamanCheckout(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanCheckoutRequest(c.Server, checkoutID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ShamanCheckoutRequirementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanCheckoutRequirementsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ShamanCheckoutRequirements(ctx context.Context, body ShamanCheckoutRequirementsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanCheckoutRequirementsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ShamanFileStoreCheck(ctx context.Context, checksum string, filesize int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanFileStoreCheckRequest(c.Server, checksum, filesize)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ShamanFileStoreWithBody(ctx context.Context, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanFileStoreRequestWithBody(c.Server, checksum, filesize, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -702,6 +790,199 @@ func NewTaskUpdateRequestWithBody(server string, taskId string, contentType stri
 	return req, nil
 }
 
+// NewShamanCheckoutRequest calls the generic ShamanCheckout builder with application/json body
+func NewShamanCheckoutRequest(server string, checkoutID string, body ShamanCheckoutJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewShamanCheckoutRequestWithBody(server, checkoutID, "application/json", bodyReader)
+}
+
+// NewShamanCheckoutRequestWithBody generates requests for ShamanCheckout with any type of body
+func NewShamanCheckoutRequestWithBody(server string, checkoutID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "checkoutID", runtime.ParamLocationPath, checkoutID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/shaman/checkout/create/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewShamanCheckoutRequirementsRequest calls the generic ShamanCheckoutRequirements builder with application/json body
+func NewShamanCheckoutRequirementsRequest(server string, body ShamanCheckoutRequirementsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewShamanCheckoutRequirementsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewShamanCheckoutRequirementsRequestWithBody generates requests for ShamanCheckoutRequirements with any type of body
+func NewShamanCheckoutRequirementsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/shaman/checkout/requirements")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewShamanFileStoreCheckRequest generates requests for ShamanFileStoreCheck
+func NewShamanFileStoreCheckRequest(server string, checksum string, filesize int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "checksum", runtime.ParamLocationPath, checksum)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "filesize", runtime.ParamLocationPath, filesize)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/shaman/files/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("OPTIONS", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewShamanFileStoreRequestWithBody generates requests for ShamanFileStore with any type of body
+func NewShamanFileStoreRequestWithBody(server string, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "checksum", runtime.ParamLocationPath, checksum)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "filesize", runtime.ParamLocationPath, filesize)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/shaman/files/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params.XShamanCanDeferUpload != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Shaman-Can-Defer-Upload", runtime.ParamLocationHeader, *params.XShamanCanDeferUpload)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Shaman-Can-Defer-Upload", headerParam0)
+	}
+
+	if params.XShamanOriginalFilename != nil {
+		var headerParam1 string
+
+		headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-Shaman-Original-Filename", runtime.ParamLocationHeader, *params.XShamanOriginalFilename)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Shaman-Original-Filename", headerParam1)
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -787,6 +1068,22 @@ type ClientWithResponsesInterface interface {
 	TaskUpdateWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
 
 	TaskUpdateWithResponse(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
+
+	// ShamanCheckout request with any body
+	ShamanCheckoutWithBodyWithResponse(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
+
+	ShamanCheckoutWithResponse(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
+
+	// ShamanCheckoutRequirements request with any body
+	ShamanCheckoutRequirementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutRequirementsResponse, error)
+
+	ShamanCheckoutRequirementsWithResponse(ctx context.Context, body ShamanCheckoutRequirementsJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutRequirementsResponse, error)
+
+	// ShamanFileStoreCheck request
+	ShamanFileStoreCheckWithResponse(ctx context.Context, checksum string, filesize int, reqEditors ...RequestEditorFn) (*ShamanFileStoreCheckResponse, error)
+
+	// ShamanFileStore request with any body
+	ShamanFileStoreWithBodyWithResponse(ctx context.Context, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanFileStoreResponse, error)
 }
 
 type SubmitJobResponse struct {
@@ -1037,6 +1334,97 @@ func (r TaskUpdateResponse) StatusCode() int {
 	return 0
 }
 
+type ShamanCheckoutResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON409      *Error
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ShamanCheckoutResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ShamanCheckoutResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ShamanCheckoutRequirementsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ShamanRequirements
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ShamanCheckoutRequirementsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ShamanCheckoutRequirementsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ShamanFileStoreCheckResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ShamanFileStoreCheckResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ShamanFileStoreCheckResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ShamanFileStoreResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON409      *Error
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ShamanFileStoreResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ShamanFileStoreResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // SubmitJobWithBodyWithResponse request with arbitrary body returning *SubmitJobResponse
 func (c *ClientWithResponses) SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error) {
 	rsp, err := c.SubmitJobWithBody(ctx, contentType, body, reqEditors...)
@@ -1174,6 +1562,58 @@ func (c *ClientWithResponses) TaskUpdateWithResponse(ctx context.Context, taskId
 		return nil, err
 	}
 	return ParseTaskUpdateResponse(rsp)
+}
+
+// ShamanCheckoutWithBodyWithResponse request with arbitrary body returning *ShamanCheckoutResponse
+func (c *ClientWithResponses) ShamanCheckoutWithBodyWithResponse(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error) {
+	rsp, err := c.ShamanCheckoutWithBody(ctx, checkoutID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseShamanCheckoutResponse(rsp)
+}
+
+func (c *ClientWithResponses) ShamanCheckoutWithResponse(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error) {
+	rsp, err := c.ShamanCheckout(ctx, checkoutID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseShamanCheckoutResponse(rsp)
+}
+
+// ShamanCheckoutRequirementsWithBodyWithResponse request with arbitrary body returning *ShamanCheckoutRequirementsResponse
+func (c *ClientWithResponses) ShamanCheckoutRequirementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutRequirementsResponse, error) {
+	rsp, err := c.ShamanCheckoutRequirementsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseShamanCheckoutRequirementsResponse(rsp)
+}
+
+func (c *ClientWithResponses) ShamanCheckoutRequirementsWithResponse(ctx context.Context, body ShamanCheckoutRequirementsJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutRequirementsResponse, error) {
+	rsp, err := c.ShamanCheckoutRequirements(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseShamanCheckoutRequirementsResponse(rsp)
+}
+
+// ShamanFileStoreCheckWithResponse request returning *ShamanFileStoreCheckResponse
+func (c *ClientWithResponses) ShamanFileStoreCheckWithResponse(ctx context.Context, checksum string, filesize int, reqEditors ...RequestEditorFn) (*ShamanFileStoreCheckResponse, error) {
+	rsp, err := c.ShamanFileStoreCheck(ctx, checksum, filesize, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseShamanFileStoreCheckResponse(rsp)
+}
+
+// ShamanFileStoreWithBodyWithResponse request with arbitrary body returning *ShamanFileStoreResponse
+func (c *ClientWithResponses) ShamanFileStoreWithBodyWithResponse(ctx context.Context, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanFileStoreResponse, error) {
+	rsp, err := c.ShamanFileStoreWithBody(ctx, checksum, filesize, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseShamanFileStoreResponse(rsp)
 }
 
 // ParseSubmitJobResponse parses an HTTP response from a SubmitJobWithResponse call
@@ -1492,6 +1932,131 @@ func ParseTaskUpdateResponse(rsp *http.Response) (*TaskUpdateResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseShamanCheckoutResponse parses an HTTP response from a ShamanCheckoutWithResponse call
+func ParseShamanCheckoutResponse(rsp *http.Response) (*ShamanCheckoutResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ShamanCheckoutResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseShamanCheckoutRequirementsResponse parses an HTTP response from a ShamanCheckoutRequirementsWithResponse call
+func ParseShamanCheckoutRequirementsResponse(rsp *http.Response) (*ShamanCheckoutRequirementsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ShamanCheckoutRequirementsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ShamanRequirements
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseShamanFileStoreCheckResponse parses an HTTP response from a ShamanFileStoreCheckWithResponse call
+func ParseShamanFileStoreCheckResponse(rsp *http.Response) (*ShamanFileStoreCheckResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ShamanFileStoreCheckResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseShamanFileStoreResponse parses an HTTP response from a ShamanFileStoreWithResponse call
+func ParseShamanFileStoreResponse(rsp *http.Response) (*ShamanFileStoreResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ShamanFileStoreResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
