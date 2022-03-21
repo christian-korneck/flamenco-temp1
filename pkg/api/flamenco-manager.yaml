@@ -260,6 +260,159 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/Job"}
 
+  /shaman/checkout/requirements:
+    summary: Allows a client to check which files are available on the server, and which ones are still unknown.
+    post:
+      operationId: shamanCheckoutRequirements
+      summary: Checks a Shaman Requirements file, and reports which files are unknown.
+      tags: [shaman]
+      requestBody:
+        description: Set of files to check
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShamanRequirements"
+      responses:
+        "200":
+          description: Subset of the posted requirements, indicating the unknown files.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ShamanRequirements"}
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shaman/checkout/create/{checkoutID}:
+    summary: Symlink a set of files into the checkout area.
+    post:
+      operationId: shamanCheckout
+      summary: Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
+      tags: [shaman]
+      parameters:
+        - name: checkoutID
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        description: Set of files to check out.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShamanCheckout"
+      responses:
+        "204":
+          description: Checkout was created succesfully.
+        "409":
+          description: Checkout already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shaman/files/{checksum}/{filesize}:
+    summary: Upload files to the Shaman server.
+    options:
+      operationId: shamanFileStoreCheck
+      summary: >
+        Check the status of a file on the Shaman server.
+      tags: [shaman]
+      parameters:
+        - name: checksum
+          in: path
+          required: true
+          schema: {type: string}
+          description: SHA256 checksum of the file.
+        - name: filesize
+          in: path
+          required: true
+          schema: {type: integer}
+          description: Size of the file in bytes.
+      responses:
+        "200":
+          description: The file is known to the server.
+        "420":
+          description: The file is currently being uploaded to the server.
+        "404":
+          description: The file does not exist on the server.
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      operationId: shamanFileStore
+      summary: >
+        Store a new file on the Shaman server. Note that the Shaman server can
+        forcibly close the HTTP connection when another client finishes uploading
+        the exact same file, to prevent double uploads.
+      tags: [shaman]
+      parameters:
+        - name: checksum
+          in: path
+          required: true
+          schema: {type: string}
+          description: SHA256 checksum of the file.
+        - name: filesize
+          in: path
+          required: true
+          schema: {type: integer}
+          description: Size of the file in bytes.
+        - name: X-Shaman-Can-Defer-Upload
+          in: header
+          required: false
+          schema: {type: boolean}
+          description: >
+            The client indicates that it can defer uploading this file. The
+            "208" response will not only be returned when the file is already
+            fully known to the Shaman server, but also when someone else is
+            currently uploading this file.
+        - name: X-Shaman-Original-Filename
+          in: header
+          required: false
+          schema: {type: string}
+          description: >
+            The original filename. If sent along with the request, it will be
+            included in the server logs, which can aid in debugging.
+      requestBody:
+        description: The file's contents.
+        required: true
+        content:
+          application/octet-stream:
+            example: Just the contents of any file.
+      responses:
+        "204":
+          description: Checkout was created succesfully.
+        "208":
+          description: >
+            The file has already been uploaded. Note that this can also be sent
+            when this file is currently in the process of being uploaded, and
+            `X-Shaman-Can-Defer-Upload: true` was sent in the request.
+        "409":
+          description: Checkout already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 tags:
   - name: meta
     description: Info about the Flamenco Manager itself.
@@ -267,6 +420,8 @@ tags:
     description: Job & task queries, submission, and management.
   - name: worker
     description: API for Flamenco Workers to communicate with Flamenco Manager.
+  - name: shaman
+    description: Shaman API, for file uploading & creating job checkouts.
 
 components:
   schemas:
@@ -523,6 +678,49 @@ components:
       required: [message]
       properties:
         message: {type: string}
+
+    ShamanRequirements:
+      type: object
+      description: Set of files with their SHA256 checksum and size in bytes.
+      properties:
+        "req":
+          type: array
+          items:
+            type: object
+            properties:
+              "c": {type: string, description: "SHA256 checksum of the file"}
+              "s": {type: integer, description: "File size in bytes"}
+            required: [c, s]
+      required: [req]
+      example:
+        req:
+          - c: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
+            s: 1424
+          - c: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
+            s: 127
+
+    ShamanCheckout:
+      type: object
+      description: Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
+      properties:
+        "req":
+          type: array
+          items:
+            type: object
+            properties:
+              "c": {type: string, description: "SHA256 checksum of the file"}
+              "s": {type: integer, description: "File size in bytes"}
+              "p": {type: string, description: "File checkout path"}
+            required: [c, s, p]
+      required: [req]
+      example:
+        req:
+          - c: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
+            s: 1424
+            p: definition.go
+          - c: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
+            s: 127
+            p: logging.go
 
   securitySchemes:
     worker_auth:
