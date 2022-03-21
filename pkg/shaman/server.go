@@ -104,24 +104,24 @@ func (s *Server) Close() {
 // Checkout creates a directory, and symlinks the required files into it. The
 // files must all have been uploaded to Shaman before calling this.
 func (s *Server) Checkout(ctx context.Context, checkoutID string, checkout api.ShamanCheckout) error {
-	return nil
+	return s.checkoutMan.Checkout(ctx, checkoutID, checkout)
 }
 
 // Requirements checks a Shaman Requirements file, and returns the subset
 // containing the unknown files.
-func (s *Server) Requirements(ctx context.Context, requirements api.ShamanRequirements) (api.ShamanRequirements, error) {
-	return requirements, nil
+func (s *Server) Requirements(ctx context.Context, requirements api.ShamanRequirementsRequest) (api.ShamanRequirementsResponse, error) {
+	return s.checkoutMan.ReportRequirements(ctx, requirements)
 }
 
-var fsStatusToApiStatus = map[filestore.FileStatus]api.ShamanFileStatusStatus{
-	filestore.StatusDoesNotExist: api.ShamanFileStatusStatusUnknown,
-	filestore.StatusUploading:    api.ShamanFileStatusStatusUploading,
-	filestore.StatusStored:       api.ShamanFileStatusStatusStored,
+var fsStatusToApiStatus = map[filestore.FileStatus]api.ShamanFileStatus{
+	filestore.StatusDoesNotExist: api.ShamanFileStatusUnknown,
+	filestore.StatusUploading:    api.ShamanFileStatusUploading,
+	filestore.StatusStored:       api.ShamanFileStatusStored,
 }
 
 // Check the status of a file on the Shaman server.
 // status (stored, currently being uploaded, unknown).
-func (s *Server) FileStoreCheck(ctx context.Context, checksum string, filesize int64) api.ShamanFileStatusStatus {
+func (s *Server) FileStoreCheck(ctx context.Context, checksum string, filesize int64) api.ShamanFileStatus {
 	status := s.fileServer.CheckFile(checksum, filesize)
 	apiStatus, ok := fsStatusToApiStatus[status]
 	if !ok {
@@ -130,7 +130,7 @@ func (s *Server) FileStoreCheck(ctx context.Context, checksum string, filesize i
 			Int64("filesize", filesize).
 			Int("fileserverStatus", int(status)).
 			Msg("shaman: unknown status on fileserver")
-		return api.ShamanFileStatusStatusUnknown
+		return api.ShamanFileStatusUnknown
 	}
 	return apiStatus
 }

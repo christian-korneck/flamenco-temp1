@@ -66,13 +66,13 @@ const (
 	JobStatusWaitingForFiles JobStatus = "waiting-for-files"
 )
 
-// Defines values for ShamanFileStatusStatus.
+// Defines values for ShamanFileStatus.
 const (
-	ShamanFileStatusStatusStored ShamanFileStatusStatus = "stored"
+	ShamanFileStatusStored ShamanFileStatus = "stored"
 
-	ShamanFileStatusStatusUnknown ShamanFileStatusStatus = "unknown"
+	ShamanFileStatusUnknown ShamanFileStatus = "unknown"
 
-	ShamanFileStatusStatusUploading ShamanFileStatusStatus = "uploading"
+	ShamanFileStatusUploading ShamanFileStatus = "uploading"
 )
 
 // Defines values for TaskStatus.
@@ -244,35 +244,46 @@ type SecurityError struct {
 
 // Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
 type ShamanCheckout struct {
-	Req []struct {
-		// SHA256 checksum of the file
-		C string `json:"c"`
-
-		// File checkout path
-		P string `json:"p"`
-
-		// File size in bytes
-		S int `json:"s"`
-	} `json:"req"`
+	Files []ShamanFileSpecWithPath `json:"files"`
 }
 
-// Status of a file in the Shaman storage.
-type ShamanFileStatus struct {
-	Status ShamanFileStatusStatus `json:"status"`
+// Specification of a file in the Shaman storage.
+type ShamanFileSpec struct {
+	// SHA256 checksum of the file
+	Sha string `json:"sha"`
+
+	// File size in bytes
+	Size int `json:"size"`
 }
 
-// ShamanFileStatusStatus defines model for ShamanFileStatus.Status.
-type ShamanFileStatusStatus string
+// ShamanFileSpecWithPath defines model for ShamanFileSpecWithPath.
+type ShamanFileSpecWithPath struct {
+	// Embedded struct due to allOf(#/components/schemas/ShamanFileSpec)
+	ShamanFileSpec `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+	// Location of the file in the checkout
+	Path string `json:"path"`
+}
+
+// ShamanFileSpecWithStatus defines model for ShamanFileSpecWithStatus.
+type ShamanFileSpecWithStatus struct {
+	// Embedded struct due to allOf(#/components/schemas/ShamanFileSpec)
+	ShamanFileSpec `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+	Status ShamanFileStatus `json:"status"`
+}
+
+// ShamanFileStatus defines model for ShamanFileStatus.
+type ShamanFileStatus string
 
 // Set of files with their SHA256 checksum and size in bytes.
-type ShamanRequirements struct {
-	Req []struct {
-		// SHA256 checksum of the file
-		C string `json:"c"`
+type ShamanRequirementsRequest struct {
+	Files []ShamanFileSpec `json:"files"`
+}
 
-		// File size in bytes
-		S int `json:"s"`
-	} `json:"req"`
+// The files from a requirements request, with their status on the Shaman server. Files that are known to Shaman are excluded from the response.
+type ShamanRequirementsResponse struct {
+	Files []ShamanFileSpecWithStatus `json:"files"`
 }
 
 // Job definition submitted to Flamenco.
@@ -345,7 +356,7 @@ type TaskUpdateJSONBody TaskUpdate
 type ShamanCheckoutJSONBody ShamanCheckout
 
 // ShamanCheckoutRequirementsJSONBody defines parameters for ShamanCheckoutRequirements.
-type ShamanCheckoutRequirementsJSONBody ShamanRequirements
+type ShamanCheckoutRequirementsJSONBody ShamanRequirementsRequest
 
 // ShamanFileStoreParams defines parameters for ShamanFileStore.
 type ShamanFileStoreParams struct {

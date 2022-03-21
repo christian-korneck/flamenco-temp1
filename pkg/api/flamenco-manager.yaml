@@ -272,13 +272,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ShamanRequirements"
+              $ref: "#/components/schemas/ShamanRequirementsRequest"
       responses:
         "200":
           description: Subset of the posted requirements, indicating the unknown files.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/ShamanRequirements"}
+              schema: {$ref: "#/components/schemas/ShamanRequirementsResponse"}
         default:
           description: unexpected error
           content:
@@ -307,6 +307,12 @@ paths:
       responses:
         "204":
           description: Checkout was created succesfully.
+        "424":
+          description: There were files missing. Use `shamanCheckoutRequirements` to figure out which ones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "409":
           description: Checkout already exists.
           content:
@@ -344,7 +350,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShamanFileStatus'
+                type: object
+                description: Status of a file in the Shaman storage.
+                properties:
+                  "status": {$ref: "#/components/schemas/ShamanFileStatus"}
+                required: [status]
+
         default:
           description: unexpected error
           content:
@@ -677,57 +688,80 @@ components:
       properties:
         message: {type: string}
 
-    ShamanRequirements:
+    ShamanRequirementsRequest:
       type: object
       description: Set of files with their SHA256 checksum and size in bytes.
       properties:
-        "req":
+        "files":
           type: array
-          items:
-            type: object
-            properties:
-              "c": {type: string, description: "SHA256 checksum of the file"}
-              "s": {type: integer, description: "File size in bytes"}
-            required: [c, s]
-      required: [req]
+          items: {$ref: "#/components/schemas/ShamanFileSpec"}
+      required: [files]
       example:
-        req:
-          - c: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
-            s: 1424
-          - c: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
-            s: 127
+        files:
+          - sha: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
+            size: 1424
+          - sha: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
+            size: 127
+
+    ShamanRequirementsResponse:
+      type: object
+      description: The files from a requirements request, with their status on the Shaman server. Files that are known to Shaman are excluded from the response.
+      properties:
+        "files":
+          type: array
+          items: {$ref: "#/components/schemas/ShamanFileSpecWithStatus"}
+      required: [files]
+      example:
+        files:
+          - sha: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
+            size: 1424
+            status: unknown
+          - sha: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
+            size: 127
+            status: uploading
+
+    ShamanFileSpec:
+      type: object
+      description: Specification of a file in the Shaman storage.
+      properties:
+        "sha": {type: string, description: "SHA256 checksum of the file"}
+        "size": {type: integer, description: "File size in bytes"}
+      required: [sha, size]
+
+    ShamanFileSpecWithStatus:
+      allOf:
+        - $ref: '#/components/schemas/ShamanFileSpec'
+        - properties:
+            "status": {$ref: "#/components/schemas/ShamanFileStatus"}
+          required: [status]
+
+    ShamanFileSpecWithPath:
+      allOf:
+        - $ref: '#/components/schemas/ShamanFileSpec'
+        - properties:
+            "path": {type: string, description: Location of the file in the checkout}
+          required: [path]
 
     ShamanCheckout:
       type: object
       description: Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
       properties:
-        "req":
+        "files":
           type: array
-          items:
-            type: object
-            properties:
-              "c": {type: string, description: "SHA256 checksum of the file"}
-              "s": {type: integer, description: "File size in bytes"}
-              "p": {type: string, description: "File checkout path"}
-            required: [c, s, p]
-      required: [req]
+          items: {$ref: "#/components/schemas/ShamanFileSpecWithPath"}
+      required: [files]
       example:
-        req:
-          - c: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
-            s: 1424
-            p: definition.go
-          - c: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
-            s: 127
-            p: logging.go
+        files:
+          - sha: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
+            size: 1424
+            path: definition.go
+          - sha: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
+            size: 127
+            path: logging.go
 
     ShamanFileStatus:
-      type: object
-      description: Status of a file in the Shaman storage.
-      properties:
-        "status":
-          type: string
-          enum: [unknown, uploading, stored]
-      required: [status]
+      type: string
+      enum: [unknown, uploading, stored]
 
   securitySchemes:
     worker_auth:

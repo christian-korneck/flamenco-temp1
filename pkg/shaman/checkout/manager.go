@@ -30,7 +30,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 
 	"git.blender.org/flamenco/pkg/shaman/config"
 	"git.blender.org/flamenco/pkg/shaman/filestore"
@@ -62,12 +62,12 @@ var (
 
 // NewManager creates and returns a new Checkout Manager.
 func NewManager(conf config.Config, fileStore filestore.Storage) *Manager {
-	logger := packageLogger.WithField("checkoutDir", conf.CheckoutPath)
-	logger.Info("opening checkout directory")
+	logger := log.With().Str("checkoutDir", conf.CheckoutPath).Logger()
+	logger.Info().Msg("opening checkout directory")
 
 	err := os.MkdirAll(conf.CheckoutPath, 0777)
 	if err != nil {
-		logger.WithError(err).Fatal("unable to create checkout directory")
+		logger.Error().Err(err).Msg("unable to create checkout directory")
 	}
 
 	return &Manager{conf.CheckoutPath, fileStore, sync.WaitGroup{}}
@@ -75,7 +75,7 @@ func NewManager(conf config.Config, fileStore filestore.Storage) *Manager {
 
 // Close waits for still-running touch() calls to finish, then returns.
 func (m *Manager) Close() {
-	packageLogger.Info("shutting down Checkout manager")
+	log.Info().Msg("shutting down Checkout manager")
 	m.wg.Wait()
 }
 
@@ -106,31 +106,31 @@ func (m *Manager) PrepareCheckout(checkoutID string) (ResolvedCheckoutInfo, erro
 		return ResolvedCheckoutInfo{}, err
 	}
 
-	logger := logrus.WithFields(logrus.Fields{
-		"checkoutPath": checkoutPaths.absolutePath,
-		"checkoutID":   checkoutID,
-	})
+	logger := log.With().
+		Str("checkoutPath", checkoutPaths.absolutePath).
+		Str("checkoutID", checkoutID).
+		Logger()
 
 	if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
 		if err == nil {
 			if stat.IsDir() {
-				logger.Debug("checkout path exists")
+				logger.Debug().Msg("checkout path exists")
 			} else {
-				logger.Error("checkout path exists but is not a directory")
+				logger.Error().Msg("checkout path exists but is not a directory")
 			}
 			// No error stat'ing this path, indicating it's an existing checkout.
 			return ResolvedCheckoutInfo{}, ErrCheckoutAlreadyExists
 		}
 		// If it's any other error, it's really a problem on our side.
-		logger.WithError(err).Error("unable to stat checkout directory")
+		logger.Error().Err(err).Msg("unable to stat checkout directory")
 		return ResolvedCheckoutInfo{}, err
 	}
 
 	if err := os.MkdirAll(checkoutPaths.absolutePath, 0777); err != nil {
-		logger.WithError(err).Fatal("unable to create checkout directory")
+		logger.Error().Err(err).Msg("unable to create checkout directory")
 	}
 
-	logger.WithField("relPath", checkoutPaths.RelativePath).Info("created checkout directory")
+	logger.Info().Str("relPath", checkoutPaths.RelativePath).Msg("created checkout directory")
 	return checkoutPaths, nil
 }
 
@@ -141,19 +141,19 @@ func (m *Manager) EraseCheckout(checkoutID string) error {
 		return err
 	}
 
-	logger := logrus.WithFields(logrus.Fields{
-		"checkoutPath": checkoutPaths.absolutePath,
-		"checkoutID":   checkoutID,
-	})
+	logger := log.With().
+		Str("checkoutPath", checkoutPaths.absolutePath).
+		Str("checkoutID", checkoutID).
+		Logger()
 	if err := os.RemoveAll(checkoutPaths.absolutePath); err != nil {
-		logger.WithError(err).Error("unable to remove checkout directory")
+		logger.Error().Err(err).Msg("unable to remove checkout directory")
 		return err
 	}
 
 	// Try to remove the parent path as well, to not keep the dangling two-letter dirs.
 	// Failure is fine, though, because there is no guarantee it's empty anyway.
 	os.Remove(path.Dir(checkoutPaths.absolutePath))
-	logger.Info("removed checkout directory")
+	logger.Info().Msg("removed checkout directory")
 	return nil
 }
 
@@ -161,18 +161,18 @@ func (m *Manager) EraseCheckout(checkoutID string) error {
 // It does *not* do any validation of the validity of the paths!
 func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath string) error {
 	symlinkPath := path.Join(checkoutPath, symlinkRelativePath)
-	logger := logrus.WithFields(logrus.Fields{
-		"blobPath":    blobPath,
-		"symlinkPath": symlinkPath,
-	})
+	logger := log.With().
+		Str("blobPath", blobPath).
+		Str("symlinkPath", symlinkPath).
+		Logger()
 
 	blobPath, err := filepath.Abs(blobPath)
 	if err != nil {
-		logger.WithError(err).Error("unable to make blobPath absolute")
+		logger.Error().Err(err).Msg("unable to make blobPath absolute")
 		return err
 	}
 
-	logger.Debug("creating symlink")
+	logger.Debug().Msg("creating symlink")
 
 	// This is expected to fail sometimes, because we don't create parent directories yet.
 	// We only create those when we get a failure from symlinking.
@@ -181,20 +181,20 @@ func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath 
 		return err
 	}
 	if !os.IsNotExist(err) {
-		logger.WithError(err).Error("unable to create symlink")
+		logger.Error().Err(err).Msg("unable to create symlink")
 		return err
 	}
 
-	logger.Debug("creating parent directory")
+	logger.Debug().Msg("creating parent directory")
 
 	dir := path.Dir(symlinkPath)
 	if err := os.MkdirAll(dir, 0777); err != nil {
-		logger.WithError(err).Error("unable to create parent directory")
+		logger.Error().Err(err).Msg("unable to create parent directory")
 		return err
 	}
 
 	if err := os.Symlink(blobPath, symlinkPath); err != nil {
-		logger.WithError(err).Error("unable to create symlink, after creating parent directory")
+		logger.Error().Err(err).Msg("unable to create symlink, after creating parent directory")
 		return err
 	}
 
@@ -215,23 +215,17 @@ func touchFile(blobPath string) error {
 	}
 	now := time.Now()
 
-	logger := logrus.WithField("file", blobPath)
-	logger.Debug("touching")
-
 	err := touch.Touch(blobPath)
-	logLevel := logrus.DebugLevel
 	if err != nil {
-		logger = logger.WithError(err)
-		logLevel = logrus.WarnLevel
+		return err
 	}
 
 	duration := time.Now().Sub(now)
-	logger = logger.WithField("duration", duration)
-	if duration < 1*time.Second {
-		logger.Log(logLevel, "done touching")
-	} else {
-		logger.Log(logLevel, "done touching but took a long time")
+	logger := log.With().Str("file", blobPath).Logger()
+	if duration > 1*time.Second {
+		logger.Warn().Str("duration", duration.String()).Msg("done touching but took a long time")
 	}
 
+	logger.Debug().Msg("done touching")
 	return err
 }

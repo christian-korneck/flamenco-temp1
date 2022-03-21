@@ -440,10 +440,10 @@ func (mr *MockShamanMockRecorder) FileStore(arg0, arg1, arg2, arg3, arg4, arg5 i
 }
 
 // FileStoreCheck mocks base method.
-func (m *MockShaman) FileStoreCheck(arg0 context.Context, arg1 string, arg2 int64) (int, error) {
+func (m *MockShaman) FileStoreCheck(arg0 context.Context, arg1 string, arg2 int64) (api.ShamanFileStatus, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FileStoreCheck", arg0, arg1, arg2)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(api.ShamanFileStatus)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -455,10 +455,10 @@ func (mr *MockShamanMockRecorder) FileStoreCheck(arg0, arg1, arg2 interface{}) *
 }
 
 // Requirements mocks base method.
-func (m *MockShaman) Requirements(arg0 context.Context, arg1 api.ShamanRequirements) (api.ShamanRequirements, error) {
+func (m *MockShaman) Requirements(arg0 context.Context, arg1 api.ShamanRequirementsRequest) (api.ShamanRequirementsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Requirements", arg0, arg1)
-	ret0, _ := ret[0].(api.ShamanRequirements)
+	ret0, _ := ret[0].(api.ShamanRequirementsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

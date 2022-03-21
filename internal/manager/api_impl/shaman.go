@@ -47,7 +47,7 @@ func (f *Flamenco) ShamanCheckoutRequirements(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	unknownFiles, err := f.shaman.Requirements(e.Request().Context(), api.ShamanRequirements(reqBody))
+	unknownFiles, err := f.shaman.Requirements(e.Request().Context(), api.ShamanRequirementsRequest(reqBody))
 	if err != nil {
 		logger.Warn().Err(err).Msg("Shaman: checking checkout requirements file")
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error: %v", err)
@@ -71,11 +71,11 @@ func (f *Flamenco) ShamanFileStoreCheck(e echo.Context, checksum string, filesiz
 
 	// TODO: actually switch over the actual statuses, see the TODO in the Shaman interface.
 	switch status {
-	case api.ShamanFileStatusStatusStored:
+	case api.ShamanFileStatusStored:
 		return e.String(http.StatusOK, "")
-	case api.ShamanFileStatusStatusUploading:
+	case api.ShamanFileStatusUploading:
 		return e.String(420 /* Enhance Your Calm */, "")
-	case api.ShamanFileStatusStatusUnknown:
+	case api.ShamanFileStatusUnknown:
 		return e.String(http.StatusNotFound, "")
 	}
 

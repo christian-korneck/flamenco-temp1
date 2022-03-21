@@ -24,6 +24,7 @@ package filestore
 
 import (
 	"errors"
+	"fmt"
 	"os"
 )
 
@@ -64,6 +65,19 @@ const (
 	StatusUploading
 	StatusStored
 )
+
+func (fs FileStatus) String() string {
+	switch fs {
+	case StatusDoesNotExist:
+		return "DoesNotExist"
+	case StatusUploading:
+		return "Uploading"
+	case StatusStored:
+		return "Stored"
+	default:
+		return fmt.Sprintf("invalid(%d)", int(fs))
+	}
+}
 
 // StoredOnly indicates whether to resolve only 'stored' files or also 'uploading' or 'checking'.
 type StoredOnly bool

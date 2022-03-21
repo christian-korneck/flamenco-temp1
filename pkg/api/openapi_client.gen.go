@@ -1338,6 +1338,7 @@ type ShamanCheckoutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON409      *Error
+	JSON424      *Error
 	JSONDefault  *Error
 }
 
@@ -1360,7 +1361,7 @@ func (r ShamanCheckoutResponse) StatusCode() int {
 type ShamanCheckoutRequirementsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ShamanRequirements
+	JSON200      *ShamanRequirementsResponse
 	JSONDefault  *Error
 }
 
@@ -1383,8 +1384,10 @@ func (r ShamanCheckoutRequirementsResponse) StatusCode() int {
 type ShamanFileStoreCheckResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ShamanFileStatus
-	JSONDefault  *Error
+	JSON200      *struct {
+		Status ShamanFileStatus `json:"status"`
+	}
+	JSONDefault *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1406,7 +1409,6 @@ func (r ShamanFileStoreCheckResponse) StatusCode() int {
 type ShamanFileStoreResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON409      *Error
 	JSONDefault  *Error
 }
 
@@ -1966,6 +1968,13 @@ func ParseShamanCheckoutResponse(rsp *http.Response) (*ShamanCheckoutResponse, e
 		}
 		response.JSON409 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 424:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON424 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1993,7 +2002,7 @@ func ParseShamanCheckoutRequirementsResponse(rsp *http.Response) (*ShamanCheckou
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ShamanRequirements
+		var dest ShamanRequirementsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2026,7 +2035,9 @@ func ParseShamanFileStoreCheckResponse(rsp *http.Response) (*ShamanFileStoreChec
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ShamanFileStatus
+		var dest struct {
+			Status ShamanFileStatus `json:"status"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2058,13 +2069,6 @@ func ParseShamanFileStoreResponse(rsp *http.Response) (*ShamanFileStoreResponse,
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

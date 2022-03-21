@@ -23,17 +23,16 @@
 package fileserver
 
 import (
+	"bytes"
+	"context"
+	"io"
 	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
 	"testing"
 
+	"git.blender.org/flamenco/pkg/shaman/config"
 	"git.blender.org/flamenco/pkg/shaman/hasher"
-	"git.blender.org/flamenco/pkg/shaman/httpserver"
 
 	"git.blender.org/flamenco/pkg/shaman/filestore"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,37 +45,42 @@ func TestStoreFile(t *testing.T) {
 	assert.EqualValues(t, []byte("h\xc3\xa4h\xc3\xa4h\xc3\xa4"), payload)
 
 	filesize := int64(len(payload))
+	correctChecksum := hasher.Checksum(payload)
 
-	testWithChecksum := func(checksum string) *httptest.ResponseRecorder {
-		compressedPayload := httpserver.CompressBuffer(payload)
-		respRec := httptest.NewRecorder()
-		req := httptest.NewRequest("POST", "/files/{checksum}/{filesize}", compressedPayload)
-		req = mux.SetURLVars(req, map[string]string{
-			"checksum": checksum,
-			"filesize": strconv.FormatInt(filesize, 10),
-		})
-		req.Header.Set("Content-Encoding", "gzip")
-		req.Header.Set("X-Shaman-Original-Filename", "in-memory-file.txt")
-		server.ServeHTTP(respRec, req)
-		return respRec
+	testWithChecksum := func(checksum string, reportSize int64) error {
+		buffer := io.NopCloser(bytes.NewBuffer(payload))
+		return server.ReceiveFile(context.Background(), buffer, checksum, reportSize, false)
 	}
 
-	var respRec *httptest.ResponseRecorder
+	var err error
 	var path string
 	var status filestore.FileStatus
 
 	// A bad checksum should be rejected.
 	badChecksum := "da-checksum-is-long-enough-like-this"
-	respRec = testWithChecksum(badChecksum)
-	assert.Equal(t, http.StatusExpectationFailed, respRec.Code)
+	err = testWithChecksum(badChecksum, filesize)
+	assert.ErrorIs(t, err, ErrFileChecksumMismatch{
+		DeclaredChecksum: badChecksum,
+		ActualChecksum:   correctChecksum,
+	})
+	path, status = server.fileStore.ResolveFile(badChecksum, filesize, filestore.ResolveEverything)
+	assert.Equal(t, filestore.StatusDoesNotExist, status)
+	assert.Equal(t, "", path)
+
+	// A bad file size should be rejected.
+	err = testWithChecksum(correctChecksum, filesize+1)
+	assert.ErrorIs(t, err, ErrFileSizeMismatch{
+		DeclaredSize: filesize + 1,
+		ActualSize:   filesize,
+	})
 	path, status = server.fileStore.ResolveFile(badChecksum, filesize, filestore.ResolveEverything)
 	assert.Equal(t, filestore.StatusDoesNotExist, status)
 	assert.Equal(t, "", path)
 
 	// The correct checksum should be accepted.
-	correctChecksum := hasher.Checksum(payload)
-	respRec = testWithChecksum(correctChecksum)
-	assert.Equal(t, http.StatusNoContent, respRec.Code)
+	err = testWithChecksum(correctChecksum, filesize)
+	assert.NoError(t, err)
+
 	path, status = server.fileStore.ResolveFile(correctChecksum, filesize, filestore.ResolveEverything)
 	assert.Equal(t, filestore.StatusStored, status)
 	assert.FileExists(t, path)
@@ -84,4 +88,18 @@ func TestStoreFile(t *testing.T) {
 	savedContent, err := ioutil.ReadFile(path)
 	assert.Nil(t, err)
 	assert.EqualValues(t, payload, savedContent, "The file should be saved uncompressed")
+}
+
+func createTestServer() (server *FileServer, cleanup func()) {
+	config, configCleanup := config.CreateTestConfig()
+
+	store := filestore.New(config)
+	server = New(store)
+	server.Go()
+
+	cleanup = func() {
+		server.Close()
+		configCleanup()
+	}
+	return
 }

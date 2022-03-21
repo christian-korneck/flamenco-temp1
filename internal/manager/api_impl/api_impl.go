@@ -86,10 +86,10 @@ type Shaman interface {
 
 	// Requirements checks a Shaman Requirements file, and returns the subset
 	// containing the unknown files.
-	Requirements(ctx context.Context, requirements api.ShamanRequirements) (api.ShamanRequirements, error)
+	Requirements(ctx context.Context, requirements api.ShamanRequirementsRequest) (api.ShamanRequirementsResponse, error)
 
 	// Check the status of a file on the Shaman server.
-	FileStoreCheck(ctx context.Context, checksum string, filesize int64) (api.ShamanFileStatusStatus, error)
+	FileStoreCheck(ctx context.Context, checksum string, filesize int64) (api.ShamanFileStatus, error)
 
 	// Store a new file on the Shaman server. Note that the Shaman server can
 	// return early when another client finishes uploading the exact same file, to

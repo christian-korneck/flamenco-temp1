@@ -25,6 +25,8 @@ package fileserver
 import (
 	"fmt"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 // Returns a channel that is open while the given file is being received.
@@ -68,10 +70,10 @@ func (fs *FileServer) receiveListenerPeriodicCheck() {
 		numChans := len(fs.receiverChannels)
 		if numChans == 0 {
 			if lastReportedChans != 0 {
-				packageLogger.Debug("no receive listener channels")
+				log.Debug().Msg("no receive listener channels")
 			}
 		} else {
-			packageLogger.WithField("num_receiver_channels", numChans).Debug("receiving files")
+			log.Debug().Int("num_receiver_channels", numChans).Msg("receiving files")
 		}
 		lastReportedChans = numChans
 	}
@@ -79,7 +81,7 @@ func (fs *FileServer) receiveListenerPeriodicCheck() {
 	for {
 		select {
 		case <-fs.ctx.Done():
-			packageLogger.Debug("stopping receive listener periodic check")
+			log.Debug().Msg("stopping receive listener periodic check")
 			return
 		case <-time.After(1 * time.Minute):
 			doCheck()
