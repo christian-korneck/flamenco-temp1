@@ -156,6 +156,7 @@ func buildWebService(
 
 	// Ensure panics when serving a web request won't bring down the server.
 	e.Use(middleware.Recover())
+	e.Use(middleware.Gzip())
 
 	// Load the API definition and enable validation & authentication checks.
 	swagger, err := api.GetSwagger()
