@@ -43,13 +43,7 @@ func CreateTestStore() *Store {
 	conf := config.Config{
 		FileStorePath: tempDir,
 	}
-	storage := New(conf)
-	store, ok := storage.(*Store)
-	if !ok {
-		panic("storage should be *Store")
-	}
-
-	return store
+	return New(conf)
 }
 
 // CleanupTestStore deletes a store returned by CreateTestStore()

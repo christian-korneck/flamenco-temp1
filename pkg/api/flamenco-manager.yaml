@@ -340,11 +340,11 @@ paths:
           description: Size of the file in bytes.
       responses:
         "200":
-          description: The file is known to the server.
-        "420":
-          description: The file is currently being uploaded to the server.
-        "404":
-          description: The file does not exist on the server.
+          description: Normal response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShamanFileStatus'
         default:
           description: unexpected error
           content:
@@ -402,10 +402,8 @@ paths:
             `X-Shaman-Can-Defer-Upload: true` was sent in the request.
         "409":
           description: Checkout already exists.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        "417":
+          description: There was a mismatch between the request parameters and the actual file size or checksum of the uploaded file.
         default:
           description: unexpected error
           content:
@@ -721,6 +719,15 @@ components:
           - c: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
             s: 127
             p: logging.go
+
+    ShamanFileStatus:
+      type: object
+      description: Status of a file in the Shaman storage.
+      properties:
+        "status":
+          type: string
+          enum: [unknown, uploading, stored]
+      required: [status]
 
   securitySchemes:
     worker_auth:

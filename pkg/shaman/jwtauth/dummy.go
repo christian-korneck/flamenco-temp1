@@ -9,3 +9,7 @@ package jwtauth
 
 type Authenticator interface {
 }
+
+type AlwaysDeny struct{}
+
+var _ Authenticator = (*AlwaysDeny)(nil)

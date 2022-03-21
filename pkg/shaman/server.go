@@ -23,15 +23,17 @@
 package shaman
 
 import (
+	"context"
+	"io"
 	"sync"
 
+	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/shaman/checkout"
 	"git.blender.org/flamenco/pkg/shaman/config"
 	"git.blender.org/flamenco/pkg/shaman/fileserver"
 	"git.blender.org/flamenco/pkg/shaman/filestore"
-	"git.blender.org/flamenco/pkg/shaman/httpserver"
 	"git.blender.org/flamenco/pkg/shaman/jwtauth"
-	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 )
 
 // Server represents a Shaman Server.
@@ -49,9 +51,8 @@ type Server struct {
 
 // NewServer creates a new Shaman server.
 func NewServer(conf config.Config, auther jwtauth.Authenticator) *Server {
-
 	if !conf.Enabled {
-		packageLogger.Warning("Shaman server is disabled")
+		log.Info().Msg("Shaman server is disabled")
 		return nil
 	}
 
@@ -60,14 +61,14 @@ func NewServer(conf config.Config, auther jwtauth.Authenticator) *Server {
 	fileServer := fileserver.New(fileStore)
 
 	shamanServer := &Server{
-		conf,
-		auther,
-		fileStore,
-		fileServer,
-		checkoutMan,
+		config:      conf,
+		auther:      auther,
+		fileStore:   fileStore,
+		fileServer:  fileServer,
+		checkoutMan: checkoutMan,
 
-		make(chan struct{}),
-		sync.WaitGroup{},
+		shutdownChan: make(chan struct{}),
+		wg:           sync.WaitGroup{},
 	}
 
 	return shamanServer
@@ -76,32 +77,70 @@ func NewServer(conf config.Config, auther jwtauth.Authenticator) *Server {
 // Go starts goroutines for background operations.
 // After Go() has been called, use Close() to stop those goroutines.
 func (s *Server) Go() {
-	packageLogger.Info("Shaman server starting")
+	log.Info().Msg("Shaman server starting")
 	s.fileServer.Go()
 
 	if s.config.GarbageCollect.Period == 0 {
-		packageLogger.Warning("garbage collection disabled, set garbageCollect.period > 0 in configuration")
+		log.Warn().Msg("garbage collection disabled, set garbageCollect.period > 0 in configuration")
 	} else if s.config.GarbageCollect.SilentlyDisable {
-		packageLogger.Debug("not starting garbage collection")
+		log.Debug().Msg("not starting garbage collection")
 	} else {
 		s.wg.Add(1)
 		go s.periodicCleanup()
 	}
 }
 
-// AddRoutes adds the Shaman server endpoints to the given router.
-func (s *Server) AddRoutes(router *mux.Router) {
-	s.checkoutMan.AddRoutes(router, s.auther)
-	s.fileServer.AddRoutes(router, s.auther)
-
-	httpserver.RegisterTestRoutes(router, s.auther)
-}
-
 // Close shuts down the Shaman server.
 func (s *Server) Close() {
-	packageLogger.Info("shutting down Shaman server")
+	log.Info().Msg("shutting down Shaman server")
+
 	close(s.shutdownChan)
+
 	s.fileServer.Close()
 	s.checkoutMan.Close()
 	s.wg.Wait()
+}
+
+// Checkout creates a directory, and symlinks the required files into it. The
+// files must all have been uploaded to Shaman before calling this.
+func (s *Server) Checkout(ctx context.Context, checkoutID string, checkout api.ShamanCheckout) error {
+	return nil
+}
+
+// Requirements checks a Shaman Requirements file, and returns the subset
+// containing the unknown files.
+func (s *Server) Requirements(ctx context.Context, requirements api.ShamanRequirements) (api.ShamanRequirements, error) {
+	return requirements, nil
+}
+
+var fsStatusToApiStatus = map[filestore.FileStatus]api.ShamanFileStatusStatus{
+	filestore.StatusDoesNotExist: api.ShamanFileStatusStatusUnknown,
+	filestore.StatusUploading:    api.ShamanFileStatusStatusUploading,
+	filestore.StatusStored:       api.ShamanFileStatusStatusStored,
+}
+
+// Check the status of a file on the Shaman server.
+// status (stored, currently being uploaded, unknown).
+func (s *Server) FileStoreCheck(ctx context.Context, checksum string, filesize int64) api.ShamanFileStatusStatus {
+	status := s.fileServer.CheckFile(checksum, filesize)
+	apiStatus, ok := fsStatusToApiStatus[status]
+	if !ok {
+		log.Warn().
+			Str("checksum", checksum).
+			Int64("filesize", filesize).
+			Int("fileserverStatus", int(status)).
+			Msg("shaman: unknown status on fileserver")
+		return api.ShamanFileStatusStatusUnknown
+	}
+	return apiStatus
+}
+
+// Store a new file on the Shaman server. Note that the Shaman server can return
+// early when another client finishes uploading the exact same file, to prevent
+// double uploads.
+func (s *Server) FileStore(ctx context.Context, file io.ReadCloser, checksum string, filesize int64, canDefer bool, originalFilename string) error {
+	err := s.fileServer.ReceiveFile(ctx, file, checksum, filesize, canDefer)
+	// TODO: Maybe translate this error into something that can be understood by
+	// the caller without relying on types declared in the `fileserver` package?
+	return err
 }

@@ -46,7 +46,7 @@ type GCStats struct {
 }
 
 func (s *Server) periodicCleanup() {
-	defer packageLogger.Debug("shutting down period cleanup")
+	defer log.Debug().Msg("shaman: shutting down period cleanup")
 	defer s.wg.Done()
 
 	for {

@@ -89,9 +89,7 @@ type Shaman interface {
 	Requirements(ctx context.Context, requirements api.ShamanRequirements) (api.ShamanRequirements, error)
 
 	// Check the status of a file on the Shaman server.
-	// TODO: instead of an integer, return a constant that indicates the actual
-	// status (stored, currently being uploaded, unknown).
-	FileStoreCheck(ctx context.Context, checksum string, filesize int64) (int, error)
+	FileStoreCheck(ctx context.Context, checksum string, filesize int64) (api.ShamanFileStatusStatus, error)
 
 	// Store a new file on the Shaman server. Note that the Shaman server can
 	// return early when another client finishes uploading the exact same file, to

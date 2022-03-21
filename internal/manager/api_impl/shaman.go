@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"git.blender.org/flamenco/pkg/api"
+	"git.blender.org/flamenco/pkg/shaman/fileserver"
 )
 
 // Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
@@ -70,11 +71,11 @@ func (f *Flamenco) ShamanFileStoreCheck(e echo.Context, checksum string, filesiz
 
 	// TODO: actually switch over the actual statuses, see the TODO in the Shaman interface.
 	switch status {
-	case 0: // known
+	case api.ShamanFileStatusStatusStored:
 		return e.String(http.StatusOK, "")
-	case 1: // being uploaded
+	case api.ShamanFileStatusStatusUploading:
 		return e.String(420 /* Enhance Your Calm */, "")
-	case 2: // unknown
+	case api.ShamanFileStatusStatusUnknown:
 		return e.String(http.StatusNotFound, "")
 	}
 
@@ -108,7 +109,21 @@ func (f *Flamenco) ShamanFileStore(e echo.Context, checksum string, filesize int
 		canDefer, origFilename,
 	)
 	if err != nil {
-		logger.Warn().Err(err).Msg("Shaman: checking stored file")
+		if err == fileserver.ErrFileAlreadyExists {
+			return e.String(http.StatusAlreadyReported, "")
+		}
+
+		logger.Warn().Err(err).Msg("shaman: checking stored file")
+		if sizeErr, ok := err.(fileserver.ErrFileSizeMismatch); ok {
+			return sendAPIError(e, http.StatusExpectationFailed,
+				"size mismatch, expected %d bytes, received %d bytes",
+				sizeErr.DeclaredSize, sizeErr.ActualSize)
+		}
+		if checksumErr, ok := err.(fileserver.ErrFileChecksumMismatch); ok {
+			return sendAPIError(e, http.StatusExpectationFailed,
+				"checksum mismatch, expected %d bytes, received %d bytes",
+				checksumErr.DeclaredChecksum, checksumErr.ActualChecksum)
+		}
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error: %v", err)
 	}
 

@@ -66,6 +66,15 @@ const (
 	JobStatusWaitingForFiles JobStatus = "waiting-for-files"
 )
 
+// Defines values for ShamanFileStatusStatus.
+const (
+	ShamanFileStatusStatusStored ShamanFileStatusStatus = "stored"
+
+	ShamanFileStatusStatusUnknown ShamanFileStatusStatus = "unknown"
+
+	ShamanFileStatusStatusUploading ShamanFileStatusStatus = "uploading"
+)
+
 // Defines values for TaskStatus.
 const (
 	TaskStatusActive TaskStatus = "active"
@@ -246,6 +255,14 @@ type ShamanCheckout struct {
 		S int `json:"s"`
 	} `json:"req"`
 }
+
+// Status of a file in the Shaman storage.
+type ShamanFileStatus struct {
+	Status ShamanFileStatusStatus `json:"status"`
+}
+
+// ShamanFileStatusStatus defines model for ShamanFileStatus.Status.
+type ShamanFileStatusStatus string
 
 // Set of files with their SHA256 checksum and size in bytes.
 type ShamanRequirements struct {

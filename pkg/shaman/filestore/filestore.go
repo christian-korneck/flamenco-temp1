@@ -28,7 +28,7 @@ import (
 	"strconv"
 
 	"git.blender.org/flamenco/pkg/shaman/config"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 // Store represents the default Shaman file store.
@@ -40,8 +40,8 @@ type Store struct {
 }
 
 // New returns a new file store.
-func New(conf config.Config) Storage {
-	packageLogger.WithField("storageDir", conf.FileStorePath).Info("opening file store")
+func New(conf config.Config) *Store {
+	log.Info().Str("storageDir", conf.FileStorePath).Msg("shaman: opening file store")
 	store := &Store{
 		conf.FileStorePath,
 		storageBin{conf.FileStorePath, "uploading", true, ".tmp"},
@@ -55,24 +55,16 @@ func New(conf config.Config) Storage {
 func (s *Store) createDirectoryStructure() {
 	mkdir := func(subdir string) {
 		path := path.Join(s.baseDir, subdir)
-		logger := packageLogger.WithField("path", path)
-		stat, err := os.Stat(path)
 
-		if err == nil {
-			if stat.IsDir() {
-				// Exists and is a directory; nothing to do.
+		logger := log.With().Str("path", path).Logger()
+		logger.Debug().Msg("shaman: creating directory")
+
+		if err := os.MkdirAll(path, 0777); err != nil {
+			if os.IsExist(err) {
+				logger.Trace().Msg("shaman: directory exists")
 				return
 			}
-			logger.Fatal("path exists but is not a directory")
-		}
-
-		if !os.IsNotExist(err) {
-			logger.WithError(err).Fatal("unable to stat directory")
-		}
-
-		logger.Debug("creating directory")
-		if err := os.MkdirAll(path, 0777); err != nil {
-			logger.WithError(err).Fatal("unable to create directory")
+			logger.Error().Err(err).Msg("shaman: unable to create directory")
 		}
 	}
 
@@ -100,27 +92,29 @@ func (s *Store) partialFilePath(checksum string, filesize int64) string {
 func (s *Store) ResolveFile(checksum string, filesize int64, storedOnly StoredOnly) (path string, status FileStatus) {
 	partial := s.partialFilePath(checksum, filesize)
 
-	logger := packageLogger.WithFields(logrus.Fields{
-		"checksum":    checksum,
-		"filesize":    filesize,
-		"partialPath": partial,
-		"storagePath": s.baseDir,
-	})
+	logger := log.With().
+		Str("checksum", checksum).
+		Int64("filesize", filesize).
+		Str("partialPath", partial).
+		Str("storagePath", s.baseDir).
+		Logger()
 
 	if path = s.stored.resolve(partial); path != "" {
-		// logger.WithField("path", path).Debug("found stored file")
+		logger.Trace().Str("path", path).Msg("shaman: found stored file")
 		return path, StatusStored
 	}
+
 	if storedOnly != ResolveEverything {
-		// logger.Debug("file does not exist in 'stored' state")
+		logger.Trace().Msg("shaman: file does not exist in 'stored' state")
 		return "", StatusDoesNotExist
 	}
 
 	if path = s.uploading.resolve(partial); path != "" {
-		logger.WithField("path", path).Debug("found currently uploading file")
+		logger.Debug().Str("path", path).Msg("shaman: found currently uploading file")
 		return path, StatusUploading
 	}
-	// logger.Debug("file does not exist")
+
+	logger.Trace().Msg("shaman: file does not exist")
 	return "", StatusDoesNotExist
 }
 
@@ -145,11 +139,10 @@ func (s *Store) MoveToStored(checksum string, filesize int64, uploadedFilePath s
 	if err := os.MkdirAll(targetDir, 0777); err != nil {
 		return err
 	}
-	logger := packageLogger.WithFields(logrus.Fields{
-		"uploadedPath": uploadedFilePath,
-		"storagePath":  targetPath,
-	})
-	logger.Debug("moving uploaded file to storage")
+	log.Debug().
+		Str("uploadedPath", uploadedFilePath).
+		Str("storagePath", targetPath).
+		Msg("shaman: moving uploaded file to storage")
 	if err := os.Rename(uploadedFilePath, targetPath); err != nil {
 		return err
 	}
@@ -161,7 +154,7 @@ func (s *Store) MoveToStored(checksum string, filesize int64, uploadedFilePath s
 func (s *Store) removeFile(filePath string) error {
 	err := os.Remove(filePath)
 	if err != nil {
-		packageLogger.WithError(err).Debug("unable to delete file; ignoring")
+		log.Debug().Err(err).Msg("shaman: unable to delete file; ignoring")
 	}
 
 	// Clean up directory structure, but ignore any errors (dirs may not be empty)
@@ -177,8 +170,8 @@ func (s *Store) removeFile(filePath string) error {
 func (s *Store) RemoveUploadedFile(filePath string) {
 	// Check that the file path is actually in the 'uploading' storage.
 	if !s.uploading.contains("", filePath) {
-		packageLogger.WithField("file", filePath).Error(
-			"filestore.Store.RemoveUploadedFile called with file not in 'uploading' storage bin")
+		log.Error().Str("file", filePath).
+			Msg("shaman: RemoveUploadedFile called with file not in 'uploading' storage bin")
 		return
 	}
 	s.removeFile(filePath)
@@ -188,8 +181,8 @@ func (s *Store) RemoveUploadedFile(filePath string) {
 func (s *Store) RemoveStoredFile(filePath string) error {
 	// Check that the file path is actually in the 'stored' storage.
 	if !s.stored.contains("", filePath) {
-		packageLogger.WithField("file", filePath).Error(
-			"filestore.Store.RemoveStoredFile called with file not in 'stored' storage bin")
+		log.Error().Str("file", filePath).
+			Msg("shaman: RemoveStoredFile called with file not in 'stored' storage bin")
 		return os.ErrNotExist
 	}
 	return s.removeFile(filePath)

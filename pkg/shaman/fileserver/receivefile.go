@@ -24,153 +24,156 @@ package fileserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
-	"net/http"
 
 	"git.blender.org/flamenco/pkg/shaman/filestore"
 	"git.blender.org/flamenco/pkg/shaman/hasher"
-	"git.blender.org/flamenco/pkg/shaman/httpserver"
-	"git.blender.org/flamenco/pkg/shaman/jwtauth"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
-// receiveFile streams a file from a HTTP request to disk.
-func (fs *FileServer) receiveFile(ctx context.Context, w http.ResponseWriter, r *http.Request, checksum string, filesize int64) {
-	logger := packageLogger.WithFields(jwtauth.RequestLogFields(r))
+// ErrFileAlreadyExists indicates that a file already exists in the Shaman
+// storage. It can also be returned during upload, when someone else succesfully
+// uploaded the same file at the same time.
+var ErrFileAlreadyExists = errors.New("uploaded file already exists")
 
-	bodyReader, err := httpserver.DecompressedReader(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+type ErrFileSizeMismatch struct {
+	DeclaredSize int64
+	ActualSize   int64
+}
+
+func (e ErrFileSizeMismatch) Error() string {
+	return fmt.Sprintf("file size mismatched, declared %d but received %d bytes", e.DeclaredSize, e.ActualSize)
+}
+
+type ErrFileChecksumMismatch struct {
+	DeclaredChecksum string
+	ActualChecksum   string
+}
+
+func (e ErrFileChecksumMismatch) Error() string {
+	return fmt.Sprintf("file SHA256 mismatched, declared %s but received %s", e.DeclaredChecksum, e.ActualChecksum)
+}
+
+// ReceiveFile streams a file from a HTTP request to disk.
+func (fs *FileServer) ReceiveFile(
+	ctx context.Context, bodyReader io.ReadCloser,
+	checksum string, filesize int64, canDefer bool,
+) error {
+	logger := *zerolog.Ctx(ctx)
 	defer bodyReader.Close()
 
-	originalFilename := r.Header.Get("X-Shaman-Original-Filename")
-	if originalFilename == "" {
-		originalFilename = "-not specified-"
-	}
-	logger = logger.WithField("originalFilename", originalFilename)
-
 	localPath, status := fs.fileStore.ResolveFile(checksum, filesize, filestore.ResolveEverything)
-	logger = logger.WithField("path", localPath)
-	if status == filestore.StatusStored {
-		logger.Info("uploaded file already exists")
-		w.Header().Set("Location", r.RequestURI)
-		http.Error(w, "File already stored", http.StatusAlreadyReported)
-		return
+	logger = logger.With().Str("path", localPath).Logger()
+
+	switch status {
+	case filestore.StatusStored:
+		logger.Info().Msg("uploaded file already exists")
+		return ErrFileAlreadyExists
+	case filestore.StatusUploading:
+		if canDefer {
+			logger.Info().Msg("someone is uploading this file and client can defer")
+			return ErrFileAlreadyExists
+		}
 	}
 
-	if status == filestore.StatusUploading && r.Header.Get("X-Shaman-Can-Defer-Upload") == "true" {
-		logger.Info("someone is uploading this file and client can defer")
-		http.Error(w, "File being uploaded, please defer", http.StatusAlreadyReported)
-		return
-	}
-	logger.Info("receiving file")
+	logger.Info().Msg("receiving file")
 
 	streamTo, err := fs.fileStore.OpenForUpload(checksum, filesize)
 	if err != nil {
-		logger.WithError(err).Error("unable to open file for writing uploaded data")
-		http.Error(w, "Unable to open file", http.StatusInternalServerError)
-		return
+		return fmt.Errorf("opening file for writing uploaded data: %w", err)
 	}
 
-	// clean up temporary file if it still exists at function exit.
+	// Clean up temporary file if it still exists at function exit.
 	defer func() {
 		streamTo.Close()
 		fs.fileStore.RemoveUploadedFile(streamTo.Name())
 	}()
 
-	// Abort this uploadwhen the file has been finished by someone else.
+	// Abort this upload when the file has been finished by someone else.
 	uploadDone := make(chan struct{})
 	uploadAlreadyCompleted := false
 	defer close(uploadDone)
 	receiverChannel := fs.receiveListenerFor(checksum, filesize)
 	go func() {
 		select {
-		case <-receiverChannel:
 		case <-uploadDone:
 			close(receiverChannel)
 			return
+		case <-receiverChannel:
 		}
-
-		logger := logger.WithField("path", localPath)
-		logger.Info("file was completed during someone else's upload")
+		logger.Info().Msg("file was completed during someone else's upload")
 
 		uploadAlreadyCompleted = true
-		err := r.Body.Close()
+		err := bodyReader.Close()
 		if err != nil {
-			logger.WithError(err).Warning("error closing connection")
+			logger.Warn().Err(err).Msg("error closing connection")
 		}
 	}()
 
+	// TODO: pass context to hasher.Copy()
 	written, actualChecksum, err := hasher.Copy(streamTo, bodyReader)
 	if err != nil {
 		if closeErr := streamTo.Close(); closeErr != nil {
-			logger.WithFields(logrus.Fields{
-				logrus.ErrorKey: err,
-				"closeError":    closeErr,
-			}).Error("error closing local file after other I/O error occured")
+			logger.Error().
+				AnErr("copyError", err).
+				AnErr("closeError", closeErr).
+				Msg("error closing local file after other I/O error occured")
 		}
 
-		logger = logger.WithError(err)
-		if uploadAlreadyCompleted {
-			logger.Debug("aborted upload")
-			w.Header().Set("Location", r.RequestURI)
-			http.Error(w, "File already stored", http.StatusAlreadyReported)
-		} else if err == io.ErrUnexpectedEOF {
-			logger.Info("unexpected EOF, client probably just disconnected")
-		} else {
-			logger.Warning("unable to copy request body to file")
-			http.Error(w, "I/O error", http.StatusInternalServerError)
+		logger = logger.With().Err(err).Logger()
+		switch {
+		case uploadAlreadyCompleted:
+			logger.Debug().Msg("aborted upload")
+			return ErrFileAlreadyExists
+		case err == io.ErrUnexpectedEOF:
+			logger.Debug().Msg("unexpected EOF, client probably just disconnected")
+			return err
+		default:
+			return fmt.Errorf("unable to copy request body to file: %w", err)
 		}
-		return
 	}
 
 	if err := streamTo.Close(); err != nil {
-		logger.WithError(err).Warning("error closing local file")
-		http.Error(w, "I/O error", http.StatusInternalServerError)
-		return
+		return fmt.Errorf("closing local file: %w", err)
 	}
 
 	if written != filesize {
-		logger.WithFields(logrus.Fields{
-			"declaredSize": filesize,
-			"actualSize":   written,
-		}).Warning("mismatch between expected and actual size")
-		http.Error(w,
-			fmt.Sprintf("Received %d bytes but you promised %d", written, filesize),
-			http.StatusExpectationFailed)
-		return
+		logger.Warn().
+			Int64("declaredSize", filesize).
+			Int64("actualSize", written).
+			Msg("mismatch between expected and actual size")
+		return ErrFileSizeMismatch{
+			DeclaredSize: filesize,
+			ActualSize:   written,
+		}
 	}
 
 	if actualChecksum != checksum {
-		logger.WithFields(logrus.Fields{
-			"declaredChecksum": checksum,
-			"actualChecksum":   actualChecksum,
-		}).Warning("mismatch between expected and actual checksum")
-		http.Error(w,
-			"Declared and actual checksums differ",
-			http.StatusExpectationFailed)
-		return
+		logger.Warn().
+			Str("declaredChecksum", checksum).
+			Str("actualChecksum", actualChecksum).
+			Msg("mismatch between expected and actual checksum")
+		return ErrFileChecksumMismatch{
+			DeclaredChecksum: checksum,
+			ActualChecksum:   actualChecksum,
+		}
 	}
 
-	logger.WithFields(logrus.Fields{
-		"receivedBytes": written,
-		"checksum":      actualChecksum,
-		"tempFile":      streamTo.Name(),
-	}).Debug("File received")
+	logger.Debug().
+		Int64("receivedBytes", written).
+		Str("checksum", actualChecksum).
+		Str("tempFile", streamTo.Name()).
+		Msg("File received")
 
 	if err := fs.fileStore.MoveToStored(checksum, filesize, streamTo.Name()); err != nil {
-		logger.WithFields(logrus.Fields{
-			"tempFile":      streamTo.Name(),
-			logrus.ErrorKey: err,
-		}).Error("unable to move file from 'upload' to 'stored' storage")
-		http.Error(w,
-			"unable to move file from 'upload' to 'stored' storage",
-			http.StatusInternalServerError)
-		return
+		logger.Error().
+			Err(err).
+			Str("tempFile", streamTo.Name()).
+			Msg("unable to move file from 'upload' to 'stored' storage")
+		return err
 	}
 
-	http.Error(w, "", http.StatusNoContent)
+	return nil
 }

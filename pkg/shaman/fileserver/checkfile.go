@@ -23,24 +23,10 @@
 package fileserver
 
 import (
-	"context"
-	"net/http"
-
 	"git.blender.org/flamenco/pkg/shaman/filestore"
 )
 
-var responseForStatus = map[filestore.FileStatus]int{
-	filestore.StatusUploading:    420, // Enhance Your Calm
-	filestore.StatusStored:       http.StatusOK,
-	filestore.StatusDoesNotExist: http.StatusNotFound,
-}
-
-func (fs *FileServer) checkFile(ctx context.Context, w http.ResponseWriter, checksum string, filesize int64) {
+func (fs *FileServer) CheckFile(checksum string, filesize int64) filestore.FileStatus {
 	_, status := fs.fileStore.ResolveFile(checksum, filesize, filestore.ResolveEverything)
-	code, ok := responseForStatus[status]
-	if !ok {
-		packageLogger.WithField("fileStoreStatus", status).Error("no HTTP status code implemented")
-		code = http.StatusInternalServerError
-	}
-	w.WriteHeader(code)
+	return status
 }
