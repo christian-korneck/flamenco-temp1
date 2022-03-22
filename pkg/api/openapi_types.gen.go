@@ -244,7 +244,9 @@ type SecurityError struct {
 
 // Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
 type ShamanCheckout struct {
-	Files []ShamanFileSpecWithPath `json:"files"`
+	// Path where the Manager should create this checkout, It is relative to the Shaman checkout path as configured on the Manager. In older versions of the Shaman this was just the "checkout ID", but in this version it can be a path like `project-slug/scene-name/unique-ID`.
+	CheckoutPath string                   `json:"checkoutPath"`
+	Files        []ShamanFileSpecWithPath `json:"files"`
 }
 
 // Specification of a file in the Shaman storage.

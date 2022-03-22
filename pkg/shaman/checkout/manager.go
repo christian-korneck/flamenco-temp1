@@ -40,7 +40,7 @@ import (
 // Manager creates checkouts and provides info about missing files.
 type Manager struct {
 	checkoutBasePath string
-	fileStore        filestore.Storage
+	fileStore        *filestore.Store
 
 	wg sync.WaitGroup
 }
@@ -49,8 +49,8 @@ type Manager struct {
 type ResolvedCheckoutInfo struct {
 	// The absolute path on our filesystem.
 	absolutePath string
-	// The path relative to the Manager.checkoutBasePath. This is what is
-	// sent back to the client.
+	// The path relative to the Manager.checkoutBasePath. This is what was
+	// received from the client.
 	RelativePath string
 }
 
@@ -61,7 +61,7 @@ var (
 )
 
 // NewManager creates and returns a new Checkout Manager.
-func NewManager(conf config.Config, fileStore filestore.Storage) *Manager {
+func NewManager(conf config.Config, fileStore *filestore.Store) *Manager {
 	logger := log.With().Str("checkoutDir", conf.CheckoutPath).Logger()
 	logger.Info().Msg("opening checkout directory")
 
@@ -79,36 +79,28 @@ func (m *Manager) Close() {
 	m.wg.Wait()
 }
 
-func (m *Manager) pathForCheckoutID(checkoutID string) (ResolvedCheckoutInfo, error) {
-	if !isValidCheckoutID(checkoutID) {
+func (m *Manager) pathForCheckout(requestedCheckoutPath string) (ResolvedCheckoutInfo, error) {
+	if !isValidCheckoutPath(requestedCheckoutPath) {
 		return ResolvedCheckoutInfo{}, ErrInvalidCheckoutID
 	}
 
-	// When changing the number of path components the checkout ID is turned into,
-	// be sure to also update the EraseCheckout() function for this.
-
-	// We're expecting ObjectIDs as checkoutIDs, which means most variation
-	// is in the last characters.
-	lastBitIndex := len(checkoutID) - 2
-	relativePath := path.Join(checkoutID[lastBitIndex:], checkoutID)
-
 	return ResolvedCheckoutInfo{
-		absolutePath: path.Join(m.checkoutBasePath, relativePath),
-		RelativePath: relativePath,
+		absolutePath: filepath.Join(m.checkoutBasePath, requestedCheckoutPath),
+		RelativePath: requestedCheckoutPath,
 	}, nil
 }
 
 // PrepareCheckout creates the root directory for a specific checkout.
 // Returns the path relative to the checkout root directory.
-func (m *Manager) PrepareCheckout(checkoutID string) (ResolvedCheckoutInfo, error) {
-	checkoutPaths, err := m.pathForCheckoutID(checkoutID)
+func (m *Manager) PrepareCheckout(checkoutPath string) (ResolvedCheckoutInfo, error) {
+	checkoutPaths, err := m.pathForCheckout(checkoutPath)
 	if err != nil {
 		return ResolvedCheckoutInfo{}, err
 	}
 
 	logger := log.With().
-		Str("checkoutPath", checkoutPaths.absolutePath).
-		Str("checkoutID", checkoutID).
+		Str("absolutePath", checkoutPaths.absolutePath).
+		Str("checkoutPath", checkoutPath).
 		Logger()
 
 	if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
@@ -136,7 +128,7 @@ func (m *Manager) PrepareCheckout(checkoutID string) (ResolvedCheckoutInfo, erro
 
 // EraseCheckout removes the checkout directory structure identified by the ID.
 func (m *Manager) EraseCheckout(checkoutID string) error {
-	checkoutPaths, err := m.pathForCheckoutID(checkoutID)
+	checkoutPaths, err := m.pathForCheckout(checkoutID)
 	if err != nil {
 		return err
 	}

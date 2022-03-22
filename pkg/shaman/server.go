@@ -41,7 +41,7 @@ type Server struct {
 	config config.Config
 
 	auther      jwtauth.Authenticator
-	fileStore   filestore.Storage
+	fileStore   *filestore.Store
 	fileServer  *fileserver.FileServer
 	checkoutMan *checkout.Manager
 
@@ -52,7 +52,12 @@ type Server struct {
 // NewServer creates a new Shaman server.
 func NewServer(conf config.Config, auther jwtauth.Authenticator) *Server {
 	if !conf.Enabled {
-		log.Info().Msg("Shaman server is disabled")
+		log.Info().Msg("shaman server is disabled")
+		return nil
+	}
+
+	if conf.CheckoutPath == "" {
+		log.Error().Interface("config", conf).Msg("shaman: no checkout path configured, unable to start")
 		return nil
 	}
 
@@ -101,10 +106,14 @@ func (s *Server) Close() {
 	s.wg.Wait()
 }
 
+func (s *Server) IsEnabled() bool {
+	return s != nil && s.config.Enabled
+}
+
 // Checkout creates a directory, and symlinks the required files into it. The
 // files must all have been uploaded to Shaman before calling this.
-func (s *Server) Checkout(ctx context.Context, checkoutID string, checkout api.ShamanCheckout) error {
-	return s.checkoutMan.Checkout(ctx, checkoutID, checkout)
+func (s *Server) Checkout(ctx context.Context, checkout api.ShamanCheckout) error {
+	return s.checkoutMan.Checkout(ctx, checkout)
 }
 
 // Requirements checks a Shaman Requirements file, and returns the subset

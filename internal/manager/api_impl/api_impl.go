@@ -14,6 +14,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
 	"git.blender.org/flamenco/pkg/api"
+	"git.blender.org/flamenco/pkg/shaman"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 )
@@ -80,22 +81,27 @@ type ConfigService interface {
 }
 
 type Shaman interface {
+	// IsEnabled returns whether this Shaman service is enabled or not.
+	IsEnabled() bool
+
 	// Checkout creates a directory, and symlinks the required files into it. The
 	// files must all have been uploaded to Shaman before calling this.
-	Checkout(ctx context.Context, checkoutID string, checkout api.ShamanCheckout) error
+	Checkout(ctx context.Context, checkout api.ShamanCheckout) error
 
 	// Requirements checks a Shaman Requirements file, and returns the subset
 	// containing the unknown files.
 	Requirements(ctx context.Context, requirements api.ShamanRequirementsRequest) (api.ShamanRequirementsResponse, error)
 
 	// Check the status of a file on the Shaman server.
-	FileStoreCheck(ctx context.Context, checksum string, filesize int64) (api.ShamanFileStatus, error)
+	FileStoreCheck(ctx context.Context, checksum string, filesize int64) api.ShamanFileStatus
 
 	// Store a new file on the Shaman server. Note that the Shaman server can
 	// return early when another client finishes uploading the exact same file, to
 	// prevent double uploads.
 	FileStore(ctx context.Context, file io.ReadCloser, checksum string, filesize int64, canDefer bool, originalFilename string) error
 }
+
+var _ Shaman = (*shaman.Server)(nil)
 
 // NewFlamenco creates a new Flamenco service.
 func NewFlamenco(
@@ -104,6 +110,7 @@ func NewFlamenco(
 	ls LogStorage,
 	cs ConfigService,
 	sm TaskStateMachine,
+	sha Shaman,
 ) *Flamenco {
 	return &Flamenco{
 		jobCompiler:  jc,
@@ -111,6 +118,7 @@ func NewFlamenco(
 		logStorage:   ls,
 		config:       cs,
 		stateMachine: sm,
+		shaman:       sha,
 	}
 }
 

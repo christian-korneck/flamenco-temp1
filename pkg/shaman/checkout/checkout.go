@@ -16,12 +16,13 @@ var (
 	ErrMissingFiles = errors.New("unknown files requested in checkout")
 )
 
-func (m *Manager) Checkout(ctx context.Context, checkoutID string, checkout api.ShamanCheckout) error {
-	logger := *zerolog.Ctx(ctx)
+func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) error {
+	logger := (*zerolog.Ctx(ctx)).With().
+		Str("checkoutPath", checkout.CheckoutPath).Logger()
 	logger.Debug().Msg("shaman: user requested checkout creation")
 
 	// Actually create the checkout.
-	resolvedCheckoutInfo, err := m.PrepareCheckout(checkoutID)
+	resolvedCheckoutInfo, err := m.PrepareCheckout(checkout.CheckoutPath)
 	if err != nil {
 		return err
 	}
@@ -30,7 +31,10 @@ func (m *Manager) Checkout(ctx context.Context, checkoutID string, checkout api.
 	var checkoutOK bool
 	defer func() {
 		if !checkoutOK {
-			m.EraseCheckout(checkoutID)
+			err := m.EraseCheckout(checkout.CheckoutPath)
+			if err != nil {
+				logger.Error().Err(err).Msg("shaman: error erasing checkout directory")
+			}
 		}
 	}()
 

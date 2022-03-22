@@ -25,35 +25,7 @@ package filestore
 import (
 	"errors"
 	"fmt"
-	"os"
 )
-
-// Storage is the interface for Shaman file stores.
-type Storage interface {
-	// ResolveFile checks the status of the file in the store and returns the actual path.
-	ResolveFile(checksum string, filesize int64, storedOnly StoredOnly) (string, FileStatus)
-
-	// OpenForUpload returns a file pointer suitable to stream an uploaded file to.
-	OpenForUpload(checksum string, filesize int64) (*os.File, error)
-
-	// BasePath returns the directory path of the storage.
-	// This is the directory containing the 'stored' and 'uploading' directories.
-	BasePath() string
-
-	// StoragePath returns the directory path of the 'stored' storage bin.
-	StoragePath() string
-
-	// MoveToStored moves a file from 'uploading' storage to the actual 'stored' storage.
-	MoveToStored(checksum string, filesize int64, uploadedFilePath string) error
-
-	// RemoveUploadedFile removes a file from the 'uploading' storage.
-	// This is intended to clean up files for which upload was aborted for some reason.
-	RemoveUploadedFile(filePath string)
-
-	// RemoveStoredFile removes a file from the 'stored' storage bin.
-	// This is intended to garbage collect old, unused files.
-	RemoveStoredFile(filePath string) error
-}
 
 // FileStatus represents the status of a file in the store.
 type FileStatus int

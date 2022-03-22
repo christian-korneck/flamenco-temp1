@@ -412,17 +412,17 @@ func (m *MockShaman) EXPECT() *MockShamanMockRecorder {
 }
 
 // Checkout mocks base method.
-func (m *MockShaman) Checkout(arg0 context.Context, arg1 string, arg2 api.ShamanCheckout) error {
+func (m *MockShaman) Checkout(arg0 context.Context, arg1 api.ShamanCheckout) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Checkout", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Checkout", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Checkout indicates an expected call of Checkout.
-func (mr *MockShamanMockRecorder) Checkout(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockShamanMockRecorder) Checkout(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Checkout", reflect.TypeOf((*MockShaman)(nil).Checkout), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Checkout", reflect.TypeOf((*MockShaman)(nil).Checkout), arg0, arg1)
 }
 
 // FileStore mocks base method.
@@ -440,18 +440,31 @@ func (mr *MockShamanMockRecorder) FileStore(arg0, arg1, arg2, arg3, arg4, arg5 i
 }
 
 // FileStoreCheck mocks base method.
-func (m *MockShaman) FileStoreCheck(arg0 context.Context, arg1 string, arg2 int64) (api.ShamanFileStatus, error) {
+func (m *MockShaman) FileStoreCheck(arg0 context.Context, arg1 string, arg2 int64) api.ShamanFileStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FileStoreCheck", arg0, arg1, arg2)
 	ret0, _ := ret[0].(api.ShamanFileStatus)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // FileStoreCheck indicates an expected call of FileStoreCheck.
 func (mr *MockShamanMockRecorder) FileStoreCheck(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileStoreCheck", reflect.TypeOf((*MockShaman)(nil).FileStoreCheck), arg0, arg1, arg2)
+}
+
+// IsEnabled mocks base method.
+func (m *MockShaman) IsEnabled() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsEnabled")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsEnabled indicates an expected call of IsEnabled.
+func (mr *MockShamanMockRecorder) IsEnabled() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsEnabled", reflect.TypeOf((*MockShaman)(nil).IsEnabled))
 }
 
 // Requirements mocks base method.

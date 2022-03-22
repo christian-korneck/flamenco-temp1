@@ -76,3 +76,4 @@ Note that list is **not** in any specific order.
 
 - [ ] Notification system to push "job done" messages to. Ideally would be in a form/shape that allows sending a message to Rocket.Chat, Matrix, Telegram, Discord, email, webbrowser, push URL-encoded/JSON/XML to some URL, stuff like that. Idea by Dan McLaughlin.
 - [ ] Notification client inside Blender itself, so that you get a message when your job is done.
+- [ ] Separate the OpenAPI definition of Shaman from the rest of Flamenco Manager. That way a part of BAT can also use the code generator. It also is the first step towards running Shaman as a standalone service.

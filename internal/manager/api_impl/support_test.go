@@ -25,6 +25,7 @@ type mockedFlamenco struct {
 	logStorage   *mocks.MockLogStorage
 	config       *mocks.MockConfigService
 	stateMachine *mocks.MockTaskStateMachine
+	shaman       *mocks.MockShaman
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
@@ -33,7 +34,8 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	ls := mocks.NewMockLogStorage(mockCtrl)
 	cs := mocks.NewMockConfigService(mockCtrl)
 	sm := mocks.NewMockTaskStateMachine(mockCtrl)
-	f := NewFlamenco(jc, ps, ls, cs, sm)
+	sha := mocks.NewMockShaman(mockCtrl)
+	f := NewFlamenco(jc, ps, ls, cs, sm, sha)
 
 	return mockedFlamenco{
 		flamenco:     f,

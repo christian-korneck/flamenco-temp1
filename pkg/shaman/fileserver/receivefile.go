@@ -65,20 +65,25 @@ func (fs *FileServer) ReceiveFile(
 	defer bodyReader.Close()
 
 	localPath, status := fs.fileStore.ResolveFile(checksum, filesize, filestore.ResolveEverything)
-	logger = logger.With().Str("path", localPath).Logger()
+	logger = logger.With().
+		Str("path", localPath).
+		Str("checksum", checksum).
+		Int64("filesize", filesize).
+		Str("status", status.String()).
+		Logger()
 
 	switch status {
 	case filestore.StatusStored:
-		logger.Info().Msg("uploaded file already exists")
+		logger.Info().Msg("shaman: uploaded file already exists")
 		return ErrFileAlreadyExists
 	case filestore.StatusUploading:
 		if canDefer {
-			logger.Info().Msg("someone is uploading this file and client can defer")
+			logger.Info().Msg("shaman: someone is uploading this file and client can defer")
 			return ErrFileAlreadyExists
 		}
 	}
 
-	logger.Info().Msg("receiving file")
+	logger.Info().Msg("shaman: receiving file")
 
 	streamTo, err := fs.fileStore.OpenForUpload(checksum, filesize)
 	if err != nil {

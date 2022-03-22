@@ -34,6 +34,7 @@ import (
 	"git.blender.org/flamenco/internal/own_url"
 	"git.blender.org/flamenco/internal/upnp_ssdp"
 	"git.blender.org/flamenco/pkg/api"
+	"git.blender.org/flamenco/pkg/shaman"
 )
 
 var cliArgs struct {
@@ -137,7 +138,8 @@ func buildFlamencoAPI(configService *config.Service, persist *persistence.DB) ap
 	}
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
 	taskStateMachine := task_state_machine.NewStateMachine(persist)
-	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService, taskStateMachine)
+	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
+	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService, taskStateMachine, shamanServer)
 	return flamenco
 }
 

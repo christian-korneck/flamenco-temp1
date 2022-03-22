@@ -11,12 +11,18 @@ import (
 	"git.blender.org/flamenco/pkg/shaman/fileserver"
 )
 
+func (f *Flamenco) isShamanEnabled() bool {
+	return f.shaman.IsEnabled()
+}
+
 // Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
 // (POST /shaman/checkout/create/{checkoutID})
-func (f *Flamenco) ShamanCheckout(e echo.Context, checkoutID string) error {
-	logger := requestLogger(e).With().
-		Str("checkoutID", checkoutID).
-		Logger()
+func (f *Flamenco) ShamanCheckout(e echo.Context) error {
+	logger := requestLogger(e)
+	if !f.isShamanEnabled() {
+		logger.Error().Msg("shaman server not active, unable to serve request")
+		return sendAPIError(e, http.StatusServiceUnavailable, "shaman server not active")
+	}
 
 	var reqBody api.ShamanCheckoutJSONBody
 	err := e.Bind(&reqBody)
@@ -25,7 +31,7 @@ func (f *Flamenco) ShamanCheckout(e echo.Context, checkoutID string) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	err = f.shaman.Checkout(e.Request().Context(), checkoutID, api.ShamanCheckout(reqBody))
+	err = f.shaman.Checkout(e.Request().Context(), api.ShamanCheckout(reqBody))
 	if err != nil {
 		// TODO: return 409 when checkout already exists.
 		logger.Warn().Err(err).Msg("Shaman: creating checkout")
@@ -39,6 +45,10 @@ func (f *Flamenco) ShamanCheckout(e echo.Context, checkoutID string) error {
 // (POST /shaman/checkout/requirements)
 func (f *Flamenco) ShamanCheckoutRequirements(e echo.Context) error {
 	logger := requestLogger(e)
+	if !f.isShamanEnabled() {
+		logger.Error().Msg("shaman server not active, unable to serve request")
+		return sendAPIError(e, http.StatusServiceUnavailable, "shaman server not active")
+	}
 
 	var reqBody api.ShamanCheckoutRequirementsJSONBody
 	err := e.Bind(&reqBody)
@@ -62,12 +72,13 @@ func (f *Flamenco) ShamanFileStoreCheck(e echo.Context, checksum string, filesiz
 	logger := requestLogger(e).With().
 		Str("checksum", checksum).Int("filesize", filesize).
 		Logger()
-
-	status, err := f.shaman.FileStoreCheck(e.Request().Context(), checksum, int64(filesize))
-	if err != nil {
-		logger.Warn().Err(err).Msg("Shaman: checking stored file")
-		return sendAPIError(e, http.StatusInternalServerError, "unexpected error: %v", err)
+	if !f.isShamanEnabled() {
+		logger.Error().Msg("shaman server not active, unable to serve request")
+		return sendAPIError(e, http.StatusServiceUnavailable, "shaman server not active")
 	}
+
+	logger.Debug().Msg("shaman: checking file")
+	status := f.shaman.FileStoreCheck(e.Request().Context(), checksum, int64(filesize))
 
 	// TODO: actually switch over the actual statuses, see the TODO in the Shaman interface.
 	switch status {
@@ -94,6 +105,13 @@ func (f *Flamenco) ShamanFileStore(e echo.Context, checksum string, filesize int
 
 	logCtx := requestLogger(e).With().
 		Str("checksum", checksum).Int("filesize", filesize)
+
+	if !f.isShamanEnabled() {
+		logger := logCtx.Logger()
+		logger.Error().Msg("shaman server not active, unable to serve request")
+		return sendAPIError(e, http.StatusServiceUnavailable, "shaman server not active")
+	}
+
 	if params.XShamanCanDeferUpload != nil {
 		canDefer = *params.XShamanCanDeferUpload
 		logCtx = logCtx.Bool("canDefer", canDefer)

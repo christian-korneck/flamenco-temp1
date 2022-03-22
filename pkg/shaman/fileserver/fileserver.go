@@ -33,7 +33,7 @@ type receiverChannel chan struct{}
 
 // FileServer deals with receiving and serving of uploaded files.
 type FileServer struct {
-	fileStore filestore.Storage
+	fileStore *filestore.Store
 
 	receiverMutex    sync.Mutex
 	receiverChannels map[string]receiverChannel
@@ -44,7 +44,7 @@ type FileServer struct {
 }
 
 // New creates a new File Server and starts a monitoring goroutine.
-func New(fileStore filestore.Storage) *FileServer {
+func New(fileStore *filestore.Store) *FileServer {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 
 	fs := &FileServer{

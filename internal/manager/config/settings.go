@@ -12,10 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"git.blender.org/flamenco/internal/appinfo"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
+
+	"git.blender.org/flamenco/internal/appinfo"
+	shaman_config "git.blender.org/flamenco/pkg/shaman/config"
 )
 
 const (
@@ -25,9 +27,6 @@ const (
 
 	// // relative to the Flamenco Server Base URL:
 	// jwtPublicKeysRelativeURL = "api/flamenco/jwt/public-keys"
-
-	defaultShamanFilestorePath = "/shared/flamenco/file-store"
-	defaultJobStorage          = "/shared/flamenco/jobs"
 )
 
 var (
@@ -97,7 +96,7 @@ type Base struct {
 	// TestTasks TestTasks `yaml:"test_tasks"`
 
 	// Shaman configuration settings.
-	// Shaman ShamanConfig `yaml:"shaman"`
+	Shaman shaman_config.Config `yaml:"shaman"`
 
 	// Authentication settings.
 	// JWT                      jwtauth.Config `yaml:"user_authentication"`
@@ -107,12 +106,6 @@ type Base struct {
 	// DynamicPoolPlatforms *dppoller.Config `yaml:"dynamic_pool_platforms,omitempty"`
 
 	// Websetup *WebsetupConf `yaml:"websetup,omitempty"`
-}
-
-type ShamanConfig struct {
-	Enabled        bool                 `yaml:"enabled"`
-	FileStorePath  string               `yaml:"fileStorePath"`
-	GarbageCollect ShamanGarbageCollect `yaml:"garbageCollect"`
 }
 
 // GarbageCollect contains the config options for the GC.

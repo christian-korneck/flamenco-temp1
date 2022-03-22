@@ -47,8 +47,8 @@ type ServerInterface interface {
 	// (POST /api/worker/task/{task_id})
 	TaskUpdate(ctx echo.Context, taskId string) error
 	// Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
-	// (POST /shaman/checkout/create/{checkoutID})
-	ShamanCheckout(ctx echo.Context, checkoutID string) error
+	// (POST /shaman/checkout/create)
+	ShamanCheckout(ctx echo.Context) error
 	// Checks a Shaman Requirements file, and reports which files are unknown.
 	// (POST /shaman/checkout/requirements)
 	ShamanCheckoutRequirements(ctx echo.Context) error
@@ -193,16 +193,9 @@ func (w *ServerInterfaceWrapper) TaskUpdate(ctx echo.Context) error {
 // ShamanCheckout converts echo context to params.
 func (w *ServerInterfaceWrapper) ShamanCheckout(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "checkoutID" -------------
-	var checkoutID string
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "checkoutID", runtime.ParamLocationPath, ctx.Param("checkoutID"), &checkoutID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter checkoutID: %s", err))
-	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.ShamanCheckout(ctx, checkoutID)
+	err = w.Handler.ShamanCheckout(ctx)
 	return err
 }
 
@@ -337,7 +330,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/worker/state-changed", wrapper.WorkerStateChanged)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
 	router.POST(baseURL+"/api/worker/task/:task_id", wrapper.TaskUpdate)
-	router.POST(baseURL+"/shaman/checkout/create/:checkoutID", wrapper.ShamanCheckout)
+	router.POST(baseURL+"/shaman/checkout/create", wrapper.ShamanCheckout)
 	router.POST(baseURL+"/shaman/checkout/requirements", wrapper.ShamanCheckoutRequirements)
 	router.OPTIONS(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStoreCheck)
 	router.POST(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStore)

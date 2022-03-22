@@ -134,9 +134,9 @@ type ClientInterface interface {
 	TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ShamanCheckout request with any body
-	ShamanCheckoutWithBody(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ShamanCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	ShamanCheckout(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ShamanCheckout(ctx context.Context, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ShamanCheckoutRequirements request with any body
 	ShamanCheckoutRequirementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -342,8 +342,8 @@ func (c *Client) TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJ
 	return c.Client.Do(req)
 }
 
-func (c *Client) ShamanCheckoutWithBody(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewShamanCheckoutRequestWithBody(c.Server, checkoutID, contentType, body)
+func (c *Client) ShamanCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanCheckoutRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -354,8 +354,8 @@ func (c *Client) ShamanCheckoutWithBody(ctx context.Context, checkoutID string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) ShamanCheckout(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewShamanCheckoutRequest(c.Server, checkoutID, body)
+func (c *Client) ShamanCheckout(ctx context.Context, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewShamanCheckoutRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -791,33 +791,26 @@ func NewTaskUpdateRequestWithBody(server string, taskId string, contentType stri
 }
 
 // NewShamanCheckoutRequest calls the generic ShamanCheckout builder with application/json body
-func NewShamanCheckoutRequest(server string, checkoutID string, body ShamanCheckoutJSONRequestBody) (*http.Request, error) {
+func NewShamanCheckoutRequest(server string, body ShamanCheckoutJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewShamanCheckoutRequestWithBody(server, checkoutID, "application/json", bodyReader)
+	return NewShamanCheckoutRequestWithBody(server, "application/json", bodyReader)
 }
 
 // NewShamanCheckoutRequestWithBody generates requests for ShamanCheckout with any type of body
-func NewShamanCheckoutRequestWithBody(server string, checkoutID string, contentType string, body io.Reader) (*http.Request, error) {
+func NewShamanCheckoutRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "checkoutID", runtime.ParamLocationPath, checkoutID)
-	if err != nil {
-		return nil, err
-	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/shaman/checkout/create/%s", pathParam0)
+	operationPath := fmt.Sprintf("/shaman/checkout/create")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1070,9 +1063,9 @@ type ClientWithResponsesInterface interface {
 	TaskUpdateWithResponse(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
 
 	// ShamanCheckout request with any body
-	ShamanCheckoutWithBodyWithResponse(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
+	ShamanCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
 
-	ShamanCheckoutWithResponse(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
+	ShamanCheckoutWithResponse(ctx context.Context, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
 
 	// ShamanCheckoutRequirements request with any body
 	ShamanCheckoutRequirementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutRequirementsResponse, error)
@@ -1568,16 +1561,16 @@ func (c *ClientWithResponses) TaskUpdateWithResponse(ctx context.Context, taskId
 }
 
 // ShamanCheckoutWithBodyWithResponse request with arbitrary body returning *ShamanCheckoutResponse
-func (c *ClientWithResponses) ShamanCheckoutWithBodyWithResponse(ctx context.Context, checkoutID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error) {
-	rsp, err := c.ShamanCheckoutWithBody(ctx, checkoutID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) ShamanCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error) {
+	rsp, err := c.ShamanCheckoutWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseShamanCheckoutResponse(rsp)
 }
 
-func (c *ClientWithResponses) ShamanCheckoutWithResponse(ctx context.Context, checkoutID string, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error) {
-	rsp, err := c.ShamanCheckout(ctx, checkoutID, body, reqEditors...)
+func (c *ClientWithResponses) ShamanCheckoutWithResponse(ctx context.Context, body ShamanCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error) {
+	rsp, err := c.ShamanCheckout(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

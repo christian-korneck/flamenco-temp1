@@ -1,5 +1,11 @@
 package config
 
+import (
+	"time"
+
+	shaman_config "git.blender.org/flamenco/pkg/shaman/config"
+)
+
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // The default configuration, use DefaultConfig() to obtain a copy.
@@ -13,6 +19,17 @@ var defaultConfig = Conf{
 		DatabaseDSN:   "flamenco-manager.sqlite",
 		TaskLogsPath:  "./task-logs",
 		SSDPDiscovery: true,
+
+		Shaman: shaman_config.Config{
+			Enabled:       true,
+			FileStorePath: "./shaman-file-storage/file-store",
+			CheckoutPath:  "./shaman-file-storage/checkout",
+			GarbageCollect: shaman_config.GarbageCollect{
+				Period:            24 * time.Hour,
+				MaxAge:            31 * 24 * time.Hour,
+				ExtraCheckoutDirs: []string{},
+			},
+		},
 
 		// ActiveTaskTimeoutInterval:   10 * time.Minute,
 		// ActiveWorkerTimeoutInterval: 1 * time.Minute,
@@ -30,16 +47,6 @@ var defaultConfig = Conf{
 		// 	BlenderRender: BlenderRenderConfig{
 		// 		JobStorage:   "{job_storage}/test-jobs",
 		// 		RenderOutput: "{render}/test-renders",
-		// 	},
-		// },
-
-		// Shaman: ShamanConfig{
-		// 	Enabled:       true,
-		// 	FileStorePath: defaultShamanFilestorePath,
-		// 	GarbageCollect: ShamanGarbageCollect{
-		// 		Period:            24 * time.Hour,
-		// 		MaxAge:            31 * 24 * time.Hour,
-		// 		ExtraCheckoutDirs: []string{},
 		// 	},
 		// },
 

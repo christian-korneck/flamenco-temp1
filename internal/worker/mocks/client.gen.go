@@ -197,10 +197,10 @@ func (mr *MockFlamencoClientMockRecorder) ShamanCheckoutRequirementsWithResponse
 }
 
 // ShamanCheckoutWithBodyWithResponse mocks base method.
-func (m *MockFlamencoClient) ShamanCheckoutWithBodyWithResponse(arg0 context.Context, arg1, arg2 string, arg3 io.Reader, arg4 ...api.RequestEditorFn) (*api.ShamanCheckoutResponse, error) {
+func (m *MockFlamencoClient) ShamanCheckoutWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.ShamanCheckoutResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2, arg3}
-	for _, a := range arg4 {
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ShamanCheckoutWithBodyWithResponse", varargs...)
@@ -210,17 +210,17 @@ func (m *MockFlamencoClient) ShamanCheckoutWithBodyWithResponse(arg0 context.Con
 }
 
 // ShamanCheckoutWithBodyWithResponse indicates an expected call of ShamanCheckoutWithBodyWithResponse.
-func (mr *MockFlamencoClientMockRecorder) ShamanCheckoutWithBodyWithResponse(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+func (mr *MockFlamencoClientMockRecorder) ShamanCheckoutWithBodyWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShamanCheckoutWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).ShamanCheckoutWithBodyWithResponse), varargs...)
 }
 
 // ShamanCheckoutWithResponse mocks base method.
-func (m *MockFlamencoClient) ShamanCheckoutWithResponse(arg0 context.Context, arg1 string, arg2 api.ShamanCheckoutJSONRequestBody, arg3 ...api.RequestEditorFn) (*api.ShamanCheckoutResponse, error) {
+func (m *MockFlamencoClient) ShamanCheckoutWithResponse(arg0 context.Context, arg1 api.ShamanCheckoutJSONRequestBody, arg2 ...api.RequestEditorFn) (*api.ShamanCheckoutResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2}
-	for _, a := range arg3 {
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ShamanCheckoutWithResponse", varargs...)
@@ -230,9 +230,9 @@ func (m *MockFlamencoClient) ShamanCheckoutWithResponse(arg0 context.Context, ar
 }
 
 // ShamanCheckoutWithResponse indicates an expected call of ShamanCheckoutWithResponse.
-func (mr *MockFlamencoClientMockRecorder) ShamanCheckoutWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+func (mr *MockFlamencoClientMockRecorder) ShamanCheckoutWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShamanCheckoutWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).ShamanCheckoutWithResponse), varargs...)
 }
 

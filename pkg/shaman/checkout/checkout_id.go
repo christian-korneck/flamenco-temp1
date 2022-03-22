@@ -24,8 +24,8 @@ package checkout
 
 import "regexp"
 
-var validCheckoutRegexp = regexp.MustCompile("^[a-zA-Z0-9_]+$")
+var validCheckoutRegexp = regexp.MustCompile("^[a-zA-Z0-9_ /]+$")
 
-func isValidCheckoutID(checkoutID string) bool {
+func isValidCheckoutPath(checkoutID string) bool {
 	return validCheckoutRegexp.MatchString(checkoutID)
 }

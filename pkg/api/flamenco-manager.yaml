@@ -286,17 +286,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /shaman/checkout/create/{checkoutID}:
+  /shaman/checkout/create:
     summary: Symlink a set of files into the checkout area.
     post:
       operationId: shamanCheckout
       summary: Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
       tags: [shaman]
-      parameters:
-        - name: checkoutID
-          in: path
-          required: true
-          schema: {type: string}
       requestBody:
         description: Set of files to check out.
         required: true
@@ -749,7 +744,14 @@ components:
         "files":
           type: array
           items: {$ref: "#/components/schemas/ShamanFileSpecWithPath"}
-      required: [files]
+        "checkoutPath":
+          type: string
+          description: >
+            Path where the Manager should create this checkout, It is relative
+            to the Shaman checkout path as configured on the Manager. In older
+            versions of the Shaman this was just the "checkout ID", but in this
+            version it can be a path like `project-slug/scene-name/unique-ID`.
+      required: [files, checkoutPath]
       example:
         files:
           - sha: 35b0491c27b0333d1fb45fc0789a12ca06b1d640d2569780b807de504d7029e0
