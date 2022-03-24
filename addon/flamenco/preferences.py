@@ -9,6 +9,7 @@ def discard_flamenco_client(prefs, context):
     from . import comms
 
     comms.discard_flamenco_data()
+    context.window_manager.flamenco_status_ping = ""
 
 
 def _update_default_job_storage(
@@ -26,6 +27,12 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
         description="Location of the Manager",
         default="http://localhost:8080/",
         update=discard_flamenco_client,
+    )
+
+    is_shaman_enabled: bpy.props.BoolProperty(  # type: ignore
+        name="Shaman Enabled",
+        description="Whether this Manager has the Shaman protocol enabled",
+        default=False,
     )
 
     job_storage: bpy.props.StringProperty(  # type: ignore
@@ -48,6 +55,12 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
         if context.window_manager.flamenco_status_ping:
             col.label(text=context.window_manager.flamenco_status_ping)
 
+        col = layout.column(align=True)
+        col.enabled = not self.is_shaman_enabled
+        if self.is_shaman_enabled:
+            col.label(
+                text="This Manager supports the Shaman API, so this setting will be ignored:"
+            )
         col.prop(self, "job_storage")
 
 
@@ -88,6 +101,7 @@ _register, _unregister = bpy.utils.register_classes_factory(classes)
 def register():
     _register()
     _register_rna_props(get(bpy.context))
+    bpy.context.window_manager.flamenco_status_ping = ""
 
 
 def unregister():

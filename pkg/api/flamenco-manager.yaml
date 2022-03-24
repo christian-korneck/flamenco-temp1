@@ -13,7 +13,7 @@ servers:
   - url: /
 paths:
   /api/version:
-    summary: Workers can use this to check this is actually a Flamenco server.
+    summary: Clients can use this to check this is actually a Flamenco server.
     get:
       summary: Get the Flamenco version of this Manager
       operationId: getVersion
@@ -25,6 +25,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FlamencoVersion"
+
+  /api/configuration:
+    summary: Endpoint for getting configuration of Flamenco Manager.
+    get:
+      summary: Get the configuration of this Manager.
+      operationId: getConfiguration
+      tags: [meta]
+      responses:
+        "200":
+          description: normal response
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ManagerConfiguration"}
 
   /api/worker/register-worker:
     summary: Registration of new workers
@@ -436,6 +449,14 @@ components:
       properties:
         version: { type: string }
         name: { type: string }
+
+    ManagerConfiguration:
+      type: object
+      properties:
+        "shamanEnabled":
+          description: Whether the Shaman file transfer API is available.
+          type: boolean
+      required: [shamanEnabled]
 
     WorkerRegistration:
       type: object

@@ -90,6 +90,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetConfiguration request
+	GetConfiguration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SubmitJob request with any body
 	SubmitJobWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -148,6 +151,18 @@ type ClientInterface interface {
 
 	// ShamanFileStore request with any body
 	ShamanFileStoreWithBody(ctx context.Context, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) GetConfiguration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConfigurationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) SubmitJobWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -412,6 +427,33 @@ func (c *Client) ShamanFileStoreWithBody(ctx context.Context, checksum string, f
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetConfigurationRequest generates requests for GetConfiguration
+func NewGetConfigurationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/configuration")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewSubmitJobRequest calls the generic SubmitJob builder with application/json body
@@ -1019,6 +1061,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetConfiguration request
+	GetConfigurationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetConfigurationResponse, error)
+
 	// SubmitJob request with any body
 	SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error)
 
@@ -1077,6 +1122,28 @@ type ClientWithResponsesInterface interface {
 
 	// ShamanFileStore request with any body
 	ShamanFileStoreWithBodyWithResponse(ctx context.Context, checksum string, filesize int, params *ShamanFileStoreParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanFileStoreResponse, error)
+}
+
+type GetConfigurationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ManagerConfiguration
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConfigurationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConfigurationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type SubmitJobResponse struct {
@@ -1419,6 +1486,15 @@ func (r ShamanFileStoreResponse) StatusCode() int {
 	return 0
 }
 
+// GetConfigurationWithResponse request returning *GetConfigurationResponse
+func (c *ClientWithResponses) GetConfigurationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetConfigurationResponse, error) {
+	rsp, err := c.GetConfiguration(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConfigurationResponse(rsp)
+}
+
 // SubmitJobWithBodyWithResponse request with arbitrary body returning *SubmitJobResponse
 func (c *ClientWithResponses) SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error) {
 	rsp, err := c.SubmitJobWithBody(ctx, contentType, body, reqEditors...)
@@ -1608,6 +1684,32 @@ func (c *ClientWithResponses) ShamanFileStoreWithBodyWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseShamanFileStoreResponse(rsp)
+}
+
+// ParseGetConfigurationResponse parses an HTTP response from a GetConfigurationWithResponse call
+func ParseGetConfigurationResponse(rsp *http.Response) (*GetConfigurationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConfigurationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ManagerConfiguration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseSubmitJobResponse parses an HTTP response from a SubmitJobWithResponse call

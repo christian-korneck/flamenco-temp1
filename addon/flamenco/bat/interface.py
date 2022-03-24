@@ -197,7 +197,7 @@ def copy(  # type: ignore
     *,
     relative_only: bool,
     packer_class=pack.Packer,
-    **packer_args: dict[Any, Any],
+    packer_kwargs: Optional[dict[Any, Any]] = None,
 ) -> PackThread:
     """Use BAT to copy the given file and dependencies to the target location.
 
@@ -210,13 +210,18 @@ def copy(  # type: ignore
         if _running_packthread is not None:
             raise RuntimeError("other packing operation already in progress")
 
+    print(f"packer_class: {packer_class}")
+    if packer_kwargs is None:
+        packer_kwargs = {}
+    packer_kwargs.setdefault("compress", True)
+    packer_kwargs.setdefault("relative_only", relative_only)
+    print(f"packer_kwargs: {packer_kwargs}")
+
     packer = packer_class(
         base_blendfile,
         project,
         target,
-        compress=True,
-        relative_only=relative_only,
-        **packer_args,
+        **packer_kwargs,
     )
     if exclusion_filter:
         filter_parts = exclusion_filter.strip().split(" ")

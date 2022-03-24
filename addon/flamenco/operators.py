@@ -2,18 +2,19 @@
 # <pep8 compliant>
 
 import datetime
+import functools
 import logging
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Optional, TYPE_CHECKING
 from urllib3.exceptions import HTTPError, MaxRetryError
 
 import bpy
 
-from . import job_types, job_submission
+from . import job_types, job_submission, preferences
 from .job_types_propgroup import JobTypePropertyGroup
 
 if TYPE_CHECKING:
-    from .bat_interface import (
+    from .bat.interface import (
         PackThread as _PackThread,
         Message as _Message,
     )
@@ -50,7 +51,6 @@ class FLAMENCO_OT_fetch_job_types(FlamencoOpMixin, bpy.types.Operator):
         api_client = self.get_api_client(context)
 
         from flamenco.manager import ApiException
-        from . import job_types
 
         scene = context.scene
         old_job_type_name = getattr(scene, "flamenco_job_type", "")
@@ -85,13 +85,14 @@ class FLAMENCO_OT_ping_manager(FlamencoOpMixin, bpy.types.Operator):
 
         from flamenco.manager import ApiException
         from flamenco.manager.apis import MetaApi
-        from flamenco.manager.models import FlamencoVersion
+        from flamenco.manager.models import FlamencoVersion, ManagerConfiguration
 
         context.window_manager.flamenco_status_ping = "..."
 
         meta_api = MetaApi(api_client)
         try:
-            response: FlamencoVersion = meta_api.get_version()
+            version: FlamencoVersion = meta_api.get_version()
+            config: ManagerConfiguration = meta_api.get_configuration()
         except ApiException as ex:
             report = "Manager cannot be reached: %s" % ex
             level = "ERROR"
@@ -104,8 +105,12 @@ class FLAMENCO_OT_ping_manager(FlamencoOpMixin, bpy.types.Operator):
             report = "Manager cannot be reached: %s" % ex
             level = "ERROR"
         else:
-            report = "%s version %s found" % (response.name, response.version)
+            report = "%s version %s found" % (version.name, version.version)
             level = "INFO"
+
+            # Store whether this Manager supports the Shaman API.
+            prefs = preferences.get(context)
+            prefs.is_shaman_enabled = config.shaman_enabled
 
         self.report({level}, report)
         context.window_manager.flamenco_status_ping = report
@@ -138,7 +143,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     bl_description = "Pack the current blend file and send it to Flamenco"
     bl_options = {"REGISTER"}  # No UNDO.
 
-    blendfile_on_farm: Optional[Path] = None
+    blendfile_on_farm: Optional[PurePosixPath] = None
     job_name: bpy.props.StringProperty(name="Job Name")  # type: ignore
     job: Optional[_SubmittedJob] = None
 
@@ -211,12 +216,35 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         return filepath
 
     def _bat_pack(self, context: bpy.types.Context, blendfile: Path) -> set[str]:
-        from . import bat_interface
+        from .bat import interface as bat_interface
 
         if bat_interface.is_packing():
             self.report({"ERROR"}, "Another packing operation is running")
             self._quit(context)
             return {"CANCELLED"}
+
+        prefs = preferences.get(context)
+        if prefs.is_shaman_enabled:
+            blendfile_on_farm = self._bat_pack_shaman(context, blendfile)
+        else:
+            blendfile_on_farm = self._bat_pack_filesystem(context, blendfile)
+
+        self.blendfile_on_farm = blendfile_on_farm
+
+        context.window_manager.modal_handler_add(self)
+        wm = context.window_manager
+        self.timer = wm.event_timer_add(0.25, window=context.window)
+
+        return {"RUNNING_MODAL"}
+
+    def _bat_pack_filesystem(
+        self, context: bpy.types.Context, blendfile: Path
+    ) -> PurePosixPath:
+        """Use BAT to store the pack on the filesystem.
+
+        :return: the path of the blend file, for use in the job definition.
+        """
+        from .bat import interface as bat_interface
 
         # TODO: get project path from addon preferences / project definition on Manager.
         project_path = blendfile.parent
@@ -225,7 +253,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         except FileNotFoundError:
             # Path.resolve() will raise a FileNotFoundError if the project path doesn't exist.
             self.report({"ERROR"}, "Project path %s does not exist" % project_path)
-            return {"CANCELLED"}
+            raise  # TODO: handle this properly.
 
         # Determine where the blend file will be stored.
         unique_dir = "%s-%s" % (
@@ -237,7 +265,6 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         # TODO: this should take the blendfile location relative to the project path into account.
         pack_target_file = pack_target_dir / blendfile.name
         self.log.info("Will store blend file at %s", pack_target_file)
-        self.blendfile_on_farm = pack_target_file
 
         self.packthread = bat_interface.copy(
             base_blendfile=blendfile,
@@ -247,14 +274,44 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             relative_only=True,  # TODO: get from GUI.
         )
 
-        context.window_manager.modal_handler_add(self)
-        wm = context.window_manager
-        self.timer = wm.event_timer_add(0.25, window=context.window)
+        return PurePosixPath(pack_target_file.as_posix())
 
-        return {"RUNNING_MODAL"}
+    def _bat_pack_shaman(
+        self, context: bpy.types.Context, blendfile: Path
+    ) -> PurePosixPath:
+        """Use the Manager's Shaman API to submit the BAT pack.
+
+        :return: the filesystem path of the blend file, for in the render job definition.
+        """
+        from .bat import (
+            interface as bat_interface,
+            shaman as bat_shaman,
+        )
+
+        assert self.job is not None
+        self.log.info("Sending BAT pack to Shaman")
+
+        # TODO: get project name from preferences/GUI.
+        # TODO: update Shaman API to ensure this is a unique location.
+        checkout_root = PurePosixPath(f"project/{self.job.name}")
+
+        self.packthread = bat_interface.copy(
+            base_blendfile=blendfile,
+            project=blendfile.parent,  # TODO: get from preferences/GUI.
+            target="/",  # Target directory irrelevant for Shaman transfers.
+            exclusion_filter="",  # TODO: get from GUI.
+            relative_only=True,  # TODO: get from GUI.
+            packer_class=functools.partial(
+                bat_shaman.Packer,
+                api_client=self.get_api_client(context),
+                checkout_path=checkout_root,
+            ),
+        )
+
+        return checkout_root / blendfile.name  # TODO: get relative to the checkout dir.
 
     def _on_bat_pack_msg(self, context: bpy.types.Context, msg: _Message) -> set[str]:
-        from . import bat_interface
+        from .bat import interface as bat_interface
 
         if isinstance(msg, bat_interface.MsgDone):
             self._submit_job(context)

@@ -3,8 +3,8 @@
 
 from typing import Optional, TYPE_CHECKING
 
-from flamenco import job_submission
-from flamenco.job_types_propgroup import JobTypePropertyGroup
+from . import preferences
+from .job_types_propgroup import JobTypePropertyGroup
 
 import bpy
 
@@ -31,6 +31,8 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
     def draw(self, context: bpy.types.Context) -> None:
         from . import job_types
 
+        prefs = preferences.get(context)
+
         layout = self.layout
         layout.use_property_decorate = False
         layout.use_property_split = True
@@ -39,7 +41,14 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
 
         col = layout.column(align=True)
         col.prop(context.scene, "flamenco_job_name", text="Job Name")
-        row = col.row(align=True)
+
+        job_storage_col = col.column(align=True)
+        job_storage_col.enabled = not prefs.is_shaman_enabled
+        if prefs.is_shaman_enabled:
+            job_storage_col.label(
+                text="Shaman API will be used for job submission, so job storage location is ignored:"
+            )
+        row = job_storage_col.row(align=True)
         row.prop(context.scene, "flamenco_job_storage", text="Job Storage")
         prop = row.operator("flamenco3.explore_file_path", text="", icon="WINDOW")
         prop.path = context.scene.flamenco_job_storage

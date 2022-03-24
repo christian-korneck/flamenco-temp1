@@ -225,6 +225,12 @@ type JobSettings struct {
 // JobStatus defines model for JobStatus.
 type JobStatus string
 
+// ManagerConfiguration defines model for ManagerConfiguration.
+type ManagerConfiguration struct {
+	// Whether the Shaman file transfer API is available.
+	ShamanEnabled bool `json:"shamanEnabled"`
+}
+
 // RegisteredWorker defines model for RegisteredWorker.
 type RegisteredWorker struct {
 	Address            string       `json:"address"`

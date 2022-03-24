@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Optional, Union
 
 import bpy
@@ -47,7 +47,9 @@ def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
 
 
 def set_blend_file(
-    job_type: _AvailableJobType, job: _SubmittedJob, blendfile: Union[str, Path]
+    job_type: _AvailableJobType,
+    job: _SubmittedJob,
+    blendfile: Union[str, Path, PurePosixPath],
 ) -> None:
     """Update the job's 'blendfile' setting, if available.
 

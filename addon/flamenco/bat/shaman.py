@@ -44,6 +44,7 @@ class Packer(bat_pack.Packer):  # type: ignore
         blendfile: Path,
         project_root: Path,
         target: str,
+        *,
         api_client: _ApiClient,
         checkout_path: str,
         **kwargs: dict[Any, Any],
@@ -201,7 +202,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             try:
                 checksum = cache.compute_cached_checksum(src)
                 filesize = src.stat().st_size
-                relpath: str = bat_bpathlib.strip_root(dst)
+                relpath = str(bat_bpathlib.strip_root(dst))
 
                 filespec = ShamanFileSpec(
                     sha=checksum,
@@ -253,6 +254,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
 
         to_upload: deque[_ShamanFileSpec] = deque()
         for file_spec in resp.files:
+            print(file_spec)
             if file_spec.path not in self._rel_to_local_path:
                 msg = (
                     "Shaman requested path we did not intend to upload: %r" % file_spec
@@ -261,7 +263,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
                 self.error_set(msg)
                 return None
 
-            self.log.debug("   %s: %s", file_spec.status, file_spec.path)
+            self.log.debug("   %s: %s", file_spec.status.value, file_spec.path)
             match file_spec.status.value:
                 case "unknown":
                     to_upload.appendleft(file_spec)

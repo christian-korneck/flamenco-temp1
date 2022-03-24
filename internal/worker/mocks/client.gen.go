@@ -56,6 +56,26 @@ func (mr *MockFlamencoClientMockRecorder) FetchJobWithResponse(arg0, arg1 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchJobWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchJobWithResponse), varargs...)
 }
 
+// GetConfigurationWithResponse mocks base method.
+func (m *MockFlamencoClient) GetConfigurationWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.GetConfigurationResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetConfigurationWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.GetConfigurationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetConfigurationWithResponse indicates an expected call of GetConfigurationWithResponse.
+func (mr *MockFlamencoClientMockRecorder) GetConfigurationWithResponse(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigurationWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).GetConfigurationWithResponse), varargs...)
+}
+
 // GetJobTypesWithResponse mocks base method.
 func (m *MockFlamencoClient) GetJobTypesWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.GetJobTypesResponse, error) {
 	m.ctrl.T.Helper()
