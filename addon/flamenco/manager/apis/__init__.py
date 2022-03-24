@@ -16,4 +16,5 @@
 # Import APIs into API package:
 from flamenco.manager.api.jobs_api import JobsApi
 from flamenco.manager.api.meta_api import MetaApi
+from flamenco.manager.api.shaman_api import ShamanApi
 from flamenco.manager.api.worker_api import WorkerApi

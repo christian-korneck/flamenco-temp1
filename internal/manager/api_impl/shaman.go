@@ -80,17 +80,9 @@ func (f *Flamenco) ShamanFileStoreCheck(e echo.Context, checksum string, filesiz
 	logger.Debug().Msg("shaman: checking file")
 	status := f.shaman.FileStoreCheck(e.Request().Context(), checksum, int64(filesize))
 
-	// TODO: actually switch over the actual statuses, see the TODO in the Shaman interface.
-	switch status {
-	case api.ShamanFileStatusStored:
-		return e.String(http.StatusOK, "")
-	case api.ShamanFileStatusUploading:
-		return e.String(420 /* Enhance Your Calm */, "")
-	case api.ShamanFileStatusUnknown:
-		return e.String(http.StatusNotFound, "")
-	}
-
-	return sendAPIError(e, http.StatusInternalServerError, "unexpected file status")
+	return e.JSON(http.StatusOK, api.ShamanSingleFileStatus{
+		Status: status,
+	})
 }
 
 // Store a new file on the Shaman server. Note that the Shaman server can
@@ -127,22 +119,21 @@ func (f *Flamenco) ShamanFileStore(e echo.Context, checksum string, filesize int
 		canDefer, origFilename,
 	)
 	if err != nil {
-		if err == fileserver.ErrFileAlreadyExists {
+		switch err {
+		case fileserver.ErrFileAlreadyExists:
 			return e.String(http.StatusAlreadyReported, "")
+		case fileserver.ErrFileShouldDefer:
+			return e.String(http.StatusTooEarly, "")
 		}
 
 		logger.Warn().Err(err).Msg("shaman: checking stored file")
-		if sizeErr, ok := err.(fileserver.ErrFileSizeMismatch); ok {
-			return sendAPIError(e, http.StatusExpectationFailed,
-				"size mismatch, expected %d bytes, received %d bytes",
-				sizeErr.DeclaredSize, sizeErr.ActualSize)
+
+		switch v := err.(type) {
+		case fileserver.ErrFileSizeMismatch, fileserver.ErrFileChecksumMismatch:
+			return sendAPIError(e, http.StatusExpectationFailed, v.Error())
+		default:
+			return sendAPIError(e, http.StatusInternalServerError, "unexpected error: %v", err)
 		}
-		if checksumErr, ok := err.(fileserver.ErrFileChecksumMismatch); ok {
-			return sendAPIError(e, http.StatusExpectationFailed,
-				"checksum mismatch, expected %d bytes, received %d bytes",
-				checksumErr.DeclaredChecksum, checksumErr.ActualChecksum)
-		}
-		return sendAPIError(e, http.StatusInternalServerError, "unexpected error: %v", err)
 	}
 
 	return nil

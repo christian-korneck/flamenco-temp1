@@ -25,6 +25,14 @@ from flamenco.manager.model.job_settings import JobSettings
 from flamenco.manager.model.job_status import JobStatus
 from flamenco.manager.model.registered_worker import RegisteredWorker
 from flamenco.manager.model.security_error import SecurityError
+from flamenco.manager.model.shaman_checkout import ShamanCheckout
+from flamenco.manager.model.shaman_file_spec import ShamanFileSpec
+from flamenco.manager.model.shaman_file_spec_with_status import ShamanFileSpecWithStatus
+from flamenco.manager.model.shaman_file_spec_with_status_all_of import ShamanFileSpecWithStatusAllOf
+from flamenco.manager.model.shaman_file_status import ShamanFileStatus
+from flamenco.manager.model.shaman_requirements_request import ShamanRequirementsRequest
+from flamenco.manager.model.shaman_requirements_response import ShamanRequirementsResponse
+from flamenco.manager.model.shaman_single_file_status import ShamanSingleFileStatus
 from flamenco.manager.model.submitted_job import SubmittedJob
 from flamenco.manager.model.task_status import TaskStatus
 from flamenco.manager.model.task_update import TaskUpdate

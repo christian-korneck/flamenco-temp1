@@ -34,13 +34,13 @@ func TestReportRequirements(t *testing.T) {
 	manager, cleanup := createTestManager()
 	defer cleanup()
 
+	spec1 := api.ShamanFileSpec{Sha: "63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079", Size: 127, Path: "file1.txt"}
+	spec2 := api.ShamanFileSpec{Sha: "9f1470441beb98dbb66e3339e7da697d9c2312999a6a5610c461cbf55040e210", Size: 795, Path: "file2.txt"}
+	spec3 := api.ShamanFileSpec{Sha: "59c6bd72af62aa860343adcafd46e3998934a9db2997ce08514b4361f099fa58", Size: 1134, Path: "file3.txt"}
+	spec4 := api.ShamanFileSpec{Sha: "59c6bd72af62aa860343adcafd46e3998934a9db2997ce08514b4361f099fa58", Size: 1134, Path: "file4.txt"} // duplicate of the above
+
 	required := api.ShamanRequirementsRequest{
-		Files: []api.ShamanFileSpec{
-			{"63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079", 127},
-			{"9f1470441beb98dbb66e3339e7da697d9c2312999a6a5610c461cbf55040e210", 795},
-			{"59c6bd72af62aa860343adcafd46e3998934a9db2997ce08514b4361f099fa58", 1134},
-			{"59c6bd72af62aa860343adcafd46e3998934a9db2997ce08514b4361f099fa58", 1134}, // duplicate of the above
-		},
+		Files: []api.ShamanFileSpec{spec1, spec2, spec3, spec4},
 	}
 
 	response, err := manager.ReportRequirements(context.Background(), required)
@@ -49,9 +49,9 @@ func TestReportRequirements(t *testing.T) {
 	// We should not be required to upload the same file twice, so the duplicate
 	// should not be in the response.
 	assert.Equal(t, []api.ShamanFileSpecWithStatus{
-		{api.ShamanFileSpec{"63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079", 127}, api.ShamanFileStatusUnknown},
-		{api.ShamanFileSpec{"9f1470441beb98dbb66e3339e7da697d9c2312999a6a5610c461cbf55040e210", 795}, api.ShamanFileStatusUnknown},
-		{api.ShamanFileSpec{"59c6bd72af62aa860343adcafd46e3998934a9db2997ce08514b4361f099fa58", 1134}, api.ShamanFileStatusUnknown},
+		{ShamanFileSpec: spec1, Status: api.ShamanFileStatusUnknown},
+		{ShamanFileSpec: spec2, Status: api.ShamanFileStatusUnknown},
+		{ShamanFileSpec: spec3, Status: api.ShamanFileStatusUnknown},
 	}, response.Files)
 }
 

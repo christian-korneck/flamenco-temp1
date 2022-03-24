@@ -154,7 +154,9 @@ func (s *Store) MoveToStored(checksum string, filesize int64, uploadedFilePath s
 func (s *Store) removeFile(filePath string) error {
 	err := os.Remove(filePath)
 	if err != nil {
-		log.Debug().Err(err).Msg("shaman: unable to delete file; ignoring")
+		if !os.IsNotExist(err) {
+			log.Debug().Err(err).Msg("shaman: unable to delete file; ignoring")
+		}
 	}
 
 	// Clean up directory structure, but ignore any errors (dirs may not be empty)

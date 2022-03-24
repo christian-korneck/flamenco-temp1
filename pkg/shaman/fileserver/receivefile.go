@@ -38,6 +38,11 @@ import (
 // uploaded the same file at the same time.
 var ErrFileAlreadyExists = errors.New("uploaded file already exists")
 
+// ErrFileShouldDefer indicates that the file is currently being uploaded
+// already. This will only be returned when the caller indicates the client is
+// capable of deferring the upload.
+var ErrFileShouldDefer = errors.New("file is being uploaded by someone else")
+
 type ErrFileSizeMismatch struct {
 	DeclaredSize int64
 	ActualSize   int64
@@ -59,14 +64,15 @@ func (e ErrFileChecksumMismatch) Error() string {
 // ReceiveFile streams a file from a HTTP request to disk.
 func (fs *FileServer) ReceiveFile(
 	ctx context.Context, bodyReader io.ReadCloser,
-	checksum string, filesize int64, canDefer bool,
+	checksum string, filesize int64,
+	canDefer bool, originalFilename string,
 ) error {
 	logger := *zerolog.Ctx(ctx)
 	defer bodyReader.Close()
 
-	localPath, status := fs.fileStore.ResolveFile(checksum, filesize, filestore.ResolveEverything)
+	storePath, status := fs.fileStore.ResolveFile(checksum, filesize, filestore.ResolveEverything)
 	logger = logger.With().
-		Str("path", localPath).
+		Str("path", originalFilename).
 		Str("checksum", checksum).
 		Int64("filesize", filesize).
 		Str("status", status.String()).
@@ -74,12 +80,12 @@ func (fs *FileServer) ReceiveFile(
 
 	switch status {
 	case filestore.StatusStored:
-		logger.Info().Msg("shaman: uploaded file already exists")
+		logger.Info().Str("storePath", storePath).Msg("shaman: uploaded file already exists")
 		return ErrFileAlreadyExists
 	case filestore.StatusUploading:
 		if canDefer {
-			logger.Info().Msg("shaman: someone is uploading this file and client can defer")
-			return ErrFileAlreadyExists
+			logger.Info().Str("storePath", storePath).Msg("shaman: someone is uploading this file and client can defer")
+			return ErrFileShouldDefer
 		}
 	}
 

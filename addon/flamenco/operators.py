@@ -315,7 +315,7 @@ class FLAMENCO3_OT_explore_file_path(bpy.types.Operator):
     bl_label = "Open in file explorer"
     bl_description = __doc__.rstrip(".")
 
-    path: bpy.props.StringProperty(
+    path: bpy.props.StringProperty(  # type: ignore
         name="Path", description="Path to explore", subtype="DIR_PATH"
     )
 
@@ -334,22 +334,22 @@ class FLAMENCO3_OT_explore_file_path(bpy.types.Operator):
                 {"ERROR"}, "Unable to open %s or any of its parents." % self.path
             )
             return {"CANCELLED"}
-        to_open = str(to_open)
 
         if platform.system() == "Windows":
             import os
 
-            os.startfile(to_open)
+            # Ignore the mypy error here, as os.startfile() only exists on Windows.
+            os.startfile(str(to_open))  # type: ignore
 
         elif platform.system() == "Darwin":
             import subprocess
 
-            subprocess.Popen(["open", to_open])
+            subprocess.Popen(["open", str(to_open)])
 
         else:
             import subprocess
 
-            subprocess.Popen(["xdg-open", to_open])
+            subprocess.Popen(["xdg-open", str(to_open)])
 
         return {"FINISHED"}
 

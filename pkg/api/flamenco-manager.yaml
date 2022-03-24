@@ -344,13 +344,7 @@ paths:
           description: Normal response.
           content:
             application/json:
-              schema:
-                type: object
-                description: Status of a file in the Shaman storage.
-                properties:
-                  "status": {$ref: "#/components/schemas/ShamanFileStatus"}
-                required: [status]
-
+              schema: {$ref: "#/components/schemas/ShamanSingleFileStatus"}
         default:
           description: unexpected error
           content:
@@ -364,6 +358,8 @@ paths:
         Store a new file on the Shaman server. Note that the Shaman server can
         forcibly close the HTTP connection when another client finishes uploading
         the exact same file, to prevent double uploads.
+
+        The file's contents should be sent in the request body.
       tags: [shaman]
       parameters:
         - name: checksum
@@ -393,23 +389,28 @@ paths:
             The original filename. If sent along with the request, it will be
             included in the server logs, which can aid in debugging.
       requestBody:
-        description: The file's contents.
+        description: Contents of the file
         required: true
         content:
           application/octet-stream:
-            example: Just the contents of any file.
+            schema:
+              type: string
+              format: binary
+
       responses:
         "204":
-          description: Checkout was created succesfully.
+          description: The file was accepted.
         "208":
-          description: >
-            The file has already been uploaded. Note that this can also be sent
-            when this file is currently in the process of being uploaded, and
-            `X-Shaman-Can-Defer-Upload: true` was sent in the request.
-        "409":
-          description: Checkout already exists.
+          description: The file was already known to the server.
         "417":
-          description: There was a mismatch between the request parameters and the actual file size or checksum of the uploaded file.
+          description: >
+            There was a mismatch between the request parameters and the actual
+            file size or checksum of the uploaded file.
+        "425":
+          description: >
+            Client should defer uploading this file. The file is currently in
+            the process of being uploaded by someone else, and
+            `X-Shaman-Can-Defer-Upload: true` was sent in the request.
         default:
           description: unexpected error
           content:
@@ -721,7 +722,8 @@ components:
       properties:
         "sha": {type: string, description: "SHA256 checksum of the file"}
         "size": {type: integer, description: "File size in bytes"}
-      required: [sha, size]
+        "path": {type: string, description: "Location of the file in the checkout"}
+      required: [sha, size, path]
 
     ShamanFileSpecWithStatus:
       allOf:
@@ -730,20 +732,13 @@ components:
             "status": {$ref: "#/components/schemas/ShamanFileStatus"}
           required: [status]
 
-    ShamanFileSpecWithPath:
-      allOf:
-        - $ref: '#/components/schemas/ShamanFileSpec'
-        - properties:
-            "path": {type: string, description: Location of the file in the checkout}
-          required: [path]
-
     ShamanCheckout:
       type: object
       description: Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
       properties:
         "files":
           type: array
-          items: {$ref: "#/components/schemas/ShamanFileSpecWithPath"}
+          items: {$ref: "#/components/schemas/ShamanFileSpec"}
         "checkoutPath":
           type: string
           description: >
@@ -764,6 +759,13 @@ components:
     ShamanFileStatus:
       type: string
       enum: [unknown, uploading, stored]
+
+    ShamanSingleFileStatus:
+      type: object
+      description: Status of a file in the Shaman storage.
+      properties:
+        "status": {$ref: "#/components/schemas/ShamanFileStatus"}
+      required: [status]
 
   securitySchemes:
     worker_auth:

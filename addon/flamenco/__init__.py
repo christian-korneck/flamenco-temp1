@@ -56,7 +56,7 @@ def _default_job_name() -> str:
 
 
 @bpy.app.handlers.persistent
-def _set_flamenco_job_name(a, b) -> None:
+def _set_flamenco_job_name(a, b):
     scene = bpy.context.scene
     if scene.flamenco_job_name:
         return
@@ -65,7 +65,7 @@ def _set_flamenco_job_name(a, b) -> None:
 
 
 @bpy.app.handlers.persistent
-def _unset_flamenco_job_name(a, b) -> None:
+def _unset_flamenco_job_name(a, b):
     scene = bpy.context.scene
     if scene.flamenco_job_name != _default_job_name():
         return

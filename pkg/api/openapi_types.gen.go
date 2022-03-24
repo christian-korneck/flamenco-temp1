@@ -245,26 +245,20 @@ type SecurityError struct {
 // Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
 type ShamanCheckout struct {
 	// Path where the Manager should create this checkout, It is relative to the Shaman checkout path as configured on the Manager. In older versions of the Shaman this was just the "checkout ID", but in this version it can be a path like `project-slug/scene-name/unique-ID`.
-	CheckoutPath string                   `json:"checkoutPath"`
-	Files        []ShamanFileSpecWithPath `json:"files"`
+	CheckoutPath string           `json:"checkoutPath"`
+	Files        []ShamanFileSpec `json:"files"`
 }
 
 // Specification of a file in the Shaman storage.
 type ShamanFileSpec struct {
+	// Location of the file in the checkout
+	Path string `json:"path"`
+
 	// SHA256 checksum of the file
 	Sha string `json:"sha"`
 
 	// File size in bytes
 	Size int `json:"size"`
-}
-
-// ShamanFileSpecWithPath defines model for ShamanFileSpecWithPath.
-type ShamanFileSpecWithPath struct {
-	// Embedded struct due to allOf(#/components/schemas/ShamanFileSpec)
-	ShamanFileSpec `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
-	// Location of the file in the checkout
-	Path string `json:"path"`
 }
 
 // ShamanFileSpecWithStatus defines model for ShamanFileSpecWithStatus.
@@ -286,6 +280,11 @@ type ShamanRequirementsRequest struct {
 // The files from a requirements request, with their status on the Shaman server. Files that are known to Shaman are excluded from the response.
 type ShamanRequirementsResponse struct {
 	Files []ShamanFileSpecWithStatus `json:"files"`
+}
+
+// Status of a file in the Shaman storage.
+type ShamanSingleFileStatus struct {
+	Status ShamanFileStatus `json:"status"`
 }
 
 // Job definition submitted to Flamenco.

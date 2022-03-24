@@ -148,7 +148,7 @@ func (s *Server) FileStoreCheck(ctx context.Context, checksum string, filesize i
 // early when another client finishes uploading the exact same file, to prevent
 // double uploads.
 func (s *Server) FileStore(ctx context.Context, file io.ReadCloser, checksum string, filesize int64, canDefer bool, originalFilename string) error {
-	err := s.fileServer.ReceiveFile(ctx, file, checksum, filesize, canDefer)
+	err := s.fileServer.ReceiveFile(ctx, file, checksum, filesize, canDefer, originalFilename)
 	// TODO: Maybe translate this error into something that can be understood by
 	// the caller without relying on types declared in the `fileserver` package?
 	return err

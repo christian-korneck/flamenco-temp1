@@ -16,7 +16,10 @@ func (m *Manager) ReportRequirements(ctx context.Context, requirements api.Shama
 	logger := zerolog.Ctx(ctx)
 	logger.Debug().Msg("user requested checkout requirements")
 
-	missing := api.ShamanRequirementsResponse{}
+	missing := api.ShamanRequirementsResponse{
+		Files: []api.ShamanFileSpecWithStatus{},
+	}
+
 	alreadyRequested := map[string]bool{}
 	for _, fileSpec := range requirements.Files {
 		fileKey := fmt.Sprintf("%s/%d", fileSpec.Sha, fileSpec.Size)
@@ -25,7 +28,7 @@ func (m *Manager) ReportRequirements(ctx context.Context, requirements api.Shama
 			continue
 		}
 
-		path, status := m.fileStore.ResolveFile(fileSpec.Sha, int64(fileSpec.Size), filestore.ResolveEverything)
+		storePath, status := m.fileStore.ResolveFile(fileSpec.Sha, int64(fileSpec.Size), filestore.ResolveEverything)
 
 		var apiStatus api.ShamanFileStatus
 		switch status {
@@ -38,13 +41,13 @@ func (m *Manager) ReportRequirements(ctx context.Context, requirements api.Shama
 		case filestore.StatusStored:
 			// We expect this file to be sent soon, though, so we need to
 			// 'touch' it to make sure it won't be GC'd in the mean time.
-			go touchFile(path)
+			go touchFile(storePath)
 
 			// Only send a response when the caller needs to do something.
 			continue
 		default:
 			logger.Error().
-				Str("path", path).
+				Str("path", fileSpec.Path).
 				Str("status", status.String()).
 				Str("checksum", fileSpec.Sha).
 				Int("filesize", fileSpec.Size).

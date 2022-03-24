@@ -56,6 +56,7 @@ type ServerInterface interface {
 	// (OPTIONS /shaman/files/{checksum}/{filesize})
 	ShamanFileStoreCheck(ctx echo.Context, checksum string, filesize int) error
 	// Store a new file on the Shaman server. Note that the Shaman server can forcibly close the HTTP connection when another client finishes uploading the exact same file, to prevent double uploads.
+	// The file's contents should be sent in the request body.
 	// (POST /shaman/files/{checksum}/{filesize})
 	ShamanFileStore(ctx echo.Context, checksum string, filesize int, params ShamanFileStoreParams) error
 }

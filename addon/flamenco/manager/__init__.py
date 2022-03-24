@@ -10,7 +10,7 @@
 """
 
 
-__version__ = "7bfde1df-dirty"
+__version__ = "63793f42-dirty"
 
 # import ApiClient
 from flamenco.manager.api_client import ApiClient

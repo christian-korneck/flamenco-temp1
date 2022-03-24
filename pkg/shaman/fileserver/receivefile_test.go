@@ -49,7 +49,7 @@ func TestStoreFile(t *testing.T) {
 
 	testWithChecksum := func(checksum string, reportSize int64) error {
 		buffer := io.NopCloser(bytes.NewBuffer(payload))
-		return server.ReceiveFile(context.Background(), buffer, checksum, reportSize, false)
+		return server.ReceiveFile(context.Background(), buffer, checksum, reportSize, false, "testfile.txt")
 	}
 
 	var err error

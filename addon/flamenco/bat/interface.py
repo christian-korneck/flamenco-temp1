@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """BAT packing interface for Flamenco."""
 
 from dataclasses import dataclass
@@ -8,7 +9,7 @@ import queue
 import threading
 import typing
 
-from . import wheels
+from .. import wheels
 
 pack = wheels.load_wheel("blender_asset_tracer.pack")
 progress = wheels.load_wheel("blender_asset_tracer.pack.progress")
@@ -122,39 +123,6 @@ class BatProgress(progress.Callback):  # type: ignore
         pass
 
 
-# class ShamanPacker(shaman.ShamanPacker):
-#     """Packer with support for getting an auth token from Flamenco Server."""
-
-#     def __init__(
-#         self,
-#         bfile: Path,
-#         project: Path,
-#         target: str,
-#         endpoint: str,
-#         checkout_id: str,
-#         *,
-#         manager_id: str,
-#         **kwargs
-#     ) -> None:
-#         self.manager_id = manager_id
-#         super().__init__(bfile, project, target, endpoint, checkout_id, **kwargs)
-
-#     def _get_auth_token(self) -> str:
-#         """get a token from Flamenco Server"""
-
-#         from ..blender import PILLAR_SERVER_URL
-#         from ..pillar import blender_id_subclient, uncached_session, SUBCLIENT_ID
-
-#         url = urllib.parse.urljoin(
-#             PILLAR_SERVER_URL, "flamenco/jwt/generate-token/%s" % self.manager_id
-#         )
-#         auth_token = blender_id_subclient()["token"]
-
-#         resp = uncached_session.get(url, auth=(auth_token, SUBCLIENT_ID))
-#         resp.raise_for_status()
-#         return resp.text
-
-
 class PackThread(threading.Thread):
     queue: queue.SimpleQueue[Message]
 
@@ -228,7 +196,7 @@ def copy(  # type: ignore
     exclusion_filter: str,
     *,
     relative_only: bool,
-    packer_class=pack.Packer,  # type: ignore
+    packer_class=pack.Packer,
     **packer_args: dict[Any, Any],
 ) -> PackThread:
     """Use BAT to copy the given file and dependencies to the target location.
