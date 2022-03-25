@@ -158,7 +158,18 @@ func buildWebService(
 
 	// Ensure panics when serving a web request won't bring down the server.
 	e.Use(middleware.Recover())
-	e.Use(middleware.Gzip())
+
+	// Disabled, as it causes issues with "204 No Content" responses.
+	// TODO: investigate & file a bug report. Adding the check on an empty slice
+	// seems to fix it:
+	//
+	// func (w *gzipResponseWriter) Write(b []byte) (int, error) {
+	// 	if len(b) == 0 {
+	// 		return 0, nil
+	// 	}
+	// 	... original code of the function ...
+	// }
+	// e.Use(middleware.Gzip())
 
 	// Load the API definition and enable validation & authentication checks.
 	swagger, err := api.GetSwagger()
