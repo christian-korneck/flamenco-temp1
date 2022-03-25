@@ -311,20 +311,29 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 	c.VariablesLookup = lookup
 }
 
+func updateMap[K comparable, V any](target map[K]V, updateWith map[K]V) {
+	for key, value := range updateWith {
+		target[key] = value
+	}
+}
+
 // ExpandVariables converts "{variable name}" to the value that belongs to the given audience and platform.
 func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
-	audienceMap := c.VariablesLookup[audience]
-	if audienceMap == nil {
+	platformsForAudience := c.VariablesLookup[audience]
+	if platformsForAudience == nil {
 		log.Warn().
 			Str("valueToExpand", valueToExpand).
 			Str("audience", string(audience)).
-			Str("platform", platform).
+			Str("platform", string(platform)).
 			Msg("no variables defined for this audience")
 		return valueToExpand
 	}
 
-	platformMap := audienceMap[platform]
-	if platformMap == nil {
+	varsForPlatform := map[string]string{}
+	updateMap(varsForPlatform, platformsForAudience[platform])
+	updateMap(varsForPlatform, platformsForAudience[VariablePlatformAll])
+
+	if varsForPlatform == nil {
 		log.Warn().
 			Str("valueToExpand", valueToExpand).
 			Str("audience", string(audience)).
@@ -334,7 +343,7 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 	}
 
 	// Variable replacement
-	for varname, varvalue := range platformMap {
+	for varname, varvalue := range varsForPlatform {
 		placeholder := fmt.Sprintf("{%s}", varname)
 		valueToExpand = strings.Replace(valueToExpand, placeholder, varvalue, -1)
 	}
