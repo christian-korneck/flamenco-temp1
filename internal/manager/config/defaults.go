@@ -21,7 +21,7 @@ var defaultConfig = Conf{
 		SSDPDiscovery: true,
 
 		Shaman: shaman_config.Config{
-			Enabled:       true,
+			Enabled:       false,
 			FileStorePath: "./shaman-file-storage/file-store",
 			CheckoutPath:  "./shaman-file-storage/checkout",
 			GarbageCollect: shaman_config.GarbageCollect{
