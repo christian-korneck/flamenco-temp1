@@ -201,7 +201,9 @@ func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath 
 	// Change the modification time of the blob to mark it as 'referenced' just now.
 	m.wg.Add(1)
 	go func() {
-		touchFile(blobPath)
+		if err := touchFile(blobPath); err != nil {
+			logger.Warn().Err(err).Msg("shaman: unable to touch blob path")
+		}
 		m.wg.Done()
 	}()
 
