@@ -114,23 +114,23 @@ func (m *Manager) PrepareCheckout(checkoutPath string) (ResolvedCheckoutInfo, er
 	if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
 		if err == nil {
 			if stat.IsDir() {
-				logger.Debug().Msg("checkout path exists")
+				logger.Debug().Msg("shaman: checkout path exists")
 			} else {
-				logger.Error().Msg("checkout path exists but is not a directory")
+				logger.Error().Msg("shaman: checkout path exists but is not a directory")
 			}
 			// No error stat'ing this path, indicating it's an existing checkout.
 			return ResolvedCheckoutInfo{}, ErrCheckoutAlreadyExists
 		}
 		// If it's any other error, it's really a problem on our side.
-		logger.Error().Err(err).Msg("unable to stat checkout directory")
+		logger.Error().Err(err).Msg("shaman: unable to stat checkout directory")
 		return ResolvedCheckoutInfo{}, err
 	}
 
 	if err := os.MkdirAll(checkoutPaths.absolutePath, 0777); err != nil {
-		logger.Error().Err(err).Msg("unable to create checkout directory")
+		logger.Error().Err(err).Msg("shaman: unable to create checkout directory")
 	}
 
-	logger.Info().Str("relPath", checkoutPaths.RelativePath).Msg("created checkout directory")
+	logger.Info().Str("relPath", checkoutPaths.RelativePath).Msg("shaman: created checkout directory")
 	return checkoutPaths, nil
 }
 
@@ -146,14 +146,14 @@ func (m *Manager) EraseCheckout(checkoutID string) error {
 		Str("checkoutID", checkoutID).
 		Logger()
 	if err := os.RemoveAll(checkoutPaths.absolutePath); err != nil {
-		logger.Error().Err(err).Msg("unable to remove checkout directory")
+		logger.Error().Err(err).Msg("shaman: unable to remove checkout directory")
 		return err
 	}
 
 	// Try to remove the parent path as well, to not keep the dangling two-letter dirs.
 	// Failure is fine, though, because there is no guarantee it's empty anyway.
 	os.Remove(path.Dir(checkoutPaths.absolutePath))
-	logger.Info().Msg("removed checkout directory")
+	logger.Info().Msg("shaman: removed checkout directory")
 	return nil
 }
 
@@ -168,11 +168,11 @@ func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath 
 
 	blobPath, err := filepath.Abs(blobPath)
 	if err != nil {
-		logger.Error().Err(err).Msg("unable to make blobPath absolute")
+		logger.Error().Err(err).Msg("shaman: unable to make blobPath absolute")
 		return err
 	}
 
-	logger.Debug().Msg("creating symlink")
+	logger.Debug().Msg("shaman: creating symlink")
 
 	// This is expected to fail sometimes, because we don't create parent directories yet.
 	// We only create those when we get a failure from symlinking.
@@ -181,20 +181,20 @@ func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath 
 		return err
 	}
 	if !os.IsNotExist(err) {
-		logger.Error().Err(err).Msg("unable to create symlink")
+		logger.Error().Err(err).Msg("shaman: unable to create symlink")
 		return err
 	}
 
-	logger.Debug().Msg("creating parent directory")
+	logger.Debug().Msg("shaman: creating parent directory")
 
 	dir := path.Dir(symlinkPath)
 	if err := os.MkdirAll(dir, 0777); err != nil {
-		logger.Error().Err(err).Msg("unable to create parent directory")
+		logger.Error().Err(err).Msg("shaman: unable to create parent directory")
 		return err
 	}
 
 	if err := os.Symlink(blobPath, symlinkPath); err != nil {
-		logger.Error().Err(err).Msg("unable to create symlink, after creating parent directory")
+		logger.Error().Err(err).Msg("shaman: unable to create symlink, after creating parent directory")
 		return err
 	}
 
