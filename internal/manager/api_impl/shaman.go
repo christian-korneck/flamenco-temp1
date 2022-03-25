@@ -31,14 +31,16 @@ func (f *Flamenco) ShamanCheckout(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	err = f.shaman.Checkout(e.Request().Context(), api.ShamanCheckout(reqBody))
+	checkoutPath, err := f.shaman.Checkout(e.Request().Context(), api.ShamanCheckout(reqBody))
 	if err != nil {
 		// TODO: return 409 when checkout already exists.
 		logger.Warn().Err(err).Msg("Shaman: creating checkout")
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error: %v", err)
 	}
 
-	return e.String(http.StatusNoContent, "")
+	return e.JSON(http.StatusOK, api.ShamanCheckoutResult{
+		CheckoutPath: checkoutPath,
+	})
 }
 
 // Checks a Shaman Requirements file, and reports which files are unknown.

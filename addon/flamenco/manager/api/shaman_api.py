@@ -23,6 +23,7 @@ from flamenco.manager.model_utils import (  # noqa: F401
 )
 from flamenco.manager.model.error import Error
 from flamenco.manager.model.shaman_checkout import ShamanCheckout
+from flamenco.manager.model.shaman_checkout_result import ShamanCheckoutResult
 from flamenco.manager.model.shaman_requirements_request import ShamanRequirementsRequest
 from flamenco.manager.model.shaman_requirements_response import ShamanRequirementsResponse
 from flamenco.manager.model.shaman_single_file_status import ShamanSingleFileStatus
@@ -41,7 +42,7 @@ class ShamanApi(object):
         self.api_client = api_client
         self.shaman_checkout_endpoint = _Endpoint(
             settings={
-                'response_type': None,
+                'response_type': (ShamanCheckoutResult,),
                 'auth': [],
                 'endpoint_path': '/shaman/checkout/create',
                 'operation_id': 'shaman_checkout',
@@ -312,7 +313,7 @@ class ShamanApi(object):
             async_req (bool): execute request asynchronously
 
         Returns:
-            None
+            ShamanCheckoutResult
                 If the method is called asynchronously, returns the request
                 thread.
         """

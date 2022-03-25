@@ -19,14 +19,14 @@ if TYPE_CHECKING:
     from ..manager import ApiClient as _ApiClient
 
     from ..manager.models import (
+        ShamanCheckoutResult as _ShamanCheckoutResult,
         ShamanRequirementsRequest as _ShamanRequirementsRequest,
-        ShamanRequirementsResponse as _ShamanRequirementsResponse,
         ShamanFileSpec as _ShamanFileSpec,
     )
 else:
     _ApiClient = object
+    _ShamanCheckoutResult = object
     _ShamanRequirementsRequest = object
-    _ShamanRequirementsResponse = object
     _ShamanFileSpec = object
 
 log = logging.getLogger(__name__)
@@ -58,10 +58,14 @@ class Packer(bat_pack.Packer):  # type: ignore
         super().__init__(blendfile, project_root, target, **kwargs)
         self.checkout_path = checkout_path
         self.api_client = api_client
+        self.shaman_transferrer: Optional[Transferrer] = None
 
     # Mypy doesn't understand that bat_transfer.FileTransferer exists.
     def _create_file_transferer(self) -> bat_transfer.FileTransferer:  # type: ignore
-        return Transferrer(self.api_client, self.project, self.checkout_path)
+        self.shaman_transferrer = Transferrer(
+            self.api_client, self.project, self.checkout_path
+        )
+        return self.shaman_transferrer
 
     def _make_target_path(self, target: str) -> PurePath:
         return PurePosixPath("/")
@@ -70,10 +74,11 @@ class Packer(bat_pack.Packer):  # type: ignore
     def output_path(self) -> PurePath:
         """The path of the packed blend file in the target directory."""
         assert self._output_path is not None
+        assert self.shaman_transferrer is not None
 
-        checkout_location = PurePosixPath(self.checkout_path)
+        checkout_root = PurePosixPath(self.shaman_transferrer.checkout_path)
         rel_output = self._output_path.relative_to(self._target_path)
-        out_path: PurePath = checkout_location / rel_output
+        out_path: PurePath = checkout_root / rel_output
         return out_path
 
     def execute(self):
@@ -149,7 +154,10 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             return
 
         self.log.info("All files uploaded succesfully")
-        self._request_checkout(shaman_file_specs)
+        checkout_result = self._request_checkout(shaman_file_specs)
+
+        # Update our checkout path to match the one received from the Manager.
+        self.checkout_path = checkout_result.checkout_path
 
     def _upload_missing_files(
         self, shaman_file_specs: _ShamanRequirementsRequest
@@ -407,14 +415,16 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             raise self.AbortUpload("interrupting ongoing upload")
         super().report_transferred(bytes_transferred)
 
-    def _request_checkout(self, shaman_file_specs: _ShamanRequirementsRequest) -> None:
+    def _request_checkout(
+        self, shaman_file_specs: _ShamanRequirementsRequest
+    ) -> Optional[_ShamanCheckoutResult]:
         """Ask the Shaman to create a checkout of this BAT pack."""
 
         if not self.checkout_path:
             self.log.warning("NOT requesting checkout at Shaman")
-            return
+            return None
 
-        from ..manager.models import ShamanCheckout
+        from ..manager.models import ShamanCheckout, ShamanCheckoutResult
         from ..manager.exceptions import ApiException
 
         self.log.info(
@@ -427,7 +437,9 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
         )
 
         try:
-            self.shaman_api.shaman_checkout(checkoutRequest)
+            result: ShamanCheckoutResult = self.shaman_api.shaman_checkout(
+                checkoutRequest
+            )
         except ApiException as ex:
             match ex.status:
                 case 424:  # Files were missing
@@ -444,9 +456,10 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
                     )
             self.log.error(msg)
             self.error_set(msg)
-            return
+            return None
 
-        self.log.info("Shaman created checkout at %s", self.checkout_path)
+        self.log.info("Shaman created checkout at %s", result.checkout_path)
+        return result
 
 
 def make_file_spec_hashable(spec: _ShamanFileSpec) -> HashableShamanFileSpec:

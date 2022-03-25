@@ -291,9 +291,8 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         assert self.job is not None
         self.log.info("Sending BAT pack to Shaman")
 
-        # TODO: get project name from preferences/GUI.
-        # TODO: update Shaman API to ensure this is a unique location.
-        checkout_root = PurePosixPath(f"project/{self.job.name}")
+        # TODO: get project name from preferences/GUI and insert that here too.
+        checkout_root = PurePosixPath(f"{self.job.name}")
 
         self.packthread = bat_interface.copy(
             base_blendfile=blendfile,

@@ -84,7 +84,8 @@ type Shaman interface {
 
 	// Checkout creates a directory, and symlinks the required files into it. The
 	// files must all have been uploaded to Shaman before calling this.
-	Checkout(ctx context.Context, checkout api.ShamanCheckout) error
+	// Returns the final checkout directory, as it may be modified to ensure uniqueness.
+	Checkout(ctx context.Context, checkout api.ShamanCheckout) (string, error)
 
 	// Requirements checks a Shaman Requirements file, and returns the subset
 	// containing the unknown files.

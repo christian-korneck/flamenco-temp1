@@ -313,8 +313,12 @@ paths:
             schema:
               $ref: "#/components/schemas/ShamanCheckout"
       responses:
-        "204":
+        "200":
           description: Checkout was created succesfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShamanCheckoutResult'
         "424":
           description: There were files missing. Use `shamanCheckoutRequirements` to figure out which ones.
           content:
@@ -794,6 +798,19 @@ components:
           - sha: 63b72c63b9424fd13b9370fb60069080c3a15717cf3ad442635b187c6a895079
             size: 127
             path: logging.go
+
+    ShamanCheckoutResult:
+      type: object
+      description: The result of a Shaman checkout.
+      properties:
+        "checkoutPath":
+          type: string
+          description: >
+            Path where the Manager created this checkout. This can be different
+            than what was requested, as the Manager will ensure a unique
+            directory. The path is relative to the Shaman checkout path as
+            configured on the Manager.
+      required: [checkoutPath]
 
     ShamanFileStatus:
       type: string

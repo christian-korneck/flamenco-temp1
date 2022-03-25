@@ -27,6 +27,7 @@ from flamenco.manager.model.manager_configuration import ManagerConfiguration
 from flamenco.manager.model.registered_worker import RegisteredWorker
 from flamenco.manager.model.security_error import SecurityError
 from flamenco.manager.model.shaman_checkout import ShamanCheckout
+from flamenco.manager.model.shaman_checkout_result import ShamanCheckoutResult
 from flamenco.manager.model.shaman_file_spec import ShamanFileSpec
 from flamenco.manager.model.shaman_file_spec_with_status import ShamanFileSpecWithStatus
 from flamenco.manager.model.shaman_file_status import ShamanFileStatus

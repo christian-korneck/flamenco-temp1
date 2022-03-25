@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 
 # **shaman_checkout**
-> shaman_checkout(shaman_checkout)
+> ShamanCheckoutResult shaman_checkout(shaman_checkout)
 
 Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
 
@@ -24,6 +24,7 @@ import flamenco.manager
 from flamenco.manager.api import shaman_api
 from flamenco.manager.model.error import Error
 from flamenco.manager.model.shaman_checkout import ShamanCheckout
+from flamenco.manager.model.shaman_checkout_result import ShamanCheckoutResult
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost
 # See configuration.py for a list of all supported configuration parameters.
@@ -50,7 +51,8 @@ with flamenco.manager.ApiClient() as api_client:
     # example passing only required values which don't have defaults set
     try:
         # Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
-        api_instance.shaman_checkout(shaman_checkout)
+        api_response = api_instance.shaman_checkout(shaman_checkout)
+        pprint(api_response)
     except flamenco.manager.ApiException as e:
         print("Exception when calling ShamanApi->shaman_checkout: %s\n" % e)
 ```
@@ -64,7 +66,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**ShamanCheckoutResult**](ShamanCheckoutResult.md)
 
 ### Authorization
 
@@ -80,7 +82,7 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**204** | Checkout was created succesfully. |  -  |
+**200** | Checkout was created succesfully. |  -  |
 **424** | There were files missing. Use &#x60;shamanCheckoutRequirements&#x60; to figure out which ones. |  -  |
 **409** | Checkout already exists. |  -  |
 **0** | unexpected error |  -  |

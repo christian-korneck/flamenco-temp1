@@ -112,7 +112,7 @@ func (s *Server) IsEnabled() bool {
 
 // Checkout creates a directory, and symlinks the required files into it. The
 // files must all have been uploaded to Shaman before calling this.
-func (s *Server) Checkout(ctx context.Context, checkout api.ShamanCheckout) error {
+func (s *Server) Checkout(ctx context.Context, checkout api.ShamanCheckout) (string, error) {
 	return s.checkoutMan.Checkout(ctx, checkout)
 }
 

@@ -28,13 +28,13 @@ func TestCheckout(t *testing.T) {
 		},
 	}
 
-	err := manager.Checkout(ctx, checkout)
+	actualCheckoutPath, err := manager.Checkout(ctx, checkout)
 	if err != nil {
 		t.Fatalf("fatal error: %v", err)
 	}
 
 	// Check the symlinks of the checkout
-	coPath := path.Join(manager.checkoutBasePath, checkout.CheckoutPath)
+	coPath := path.Join(manager.checkoutBasePath, actualCheckoutPath)
 	assert.FileExists(t, path.Join(coPath, "subdir", "replacer.py"))
 	assert.FileExists(t, path.Join(coPath, "feed.py"))
 	assert.FileExists(t, path.Join(coPath, "httpstuff.py"))

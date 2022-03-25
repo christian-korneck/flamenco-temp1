@@ -20,7 +20,7 @@ var (
 	validCheckoutRegexp = regexp.MustCompile(`^[^/?*:;{}\\][^?*:;{}\\]*$`)
 )
 
-func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) error {
+func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) (string, error) {
 	logger := (*zerolog.Ctx(ctx)).With().
 		Str("checkoutPath", checkout.CheckoutPath).Logger()
 	logger.Debug().Msg("shaman: user requested checkout creation")
@@ -28,7 +28,7 @@ func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) err
 	// Actually create the checkout.
 	resolvedCheckoutInfo, err := m.PrepareCheckout(checkout.CheckoutPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// The checkout directory was created, so if anything fails now, it should be erased.
@@ -46,17 +46,17 @@ func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) err
 		blobPath, status := m.fileStore.ResolveFile(fileSpec.Sha, int64(fileSpec.Size), filestore.ResolveStoredOnly)
 		if status != filestore.StatusStored {
 			// Caller should upload this file before we can create the checkout.
-			return ErrMissingFiles
+			return "", ErrMissingFiles
 		}
 
 		if err := m.SymlinkToCheckout(blobPath, resolvedCheckoutInfo.absolutePath, fileSpec.Path); err != nil {
-			return fmt.Errorf("symlinking %q to checkout: %w", fileSpec.Path, err)
+			return "", fmt.Errorf("symlinking %q to checkout: %w", fileSpec.Path, err)
 		}
 	}
 
 	checkoutOK = true // Prevent the checkout directory from being erased again.
 	logger.Info().Msg("shaman: checkout created")
-	return nil
+	return resolvedCheckoutInfo.RelativePath, nil
 }
 
 func isValidCheckoutPath(checkoutPath string) bool {

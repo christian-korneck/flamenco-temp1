@@ -25,6 +25,7 @@ package checkout
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,7 +44,9 @@ type Manager struct {
 	checkoutBasePath string
 	fileStore        *filestore.Store
 
-	wg sync.WaitGroup
+	wg *sync.WaitGroup
+
+	checkoutUniquenessMutex *sync.Mutex
 }
 
 // ResolvedCheckoutInfo contains the result of validating the Checkout ID and parsing it into a final path.
@@ -78,7 +81,7 @@ func NewManager(conf config.Config, fileStore *filestore.Store) *Manager {
 		logger.Error().Err(err).Msg("unable to create checkout directory")
 	}
 
-	return &Manager{conf.CheckoutPath, fileStore, sync.WaitGroup{}}
+	return &Manager{conf.CheckoutPath, fileStore, new(sync.WaitGroup), new(sync.Mutex)}
 }
 
 // Close waits for still-running touch() calls to finish, then returns.
@@ -101,37 +104,54 @@ func (m *Manager) pathForCheckout(requestedCheckoutPath string) (ResolvedCheckou
 // PrepareCheckout creates the root directory for a specific checkout.
 // Returns the path relative to the checkout root directory.
 func (m *Manager) PrepareCheckout(checkoutPath string) (ResolvedCheckoutInfo, error) {
-	checkoutPaths, err := m.pathForCheckout(checkoutPath)
-	if err != nil {
-		return ResolvedCheckoutInfo{}, err
-	}
+	// This function checks the filesystem and tries to ensure uniqueness, so it's
+	// important that it doesn't run simultaneously in parallel threads.
+	m.checkoutUniquenessMutex.Lock()
+	defer m.checkoutUniquenessMutex.Unlock()
 
-	logger := log.With().
-		Str("absolutePath", checkoutPaths.absolutePath).
-		Str("checkoutPath", checkoutPath).
-		Logger()
+	var lastErr error
+	// Just try 10 different random tokens. If that still doesn't work, fail.
+	for try := 0; try < 10; try++ {
+		randomisedPath := fmt.Sprintf("%s-%s", checkoutPath, randomisedToken())
 
-	if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
-		if err == nil {
-			if stat.IsDir() {
-				logger.Debug().Msg("shaman: checkout path exists")
-			} else {
-				logger.Error().Msg("shaman: checkout path exists but is not a directory")
-			}
-			// No error stat'ing this path, indicating it's an existing checkout.
-			return ResolvedCheckoutInfo{}, ErrCheckoutAlreadyExists
+		checkoutPaths, err := m.pathForCheckout(randomisedPath)
+		if err != nil {
+			return ResolvedCheckoutInfo{}, err
 		}
-		// If it's any other error, it's really a problem on our side.
-		logger.Error().Err(err).Msg("shaman: unable to stat checkout directory")
-		return ResolvedCheckoutInfo{}, err
+
+		logger := log.With().
+			Str("absolutePath", checkoutPaths.absolutePath).
+			Str("checkoutPath", checkoutPath).
+			Logger()
+
+		if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
+			if err == nil {
+				// No error stat'ing this path, indicating it's an existing checkout.
+				// Just retry another random token.
+				lastErr = ErrCheckoutAlreadyExists
+				if stat.IsDir() {
+					logger.Debug().Msg("shaman: checkout path exists")
+				} else {
+					logger.Warn().Msg("shaman: checkout path exists but is not a directory")
+				}
+				continue
+			}
+			// If it's any other error, it's really a problem on our side. Don't retry.
+			logger.Error().Err(err).Msg("shaman: unable to stat checkout directory")
+			return ResolvedCheckoutInfo{}, err
+		}
+
+		if err := os.MkdirAll(checkoutPaths.absolutePath, 0777); err != nil {
+			lastErr = err
+			logger.Warn().Err(err).Msg("shaman: unable to create checkout directory")
+			continue
+		}
+
+		logger.Info().Str("relPath", checkoutPaths.RelativePath).Msg("shaman: created checkout directory")
+		return checkoutPaths, nil
 	}
 
-	if err := os.MkdirAll(checkoutPaths.absolutePath, 0777); err != nil {
-		logger.Error().Err(err).Msg("shaman: unable to create checkout directory")
-	}
-
-	logger.Info().Str("relPath", checkoutPaths.RelativePath).Msg("shaman: created checkout directory")
-	return checkoutPaths, nil
+	return ResolvedCheckoutInfo{}, lastErr
 }
 
 // EraseCheckout removes the checkout directory structure identified by the ID.
@@ -230,4 +250,18 @@ func touchFile(blobPath string) error {
 
 	logger.Debug().Msg("done touching")
 	return nil
+}
+
+// randomisedToken generates a random 4-character string.
+// It is intended to add to a checkout path, to create some randomness and thus
+// a higher chance of the path not yet existing.
+func randomisedToken() string {
+	var runes = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+	n := 4
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = runes[rand.Intn(len(runes))]
+	}
+	return string(s)
 }

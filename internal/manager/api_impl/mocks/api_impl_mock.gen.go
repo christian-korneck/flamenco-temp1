@@ -412,11 +412,12 @@ func (m *MockShaman) EXPECT() *MockShamanMockRecorder {
 }
 
 // Checkout mocks base method.
-func (m *MockShaman) Checkout(arg0 context.Context, arg1 api.ShamanCheckout) error {
+func (m *MockShaman) Checkout(arg0 context.Context, arg1 api.ShamanCheckout) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Checkout", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Checkout indicates an expected call of Checkout.
