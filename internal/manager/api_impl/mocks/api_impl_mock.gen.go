@@ -324,7 +324,7 @@ func (m *MockConfigService) EXPECT() *MockConfigServiceMockRecorder {
 }
 
 // ExpandVariables mocks base method.
-func (m *MockConfigService) ExpandVariables(arg0 string, arg1 config.VariableAudience, arg2 string) string {
+func (m *MockConfigService) ExpandVariables(arg0 string, arg1 config.VariableAudience, arg2 config.VariablePlatform) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExpandVariables", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)

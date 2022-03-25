@@ -19,7 +19,7 @@ func TestDefaultSettings(t *testing.T) {
 
 	assert.Equal(t, false, config.Variables["ffmpeg"].IsTwoWay)
 	assert.Equal(t, "ffmpeg", config.Variables["ffmpeg"].Values[0].Value)
-	assert.Equal(t, "linux", config.Variables["ffmpeg"].Values[0].Platform)
+	assert.Equal(t, VariablePlatformLinux, config.Variables["ffmpeg"].Values[0].Platform)
 }
 
 func TestVariableValidation(t *testing.T) {

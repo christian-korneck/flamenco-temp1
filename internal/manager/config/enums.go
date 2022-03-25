@@ -10,3 +10,13 @@ const (
 )
 
 type VariableAudience string
+
+const (
+	// the "platform" of task variables. It's a free-form string field, but it has
+	// some predefined values here.
+	VariablePlatformLinux   VariablePlatform = "linux"
+	VariablePlatformWindows VariablePlatform = "windows"
+	VariablePlatformDarwin  VariablePlatform = "darwin"
+)
+
+type VariablePlatform string

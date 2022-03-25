@@ -133,7 +133,7 @@ type Conf struct {
 	// audience + platform + variable name → variable value.
 	// Used to look up variables for a given platform and audience.
 	// The 'audience' is never "all" or ""; only concrete audiences are stored here.
-	VariablesLookup map[VariableAudience]map[string]map[string]string `yaml:"-"`
+	VariablesLookup map[VariableAudience]map[VariablePlatform]map[string]string `yaml:"-"`
 }
 
 // Variable defines a configuration variable.
@@ -152,8 +152,8 @@ type VariableValue struct {
 	Audience VariableAudience `yaml:"audience,omitempty" json:"audience,omitempty"`
 
 	// Platforms that use this value. Only one of "Platform" and "Platforms" may be set.
-	Platform  string   `yaml:"platform,omitempty" json:"platform,omitempty"`
-	Platforms []string `yaml:"platforms,omitempty,flow" json:"platforms,omitempty"`
+	Platform  VariablePlatform   `yaml:"platform,omitempty" json:"platform,omitempty"`
+	Platforms []VariablePlatform `yaml:"platforms,omitempty,flow" json:"platforms,omitempty"`
 
 	// The actual value of the variable for this audience+platform.
 	Value string `yaml:"value" json:"value"`
@@ -225,7 +225,7 @@ func loadConf(filename string) (Conf, error) {
 }
 
 func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
-	lookup := map[VariableAudience]map[string]map[string]string{}
+	lookup := map[VariableAudience]map[VariablePlatform]map[string]string{}
 
 	// Construct a list of all audiences except "" and "all"
 	concreteAudiences := []VariableAudience{}
@@ -242,8 +242,8 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 		Msg("constructing variable lookup table")
 
 	// setValue expands wildcard audiences into concrete ones.
-	var setValue func(audience VariableAudience, platform, name, value string)
-	setValue = func(audience VariableAudience, platform, name, value string) {
+	var setValue func(audience VariableAudience, platform VariablePlatform, name, value string)
+	setValue = func(audience VariableAudience, platform VariablePlatform, name, value string) {
 		if isWildcard[audience] {
 			for _, aud := range concreteAudiences {
 				setValue(aud, platform, name, value)
@@ -252,14 +252,14 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 		}
 
 		if lookup[audience] == nil {
-			lookup[audience] = map[string]map[string]string{}
+			lookup[audience] = map[VariablePlatform]map[string]string{}
 		}
 		if lookup[audience][platform] == nil {
 			lookup[audience][platform] = map[string]string{}
 		}
 		log.Trace().
 			Str("audience", string(audience)).
-			Str("platform", platform).
+			Str("platform", string(platform)).
 			Str("name", name).
 			Str("value", value).
 			Msg("setting variable")
@@ -282,7 +282,7 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 					log.Warn().
 						Str("variable", name).
 						Str("audience", string(value.Audience)).
-						Str("platform", value.Platform).
+						Str("platform", string(value.Platform)).
 						Str("value", value.Value).
 						Msg("Backslash found in variable value. Change paths to use forward slashes instead.")
 				}
@@ -305,7 +305,7 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 }
 
 // ExpandVariables converts "{variable name}" to the value that belongs to the given audience and platform.
-func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, platform string) string {
+func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
 	audienceMap := c.VariablesLookup[audience]
 	if audienceMap == nil {
 		log.Warn().
@@ -321,7 +321,7 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 		log.Warn().
 			Str("valueToExpand", valueToExpand).
 			Str("audience", string(audience)).
-			Str("platform", platform).
+			Str("platform", string(platform)).
 			Msg("no variables defined for this platform given this audience")
 		return valueToExpand
 	}
@@ -354,8 +354,8 @@ func (c *Conf) checkVariables() {
 				log.Warn().
 					Str("name", name).
 					Interface("value", value).
-					Str("platform", value.Platform).
-					Strs("platforms", value.Platforms).
+					Str("platform", string(value.Platform)).
+					Interface("platforms", value.Platforms).
 					Msg("variable has a both 'platform' and 'platforms' set")
 				value.Platforms = append(value.Platforms, value.Platform)
 				value.Platform = ""

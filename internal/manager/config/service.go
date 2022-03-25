@@ -24,7 +24,7 @@ func (s *Service) Load() error {
 	return nil
 }
 
-func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform string) string {
+func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
 	return s.config.ExpandVariables(valueToExpand, audience, platform)
 }
 
