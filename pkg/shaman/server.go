@@ -56,7 +56,7 @@ func NewServer(conf config.Config, auther jwtauth.Authenticator) *Server {
 		return nil
 	}
 
-	if conf.CheckoutPath == "" {
+	if conf.StoragePath == "" {
 		log.Error().Interface("config", conf).Msg("shaman: no checkout path configured, unable to start")
 		return nil
 	}

@@ -72,7 +72,7 @@ func (s *Server) GCStorage(doDryRun bool) (stats GCStats) {
 	ageThreshold := s.gcAgeThreshold()
 
 	logger := log.With().
-		Str("checkoutPath", s.config.CheckoutPath).
+		Str("checkoutPath", s.config.CheckoutPath()).
 		Str("fileStorePath", s.fileStore.StoragePath()).
 		Time("ageThreshold", ageThreshold).
 		Logger()
@@ -99,7 +99,7 @@ func (s *Server) GCStorage(doDryRun bool) (stats GCStats) {
 		Msg("found old files, going to check for links")
 
 	// Scan the checkout area and extra checkout paths, and discard any old file that is linked.
-	dirsToCheck := []string{s.config.CheckoutPath}
+	dirsToCheck := []string{s.config.CheckoutPath()}
 	dirsToCheck = append(dirsToCheck, s.config.GarbageCollect.ExtraCheckoutDirs...)
 	for _, checkDir := range dirsToCheck {
 		if err := s.gcFilterLinkedFiles(checkDir, oldFiles, logger, &stats); err != nil {

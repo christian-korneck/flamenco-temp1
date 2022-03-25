@@ -43,7 +43,7 @@ func createTestShaman() (*Server, func()) {
 
 func makeOld(shaman *Server, expectOld mtimeMap, relPath string) {
 	oldTime := time.Now().Add(-2 * shaman.config.GarbageCollect.MaxAge)
-	absPath := path.Join(shaman.config.FileStorePath, relPath)
+	absPath := path.Join(shaman.config.FileStorePath(), relPath)
 
 	err := os.Chtimes(absPath, oldTime, oldTime)
 	if err != nil {
@@ -71,7 +71,7 @@ func TestGCFindOldFiles(t *testing.T) {
 	server, cleanup := createTestShaman()
 	defer cleanup()
 
-	filestore.LinkTestFileStore(server.config.FileStorePath)
+	filestore.LinkTestFileStore(server.config.FileStorePath())
 
 	// Since all the links have just been created, nothing should be considered old.
 	ageThreshold := server.gcAgeThreshold()
@@ -98,7 +98,7 @@ func TestGCComponents(t *testing.T) {
 	extraCheckoutDir := path.Join(server.config.TestTempDir, "extra-checkout")
 	server.config.GarbageCollect.ExtraCheckoutDirs = []string{extraCheckoutDir}
 
-	filestore.LinkTestFileStore(server.config.FileStorePath)
+	filestore.LinkTestFileStore(server.config.FileStorePath())
 
 	copymap := func(somemap mtimeMap) mtimeMap {
 		theCopy := mtimeMap{}
@@ -123,14 +123,14 @@ func TestGCComponents(t *testing.T) {
 
 	// No symlinks created yet, so this should report all the files in oldFiles.
 	oldFiles := copymap(expectOld)
-	err := server.gcFilterLinkedFiles(server.config.CheckoutPath, oldFiles, log.With().Str("package", "shaman/test").Logger(), nil)
+	err := server.gcFilterLinkedFiles(server.config.CheckoutPath(), oldFiles, log.With().Str("package", "shaman/test").Logger(), nil)
 	assert.Nil(t, err)
 	assert.EqualValues(t, expectOld, oldFiles)
 
 	// Create some symlinks
 	checkoutInfo, err := server.checkoutMan.PrepareCheckout("checkoutID")
 	assert.Nil(t, err)
-	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath,
+	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath(),
 		path.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
 	assert.Nil(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["781.blob"], extraCheckoutDir,
@@ -144,7 +144,7 @@ func TestGCComponents(t *testing.T) {
 	}
 	oldFiles = copymap(expectOld)
 	stats := GCStats{}
-	err = server.gcFilterLinkedFiles(server.config.CheckoutPath, oldFiles, log.With().Str("package", "shaman/test").Logger(), &stats)
+	err = server.gcFilterLinkedFiles(server.config.CheckoutPath(), oldFiles, log.With().Str("package", "shaman/test").Logger(), &stats)
 	assert.Equal(t, 1, stats.numSymlinksChecked) // 1 is in checkoutPath, the other in extraCheckoutDir
 	assert.Nil(t, err)
 	assert.Equal(t, len(expectRemovable)+1, len(oldFiles)) // one file is linked from the extra checkout dir
@@ -182,7 +182,7 @@ func TestGarbageCollect(t *testing.T) {
 	extraCheckoutDir := path.Join(server.config.TestTempDir, "extra-checkout")
 	server.config.GarbageCollect.ExtraCheckoutDirs = []string{extraCheckoutDir}
 
-	filestore.LinkTestFileStore(server.config.FileStorePath)
+	filestore.LinkTestFileStore(server.config.FileStorePath())
 
 	// Make some files old.
 	expectOld := mtimeMap{}
@@ -200,7 +200,7 @@ func TestGarbageCollect(t *testing.T) {
 	// Create some symlinks
 	checkoutInfo, err := server.checkoutMan.PrepareCheckout("checkoutID")
 	assert.Nil(t, err)
-	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath,
+	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath(),
 		path.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
 	assert.Nil(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["781.blob"], extraCheckoutDir,

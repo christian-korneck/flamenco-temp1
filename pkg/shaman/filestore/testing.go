@@ -41,7 +41,7 @@ func CreateTestStore() *Store {
 	}
 
 	conf := config.Config{
-		FileStorePath: tempDir,
+		StoragePath: tempDir,
 	}
 	return New(conf)
 }

@@ -21,9 +21,8 @@ var defaultConfig = Conf{
 		SSDPDiscovery: true,
 
 		Shaman: shaman_config.Config{
-			Enabled:       false,
-			FileStorePath: "./shaman-file-storage/file-store",
-			CheckoutPath:  "./shaman-file-storage/checkout",
+			Enabled:     false,
+			StoragePath: "./shaman-file-storage",
 			GarbageCollect: shaman_config.GarbageCollect{
 				Period:            24 * time.Hour,
 				MaxAge:            31 * 24 * time.Hour,

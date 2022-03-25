@@ -73,15 +73,16 @@ var (
 
 // NewManager creates and returns a new Checkout Manager.
 func NewManager(conf config.Config, fileStore *filestore.Store) *Manager {
-	logger := log.With().Str("checkoutDir", conf.CheckoutPath).Logger()
+	checkoutDir := conf.CheckoutPath()
+	logger := log.With().Str("checkoutDir", checkoutDir).Logger()
 	logger.Info().Msg("opening checkout directory")
 
-	err := os.MkdirAll(conf.CheckoutPath, 0777)
+	err := os.MkdirAll(checkoutDir, 0777)
 	if err != nil {
 		logger.Error().Err(err).Msg("unable to create checkout directory")
 	}
 
-	return &Manager{conf.CheckoutPath, fileStore, new(sync.WaitGroup), new(sync.Mutex)}
+	return &Manager{checkoutDir, fileStore, new(sync.WaitGroup), new(sync.Mutex)}
 }
 
 // Close waits for still-running touch() calls to finish, then returns.

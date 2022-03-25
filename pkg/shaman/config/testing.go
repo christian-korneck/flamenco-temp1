@@ -25,7 +25,6 @@ package config
 import (
 	"io/ioutil"
 	"os"
-	"path"
 	"time"
 )
 
@@ -37,10 +36,9 @@ func CreateTestConfig() (conf Config, cleanup func()) {
 	}
 
 	conf = Config{
-		TestTempDir:   tempDir,
-		Enabled:       true,
-		FileStorePath: path.Join(tempDir, "file-store"),
-		CheckoutPath:  path.Join(tempDir, "checkout"),
+		TestTempDir: tempDir,
+		Enabled:     true,
+		StoragePath: tempDir,
 
 		GarbageCollect: GarbageCollect{
 			Period:            8 * time.Hour,

@@ -41,11 +41,12 @@ type Store struct {
 
 // New returns a new file store.
 func New(conf config.Config) *Store {
-	log.Info().Str("storageDir", conf.FileStorePath).Msg("shaman: opening file store")
+	storageDir := conf.FileStorePath()
+	log.Info().Str("storageDir", storageDir).Msg("shaman: opening file store")
 	store := &Store{
-		conf.FileStorePath,
-		storageBin{conf.FileStorePath, "uploading", true, ".tmp"},
-		storageBin{conf.FileStorePath, "stored", false, ".blob"},
+		storageDir,
+		storageBin{storageDir, "uploading", true, ".tmp"},
+		storageBin{storageDir, "stored", false, ".blob"},
 	}
 	store.createDirectoryStructure()
 	return store

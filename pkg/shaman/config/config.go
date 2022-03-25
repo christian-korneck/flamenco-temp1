@@ -23,7 +23,19 @@
 package config
 
 import (
+	"path/filepath"
 	"time"
+)
+
+const (
+	// fileStoreSubdir is the sub-directory of the configured storage path, used
+	// for the file store (i.e. the place where binary blobs are uploaded to).
+	fileStoreSubdir = "file-store"
+
+	// checkoutSubDir is the sub-directory of the configured storage path, used
+	// for the checkouts of job files (f.e. the blend files used for render jobs,
+	// symlinked from the file store dir).
+	checkoutSubDir = "jobs"
 )
 
 // Config contains all the Shaman configuration
@@ -32,11 +44,8 @@ type Config struct {
 	// directory created for this test is located.
 	TestTempDir string `yaml:"-"`
 
-	Enabled bool `yaml:"enabled"`
-
-	FileStorePath string `yaml:"fileStorePath"`
-	CheckoutPath  string `yaml:"checkoutPath"`
-
+	Enabled        bool           `yaml:"enabled"`
+	StoragePath    string         `yaml:"storagePath"`
 	GarbageCollect GarbageCollect `yaml:"garbageCollect"`
 }
 
@@ -52,4 +61,17 @@ type GarbageCollect struct {
 	// Used by the -gc CLI arg to silently disable the garbage collector
 	// while we're performing a manual sweep.
 	SilentlyDisable bool `yaml:"-"`
+}
+
+// FileStorePath returns the sub-directory of the configured storage path,
+// used for the file store (i.e. the place where binary blobs are uploaded to).
+func (c Config) FileStorePath() string {
+	return filepath.Join(c.StoragePath, fileStoreSubdir)
+}
+
+// CheckoutPath returns the sub-directory of the configured storage path, used
+// for the checkouts of job files (f.e. the blend files used for render jobs,
+// symlinked from the file store dir).
+func (c Config) CheckoutPath() string {
+	return filepath.Join(c.StoragePath, checkoutSubDir)
 }
