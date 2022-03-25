@@ -174,15 +174,18 @@ func getConf() (Conf, error) {
 }
 
 // DefaultConfig returns a copy of the default configuration.
-func DefaultConfig() Conf {
+func DefaultConfig(override ...func(c *Conf)) Conf {
 	c := defaultConfig
 	c.Meta.Version = latestConfigVersion
+	for _, overrideFunc := range override {
+		overrideFunc(&c)
+	}
 	c.constructVariableLookupTable(zerolog.TraceLevel)
 	return c
 }
 
 // loadConf parses the given file and returns its contents as a Conf object.
-func loadConf(filename string) (Conf, error) {
+func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 	log.Info().Str("file", filename).Msg("loading configuration")
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
@@ -193,7 +196,7 @@ func loadConf(filename string) (Conf, error) {
 			evt = log.Warn().Err(err)
 		}
 		evt.Msg("unable to load configuration, using defaults")
-		return DefaultConfig(), err
+		return DefaultConfig(overrides...), err
 	}
 
 	// First parse attempt, find the version.
@@ -213,6 +216,10 @@ func loadConf(filename string) (Conf, error) {
 	c := DefaultConfig()
 	if err := yaml.Unmarshal(yamlFile, &c); err != nil {
 		return c, fmt.Errorf("unable to parse %s: %w", filename, err)
+	}
+
+	for _, overrideFunc := range overrides {
+		overrideFunc(&c)
 	}
 
 	c.constructVariableLookupTable(zerolog.DebugLevel)
@@ -478,12 +485,14 @@ func (c *Conf) parseURLs() {
 // GetTestConfig returns the configuration for unit tests.
 // The config is loaded from `test-flamenco-manager.yaml` in the directory
 // containing the caller's source.
-func GetTestConfig() Conf {
+// The `overrides` parameter can be used to override configuration between
+// loading it and processing the file's contents.
+func GetTestConfig(overrides ...func(c *Conf)) Conf {
 	_, myFilename, _, _ := runtime.Caller(1)
 	myDir := path.Dir(myFilename)
 
 	filepath := path.Join(myDir, "test-flamenco-manager.yaml")
-	conf, err := loadConf(filepath)
+	conf, err := loadConf(filepath, overrides...)
 	if err != nil {
 		log.Fatal().Err(err).Str("file", filepath).Msg("unable to load test config")
 	}
