@@ -110,11 +110,11 @@ func (m *Manager) PrepareCheckout(checkoutPath string) (ResolvedCheckoutInfo, er
 	defer m.checkoutUniquenessMutex.Unlock()
 
 	var lastErr error
-	// Just try 10 different random tokens. If that still doesn't work, fail.
-	for try := 0; try < 10; try++ {
-		randomisedPath := fmt.Sprintf("%s-%s", checkoutPath, randomisedToken())
+	attemptCheckoutPath := checkoutPath
 
-		checkoutPaths, err := m.pathForCheckout(randomisedPath)
+	// Just try 10 different random suffixes. If that still doesn't work, fail.
+	for try := 0; try < 10; try++ {
+		checkoutPaths, err := m.pathForCheckout(attemptCheckoutPath)
 		if err != nil {
 			return ResolvedCheckoutInfo{}, err
 		}
@@ -127,13 +127,15 @@ func (m *Manager) PrepareCheckout(checkoutPath string) (ResolvedCheckoutInfo, er
 		if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
 			if err == nil {
 				// No error stat'ing this path, indicating it's an existing checkout.
-				// Just retry another random token.
 				lastErr = ErrCheckoutAlreadyExists
 				if stat.IsDir() {
 					logger.Debug().Msg("shaman: checkout path exists")
 				} else {
 					logger.Warn().Msg("shaman: checkout path exists but is not a directory")
 				}
+
+				// Retry with (another) random suffix.
+				attemptCheckoutPath = fmt.Sprintf("%s-%s", checkoutPath, randomisedToken())
 				continue
 			}
 			// If it's any other error, it's really a problem on our side. Don't retry.
