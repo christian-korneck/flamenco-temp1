@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -180,6 +181,7 @@ func DefaultConfig(override ...func(c *Conf)) Conf {
 	for _, overrideFunc := range override {
 		overrideFunc(&c)
 	}
+	c.addImplicitVariables()
 	c.constructVariableLookupTable(zerolog.TraceLevel)
 	return c
 }
@@ -222,6 +224,7 @@ func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 		overrideFunc(&c)
 	}
 
+	c.addImplicitVariables()
 	c.constructVariableLookupTable(zerolog.DebugLevel)
 	c.parseURLs()
 	c.checkDatabase()
@@ -229,6 +232,31 @@ func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 	c.checkTLS()
 
 	return c, nil
+}
+
+func (c *Conf) addImplicitVariables() {
+	if !c.Shaman.Enabled {
+		return
+	}
+
+	// Shaman adds a variable to allow job submission to create
+	// checkout-dir-relative paths.
+	shamanCheckoutPath := c.Shaman.CheckoutPath()
+	absPath, err := filepath.Abs(shamanCheckoutPath)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to find absolute path of Shaman checkout path")
+		absPath = shamanCheckoutPath
+	}
+	c.Variables["jobs"] = Variable{
+		IsTwoWay: false,
+		Values: []VariableValue{
+			{
+				Audience: VariableAudienceAll,
+				Platform: VariablePlatformAll,
+				Value:    absPath,
+			},
+		},
+	}
 }
 
 func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
@@ -330,8 +358,8 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 	}
 
 	varsForPlatform := map[string]string{}
-	updateMap(varsForPlatform, platformsForAudience[platform])
 	updateMap(varsForPlatform, platformsForAudience[VariablePlatformAll])
+	updateMap(varsForPlatform, platformsForAudience[platform])
 
 	if varsForPlatform == nil {
 		log.Warn().

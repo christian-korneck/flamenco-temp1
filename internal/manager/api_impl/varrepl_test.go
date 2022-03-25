@@ -3,6 +3,7 @@ package api_impl
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -94,4 +95,21 @@ func TestReplacePathsUnknownOS(t *testing.T) {
 		replacedTask.Commands[2].Parameters["args"],
 	)
 	assert.Equal(t, "{hey}/haha", replacedTask.Commands[2].Parameters["otherpath"])
+}
+
+func TestReplaceJobsVariable(t *testing.T) {
+	worker := persistence.Worker{Platform: "linux"}
+
+	// Having the Shaman enabled should create an implicit variable "{jobs}".
+	conf := config.GetTestConfig(func(c *config.Conf) {
+		c.Shaman.Enabled = true
+		c.Shaman.StoragePath = "/path/to/shaman/storage"
+	})
+
+	task := varreplTestTask()
+	task.Commands[2].Parameters["filepath"] = "{jobs}/path/in/shaman.blend"
+
+	replacedTask := replaceTaskVariables(&conf, task, worker)
+	expectPath := path.Join(conf.Shaman.CheckoutPath(), "path/in/shaman.blend")
+	assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
 }

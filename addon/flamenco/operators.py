@@ -307,7 +307,9 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             ),
         )
 
-        return checkout_root / blendfile.name  # TODO: get relative to the checkout dir.
+        # Having Shaman enabled on the Manager automatically creates a variable
+        # "jobs" that will resolve to the checkout directory.
+        return PurePosixPath("{jobs}") / checkout_root / blendfile.name
 
     def _on_bat_pack_msg(self, context: bpy.types.Context, msg: _Message) -> set[str]:
         from .bat import interface as bat_interface

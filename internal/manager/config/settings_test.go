@@ -40,3 +40,17 @@ func TestVariableValidation(t *testing.T) {
 
 // TODO: Test two-way variables. Even though they're not currently in the
 // default configuration, they should work.
+
+func TestShamanImplicitVariables(t *testing.T) {
+	c := DefaultConfig(func(c *Conf) {
+		// Having the Shaman enabled should create an implicit variable "{jobs}".
+		c.Shaman.Enabled = true
+		c.Shaman.StoragePath = "/path/to/shaman/storage"
+	})
+
+	if !assert.Contains(t, c.Variables, "jobs") {
+		t.FailNow()
+	}
+	assert.False(t, c.Variables["jobs"].IsTwoWay)
+	assert.Equal(t, c.Shaman.CheckoutPath(), c.Variables["jobs"].Values[0].Value)
+}
