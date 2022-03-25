@@ -48,26 +48,25 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 }
 
 // prepareMockedJSONRequest returns an `echo.Context` that has a JSON request body attached to it.
-func (mf *mockedFlamenco) prepareMockedJSONRequest(worker *persistence.Worker, requestBody interface{}) echo.Context {
+func (mf *mockedFlamenco) prepareMockedJSONRequest(requestBody interface{}) echo.Context {
 	bodyBytes, err := json.MarshalIndent(requestBody, "", "    ")
 	if err != nil {
 		panic(err)
 	}
 
-	c := mf.prepareMockedRequest(worker, bytes.NewBuffer(bodyBytes))
+	c := mf.prepareMockedRequest(bytes.NewBuffer(bodyBytes))
 	c.Request().Header.Add(echo.HeaderContentType, "application/json")
 
 	return c
 }
 
 // prepareMockedJSONRequest returns an `echo.Context` that has an empty request body attached to it.
-func (mf *mockedFlamenco) prepareMockedRequest(worker *persistence.Worker, body io.Reader) echo.Context {
+func (mf *mockedFlamenco) prepareMockedRequest(body io.Reader) echo.Context {
 	e := echo.New()
 
 	req := httptest.NewRequest(http.MethodPost, "/", body)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	requestWorkerStore(c, worker)
 
 	return c
 }

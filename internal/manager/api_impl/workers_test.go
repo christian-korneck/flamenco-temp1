@@ -23,7 +23,8 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf := newMockedFlamenco(mockCtrl)
 	worker := testWorker()
 
-	echo := mf.prepareMockedRequest(&worker, nil)
+	echo := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echo, &worker)
 
 	// Expect a call into the persistence layer, which should return a scheduled task.
 	job := persistence.Job{
@@ -54,7 +55,8 @@ func TestTaskScheduleNonActiveStatus(t *testing.T) {
 	// Explicitly NO expected calls to the persistence layer. Since the worker is
 	// not in a state that allows task execution, there should be no DB queries.
 
-	echoCtx := mf.prepareMockedRequest(&worker, nil)
+	echoCtx := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echoCtx, &worker)
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
 
@@ -73,7 +75,8 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	// Explicitly NO expected calls to the persistence layer. Since the worker is
 	// not in a state that allows task execution, there should be no DB queries.
 
-	echoCtx := mf.prepareMockedRequest(&worker, nil)
+	echoCtx := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echoCtx, &worker)
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
 
@@ -112,7 +115,8 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 
 	// Signing off should be handled completely, even when the HTTP connection
 	// breaks. This means using a different context than the one passed by Echo.
-	echo := mf.prepareMockedRequest(&worker, nil)
+	echo := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echo, &worker)
 	expectCtx := gomock.Not(gomock.Eq(echo.Request().Context()))
 
 	// Expect worker's tasks to be re-queued.

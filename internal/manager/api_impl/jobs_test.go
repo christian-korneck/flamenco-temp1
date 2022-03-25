@@ -65,7 +65,8 @@ func TestTaskUpdate(t *testing.T) {
 	mf.logStorage.EXPECT().Write(gomock.Any(), jobID, taskID, "line1\nline2\n")
 
 	// Do the call.
-	echoCtx := mf.prepareMockedJSONRequest(&worker, taskUpdate)
+	echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
+	requestWorkerStore(echoCtx, &worker)
 	err := mf.flamenco.TaskUpdate(echoCtx, taskID)
 
 	// Check the saved task.
