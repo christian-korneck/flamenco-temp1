@@ -46,11 +46,24 @@ func TestShamanImplicitVariables(t *testing.T) {
 		// Having the Shaman enabled should create an implicit variable "{jobs}".
 		c.Shaman.Enabled = true
 		c.Shaman.StoragePath = "/path/to/shaman/storage"
+
+		c.Variables["jobs"] = Variable{
+			IsTwoWay: true,
+			Values: []VariableValue{
+				{
+					Audience: VariableAudienceAll,
+					Platform: VariablePlatformAll,
+					Value:    "this value should not be seen",
+				},
+			},
+		}
+
 	})
 
-	if !assert.Contains(t, c.Variables, "jobs") {
+	assert.NotContains(t, c.Variables, "jobs", "implicit variables should erase existing variables with the same name")
+	if !assert.Contains(t, c.implicitVariables, "jobs") {
 		t.FailNow()
 	}
-	assert.False(t, c.Variables["jobs"].IsTwoWay)
-	assert.Equal(t, c.Shaman.CheckoutPath(), c.Variables["jobs"].Values[0].Value)
+	assert.False(t, c.implicitVariables["jobs"].IsTwoWay)
+	assert.Equal(t, c.Shaman.CheckoutPath(), c.implicitVariables["jobs"].Values[0].Value)
 }

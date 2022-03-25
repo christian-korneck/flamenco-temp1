@@ -131,6 +131,10 @@ type Conf struct {
 	// Variable name → Variable definition
 	Variables map[string]Variable `yaml:"variables"`
 
+	// Implicit variables work as regular variables, but do not get written to the
+	// configuration file.
+	implicitVariables map[string]Variable `yaml:"-"`
+
 	// audience + platform + variable name → variable value.
 	// Used to look up variables for a given platform and audience.
 	// The 'audience' is never "all" or ""; only concrete audiences are stored here.
@@ -182,6 +186,7 @@ func DefaultConfig(override ...func(c *Conf)) Conf {
 		overrideFunc(&c)
 	}
 	c.addImplicitVariables()
+	c.ensureVariablesUnique()
 	c.constructVariableLookupTable(zerolog.TraceLevel)
 	return c
 }
@@ -225,6 +230,7 @@ func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 	}
 
 	c.addImplicitVariables()
+	c.ensureVariablesUnique()
 	c.constructVariableLookupTable(zerolog.DebugLevel)
 	c.parseURLs()
 	c.checkDatabase()
@@ -235,6 +241,8 @@ func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 }
 
 func (c *Conf) addImplicitVariables() {
+	c.implicitVariables = make(map[string]Variable)
+
 	if !c.Shaman.Enabled {
 		return
 	}
@@ -247,7 +255,7 @@ func (c *Conf) addImplicitVariables() {
 		log.Error().Err(err).Msg("unable to find absolute path of Shaman checkout path")
 		absPath = shamanCheckoutPath
 	}
-	c.Variables["jobs"] = Variable{
+	c.implicitVariables["jobs"] = Variable{
 		IsTwoWay: false,
 		Values: []VariableValue{
 			{
@@ -259,9 +267,33 @@ func (c *Conf) addImplicitVariables() {
 	}
 }
 
-func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
-	lookup := map[VariableAudience]map[VariablePlatform]map[string]string{}
+// ensureVariablesUnique erases configured variables when there are implicit
+// variables with the same name.
+func (c *Conf) ensureVariablesUnique() {
+	for varname := range c.implicitVariables {
+		if _, found := c.Variables[varname]; !found {
+			continue
+		}
+		log.Warn().Str("variable", varname).
+			Msg("configured variable will be removed, as there is an implicit variable with the same name")
+		delete(c.Variables, varname)
+	}
+}
 
+func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
+	if c.VariablesLookup == nil {
+		c.VariablesLookup = map[VariableAudience]map[VariablePlatform]map[string]string{}
+	}
+
+	c.constructVariableLookupTableForVars(logLevel, c.Variables)
+	c.constructVariableLookupTableForVars(logLevel, c.implicitVariables)
+
+	log.Trace().
+		Interface("variables", c.Variables).
+		Msg("constructed lookup table")
+}
+
+func (c *Conf) constructVariableLookupTableForVars(logLevel zerolog.Level, vars map[string]Variable) {
 	// Construct a list of all audiences except "" and "all"
 	concreteAudiences := []VariableAudience{}
 	isWildcard := map[VariableAudience]bool{"": true, VariableAudienceAll: true}
@@ -275,6 +307,9 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 		Interface("concreteAudiences", concreteAudiences).
 		Interface("isWildcard", isWildcard).
 		Msg("constructing variable lookup table")
+
+	// Just for brevity.
+	lookup := c.VariablesLookup
 
 	// setValue expands wildcard audiences into concrete ones.
 	var setValue func(audience VariableAudience, platform VariablePlatform, name, value string)
@@ -302,7 +337,7 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 	}
 
 	// Construct the lookup table for each audience+platform+name
-	for name, variable := range c.Variables {
+	for name, variable := range vars {
 		log.WithLevel(logLevel).
 			Str("name", name).
 			Interface("variable", variable).
@@ -332,11 +367,6 @@ func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
 			}
 		}
 	}
-	log.Trace().
-		Interface("variables", c.Variables).
-		Interface("lookup", lookup).
-		Msg("constructed lookup table")
-	c.VariablesLookup = lookup
 }
 
 func updateMap[K comparable, V any](target map[K]V, updateWith map[K]V) {
