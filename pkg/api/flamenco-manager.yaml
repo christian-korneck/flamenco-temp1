@@ -781,7 +781,7 @@ components:
         "checkoutPath":
           type: string
           description: >
-            Path where the Manager should create this checkout, It is relative
+            Path where the Manager should create this checkout. It is relative
             to the Shaman checkout path as configured on the Manager. In older
             versions of the Shaman this was just the "checkout ID", but in this
             version it can be a path like `project-slug/scene-name/unique-ID`.
