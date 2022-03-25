@@ -301,11 +301,9 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             target="/",  # Target directory irrelevant for Shaman transfers.
             exclusion_filter="",  # TODO: get from GUI.
             relative_only=True,  # TODO: get from GUI.
-            packer_class=functools.partial(
-                bat_shaman.Packer,
-                api_client=self.get_api_client(context),
-                checkout_path=checkout_root,
-            ),
+            api_client=self.get_api_client(context),
+            checkout_path=checkout_root,
+            packer_class=bat_shaman.Packer,
         )
 
         return checkout_root / blendfile.name  # TODO: get relative to the checkout dir.

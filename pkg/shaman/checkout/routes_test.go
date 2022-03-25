@@ -49,9 +49,9 @@ func TestReportRequirements(t *testing.T) {
 	// We should not be required to upload the same file twice, so the duplicate
 	// should not be in the response.
 	assert.Equal(t, []api.ShamanFileSpecWithStatus{
-		{ShamanFileSpec: spec1, Status: api.ShamanFileStatusUnknown},
-		{ShamanFileSpec: spec2, Status: api.ShamanFileStatusUnknown},
-		{ShamanFileSpec: spec3, Status: api.ShamanFileStatusUnknown},
+		{Sha: spec1.Sha, Size: spec1.Size, Path: spec1.Path, Status: api.ShamanFileStatusUnknown},
+		{Sha: spec2.Sha, Size: spec2.Size, Path: spec2.Path, Status: api.ShamanFileStatusUnknown},
+		{Sha: spec3.Sha, Size: spec3.Size, Path: spec3.Path, Status: api.ShamanFileStatusUnknown},
 	}, response.Files)
 }
 

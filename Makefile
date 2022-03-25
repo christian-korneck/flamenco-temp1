@@ -51,7 +51,6 @@ generate-py:
 		-i pkg/api/flamenco-manager.yaml \
 		-g python \
 		-o addon/ \
-		--skip-validate-spec \
 		--package-name "${PY_API_PKG_NAME}" \
 		--http-user-agent "Flamenco/${VERSION} (Blender add-on)" \
 		-p generateSourceCodeOnly=true \

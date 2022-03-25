@@ -267,11 +267,16 @@ type ShamanFileSpec struct {
 	Size int `json:"size"`
 }
 
-// ShamanFileSpecWithStatus defines model for ShamanFileSpecWithStatus.
+// Specification of a file, which could be in the Shaman storage, or not, depending on its status.
 type ShamanFileSpecWithStatus struct {
-	// Embedded struct due to allOf(#/components/schemas/ShamanFileSpec)
-	ShamanFileSpec `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
+	// Location of the file in the checkout
+	Path string `json:"path"`
+
+	// SHA256 checksum of the file
+	Sha string `json:"sha"`
+
+	// File size in bytes
+	Size   int              `json:"size"`
 	Status ShamanFileStatus `json:"status"`
 }
 

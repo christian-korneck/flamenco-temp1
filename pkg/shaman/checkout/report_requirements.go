@@ -41,8 +41,11 @@ func (m *Manager) ReportRequirements(ctx context.Context, requirements api.Shama
 		case filestore.StatusStored:
 			// We expect this file to be sent soon, though, so we need to
 			// 'touch' it to make sure it won't be GC'd in the mean time.
-			go touchFile(storePath)
-
+			go func() {
+				if err := touchFile(storePath); err != nil {
+					logger.Error().Err(err).Str("path", storePath).Msg("shaman: error touching file")
+				}
+			}()
 			// Only send a response when the caller needs to do something.
 			continue
 		default:
@@ -51,15 +54,19 @@ func (m *Manager) ReportRequirements(ctx context.Context, requirements api.Shama
 				Str("status", status.String()).
 				Str("checksum", fileSpec.Sha).
 				Int("filesize", fileSpec.Size).
-				Msg("invalid status returned by ResolveFile")
+				Msg("shaman: invalid status returned by ResolveFile, ignoring this file")
 			continue
 		}
 
 		alreadyRequested[fileKey] = true
-		missing.Files = append(missing.Files, api.ShamanFileSpecWithStatus{
-			ShamanFileSpec: fileSpec,
-			Status:         apiStatus,
-		})
+		fileSpec := api.ShamanFileSpecWithStatus{
+			Path:   fileSpec.Path,
+			Sha:    fileSpec.Sha,
+			Size:   fileSpec.Size,
+			Status: apiStatus,
+		}
+		logger.Trace().Interface("fileSpec", fileSpec).Msg("shaman: file needed from client")
+		missing.Files = append(missing.Files, fileSpec)
 	}
 
 	return missing, nil

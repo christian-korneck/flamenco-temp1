@@ -1,5 +1,6 @@
 # ShamanFileSpecWithStatus
 
+Specification of a file, which could be in the Shaman storage, or not, depending on its status.
 
 ## Properties
 Name | Type | Description | Notes

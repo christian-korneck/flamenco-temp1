@@ -29,7 +29,6 @@ from flamenco.manager.model.security_error import SecurityError
 from flamenco.manager.model.shaman_checkout import ShamanCheckout
 from flamenco.manager.model.shaman_file_spec import ShamanFileSpec
 from flamenco.manager.model.shaman_file_spec_with_status import ShamanFileSpecWithStatus
-from flamenco.manager.model.shaman_file_spec_with_status_all_of import ShamanFileSpecWithStatusAllOf
 from flamenco.manager.model.shaman_file_status import ShamanFileStatus
 from flamenco.manager.model.shaman_requirements_request import ShamanRequirementsRequest
 from flamenco.manager.model.shaman_requirements_response import ShamanRequirementsResponse

@@ -24,6 +24,7 @@ package checkout
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -54,10 +55,17 @@ type ResolvedCheckoutInfo struct {
 	RelativePath string
 }
 
+type ErrInvalidCheckoutPath struct {
+	CheckoutPath string
+}
+
+func (err ErrInvalidCheckoutPath) Error() string {
+	return fmt.Sprintf("invalid checkout path %q", err.CheckoutPath)
+}
+
 // Errors returned by the Checkout Manager.
 var (
 	ErrCheckoutAlreadyExists = errors.New("A checkout with this ID already exists")
-	ErrInvalidCheckoutID     = errors.New("The Checkout ID is invalid")
 )
 
 // NewManager creates and returns a new Checkout Manager.
@@ -81,7 +89,7 @@ func (m *Manager) Close() {
 
 func (m *Manager) pathForCheckout(requestedCheckoutPath string) (ResolvedCheckoutInfo, error) {
 	if !isValidCheckoutPath(requestedCheckoutPath) {
-		return ResolvedCheckoutInfo{}, ErrInvalidCheckoutID
+		return ResolvedCheckoutInfo{}, ErrInvalidCheckoutPath{requestedCheckoutPath}
 	}
 
 	return ResolvedCheckoutInfo{
@@ -219,5 +227,5 @@ func touchFile(blobPath string) error {
 	}
 
 	logger.Debug().Msg("done touching")
-	return err
+	return nil
 }

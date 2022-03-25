@@ -5,7 +5,7 @@ import logging
 import random
 from collections import deque
 from pathlib import Path, PurePath, PurePosixPath
-from typing import TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING, Optional, Any, Iterable, Iterator
 
 from .. import wheels
 from . import cache
@@ -34,6 +34,8 @@ log = logging.getLogger(__name__)
 MAX_DEFERRED_PATHS = 8
 MAX_FAILED_PATHS = 8
 
+HashableShamanFileSpec = tuple[str, int, str]
+"""Tuple of the 'sha', 'size', and 'path' fields of a ShamanFileSpec."""
 
 # Mypy doesn't understand that bat_pack.Packer exists.
 class Packer(bat_pack.Packer):  # type: ignore
@@ -151,21 +153,21 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
 
     def _upload_missing_files(
         self, shaman_file_specs: _ShamanRequirementsRequest
-    ) -> set[_ShamanFileSpec]:
+    ) -> list[_ShamanFileSpec]:
         self.log.info("Feeding %d files to the Shaman", len(shaman_file_specs.files))
         if self.log.isEnabledFor(logging.INFO):
             for spec in shaman_file_specs.files:
                 self.log.info("   - %s", spec.path)
 
         # Try to upload all the files.
-        failed_files: set[_ShamanFileSpec] = set()
+        failed_files: set[HashableShamanFileSpec] = set()
         max_tries = 50
         for try_index in range(max_tries):
             # Send the file to the Shaman and see what we still need to send there.
             to_upload = self._send_checkout_def_to_shaman(shaman_file_specs)
             if to_upload is None:
                 # An error has already been logged.
-                return failed_files
+                return make_file_specs_regular_list(failed_files)
 
             if not to_upload:
                 break
@@ -180,7 +182,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             # clients are sending the same files. Instead of retrying on a
             # file-by-file basis, we just re-send the checkout definition
             # file to the Shaman and obtain a new list of files to upload.
-        return failed_files
+        return make_file_specs_regular_list(failed_files)
 
     def _create_checkout_definition(self) -> Optional[_ShamanRequirementsRequest]:
         """Create the checkout definition file for this BAT pack.
@@ -241,6 +243,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             None if there was an error.
         """
         from ..manager.exceptions import ApiException
+        from ..manager.models import ShamanRequirementsResponse
 
         try:
             resp = self.shaman_api.shaman_checkout_requirements(requirements)
@@ -250,11 +253,10 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             self.log.error(msg)
             self.error_set(msg)
             return None
-        assert isinstance(resp, _ShamanRequirementsResponse)
+        assert isinstance(resp, ShamanRequirementsResponse)
 
         to_upload: deque[_ShamanFileSpec] = deque()
         for file_spec in resp.files:
-            print(file_spec)
             if file_spec.path not in self._rel_to_local_path:
                 msg = (
                     "Shaman requested path we did not intend to upload: %r" % file_spec
@@ -263,7 +265,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
                 self.error_set(msg)
                 return None
 
-            self.log.debug("   %s: %s", file_spec.status.value, file_spec.path)
+            self.log.debug("   %s: %s", file_spec.status, file_spec.path)
             match file_spec.status.value:
                 case "unknown":
                     to_upload.appendleft(file_spec)
@@ -276,7 +278,9 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
                     return None
         return to_upload
 
-    def _upload_files(self, to_upload: deque[_ShamanFileSpec]) -> set[_ShamanFileSpec]:
+    def _upload_files(
+        self, to_upload: deque[_ShamanFileSpec]
+    ) -> set[HashableShamanFileSpec]:
         """Actually upload the files to Shaman.
 
         Returns the set of files that we did not upload.
@@ -288,8 +292,8 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
 
         from ..manager.exceptions import ApiException
 
-        failed_specs: set[_ShamanFileSpec] = set()
-        deferred_specs: set[_ShamanFileSpec] = set()
+        failed_specs: set[HashableShamanFileSpec] = set()
+        deferred_specs: set[HashableShamanFileSpec] = set()
 
         def defer(filespec: _ShamanFileSpec) -> None:
             nonlocal to_upload
@@ -297,7 +301,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             self.log.info(
                 "   %s deferred (already being uploaded by someone else)", filespec.path
             )
-            deferred_specs.add(filespec)
+            deferred_specs.add(make_file_spec_hashable(filespec))
 
             # Instead of deferring this one file, randomize the files to upload.
             # This prevents multiple deferrals when someone else is uploading
@@ -307,13 +311,15 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             to_upload = deque(all_files)
 
         self.log.info(
-            "Going to upload %d of %d files", len(to_upload), len(self._spec_to_paths)
+            "Going to upload %d of %d files",
+            len(to_upload),
+            len(self._rel_to_local_path),
         )
         while to_upload:
             # After too many failures, just retry to get a fresh set of files to upload.
             if len(failed_specs) > MAX_FAILED_PATHS:
                 self.log.info("Too many failures, going to abort this iteration")
-                failed_specs.update(to_upload)
+                failed_specs.update(make_file_specs_hashable_gen(to_upload))
                 return failed_specs
 
             file_spec = to_upload.popleft()
@@ -331,9 +337,10 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
                 continue
 
             # Let the Shaman know whether we can defer uploading this file or not.
-            can_defer = (
+            hashable_file_spec = make_file_spec_hashable(file_spec)
+            can_defer = bool(
                 len(deferred_specs) < MAX_DEFERRED_PATHS
-                and file_spec not in deferred_specs
+                and hashable_file_spec not in deferred_specs
                 and len(to_upload)
             )
 
@@ -370,10 +377,10 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
 
                 self.log.error(msg)
                 self.error_set(msg)
-                failed_specs.add(file_spec)
+                failed_specs.add(make_file_spec_hashable(file_spec))
                 return failed_specs
 
-            failed_specs.discard(file_spec)
+            failed_specs.discard(make_file_spec_hashable(file_spec))
             self.uploaded_files += 1
             file_size = local_filepath.stat().st_size
             self.uploaded_bytes += file_size
@@ -411,12 +418,12 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
         from ..manager.exceptions import ApiException
 
         self.log.info(
-            "Requesting checkout at Shaman for checkout_path=%r", self.checkout_path
+            "Requesting checkout at Shaman for checkout_path=%s", self.checkout_path
         )
 
         checkoutRequest = ShamanCheckout(
             files=shaman_file_specs.files,
-            checkout_path=self.checkout_path,
+            checkout_path=str(self.checkout_path),
         )
 
         try:
@@ -440,3 +447,30 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             return
 
         self.log.info("Shaman created checkout at %s", self.checkout_path)
+
+
+def make_file_spec_hashable(spec: _ShamanFileSpec) -> HashableShamanFileSpec:
+    """Return a hashable, immutable representation of the given spec."""
+    return (spec.sha, spec.size, spec.path)
+
+
+def make_file_spec_regular(hashable_spec: HashableShamanFileSpec) -> _ShamanFileSpec:
+    """Convert a hashable filespec into a real one."""
+    from ..manager.models import ShamanFileSpec
+
+    spec: ShamanFileSpec = ShamanFileSpec(*hashable_spec)
+    return spec
+
+
+def make_file_specs_hashable_gen(
+    specs: Iterable[_ShamanFileSpec],
+) -> Iterator[HashableShamanFileSpec]:
+    """Convert a collection of specifications by generating their hashable representations."""
+    return (make_file_spec_hashable(spec) for spec in specs)
+
+
+def make_file_specs_regular_list(
+    hashable_specs: Iterable[HashableShamanFileSpec],
+) -> list[_ShamanFileSpec]:
+    """Convert hashable filespecs into a list of real ones."""
+    return [make_file_spec_regular(spec) for spec in hashable_specs]

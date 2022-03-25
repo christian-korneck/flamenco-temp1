@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/shaman/filestore"
@@ -14,6 +16,8 @@ import (
 
 var (
 	ErrMissingFiles = errors.New("unknown files requested in checkout")
+
+	validCheckoutRegexp = regexp.MustCompile(`^[^/?*:;{}\\][^?*:;{}\\]*$`)
 )
 
 func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) error {
@@ -53,4 +57,14 @@ func (m *Manager) Checkout(ctx context.Context, checkout api.ShamanCheckout) err
 	checkoutOK = true // Prevent the checkout directory from being erased again.
 	logger.Info().Msg("shaman: checkout created")
 	return nil
+}
+
+func isValidCheckoutPath(checkoutPath string) bool {
+	if !validCheckoutRegexp.MatchString(checkoutPath) {
+		return false
+	}
+	if strings.Contains(checkoutPath, "../") || strings.Contains(checkoutPath, "/..") {
+		return false
+	}
+	return true
 }

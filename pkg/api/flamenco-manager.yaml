@@ -747,11 +747,29 @@ components:
       required: [sha, size, path]
 
     ShamanFileSpecWithStatus:
-      allOf:
-        - $ref: '#/components/schemas/ShamanFileSpec'
-        - properties:
-            "status": {$ref: "#/components/schemas/ShamanFileStatus"}
-          required: [status]
+      # Using allOf here would trigger a bug in the Python code generator,
+      # resulting in this error:
+      #
+      # Values stored for property status in ShamanFileSpecWithStatus differ
+      # when looking at self and self's composed instances. All values must be
+      # the same at ['['received_data', 'files', 0]']['status']
+      #
+      # The underlying cause is that composited types can apparently store
+      # property values multiple times, and these have to be equal. However, one
+      # is using the `ShamanFileStatus` type, and the other is using the `str`
+      # type to store the same status value.
+      #
+      # To work around this, even though this should be a composition of
+      # `ShamanFileSpec` with some extra properties, we just repeat those same
+      # properties here.
+      type: object
+      description: Specification of a file, which could be in the Shaman storage, or not, depending on its status.
+      properties:
+        "sha": {type: string, description: "SHA256 checksum of the file"}
+        "size": {type: integer, description: "File size in bytes"}
+        "path": {type: string, description: "Location of the file in the checkout"}
+        "status": {$ref: "#/components/schemas/ShamanFileStatus"}
+      required: [sha, size, path, status]
 
     ShamanCheckout:
       type: object
