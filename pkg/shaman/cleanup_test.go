@@ -76,7 +76,7 @@ func TestGCFindOldFiles(t *testing.T) {
 	// Since all the links have just been created, nothing should be considered old.
 	ageThreshold := server.gcAgeThreshold()
 	old, err := server.gcFindOldFiles(ageThreshold, log.With().Str("test", "test").Logger())
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.EqualValues(t, mtimeMap{}, old)
 
 	// Make some files old, they should show up in a scan.
@@ -86,7 +86,7 @@ func TestGCFindOldFiles(t *testing.T) {
 	makeOld(server, expectOld, "stored/dc/89f15de821ad1df3e78f8ef455e653a2d1862f2eb3f5ee78aa4ca68eb6fb35/781.blob")
 
 	old, err = server.gcFindOldFiles(ageThreshold, log.With().Str("package", "shaman/test").Logger())
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.EqualValues(t, expectOld, old)
 }
 
@@ -124,18 +124,18 @@ func TestGCComponents(t *testing.T) {
 	// No symlinks created yet, so this should report all the files in oldFiles.
 	oldFiles := copymap(expectOld)
 	err := server.gcFilterLinkedFiles(server.config.CheckoutPath(), oldFiles, log.With().Str("package", "shaman/test").Logger(), nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.EqualValues(t, expectOld, oldFiles)
 
 	// Create some symlinks
 	checkoutInfo, err := server.checkoutMan.PrepareCheckout("checkoutID")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath(),
 		path.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["781.blob"], extraCheckoutDir,
 		path.Join(checkoutInfo.RelativePath, "use-of-781.blob"))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// There should only be two old file reported now.
 	expectRemovable := mtimeMap{
@@ -146,17 +146,17 @@ func TestGCComponents(t *testing.T) {
 	stats := GCStats{}
 	err = server.gcFilterLinkedFiles(server.config.CheckoutPath(), oldFiles, log.With().Str("package", "shaman/test").Logger(), &stats)
 	assert.Equal(t, 1, stats.numSymlinksChecked) // 1 is in checkoutPath, the other in extraCheckoutDir
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, len(expectRemovable)+1, len(oldFiles)) // one file is linked from the extra checkout dir
 	err = server.gcFilterLinkedFiles(extraCheckoutDir, oldFiles, log.With().Str("package", "shaman/test").Logger(), &stats)
 	assert.Equal(t, 2, stats.numSymlinksChecked) // 1 is in checkoutPath, the other in extraCheckoutDir
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.EqualValues(t, expectRemovable, oldFiles)
 
 	// Touching a file before requesting deletion should not delete it.
 	now := time.Now()
 	err = os.Chtimes(absPaths["6001.blob"], now, now)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// Running the garbage collector should only remove that one unused and untouched file.
 	assert.FileExists(t, absPaths["6001.blob"], "file should exist before GC")
@@ -199,13 +199,13 @@ func TestGarbageCollect(t *testing.T) {
 
 	// Create some symlinks
 	checkoutInfo, err := server.checkoutMan.PrepareCheckout("checkoutID")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath(),
 		path.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["781.blob"], extraCheckoutDir,
 		path.Join(checkoutInfo.RelativePath, "use-of-781.blob"))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// Running the garbage collector should only remove those two unused files.
 	assert.FileExists(t, absPaths["6001.blob"], "file should exist before GC")

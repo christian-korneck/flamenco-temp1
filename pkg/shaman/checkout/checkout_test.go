@@ -53,7 +53,7 @@ func TestCheckout(t *testing.T) {
 
 func assertLinksTo(t *testing.T, linkPath, expectedTarget string) {
 	actualTarget, err := os.Readlink(linkPath)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, expectedTarget, actualTarget)
 }
 

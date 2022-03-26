@@ -46,7 +46,7 @@ func TestTouch(t *testing.T) {
 	assert.Nil(t, Touch(testPath))
 
 	stat, err := os.Stat(testPath)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	threshold := time.Now().Add(-5 * time.Second)
 	assert.True(t, stat.ModTime().After(threshold),

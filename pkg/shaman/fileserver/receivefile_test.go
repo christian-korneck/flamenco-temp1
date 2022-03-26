@@ -86,7 +86,7 @@ func TestStoreFile(t *testing.T) {
 	assert.FileExists(t, path)
 
 	savedContent, err := ioutil.ReadFile(path)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.EqualValues(t, payload, savedContent, "The file should be saved uncompressed")
 }
 

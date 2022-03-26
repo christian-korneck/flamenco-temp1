@@ -55,7 +55,7 @@ func TestContains(t *testing.T) {
 
 func TestFilePermissions(t *testing.T) {
 	dirname, err := os.MkdirTemp("", "file-permission-test")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	defer os.RemoveAll(dirname)
 
 	bin := storageBin{
@@ -65,11 +65,11 @@ func TestFilePermissions(t *testing.T) {
 	}
 
 	file, err := bin.openForWriting("testfilename.blend")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	defer file.Close()
 
 	filestat, err := file.Stat()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// The exact permissions depend on the current (unittest) process umask. This
 	// umask is not easy to get, which is why we have a copy of `tempfile.go` in

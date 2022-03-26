@@ -105,7 +105,7 @@ func TestOpenForUpload(t *testing.T) {
 	fileSize := int64(len(contents))
 
 	file, err := store.OpenForUpload("abcdefxxx", fileSize)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	file.Write(contents)
 	file.Close()
 
@@ -114,7 +114,7 @@ func TestOpenForUpload(t *testing.T) {
 	assert.Equal(t, StatusUploading, status)
 
 	readContents, err := ioutil.ReadFile(foundPath)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.EqualValues(t, contents, readContents)
 }
 
@@ -126,16 +126,16 @@ func TestMoveToStored(t *testing.T) {
 	fileSize := int64(len(contents))
 
 	err := store.MoveToStored("abcdefxxx", fileSize, "/just/some/path")
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 	file, err := store.OpenForUpload("abcdefxxx", fileSize)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	file.Write(contents)
 	file.Close()
 	tempLocation := file.Name()
 
 	err = store.MoveToStored("abcdefxxx", fileSize, file.Name())
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	foundPath, status := store.ResolveFile("abcdefxxx", fileSize, ResolveEverything)
 	assert.NotEqual(t, file.Name(), foundPath)
