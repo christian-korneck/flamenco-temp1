@@ -106,8 +106,9 @@ func TestOpenForUpload(t *testing.T) {
 
 	file, err := store.OpenForUpload("abcdefxxx", fileSize)
 	assert.NoError(t, err)
-	file.Write(contents)
-	file.Close()
+	_, err = file.Write(contents)
+	assert.NoError(t, err)
+	assert.NoError(t, file.Close())
 
 	foundPath, status := store.ResolveFile("abcdefxxx", fileSize, ResolveEverything)
 	assert.Equal(t, file.Name(), foundPath)
@@ -130,8 +131,9 @@ func TestMoveToStored(t *testing.T) {
 
 	file, err := store.OpenForUpload("abcdefxxx", fileSize)
 	assert.NoError(t, err)
-	file.Write(contents)
-	file.Close()
+	_, err = file.Write(contents)
+	assert.NoError(t, err)
+	assert.NoError(t, file.Close())
 	tempLocation := file.Name()
 
 	err = store.MoveToStored("abcdefxxx", fileSize, file.Name())
