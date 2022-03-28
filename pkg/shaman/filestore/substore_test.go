@@ -25,6 +25,7 @@ package filestore
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,6 +56,10 @@ func TestContains(t *testing.T) {
 }
 
 func TestFilePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Logf("Skipping permission test on %s, as it was designed for umask/UNIX", runtime.GOOS)
+		t.SkipNow()
+	}
 	dirname, err := os.MkdirTemp("", "file-permission-test")
 	assert.NoError(t, err)
 	defer os.RemoveAll(dirname)
