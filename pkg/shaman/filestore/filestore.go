@@ -24,7 +24,7 @@ package filestore
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 
 	"git.blender.org/flamenco/pkg/shaman/config"
@@ -55,7 +55,7 @@ func New(conf config.Config) *Store {
 // Create the base directory structure for this store.
 func (s *Store) createDirectoryStructure() {
 	mkdir := func(subdir string) {
-		path := path.Join(s.baseDir, subdir)
+		path := filepath.Join(s.baseDir, subdir)
 
 		logger := log.With().Str("path", path).Logger()
 		logger.Debug().Msg("shaman: creating directory")
@@ -75,7 +75,7 @@ func (s *Store) createDirectoryStructure() {
 
 // StoragePath returns the directory path of the 'stored' storage bin.
 func (s *Store) StoragePath() string {
-	return path.Join(s.stored.basePath, s.stored.dirName)
+	return filepath.Join(s.stored.basePath, s.stored.dirName)
 }
 
 // BasePath returns the directory path of the storage.
@@ -86,7 +86,7 @@ func (s *Store) BasePath() string {
 // Returns the checksum/filesize dependent parts of the file's path.
 // To be combined with a base directory, status directory, and status-dependent suffix.
 func (s *Store) partialFilePath(checksum string, filesize int64) string {
-	return path.Join(checksum[0:2], checksum[2:], strconv.FormatInt(filesize, 10))
+	return filepath.Join(checksum[0:2], checksum[2:], strconv.FormatInt(filesize, 10))
 }
 
 // ResolveFile checks the status of the file in the store.
@@ -136,7 +136,7 @@ func (s *Store) MoveToStored(checksum string, filesize int64, uploadedFilePath s
 
 	// Move to the other storage bin.
 	targetPath := s.stored.pathFor(partial)
-	targetDir, _ := path.Split(targetPath)
+	targetDir, _ := filepath.Split(targetPath)
 	if err := os.MkdirAll(targetDir, 0777); err != nil {
 		return err
 	}
@@ -161,9 +161,9 @@ func (s *Store) removeFile(filePath string) error {
 	}
 
 	// Clean up directory structure, but ignore any errors (dirs may not be empty)
-	directory := path.Dir(filePath)
+	directory := filepath.Dir(filePath)
 	os.Remove(directory)
-	os.Remove(path.Dir(directory))
+	os.Remove(filepath.Dir(directory))
 
 	return err
 }
@@ -177,7 +177,9 @@ func (s *Store) RemoveUploadedFile(filePath string) {
 			Msg("shaman: RemoveUploadedFile called with file not in 'uploading' storage bin")
 		return
 	}
-	s.removeFile(filePath)
+	// Ignore the error here. It could very well be that the uploaded file has
+	// been moved somewhere else already.
+	_ = s.removeFile(filePath)
 }
 
 // RemoveStoredFile removes a file from the 'stored' storage bin.

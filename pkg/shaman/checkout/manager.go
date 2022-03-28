@@ -183,7 +183,7 @@ func (m *Manager) EraseCheckout(checkoutID string) error {
 // SymlinkToCheckout creates a symlink at symlinkPath to blobPath.
 // It does *not* do any validation of the validity of the paths!
 func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath string) error {
-	symlinkPath := path.Join(checkoutPath, symlinkRelativePath)
+	symlinkPath := filepath.Join(checkoutPath, symlinkRelativePath)
 	logger := log.With().
 		Str("blobPath", blobPath).
 		Str("symlinkPath", symlinkPath).

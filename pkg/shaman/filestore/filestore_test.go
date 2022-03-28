@@ -25,7 +25,7 @@ package filestore
 import (
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,13 +33,13 @@ import (
 
 // mustCreateFile creates an empty file.
 // The containing directory structure is created as well, if necessary.
-func mustCreateFile(filepath string) {
-	err := os.MkdirAll(path.Dir(filepath), 0777)
+func mustCreateFile(file_path string) {
+	err := os.MkdirAll(filepath.Dir(file_path), 0777)
 	if err != nil {
 		panic(err)
 	}
 
-	file, err := os.Create(filepath)
+	file, err := os.Create(file_path)
 	if err != nil {
 		panic(err)
 	}
@@ -50,11 +50,11 @@ func TestCreateDirectories(t *testing.T) {
 	store := CreateTestStore()
 	defer CleanupTestStore(store)
 
-	assert.Equal(t, path.Join(store.baseDir, "uploading", "x"), store.uploading.storagePrefix("x"))
-	assert.Equal(t, path.Join(store.baseDir, "stored", "x"), store.stored.storagePrefix("x"))
+	assert.Equal(t, filepath.Join(store.baseDir, "uploading", "x"), store.uploading.storagePrefix("x"))
+	assert.Equal(t, filepath.Join(store.baseDir, "stored", "x"), store.stored.storagePrefix("x"))
 
-	assert.DirExists(t, path.Join(store.baseDir, "uploading"))
-	assert.DirExists(t, path.Join(store.baseDir, "stored"))
+	assert.DirExists(t, filepath.Join(store.baseDir, "uploading"))
+	assert.DirExists(t, filepath.Join(store.baseDir, "stored"))
 }
 
 func TestResolveStoredFile(t *testing.T) {
@@ -65,7 +65,7 @@ func TestResolveStoredFile(t *testing.T) {
 	assert.Equal(t, "", foundPath)
 	assert.Equal(t, StatusDoesNotExist, status)
 
-	fname := path.Join(store.baseDir, "stored", "ab", "cdefxxx", "123.blob")
+	fname := filepath.Join(store.baseDir, "stored", "ab", "cdefxxx", "123.blob")
 	mustCreateFile(fname)
 
 	foundPath, status = store.ResolveFile("abcdefxxx", 123, ResolveStoredOnly)
@@ -85,7 +85,7 @@ func TestResolveUploadingFile(t *testing.T) {
 	assert.Equal(t, "", foundPath)
 	assert.Equal(t, StatusDoesNotExist, status)
 
-	fname := path.Join(store.baseDir, "uploading", "ab", "cdefxxx", "123-unique-code.tmp")
+	fname := filepath.Join(store.baseDir, "uploading", "ab", "cdefxxx", "123-unique-code.tmp")
 	mustCreateFile(fname)
 
 	foundPath, status = store.ResolveFile("abcdefxxx", 123, ResolveStoredOnly)
@@ -137,7 +137,7 @@ func TestMoveToStored(t *testing.T) {
 	tempLocation := file.Name()
 
 	err = store.MoveToStored("abcdefxxx", fileSize, file.Name())
-	assert.NoError(t, err)
+	assert.NoError(t, err, "moving file %s", file.Name())
 
 	foundPath, status := store.ResolveFile("abcdefxxx", fileSize, ResolveEverything)
 	assert.NotEqual(t, file.Name(), foundPath)
@@ -146,12 +146,7 @@ func TestMoveToStored(t *testing.T) {
 	assert.FileExists(t, foundPath)
 
 	// The entire directory structure should be kept clean.
-	assertDoesNotExist(t, tempLocation)
-	assertDoesNotExist(t, path.Dir(tempLocation))
-	assertDoesNotExist(t, path.Dir(path.Dir(tempLocation)))
-}
-
-func assertDoesNotExist(t *testing.T, path string) {
-	_, err := os.Stat(path)
-	assert.True(t, os.IsNotExist(err), "%s should not exist, err=%v", path, err)
+	assert.NoFileExists(t, tempLocation)
+	assert.NoDirExists(t, filepath.Dir(tempLocation))
+	assert.NoDirExists(t, filepath.Dir(filepath.Dir(tempLocation)))
 }

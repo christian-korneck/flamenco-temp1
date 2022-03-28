@@ -3,7 +3,7 @@ package checkout
 import (
 	"context"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"git.blender.org/flamenco/pkg/api"
@@ -34,21 +34,21 @@ func TestCheckout(t *testing.T) {
 	}
 
 	// Check the symlinks of the checkout
-	coPath := path.Join(manager.checkoutBasePath, actualCheckoutPath)
-	assert.FileExists(t, path.Join(coPath, "subdir", "replacer.py"))
-	assert.FileExists(t, path.Join(coPath, "feed.py"))
-	assert.FileExists(t, path.Join(coPath, "httpstuff.py"))
-	assert.FileExists(t, path.Join(coPath, "filesystemstuff.py"))
+	coPath := filepath.Join(manager.checkoutBasePath, actualCheckoutPath)
+	assert.FileExists(t, filepath.Join(coPath, "subdir", "replacer.py"))
+	assert.FileExists(t, filepath.Join(coPath, "feed.py"))
+	assert.FileExists(t, filepath.Join(coPath, "httpstuff.py"))
+	assert.FileExists(t, filepath.Join(coPath, "filesystemstuff.py"))
 
 	storePath := manager.fileStore.StoragePath()
-	assertLinksTo(t, path.Join(coPath, "subdir", "replacer.py"),
-		path.Join(storePath, "59", "0c148428d5c35fab3ebad2f3365bb469ab9c531b60831f3e826c472027a0b9", "3367.blob"))
-	assertLinksTo(t, path.Join(coPath, "feed.py"),
-		path.Join(storePath, "80", "b749c27b2fef7255e7e7b3c2029b03b31299c75ff1f1c72732081c70a713a3", "7488.blob"))
-	assertLinksTo(t, path.Join(coPath, "httpstuff.py"),
-		path.Join(storePath, "91", "4853599dd2c351ab7b82b219aae6e527e51518a667f0ff32244b0c94c75688", "486.blob"))
-	assertLinksTo(t, path.Join(coPath, "filesystemstuff.py"),
-		path.Join(storePath, "d6", "fc7289b5196cc96748ea72f882a22c39b8833b457fe854ef4c03a01f5db0d3", "7217.blob"))
+	assertLinksTo(t, filepath.Join(coPath, "subdir", "replacer.py"),
+		filepath.Join(storePath, "59", "0c148428d5c35fab3ebad2f3365bb469ab9c531b60831f3e826c472027a0b9", "3367.blob"))
+	assertLinksTo(t, filepath.Join(coPath, "feed.py"),
+		filepath.Join(storePath, "80", "b749c27b2fef7255e7e7b3c2029b03b31299c75ff1f1c72732081c70a713a3", "7488.blob"))
+	assertLinksTo(t, filepath.Join(coPath, "httpstuff.py"),
+		filepath.Join(storePath, "91", "4853599dd2c351ab7b82b219aae6e527e51518a667f0ff32244b0c94c75688", "486.blob"))
+	assertLinksTo(t, filepath.Join(coPath, "filesystemstuff.py"),
+		filepath.Join(storePath, "d6", "fc7289b5196cc96748ea72f882a22c39b8833b457fe854ef4c03a01f5db0d3", "7217.blob"))
 }
 
 func assertLinksTo(t *testing.T, linkPath, expectedTarget string) {

@@ -80,7 +80,7 @@ func (s *Store) MustStoreFileForTest(checksum string, filesize int64, contents [
 // Panics if there are any errors.
 func LinkTestFileStore(cloneTo string) {
 	_, myFilename, _, _ := runtime.Caller(0)
-	fileStorePath := path.Join(path.Dir(path.Dir(myFilename)), "_test_file_store")
+	fileStorePath := filepath.Join(path.Dir(path.Dir(myFilename)), "_test_file_store")
 	now := time.Now()
 
 	visit := func(visitPath string, info os.FileInfo, err error) error {
@@ -93,7 +93,7 @@ func LinkTestFileStore(cloneTo string) {
 			return err
 		}
 
-		targetPath := path.Join(cloneTo, relpath)
+		targetPath := filepath.Join(cloneTo, relpath)
 		if info.IsDir() {
 			return os.MkdirAll(targetPath, 0755)
 		}

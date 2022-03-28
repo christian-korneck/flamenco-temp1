@@ -25,7 +25,7 @@ package checkout
 import (
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -46,7 +46,7 @@ func TestSymlinkToCheckout(t *testing.T) {
 	defer cleanup()
 
 	// Fake an older file.
-	blobPath := path.Join(manager.checkoutBasePath, "jemoeder.blob")
+	blobPath := filepath.Join(manager.checkoutBasePath, "jemoeder.blob")
 	err := ioutil.WriteFile(blobPath, []byte("op je hoofd"), 0600)
 	assert.NoError(t, err)
 
@@ -68,7 +68,7 @@ func TestSymlinkToCheckout(t *testing.T) {
 		stat.ModTime().After(wayBackWhen),
 		"File must be touched (%v must be later than %v)", stat.ModTime(), wayBackWhen)
 
-	symlinkPath := path.Join(manager.checkoutBasePath, symlinkRelativePath)
+	symlinkPath := filepath.Join(manager.checkoutBasePath, symlinkRelativePath)
 	stat, err = os.Lstat(symlinkPath)
 	assert.NoError(t, err)
 	assert.True(t, stat.Mode()&os.ModeType == os.ModeSymlink,

@@ -25,7 +25,6 @@ package filestore
 import (
 	"errors"
 	"os"
-	"path"
 	"path/filepath"
 )
 
@@ -41,7 +40,7 @@ var (
 )
 
 func (s *storageBin) storagePrefix(partialPath string) string {
-	return path.Join(s.basePath, s.dirName, partialPath)
+	return filepath.Join(s.basePath, s.dirName, partialPath)
 }
 
 // Returns whether 'someFullPath' is pointing to a path inside our storage for the given partial path.
@@ -95,7 +94,7 @@ func (s *storageBin) openForWriting(partialPath string) (*os.File, error) {
 	}
 
 	pathOrGlob := s.pathOrGlob(partialPath)
-	dirname, filename := path.Split(pathOrGlob)
+	dirname, filename := filepath.Split(pathOrGlob)
 
 	if err := os.MkdirAll(dirname, 0777); err != nil {
 		return nil, err

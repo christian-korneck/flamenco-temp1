@@ -25,6 +25,7 @@ package shaman
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -43,7 +44,7 @@ func createTestShaman() (*Server, func()) {
 
 func makeOld(shaman *Server, expectOld mtimeMap, relPath string) {
 	oldTime := time.Now().Add(-2 * shaman.config.GarbageCollect.MaxAge)
-	absPath := path.Join(shaman.config.FileStorePath(), relPath)
+	absPath := filepath.Join(shaman.config.FileStorePath(), relPath)
 
 	err := os.Chtimes(absPath, oldTime, oldTime)
 	if err != nil {
@@ -95,7 +96,7 @@ func TestGCComponents(t *testing.T) {
 	server, cleanup := createTestShaman()
 	defer cleanup()
 
-	extraCheckoutDir := path.Join(server.config.TestTempDir, "extra-checkout")
+	extraCheckoutDir := filepath.Join(server.config.TestTempDir, "extra-checkout")
 	server.config.GarbageCollect.ExtraCheckoutDirs = []string{extraCheckoutDir}
 
 	filestore.LinkTestFileStore(server.config.FileStorePath())
@@ -131,10 +132,10 @@ func TestGCComponents(t *testing.T) {
 	checkoutInfo, err := server.checkoutMan.PrepareCheckout("checkoutID")
 	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath(),
-		path.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
+		filepath.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
 	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["781.blob"], extraCheckoutDir,
-		path.Join(checkoutInfo.RelativePath, "use-of-781.blob"))
+		filepath.Join(checkoutInfo.RelativePath, "use-of-781.blob"))
 	assert.NoError(t, err)
 
 	// There should only be two old file reported now.
@@ -179,7 +180,7 @@ func TestGarbageCollect(t *testing.T) {
 	server, cleanup := createTestShaman()
 	defer cleanup()
 
-	extraCheckoutDir := path.Join(server.config.TestTempDir, "extra-checkout")
+	extraCheckoutDir := filepath.Join(server.config.TestTempDir, "extra-checkout")
 	server.config.GarbageCollect.ExtraCheckoutDirs = []string{extraCheckoutDir}
 
 	filestore.LinkTestFileStore(server.config.FileStorePath())
@@ -201,10 +202,10 @@ func TestGarbageCollect(t *testing.T) {
 	checkoutInfo, err := server.checkoutMan.PrepareCheckout("checkoutID")
 	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["3367.blob"], server.config.CheckoutPath(),
-		path.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
+		filepath.Join(checkoutInfo.RelativePath, "use-of-3367.blob"))
 	assert.NoError(t, err)
 	err = server.checkoutMan.SymlinkToCheckout(absPaths["781.blob"], extraCheckoutDir,
-		path.Join(checkoutInfo.RelativePath, "use-of-781.blob"))
+		filepath.Join(checkoutInfo.RelativePath, "use-of-781.blob"))
 	assert.NoError(t, err)
 
 	// Running the garbage collector should only remove those two unused files.

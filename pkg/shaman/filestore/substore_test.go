@@ -24,6 +24,7 @@ package filestore
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,10 +35,10 @@ func TestStoragePrefix(t *testing.T) {
 		basePath: "/base",
 		dirName:  "testunit",
 	}
-	assert.Equal(t, "/base/testunit", bin.storagePrefix(""))
-	assert.Equal(t, "/base/testunit", bin.storagePrefix("/"))
-	assert.Equal(t, "/base/testunit/xxx", bin.storagePrefix("xxx"))
-	assert.Equal(t, "/base/testunit/xxx", bin.storagePrefix("/xxx"))
+	assert.Equal(t, filepath.FromSlash("/base/testunit"), bin.storagePrefix(""))
+	assert.Equal(t, filepath.FromSlash("/base/testunit"), bin.storagePrefix("/"))
+	assert.Equal(t, filepath.FromSlash("/base/testunit/xxx"), bin.storagePrefix("xxx"))
+	assert.Equal(t, filepath.FromSlash("/base/testunit/xxx"), bin.storagePrefix("/xxx"))
 }
 
 func TestContains(t *testing.T) {
@@ -45,9 +46,9 @@ func TestContains(t *testing.T) {
 		basePath: "/base",
 		dirName:  "testunit",
 	}
-	assert.True(t, bin.contains("", "/base/testunit/jemoeder.txt"))
-	assert.True(t, bin.contains("jemoeder", "/base/testunit/jemoeder.txt"))
-	assert.False(t, bin.contains("jemoeder", "/base/testunit/opjehoofd/jemoeder.txt"))
+	assert.True(t, bin.contains("", filepath.FromSlash("/base/testunit/jemoeder.txt")))
+	assert.True(t, bin.contains("jemoeder", filepath.FromSlash("/base/testunit/jemoeder.txt")))
+	assert.False(t, bin.contains("jemoeder", filepath.FromSlash("/base/testunit/opjehoofd/jemoeder.txt")))
 	assert.False(t, bin.contains("", "/etc/passwd"))
 	assert.False(t, bin.contains("/", "/etc/passwd"))
 	assert.False(t, bin.contains("/etc", "/etc/passwd"))
