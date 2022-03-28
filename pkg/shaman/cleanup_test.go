@@ -24,7 +24,6 @@ package shaman
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 	"time"
@@ -119,7 +118,7 @@ func TestGCComponents(t *testing.T) {
 	// utility mapping to be able to find absolute paths more easily
 	absPaths := map[string]string{}
 	for absPath := range expectOld {
-		absPaths[path.Base(absPath)] = absPath
+		absPaths[filepath.Base(absPath)] = absPath
 	}
 
 	// No symlinks created yet, so this should report all the files in oldFiles.
@@ -195,7 +194,7 @@ func TestGarbageCollect(t *testing.T) {
 	// utility mapping to be able to find absolute paths more easily
 	absPaths := map[string]string{}
 	for absPath := range expectOld {
-		absPaths[path.Base(absPath)] = absPath
+		absPaths[filepath.Base(absPath)] = absPath
 	}
 
 	// Create some symlinks

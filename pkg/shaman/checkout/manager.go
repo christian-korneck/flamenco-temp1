@@ -27,7 +27,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -175,7 +174,7 @@ func (m *Manager) EraseCheckout(checkoutID string) error {
 
 	// Try to remove the parent path as well, to not keep the dangling two-letter dirs.
 	// Failure is fine, though, because there is no guarantee it's empty anyway.
-	os.Remove(path.Dir(checkoutPaths.absolutePath))
+	os.Remove(filepath.Dir(checkoutPaths.absolutePath))
 	logger.Info().Msg("shaman: removed checkout directory")
 	return nil
 }
@@ -210,7 +209,7 @@ func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath 
 
 	logger.Debug().Msg("shaman: creating parent directory")
 
-	dir := path.Dir(symlinkPath)
+	dir := filepath.Dir(symlinkPath)
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		logger.Error().Err(err).Msg("shaman: unable to create parent directory")
 		return err

@@ -49,9 +49,9 @@ func TestContains(t *testing.T) {
 	assert.True(t, bin.contains("", filepath.FromSlash("/base/testunit/jemoeder.txt")))
 	assert.True(t, bin.contains("jemoeder", filepath.FromSlash("/base/testunit/jemoeder.txt")))
 	assert.False(t, bin.contains("jemoeder", filepath.FromSlash("/base/testunit/opjehoofd/jemoeder.txt")))
-	assert.False(t, bin.contains("", "/etc/passwd"))
-	assert.False(t, bin.contains("/", "/etc/passwd"))
-	assert.False(t, bin.contains("/etc", "/etc/passwd"))
+	assert.False(t, bin.contains("", filepath.FromSlash("/etc/passwd")))
+	assert.False(t, bin.contains(filepath.FromSlash("/"), filepath.FromSlash("/etc/passwd")))
+	assert.False(t, bin.contains(filepath.FromSlash("/etc"), filepath.FromSlash("/etc/passwd")))
 }
 
 func TestFilePermissions(t *testing.T) {
