@@ -182,12 +182,7 @@ func getConf() (Conf, error) {
 func DefaultConfig(override ...func(c *Conf)) Conf {
 	c := defaultConfig
 	c.Meta.Version = latestConfigVersion
-	for _, overrideFunc := range override {
-		overrideFunc(&c)
-	}
-	c.addImplicitVariables()
-	c.ensureVariablesUnique()
-	c.constructVariableLookupTable(zerolog.TraceLevel)
+	c.processAfterLoading(override...)
 	return c
 }
 
@@ -225,19 +220,26 @@ func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 		return c, fmt.Errorf("unable to parse %s: %w", filename, err)
 	}
 
-	for _, overrideFunc := range overrides {
-		overrideFunc(&c)
+	c.processAfterLoading(overrides...)
+
+	return c, nil
+}
+
+// processAfterLoading processes and checks the loaded config.
+// This is called not just after loading from disk, but also after getting the
+// default configuration.
+func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
+	for _, overrideFunc := range override {
+		overrideFunc(c)
 	}
 
 	c.addImplicitVariables()
 	c.ensureVariablesUnique()
-	c.constructVariableLookupTable(zerolog.DebugLevel)
+	c.constructVariableLookupTable()
 	c.parseURLs()
 	c.checkDatabase()
 	c.checkVariables()
 	c.checkTLS()
-
-	return c, nil
 }
 
 func (c *Conf) addImplicitVariables() {
@@ -280,20 +282,20 @@ func (c *Conf) ensureVariablesUnique() {
 	}
 }
 
-func (c *Conf) constructVariableLookupTable(logLevel zerolog.Level) {
+func (c *Conf) constructVariableLookupTable() {
 	if c.VariablesLookup == nil {
 		c.VariablesLookup = map[VariableAudience]map[VariablePlatform]map[string]string{}
 	}
 
-	c.constructVariableLookupTableForVars(logLevel, c.Variables)
-	c.constructVariableLookupTableForVars(logLevel, c.implicitVariables)
+	c.constructVariableLookupTableForVars(c.Variables)
+	c.constructVariableLookupTableForVars(c.implicitVariables)
 
 	log.Trace().
 		Interface("variables", c.Variables).
 		Msg("constructed lookup table")
 }
 
-func (c *Conf) constructVariableLookupTableForVars(logLevel zerolog.Level, vars map[string]Variable) {
+func (c *Conf) constructVariableLookupTableForVars(vars map[string]Variable) {
 	// Construct a list of all audiences except "" and "all"
 	concreteAudiences := []VariableAudience{}
 	isWildcard := map[VariableAudience]bool{"": true, VariableAudienceAll: true}
@@ -338,7 +340,7 @@ func (c *Conf) constructVariableLookupTableForVars(logLevel zerolog.Level, vars 
 
 	// Construct the lookup table for each audience+platform+name
 	for name, variable := range vars {
-		log.WithLevel(logLevel).
+		log.Trace().
 			Str("name", name).
 			Interface("variable", variable).
 			Msg("handling variable")
