@@ -340,7 +340,7 @@ paths:
 
   /shaman/files/{checksum}/{filesize}:
     summary: Upload files to the Shaman server.
-    options:
+    get:
       operationId: shamanFileStoreCheck
       summary: >
         Check the status of a file on the Shaman server.

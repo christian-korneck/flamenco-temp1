@@ -945,7 +945,7 @@ func NewShamanFileStoreCheckRequest(server string, checksum string, filesize int
 		return nil, err
 	}
 
-	req, err := http.NewRequest("OPTIONS", queryURL.String(), nil)
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}

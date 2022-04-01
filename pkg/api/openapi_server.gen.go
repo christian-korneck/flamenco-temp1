@@ -56,7 +56,7 @@ type ServerInterface interface {
 	// (POST /shaman/checkout/requirements)
 	ShamanCheckoutRequirements(ctx echo.Context) error
 	// Check the status of a file on the Shaman server.
-	// (OPTIONS /shaman/files/{checksum}/{filesize})
+	// (GET /shaman/files/{checksum}/{filesize})
 	ShamanFileStoreCheck(ctx echo.Context, checksum string, filesize int) error
 	// Store a new file on the Shaman server. Note that the Shaman server can forcibly close the HTTP connection when another client finishes uploading the exact same file, to prevent double uploads.
 	// The file's contents should be sent in the request body.
@@ -346,7 +346,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/worker/task/:task_id", wrapper.TaskUpdate)
 	router.POST(baseURL+"/shaman/checkout/create", wrapper.ShamanCheckout)
 	router.POST(baseURL+"/shaman/checkout/requirements", wrapper.ShamanCheckoutRequirements)
-	router.OPTIONS(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStoreCheck)
+	router.GET(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStoreCheck)
 	router.POST(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStore)
 
 }

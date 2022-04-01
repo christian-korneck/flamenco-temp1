@@ -218,7 +218,7 @@ class ShamanApi(object):
                 'auth': [],
                 'endpoint_path': '/shaman/files/{checksum}/{filesize}',
                 'operation_id': 'shaman_file_store_check',
-                'http_method': 'OPTIONS',
+                'http_method': 'GET',
                 'servers': None,
             },
             params_map={

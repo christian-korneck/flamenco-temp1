@@ -7,7 +7,7 @@ Method | HTTP request | Description
 [**shaman_checkout**](ShamanApi.md#shaman_checkout) | **POST** /shaman/checkout/create | Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
 [**shaman_checkout_requirements**](ShamanApi.md#shaman_checkout_requirements) | **POST** /shaman/checkout/requirements | Checks a Shaman Requirements file, and reports which files are unknown.
 [**shaman_file_store**](ShamanApi.md#shaman_file_store) | **POST** /shaman/files/{checksum}/{filesize} | Store a new file on the Shaman server. Note that the Shaman server can forcibly close the HTTP connection when another client finishes uploading the exact same file, to prevent double uploads. The file&#39;s contents should be sent in the request body. 
-[**shaman_file_store_check**](ShamanApi.md#shaman_file_store_check) | **OPTIONS** /shaman/files/{checksum}/{filesize} | Check the status of a file on the Shaman server. 
+[**shaman_file_store_check**](ShamanApi.md#shaman_file_store_check) | **GET** /shaman/files/{checksum}/{filesize} | Check the status of a file on the Shaman server. 
 
 
 # **shaman_checkout**
