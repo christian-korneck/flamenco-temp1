@@ -73,6 +73,11 @@ type Base struct {
 	Listen       string `yaml:"listen"`
 	// ListenHTTPS  string `yaml:"listen_https"`
 
+	SSDPDiscovery bool `yaml:"autodiscoverable"`
+
+	// Storage configuration:
+	Shaman shaman_config.Config `yaml:"shaman"`
+
 	// TLS certificate management. TLSxxx has priority over ACME.
 	// TLSKey         string `yaml:"tlskey"`
 	// TLSCert        string `yaml:"tlscert"`
@@ -92,12 +97,7 @@ type Base struct {
 	// (even when there are workers left that could technically retry the task).
 	// TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
 
-	SSDPDiscovery bool `yaml:"autodiscoverable"`
-
 	// TestTasks TestTasks `yaml:"test_tasks"`
-
-	// Shaman configuration settings.
-	Shaman shaman_config.Config `yaml:"shaman"`
 
 	// Authentication settings.
 	// JWT                      jwtauth.Config `yaml:"user_authentication"`
