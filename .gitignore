@@ -10,7 +10,7 @@
 /flamenco-worker-credentials.yaml
 node_modules/
 task-logs/
-shaman-file-storage/
+flamenco-storage/
 
 __pycache__
 *.pyc
