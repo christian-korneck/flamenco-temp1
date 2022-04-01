@@ -13,6 +13,17 @@ import {
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 
+let flamencoManager = require('flamenco-manager');
+
+let apiClient = new flamencoManager.ApiClient("http://localhost:8080/");
+var api = new flamencoManager.JobsApi(apiClient);
+var jobId = "07d134bc-0614-4477-9b1f-e238f0f0391a";
+api.fetchJob(jobId).then(function(data) {
+  console.log('API called successfully. Returned data: ', data);
+}, function(error) {
+  console.error(error);
+});
+
 Vue.config.productionTip = false
 
 Vue.use(FormInputPlugin);

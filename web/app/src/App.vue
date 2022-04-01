@@ -23,7 +23,7 @@ export default {
   data: () => {
     return {
       socket: null,
-      serverUrl: process.env.VUE_APP_SOCKET_URL || "ws://localhost:8081",
+      serverUrl: process.env.VUE_APP_SOCKET_URL || "ws://localhost:8080",
       messages: [],
     };
   },

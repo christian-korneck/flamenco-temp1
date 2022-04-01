@@ -31,6 +31,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/swagger_ui"
 	"git.blender.org/flamenco/internal/manager/task_logs"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/internal/own_url"
 	"git.blender.org/flamenco/internal/upnp_ssdp"
 	"git.blender.org/flamenco/pkg/api"
@@ -94,7 +95,8 @@ func main() {
 	// go persist.PeriodicMaintenanceLoop(mainCtx)
 
 	flamenco := buildFlamencoAPI(configService, persist)
-	e := buildWebService(flamenco, persist, ssdp)
+	webUpdater := webupdates.New()
+	e := buildWebService(flamenco, persist, ssdp, webUpdater)
 
 	installSignalHandler(mainCtxCancel)
 
@@ -147,6 +149,7 @@ func buildWebService(
 	flamenco api.ServerInterface,
 	persist api_impl.PersistenceService,
 	ssdp *upnp_ssdp.Server,
+	webUpdater *webupdates.BiDirComms,
 ) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
@@ -171,6 +174,33 @@ func buildWebService(
 	// }
 	// e.Use(middleware.Gzip())
 
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		// Just some hard-coded URLs for now, just to get some tests going.
+		AllowOrigins: []string{"http://localhost:8080/", "http://localhost:8081/", "http://10.161.30.150:8081"},
+
+		// List taken from https://www.bacancytechnology.com/blog/real-time-chat-application-using-socketio-golang-vuejs/
+		AllowHeaders: []string{
+			echo.HeaderAccept,
+			echo.HeaderAcceptEncoding,
+			echo.HeaderAccessControlAllowOrigin,
+			echo.HeaderAccessControlRequestHeaders,
+			echo.HeaderAccessControlRequestMethod,
+			echo.HeaderAuthorization,
+			echo.HeaderContentLength,
+			echo.HeaderContentType,
+			echo.HeaderOrigin,
+			echo.HeaderXCSRFToken,
+			echo.HeaderXRequestedWith,
+			"Cache-Control",
+			"Connection",
+			"Host",
+			"Referer",
+			"User-Agent",
+			"X-header",
+		},
+		AllowMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
+	}))
+
 	// Load the API definition and enable validation & authentication checks.
 	swagger, err := api.GetSwagger()
 	if err != nil {
@@ -181,6 +211,7 @@ func buildWebService(
 
 	// Register routes.
 	api.RegisterHandlers(e, flamenco)
+	webUpdater.RegisterHandlers(e)
 	swagger_ui.RegisterSwaggerUIStaticFiles(e)
 	e.GET("/api/openapi3.json", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, swagger)

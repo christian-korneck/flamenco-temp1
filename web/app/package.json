@@ -18,7 +18,7 @@
     }
   ],
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --port 8081",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
@@ -43,7 +43,10 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {},
+    "ignorePatterns": [
+      "../manager-api/src/**"
+    ]
   },
   "browserslist": [
     "> 1%",

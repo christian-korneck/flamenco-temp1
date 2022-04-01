@@ -5,8 +5,9 @@ PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
-# Package name of the generated Python code for the Flamenco API.
+# Package name of the generated Python/JavaScript code for the Flamenco API.
 PY_API_PKG_NAME=flamenco.manager
+JS_API_PKG_NAME=manager
 
 # Prevent any dependency that requires a C compiler, i.e. only work with pure-Go libraries.
 export CGO_ENABLED=0
@@ -30,7 +31,7 @@ flamenco-worker:
 socketio-poc:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
-generate: generate-go generate-py
+generate: generate-go generate-py generate-js
 
 generate-go:
 	go generate ./pkg/api/...
@@ -46,6 +47,7 @@ generate-py:
 # remove no-longer-generated files.
 	rm -rf addon/flamenco/manager
 
+# See https://openapi-generator.tech/docs/generators/python for the options.
 	java -jar addon/openapi-generator-cli.jar \
 		generate \
 		-i pkg/api/flamenco-manager.yaml \
@@ -60,6 +62,32 @@ generate-py:
 # The generator outputs files so that we can write our own tests. We don't,
 # though, so it's better to just remove those placeholders.
 	rm -rf addon/flamenco/manager/test
+
+generate-js:
+# The generator doesn't consistently overwrite existing files, nor does it
+# remove no-longer-generated files.
+	rm -rf web/manager-api
+
+# See https://openapi-generator.tech/docs/generators/javascript for the options.
+# Version '0.0.0' is used as NPM doesn't like Git hashes as versions.
+	java -jar addon/openapi-generator-cli.jar \
+		generate \
+		-i pkg/api/flamenco-manager.yaml \
+		-g javascript \
+		-o web/manager-api \
+		--http-user-agent "Flamenco/${VERSION} / webbrowser" \
+		-p generateSourceCodeOnly=true \
+		-p projectName=flamenco-manager \
+		-p projectVersion="0.0.0" \
+		-p apiPackage="${JS_API_PKG_NAME}" \
+		-p disallowAdditionalPropertiesIfNotPresent=false \
+		-p usePromises=true \
+		-p moduleName=flamencoManager
+
+
+# The generator outputs files so that we can write our own tests. We don't,
+# though, so it's better to just remove those placeholders.
+	rm -rf web/manager-api/test
 
 version:
 	@echo "OS     : ${OS}"
