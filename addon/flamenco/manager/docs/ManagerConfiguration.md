@@ -4,6 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**storage_location** | **str** | Directory used for job file storage. | 
 **shaman_enabled** | **bool** | Whether the Shaman file transfer API is available. | 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]
 

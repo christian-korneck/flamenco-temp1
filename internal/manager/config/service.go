@@ -24,10 +24,6 @@ func (s *Service) Load() error {
 	return nil
 }
 
-func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
-	return s.config.ExpandVariables(valueToExpand, audience, platform)
-}
-
 func (s *Service) Get() *Conf {
 	return &s.config
 }
@@ -42,4 +38,13 @@ func (s *Service) Save() error {
 	// Do the logging here, as our caller doesn't know `configFilename``.
 	log.Info().Str("filename", configFilename).Msg("configuration file written")
 	return nil
+}
+
+// Expose some functions on Conf here, for easier mocking of functionality via interfaces.
+//
+func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
+	return s.config.ExpandVariables(valueToExpand, audience, platform)
+}
+func (s *Service) EffectiveStoragePath() string {
+	return s.config.EffectiveStoragePath()
 }

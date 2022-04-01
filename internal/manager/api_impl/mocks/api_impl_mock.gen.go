@@ -323,6 +323,20 @@ func (m *MockConfigService) EXPECT() *MockConfigServiceMockRecorder {
 	return m.recorder
 }
 
+// EffectiveStoragePath mocks base method.
+func (m *MockConfigService) EffectiveStoragePath() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EffectiveStoragePath")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// EffectiveStoragePath indicates an expected call of EffectiveStoragePath.
+func (mr *MockConfigServiceMockRecorder) EffectiveStoragePath() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EffectiveStoragePath", reflect.TypeOf((*MockConfigService)(nil).EffectiveStoragePath))
+}
+
 // ExpandVariables mocks base method.
 func (m *MockConfigService) ExpandVariables(arg0 string, arg1 config.VariableAudience, arg2 config.VariablePlatform) string {
 	m.ctrl.T.Helper()

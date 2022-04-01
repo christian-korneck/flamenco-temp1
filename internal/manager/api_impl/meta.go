@@ -20,6 +20,7 @@ func (f *Flamenco) GetVersion(e echo.Context) error {
 
 func (f *Flamenco) GetConfiguration(e echo.Context) error {
 	return e.JSON(http.StatusOK, api.ManagerConfiguration{
-		ShamanEnabled: f.isShamanEnabled(),
+		ShamanEnabled:   f.isShamanEnabled(),
+		StorageLocation: f.config.EffectiveStoragePath(),
 	})
 }

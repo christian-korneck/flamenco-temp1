@@ -229,6 +229,9 @@ type JobStatus string
 type ManagerConfiguration struct {
 	// Whether the Shaman file transfer API is available.
 	ShamanEnabled bool `json:"shamanEnabled"`
+
+	// Directory used for job file storage.
+	StorageLocation string `json:"storageLocation"`
 }
 
 // RegisteredWorker defines model for RegisteredWorker.

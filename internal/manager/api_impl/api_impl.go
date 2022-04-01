@@ -76,6 +76,11 @@ type LogStorage interface {
 
 type ConfigService interface {
 	VariableReplacer
+
+	// EffectiveStoragePath returns the job storage path used by Flamenco. It's
+	// basically the configured storage path, but can be influenced by other
+	// options (like Shaman).
+	EffectiveStoragePath() string
 }
 
 type Shaman interface {

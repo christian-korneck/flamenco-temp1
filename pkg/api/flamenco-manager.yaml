@@ -457,10 +457,13 @@ components:
     ManagerConfiguration:
       type: object
       properties:
+        "storageLocation":
+          description: Directory used for job file storage.
+          type: string
         "shamanEnabled":
           description: Whether the Shaman file transfer API is available.
           type: boolean
-      required: [shamanEnabled]
+      required: [storageLocation, shamanEnabled]
 
     WorkerRegistration:
       type: object

@@ -251,9 +251,10 @@ func (c *Conf) processStorage() {
 	}
 }
 
-func (c *Conf) addImplicitVariables() {
-	c.implicitVariables = make(map[string]Variable)
-
+// EffectiveStoragePath returns the absolute path of the job storage directory.
+// This is made from a combination of the configured job storage path and a
+// Shaman-specific subpath (if enabled).
+func (c *Conf) EffectiveStoragePath() string {
 	var jobStorage string
 	if c.Shaman.Enabled {
 		jobStorage = c.Shaman.CheckoutPath()
@@ -269,13 +270,20 @@ func (c *Conf) addImplicitVariables() {
 			Err(err).Msg("unable to find absolute path of storage path")
 		absPath = jobStorage
 	}
+
+	return absPath
+}
+
+func (c *Conf) addImplicitVariables() {
+	c.implicitVariables = make(map[string]Variable)
+
 	c.implicitVariables["jobs"] = Variable{
 		IsTwoWay: false,
 		Values: []VariableValue{
 			{
 				Audience: VariableAudienceAll,
 				Platform: VariablePlatformAll,
-				Value:    absPath,
+				Value:    c.EffectiveStoragePath(),
 			},
 		},
 	}

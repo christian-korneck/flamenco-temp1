@@ -81,6 +81,7 @@ class ManagerConfiguration(ModelNormal):
                 and the value is attribute type.
         """
         return {
+            'storage_location': (str,),  # noqa: E501
             'shaman_enabled': (bool,),  # noqa: E501
         }
 
@@ -90,6 +91,7 @@ class ManagerConfiguration(ModelNormal):
 
 
     attribute_map = {
+        'storage_location': 'storageLocation',  # noqa: E501
         'shaman_enabled': 'shamanEnabled',  # noqa: E501
     }
 
@@ -100,10 +102,11 @@ class ManagerConfiguration(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, shaman_enabled, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, storage_location, shaman_enabled, *args, **kwargs):  # noqa: E501
         """ManagerConfiguration - a model defined in OpenAPI
 
         Args:
+            storage_location (str): Directory used for job file storage.
             shaman_enabled (bool): Whether the Shaman file transfer API is available.
 
         Keyword Args:
@@ -164,6 +167,7 @@ class ManagerConfiguration(ModelNormal):
         self._configuration = _configuration
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
+        self.storage_location = storage_location
         self.shaman_enabled = shaman_enabled
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
@@ -185,10 +189,11 @@ class ManagerConfiguration(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, shaman_enabled, *args, **kwargs):  # noqa: E501
+    def __init__(self, storage_location, shaman_enabled, *args, **kwargs):  # noqa: E501
         """ManagerConfiguration - a model defined in OpenAPI
 
         Args:
+            storage_location (str): Directory used for job file storage.
             shaman_enabled (bool): Whether the Shaman file transfer API is available.
 
         Keyword Args:
@@ -247,6 +252,7 @@ class ManagerConfiguration(ModelNormal):
         self._configuration = _configuration
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
+        self.storage_location = storage_location
         self.shaman_enabled = shaman_enabled
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
