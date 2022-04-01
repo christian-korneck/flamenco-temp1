@@ -2,7 +2,6 @@
 # <pep8 compliant>
 
 import datetime
-import functools
 import logging
 from pathlib import Path, PurePosixPath
 from typing import Optional, TYPE_CHECKING
