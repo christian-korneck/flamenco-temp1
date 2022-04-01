@@ -13,9 +13,17 @@ import {
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 
+let url = new URL(window.location);
+url.port = "8080";
+const flamencoAPIURL = url.href;
+url.protocol = "ws:";
+const websocketURL = url.href;
+console.log("Flamenco API:", flamencoAPIURL);
+console.log("Websocket   :", websocketURL);
+
 let flamencoManager = require('flamenco-manager');
 
-let apiClient = new flamencoManager.ApiClient("http://localhost:8080/");
+let apiClient = new flamencoManager.ApiClient(flamencoAPIURL);
 var api = new flamencoManager.JobsApi(apiClient);
 var jobId = "07d134bc-0614-4477-9b1f-e238f0f0391a";
 api.fetchJob(jobId).then(function(data) {
@@ -25,6 +33,7 @@ api.fetchJob(jobId).then(function(data) {
 });
 
 Vue.config.productionTip = false
+Vue.config.serverUrl = websocketURL;
 
 Vue.use(FormInputPlugin);
 Vue.use(NavbarPlugin);
@@ -34,9 +43,8 @@ Vue.component("b-input-group", BInputGroup);
 Vue.component("b-button", BButton);
 Vue.use(IconsPlugin);
 
-var app = new Vue({
+var vueApp = new Vue({
   render: h => h(App),
-
 });
 
-app.$mount("#app");
+vueApp.$mount("#app");
