@@ -12,11 +12,14 @@ def discard_flamenco_client(prefs, context):
     context.window_manager.flamenco_status_ping = ""
 
 
-def _update_default_job_storage(
+def _refresh_the_planet(
     prefs: "FlamencoPreferences", context: bpy.types.Context
 ) -> None:
-    _unregister_rna_props()
-    _register_rna_props(prefs)
+    """Refresh all GUI areas."""
+    for win in context.window_manager.windows:
+        for area in win.screen.areas:
+            for region in area.regions:
+                region.tag_redraw()
 
 
 class FlamencoPreferences(bpy.types.AddonPreferences):
@@ -33,35 +36,49 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
         name="Shaman Enabled",
         description="Whether this Manager has the Shaman protocol enabled",
         default=False,
+        update=_refresh_the_planet,
     )
 
+    # Property that should be editable from Python. It's not exposed to the GUI.
     job_storage: bpy.props.StringProperty(  # type: ignore
         name="Job Storage Directory",
         subtype="DIR_PATH",
         default="",
-        description="Directory where blend files are stored, when submitting them to Flamenco",
-        update=_update_default_job_storage,
+        options={"HIDDEN"},
+        description="Directory where blend files are stored when submitting them to Flamenco. This value is determined by Flamenco Manager",
+    )
+
+    # Property that gets its value from the above _job_storage, and cannot be
+    # set. This makes it read-only in the GUI.
+    job_storage_for_gui: bpy.props.StringProperty(  # type: ignore
+        name="Job Storage Directory",
+        subtype="DIR_PATH",
+        default="",
+        options={"SKIP_SAVE"},
+        description="Directory where blend files are stored when submitting them to Flamenco. This value is determined by Flamenco Manager",
+        get=lambda prefs: prefs.job_storage,
     )
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
+        layout.use_property_decorate = False
+        layout.use_property_split = True
 
         col = layout.column()
-        col.use_property_split = True
 
         row = col.row(align=True)
         row.prop(self, "manager_url")
         row.operator("flamenco.ping_manager", text="", icon="CHECKMARK")
         if context.window_manager.flamenco_status_ping:
-            col.label(text=context.window_manager.flamenco_status_ping)
+            split = col.split(factor=0.4)
+            split.label(text="")
+            split.label(text=context.window_manager.flamenco_status_ping)
 
-        col = layout.column(align=True)
-        col.enabled = not self.is_shaman_enabled
         if self.is_shaman_enabled:
-            col.label(
-                text="This Manager supports the Shaman API, so this setting will be ignored:"
-            )
-        col.prop(self, "job_storage")
+            split = col.split(factor=0.4)
+            split.label(text="")
+            split.label(text="Shaman enabled")
+        col.prop(self, "job_storage_for_gui", text="Job Storage")
 
 
 def get(context: bpy.types.Context) -> FlamencoPreferences:
@@ -79,31 +96,14 @@ def manager_url(context: bpy.types.Context) -> str:
     return str(prefs.manager_url)
 
 
-def _register_rna_props(prefs: FlamencoPreferences) -> None:
-    """RNA properties that have their defaults set in the preferences get registered here."""
-
-    bpy.types.Scene.flamenco_job_storage = bpy.props.StringProperty(
-        name="Flamenco Job Storage",
-        subtype="DIR_PATH",
-        default=prefs.job_storage,
-        description="Directory where blend files are stored, when submitting them to Flamenco",
-    )
-
-
-def _unregister_rna_props() -> None:
-    del bpy.types.Scene.flamenco_job_storage
-
-
 classes = (FlamencoPreferences,)
 _register, _unregister = bpy.utils.register_classes_factory(classes)
 
 
 def register():
     _register()
-    _register_rna_props(get(bpy.context))
     bpy.context.window_manager.flamenco_status_ping = ""
 
 
 def unregister():
-    _unregister_rna_props()
     _unregister()

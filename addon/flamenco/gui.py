@@ -42,17 +42,6 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         col = layout.column(align=True)
         col.prop(context.scene, "flamenco_job_name", text="Job Name")
 
-        job_storage_col = col.column(align=True)
-        job_storage_col.enabled = not prefs.is_shaman_enabled
-        if prefs.is_shaman_enabled:
-            job_storage_col.label(
-                text="Shaman API will be used for job submission, so job storage location is ignored:"
-            )
-        row = job_storage_col.row(align=True)
-        row.prop(context.scene, "flamenco_job_storage", text="Job Storage")
-        prop = row.operator("flamenco3.explore_file_path", text="", icon="WINDOW")
-        prop.path = context.scene.flamenco_job_storage
-
         layout.separator()
 
         col = layout.column()

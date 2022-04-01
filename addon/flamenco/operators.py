@@ -111,6 +111,7 @@ class FLAMENCO_OT_ping_manager(FlamencoOpMixin, bpy.types.Operator):
             # Store whether this Manager supports the Shaman API.
             prefs = preferences.get(context)
             prefs.is_shaman_enabled = config.shaman_enabled
+            prefs.job_storage = config.storage_location
 
         self.report({level}, report)
         context.window_manager.flamenco_status_ping = report
@@ -260,7 +261,8 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             datetime.datetime.now().isoformat("-").replace(":", ""),
             self.job_name,
         )
-        pack_target_dir = Path(context.scene.flamenco_job_storage) / unique_dir
+        prefs = preferences.get(context)
+        pack_target_dir = Path(prefs.job_storage) / unique_dir
 
         # TODO: this should take the blendfile location relative to the project path into account.
         pack_target_file = pack_target_dir / blendfile.name
