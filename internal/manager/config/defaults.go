@@ -1,6 +1,7 @@
 package config
 
 import (
+	"runtime"
 	"time"
 
 	shaman_config "git.blender.org/flamenco/pkg/shaman/config"
@@ -22,7 +23,8 @@ var defaultConfig = Conf{
 		StoragePath:   "./flamenco-storage",
 
 		Shaman: shaman_config.Config{
-			Enabled: false,
+			// Enable Shaman by default, except on Windows where symlinks are still tricky.
+			Enabled: runtime.GOOS != "windows",
 			GarbageCollect: shaman_config.GarbageCollect{
 				Period:            24 * time.Hour,
 				MaxAge:            31 * 24 * time.Hour,
