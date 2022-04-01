@@ -45,7 +45,7 @@ type Config struct {
 	TestTempDir string `yaml:"-"`
 
 	Enabled        bool           `yaml:"enabled"`
-	StoragePath    string         `yaml:"storagePath"`
+	StoragePath    string         `yaml:"-"` // Needs to be set externally, not saved in config.
 	GarbageCollect GarbageCollect `yaml:"garbageCollect"`
 }
 

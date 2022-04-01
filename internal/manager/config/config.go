@@ -76,7 +76,8 @@ type Base struct {
 	SSDPDiscovery bool `yaml:"autodiscoverable"`
 
 	// Storage configuration:
-	Shaman shaman_config.Config `yaml:"shaman"`
+	StoragePath string               `yaml:"storage_path"`
+	Shaman      shaman_config.Config `yaml:"shaman"`
 
 	// TLS certificate management. TLSxxx has priority over ACME.
 	// TLSKey         string `yaml:"tlskey"`
@@ -233,6 +234,7 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 		overrideFunc(c)
 	}
 
+	c.processStorage()
 	c.addImplicitVariables()
 	c.ensureVariablesUnique()
 	c.constructVariableLookupTable()
@@ -242,20 +244,30 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 	c.checkTLS()
 }
 
+func (c *Conf) processStorage() {
+	// Shaman should use the Flamenco storage location.
+	if c.Shaman.Enabled {
+		c.Shaman.StoragePath = c.StoragePath
+	}
+}
+
 func (c *Conf) addImplicitVariables() {
 	c.implicitVariables = make(map[string]Variable)
 
-	if !c.Shaman.Enabled {
-		return
+	var jobStorage string
+	if c.Shaman.Enabled {
+		jobStorage = c.Shaman.CheckoutPath()
+	} else {
+		jobStorage = c.StoragePath
 	}
 
-	// Shaman adds a variable to allow job submission to create
-	// checkout-dir-relative paths.
-	shamanCheckoutPath := c.Shaman.CheckoutPath()
-	absPath, err := filepath.Abs(shamanCheckoutPath)
+	absPath, err := filepath.Abs(jobStorage)
 	if err != nil {
-		log.Error().Err(err).Msg("unable to find absolute path of Shaman checkout path")
-		absPath = shamanCheckoutPath
+		log.Warn().
+			Str("storagePath", jobStorage).
+			Bool("shamanEnabled", c.Shaman.Enabled).
+			Err(err).Msg("unable to find absolute path of storage path")
+		absPath = jobStorage
 	}
 	c.implicitVariables["jobs"] = Variable{
 		IsTwoWay: false,

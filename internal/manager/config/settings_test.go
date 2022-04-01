@@ -41,11 +41,11 @@ func TestVariableValidation(t *testing.T) {
 // TODO: Test two-way variables. Even though they're not currently in the
 // default configuration, they should work.
 
-func TestShamanImplicitVariables(t *testing.T) {
+func TestStorageImplicitVariablesWithShaman(t *testing.T) {
 	c := DefaultConfig(func(c *Conf) {
-		// Having the Shaman enabled should create an implicit variable "{jobs}".
+		// Having the Shaman enabled should create an implicit variable "{jobs}" at the Shaman checkout path.
+		c.StoragePath = "/path/to/shaman/storage"
 		c.Shaman.Enabled = true
-		c.Shaman.StoragePath = "/path/to/shaman/storage"
 
 		c.Variables["jobs"] = Variable{
 			IsTwoWay: true,
@@ -57,7 +57,6 @@ func TestShamanImplicitVariables(t *testing.T) {
 				},
 			},
 		}
-
 	})
 
 	assert.NotContains(t, c.Variables, "jobs", "implicit variables should erase existing variables with the same name")
@@ -66,4 +65,30 @@ func TestShamanImplicitVariables(t *testing.T) {
 	}
 	assert.False(t, c.implicitVariables["jobs"].IsTwoWay)
 	assert.Equal(t, c.Shaman.CheckoutPath(), c.implicitVariables["jobs"].Values[0].Value)
+}
+
+func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
+	c := DefaultConfig(func(c *Conf) {
+		// Having the Shaman disabled should create an implicit variable "{jobs}" at the storage path.
+		c.StoragePath = "/path/to/shaman/storage"
+		c.Shaman.Enabled = false
+
+		c.Variables["jobs"] = Variable{
+			IsTwoWay: true,
+			Values: []VariableValue{
+				{
+					Audience: VariableAudienceAll,
+					Platform: VariablePlatformAll,
+					Value:    "this value should not be seen",
+				},
+			},
+		}
+	})
+
+	assert.NotContains(t, c.Variables, "jobs", "implicit variables should erase existing variables with the same name")
+	if !assert.Contains(t, c.implicitVariables, "jobs") {
+		t.FailNow()
+	}
+	assert.False(t, c.implicitVariables["jobs"].IsTwoWay)
+	assert.Equal(t, c.StoragePath, c.implicitVariables["jobs"].Values[0].Value)
 }

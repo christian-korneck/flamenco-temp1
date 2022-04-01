@@ -102,8 +102,8 @@ func TestReplaceJobsVariable(t *testing.T) {
 
 	// Having the Shaman enabled should create an implicit variable "{jobs}".
 	conf := config.GetTestConfig(func(c *config.Conf) {
+		c.StoragePath = "/path/to/flamenco-storage"
 		c.Shaman.Enabled = true
-		c.Shaman.StoragePath = "/path/to/shaman/storage"
 	})
 
 	task := varreplTestTask()

@@ -19,10 +19,10 @@ var defaultConfig = Conf{
 		DatabaseDSN:   "flamenco-manager.sqlite",
 		TaskLogsPath:  "./task-logs",
 		SSDPDiscovery: true,
+		StoragePath:   "./flamenco-storage",
 
 		Shaman: shaman_config.Config{
-			Enabled:     false,
-			StoragePath: "./shaman-file-storage",
+			Enabled: false,
 			GarbageCollect: shaman_config.GarbageCollect{
 				Period:            24 * time.Hour,
 				MaxAge:            31 * 24 * time.Hour,
