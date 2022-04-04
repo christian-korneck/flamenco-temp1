@@ -9,6 +9,7 @@ import (
 	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -63,6 +64,15 @@ func WorkerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInpu
 func requestWorkerStore(e echo.Context, w *persistence.Worker) {
 	req := e.Request()
 	reqCtx := context.WithValue(req.Context(), workerKey, w)
+
+	// Update the logger in this context to reflect the Worker.
+	l := zerolog.Ctx(reqCtx)
+	l.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.
+			Str("wUUID", w.UUID).
+			Str("wName", w.Name)
+	})
+
 	e.SetRequest(req.WithContext(reqCtx))
 }
 

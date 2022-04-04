@@ -9,16 +9,6 @@ import (
 )
 
 func requestLogger(e echo.Context) zerolog.Logger {
-	logCtx := log.With().
-		Str("remoteAddr", e.RealIP()).
-		Str("userAgent", e.Request().UserAgent())
-
-	worker := requestWorker(e)
-	if worker != nil {
-		logCtx = logCtx.
-			Str("wUUID", worker.UUID).
-			Str("wName", worker.Name)
-	}
-
-	return logCtx.Logger()
+	logger := log.Ctx(e.Request().Context())
+	return *logger
 }
