@@ -654,7 +654,8 @@ components:
         settings:
           blender_cmd: "{blender}"
           filepath: "/render/sf/jobs/scene123.blend"
-          render_output: "/render/sf/frames/scene123"
+          render_output_root: "/render/sf/frames/scene123"
+          render_output_path: "/render/sf/frames/scene123/3Д рендеринг/######"
           frames: "1-10"
           chunk_size: 3
           fps: 24
