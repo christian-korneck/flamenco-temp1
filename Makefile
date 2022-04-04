@@ -20,16 +20,13 @@ with-deps:
 	go get github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) application
 
-application: flamenco-manager flamenco-worker socketio-poc
+application: flamenco-manager flamenco-worker
 
 flamenco-manager:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
 
 flamenco-worker:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
-
-socketio-poc:
-	go build -v ${BUILD_FLAGS} ${PKG}/cmd/socketio-poc
 
 generate: generate-go generate-py generate-js
 
@@ -112,7 +109,7 @@ test:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-v* flamenco-manager flamenco-worker socketio-poc *.exe
+	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
@@ -124,4 +121,4 @@ package: flamenco-manager flamenco-worker
 	rm -rf dist/flamenco
 
 
-.PHONY: application version flamenco-manager flamenco-worker socketio-poc generate generate-go generate-py with-deps swagger-ui list-embedded test clean
+.PHONY: application version flamenco-manager flamenco-worker generate generate-go generate-py with-deps swagger-ui list-embedded test clean

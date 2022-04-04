@@ -1,5 +1,4 @@
 *.exe
-/*-poc
 *.sqlite
 *.db
 *.blend[0-9]
