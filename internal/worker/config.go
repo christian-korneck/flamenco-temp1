@@ -67,16 +67,15 @@ func (fcw *FileConfigWrangler) WorkerConfig() (WorkerConfig, error) {
 		return *fcw.wc, nil
 	}
 
-	wc := WorkerConfig{}
+	wc := fcw.DefaultConfig()
 	err := fcw.loadConfig(configFilename, &wc)
 
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return WorkerConfig{}, err
+			return wc, err
 		}
 
 		// The config file not existing is fine; just use the defaults.
-		wc = fcw.DefaultConfig()
 	}
 
 	fcw.wc = &wc
