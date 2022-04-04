@@ -24,12 +24,12 @@ class WorkerRegistration {
      * @alias module:model/WorkerRegistration
      * @param secret {String} 
      * @param platform {String} 
-     * @param supportedTaskTypes {Array.<String>} 
+     * @param supported_task_types {Array.<String>} 
      * @param nickname {String} 
      */
-    constructor(secret, platform, supportedTaskTypes, nickname) { 
+    constructor(secret, platform, supported_task_types, nickname) { 
         
-        WorkerRegistration.initialize(this, secret, platform, supportedTaskTypes, nickname);
+        WorkerRegistration.initialize(this, secret, platform, supported_task_types, nickname);
     }
 
     /**
@@ -37,10 +37,10 @@ class WorkerRegistration {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, secret, platform, supportedTaskTypes, nickname) { 
+    static initialize(obj, secret, platform, supported_task_types, nickname) { 
         obj['secret'] = secret;
         obj['platform'] = platform;
-        obj['supported_task_types'] = supportedTaskTypes;
+        obj['supported_task_types'] = supported_task_types;
         obj['nickname'] = nickname;
     }
 

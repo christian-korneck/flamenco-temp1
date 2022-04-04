@@ -30,14 +30,14 @@ class AssignedTask {
      * @param name {String} 
      * @param status {module:model/TaskStatus} 
      * @param priority {Number} 
-     * @param jobPriority {Number} 
-     * @param jobType {String} 
-     * @param taskType {String} 
+     * @param job_priority {Number} 
+     * @param job_type {String} 
+     * @param task_type {String} 
      * @param commands {Array.<module:model/Command>} 
      */
-    constructor(uuid, job, name, status, priority, jobPriority, jobType, taskType, commands) { 
+    constructor(uuid, job, name, status, priority, job_priority, job_type, task_type, commands) { 
         
-        AssignedTask.initialize(this, uuid, job, name, status, priority, jobPriority, jobType, taskType, commands);
+        AssignedTask.initialize(this, uuid, job, name, status, priority, job_priority, job_type, task_type, commands);
     }
 
     /**
@@ -45,15 +45,15 @@ class AssignedTask {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, uuid, job, name, status, priority, jobPriority, jobType, taskType, commands) { 
+    static initialize(obj, uuid, job, name, status, priority, job_priority, job_type, task_type, commands) { 
         obj['uuid'] = uuid;
         obj['job'] = job;
         obj['name'] = name;
         obj['status'] = status;
         obj['priority'] = priority;
-        obj['job_priority'] = jobPriority;
-        obj['job_type'] = jobType;
-        obj['task_type'] = taskType;
+        obj['job_priority'] = job_priority;
+        obj['job_type'] = job_type;
+        obj['task_type'] = task_type;
         obj['commands'] = commands;
     }
 

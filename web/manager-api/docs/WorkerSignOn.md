@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **nickname** | **String** |  | 
-**supportedTaskTypes** | **[String]** |  | 
-**softwareVersion** | **String** |  | 
+**supported_task_types** | **[String]** |  | 
+**software_version** | **String** |  | 
 
 

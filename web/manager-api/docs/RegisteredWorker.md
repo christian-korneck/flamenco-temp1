@@ -9,8 +9,8 @@ Name | Type | Description | Notes
 **address** | **String** |  | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
 **platform** | **String** |  | 
-**lastActivity** | **String** |  | 
+**last_activity** | **String** |  | 
 **software** | **String** |  | 
-**supportedTaskTypes** | **[String]** |  | 
+**supported_task_types** | **[String]** |  | 
 
 

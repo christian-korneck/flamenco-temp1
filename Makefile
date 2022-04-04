@@ -67,24 +67,31 @@ generate-js:
 
 # See https://openapi-generator.tech/docs/generators/javascript for the options.
 # Version '0.0.0' is used as NPM doesn't like Git hashes as versions.
+#
+# -p modelPropertyNaming=original is needed because otherwise the generator will
+# use original naming internally, but generate docs with camelCase, and then
+# things don't work properly.
 	java -jar addon/openapi-generator-cli.jar \
 		generate \
 		-i pkg/api/flamenco-manager.yaml \
 		-g javascript \
 		-o web/manager-api \
 		--http-user-agent "Flamenco/${VERSION} / webbrowser" \
-		-p generateSourceCodeOnly=true \
 		-p projectName=flamenco-manager \
 		-p projectVersion="0.0.0" \
 		-p apiPackage="${JS_API_PKG_NAME}" \
 		-p disallowAdditionalPropertiesIfNotPresent=false \
 		-p usePromises=true \
-		-p moduleName=flamencoManager
-
+		-p moduleName=flamencoManager \
+		-p modelPropertyNaming=original
 
 # The generator outputs files so that we can write our own tests. We don't,
 # though, so it's better to just remove those placeholders.
 	rm -rf web/manager-api/test
+
+# Ensure that the API package can actually be imported by the webapp (if
+# symlinks are in place).
+	cd web/manager-api && npm install && npm run build
 
 version:
 	@echo "OS     : ${OS}"

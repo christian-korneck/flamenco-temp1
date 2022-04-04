@@ -23,11 +23,11 @@ class WorkerStateChange {
     /**
      * Constructs a new <code>WorkerStateChange</code>.
      * @alias module:model/WorkerStateChange
-     * @param statusRequested {module:model/WorkerStatus} 
+     * @param status_requested {module:model/WorkerStatus} 
      */
-    constructor(statusRequested) { 
+    constructor(status_requested) { 
         
-        WorkerStateChange.initialize(this, statusRequested);
+        WorkerStateChange.initialize(this, status_requested);
     }
 
     /**
@@ -35,8 +35,8 @@ class WorkerStateChange {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, statusRequested) { 
-        obj['status_requested'] = statusRequested;
+    static initialize(obj, status_requested) { 
+        obj['status_requested'] = status_requested;
     }
 
     /**

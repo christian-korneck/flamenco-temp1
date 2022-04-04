@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **secret** | **String** |  | 
 **platform** | **String** |  | 
-**supportedTaskTypes** | **[String]** |  | 
+**supported_task_types** | **[String]** |  | 
 **nickname** | **String** |  | 
 
 

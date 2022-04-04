@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 ## registerWorker
 
-> RegisteredWorker registerWorker(workerRegistration)
+> RegisteredWorker registerWorker(WorkerRegistration)
 
 Register a new worker
 
@@ -26,8 +26,8 @@ Register a new worker
 import flamencoManager from 'flamenco-manager';
 
 let apiInstance = new flamencoManager.WorkerApi();
-let workerRegistration = new flamencoManager.WorkerRegistration(); // WorkerRegistration | Worker to register
-apiInstance.registerWorker(workerRegistration).then((data) => {
+let WorkerRegistration = new flamencoManager.WorkerRegistration(); // WorkerRegistration | Worker to register
+apiInstance.registerWorker(WorkerRegistration).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -40,7 +40,7 @@ apiInstance.registerWorker(workerRegistration).then((data) => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **workerRegistration** | [**WorkerRegistration**](WorkerRegistration.md)| Worker to register | 
+ **WorkerRegistration** | [**WorkerRegistration**](WorkerRegistration.md)| Worker to register | 
 
 ### Return type
 
@@ -144,7 +144,7 @@ null (empty response body)
 
 ## signOn
 
-> WorkerStateChange signOn(workerSignOn)
+> WorkerStateChange signOn(WorkerSignOn)
 
 Authenticate &amp; sign in the worker.
 
@@ -159,8 +159,8 @@ worker_auth.username = 'YOUR USERNAME';
 worker_auth.password = 'YOUR PASSWORD';
 
 let apiInstance = new flamencoManager.WorkerApi();
-let workerSignOn = new flamencoManager.WorkerSignOn(); // WorkerSignOn | Worker metadata
-apiInstance.signOn(workerSignOn).then((data) => {
+let WorkerSignOn = new flamencoManager.WorkerSignOn(); // WorkerSignOn | Worker metadata
+apiInstance.signOn(WorkerSignOn).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -173,7 +173,7 @@ apiInstance.signOn(workerSignOn).then((data) => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **workerSignOn** | [**WorkerSignOn**](WorkerSignOn.md)| Worker metadata | 
+ **WorkerSignOn** | [**WorkerSignOn**](WorkerSignOn.md)| Worker metadata | 
 
 ### Return type
 
@@ -191,7 +191,7 @@ Name | Type | Description  | Notes
 
 ## taskUpdate
 
-> taskUpdate(taskId, taskUpdate)
+> taskUpdate(task_id, TaskUpdate)
 
 Update the task, typically to indicate progress, completion, or failure.
 
@@ -206,9 +206,9 @@ worker_auth.username = 'YOUR USERNAME';
 worker_auth.password = 'YOUR PASSWORD';
 
 let apiInstance = new flamencoManager.WorkerApi();
-let taskId = "taskId_example"; // String | 
-let taskUpdate = new flamencoManager.TaskUpdate(); // TaskUpdate | Task update information
-apiInstance.taskUpdate(taskId, taskUpdate).then(() => {
+let task_id = "task_id_example"; // String | 
+let TaskUpdate = new flamencoManager.TaskUpdate(); // TaskUpdate | Task update information
+apiInstance.taskUpdate(task_id, TaskUpdate).then(() => {
   console.log('API called successfully.');
 }, (error) => {
   console.error(error);
@@ -221,8 +221,8 @@ apiInstance.taskUpdate(taskId, taskUpdate).then(() => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **taskId** | **String**|  | 
- **taskUpdate** | [**TaskUpdate**](TaskUpdate.md)| Task update information | 
+ **task_id** | **String**|  | 
+ **TaskUpdate** | [**TaskUpdate**](TaskUpdate.md)| Task update information | 
 
 ### Return type
 
@@ -283,7 +283,7 @@ This endpoint does not need any parameter.
 
 ## workerStateChanged
 
-> workerStateChanged(workerStateChanged)
+> workerStateChanged(WorkerStateChanged)
 
 Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
 
@@ -298,8 +298,8 @@ worker_auth.username = 'YOUR USERNAME';
 worker_auth.password = 'YOUR PASSWORD';
 
 let apiInstance = new flamencoManager.WorkerApi();
-let workerStateChanged = new flamencoManager.WorkerStateChanged(); // WorkerStateChanged | New worker state
-apiInstance.workerStateChanged(workerStateChanged).then(() => {
+let WorkerStateChanged = new flamencoManager.WorkerStateChanged(); // WorkerStateChanged | New worker state
+apiInstance.workerStateChanged(WorkerStateChanged).then(() => {
   console.log('API called successfully.');
 }, (error) => {
   console.error(error);
@@ -312,7 +312,7 @@ apiInstance.workerStateChanged(workerStateChanged).then(() => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **workerStateChanged** | [**WorkerStateChanged**](WorkerStateChanged.md)| New worker state | 
+ **WorkerStateChanged** | [**WorkerStateChanged**](WorkerStateChanged.md)| New worker state | 
 
 ### Return type
 

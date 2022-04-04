@@ -45,14 +45,14 @@ export default class WorkerApi {
 
     /**
      * Register a new worker
-     * @param {module:model/WorkerRegistration} workerRegistration Worker to register
+     * @param {module:model/WorkerRegistration} WorkerRegistration Worker to register
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/RegisteredWorker} and HTTP response
      */
-    registerWorkerWithHttpInfo(workerRegistration) {
-      let postBody = workerRegistration;
-      // verify the required parameter 'workerRegistration' is set
-      if (workerRegistration === undefined || workerRegistration === null) {
-        throw new Error("Missing the required parameter 'workerRegistration' when calling registerWorker");
+    registerWorkerWithHttpInfo(WorkerRegistration) {
+      let postBody = WorkerRegistration;
+      // verify the required parameter 'WorkerRegistration' is set
+      if (WorkerRegistration === undefined || WorkerRegistration === null) {
+        throw new Error("Missing the required parameter 'WorkerRegistration' when calling registerWorker");
       }
 
       let pathParams = {
@@ -77,11 +77,11 @@ export default class WorkerApi {
 
     /**
      * Register a new worker
-     * @param {module:model/WorkerRegistration} workerRegistration Worker to register
+     * @param {module:model/WorkerRegistration} WorkerRegistration Worker to register
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/RegisteredWorker}
      */
-    registerWorker(workerRegistration) {
-      return this.registerWorkerWithHttpInfo(workerRegistration)
+    registerWorker(WorkerRegistration) {
+      return this.registerWorkerWithHttpInfo(WorkerRegistration)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -168,14 +168,14 @@ export default class WorkerApi {
 
     /**
      * Authenticate & sign in the worker.
-     * @param {module:model/WorkerSignOn} workerSignOn Worker metadata
+     * @param {module:model/WorkerSignOn} WorkerSignOn Worker metadata
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/WorkerStateChange} and HTTP response
      */
-    signOnWithHttpInfo(workerSignOn) {
-      let postBody = workerSignOn;
-      // verify the required parameter 'workerSignOn' is set
-      if (workerSignOn === undefined || workerSignOn === null) {
-        throw new Error("Missing the required parameter 'workerSignOn' when calling signOn");
+    signOnWithHttpInfo(WorkerSignOn) {
+      let postBody = WorkerSignOn;
+      // verify the required parameter 'WorkerSignOn' is set
+      if (WorkerSignOn === undefined || WorkerSignOn === null) {
+        throw new Error("Missing the required parameter 'WorkerSignOn' when calling signOn");
       }
 
       let pathParams = {
@@ -200,11 +200,11 @@ export default class WorkerApi {
 
     /**
      * Authenticate & sign in the worker.
-     * @param {module:model/WorkerSignOn} workerSignOn Worker metadata
+     * @param {module:model/WorkerSignOn} WorkerSignOn Worker metadata
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/WorkerStateChange}
      */
-    signOn(workerSignOn) {
-      return this.signOnWithHttpInfo(workerSignOn)
+    signOn(WorkerSignOn) {
+      return this.signOnWithHttpInfo(WorkerSignOn)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -213,23 +213,23 @@ export default class WorkerApi {
 
     /**
      * Update the task, typically to indicate progress, completion, or failure.
-     * @param {String} taskId 
-     * @param {module:model/TaskUpdate} taskUpdate Task update information
+     * @param {String} task_id 
+     * @param {module:model/TaskUpdate} TaskUpdate Task update information
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
      */
-    taskUpdateWithHttpInfo(taskId, taskUpdate) {
-      let postBody = taskUpdate;
-      // verify the required parameter 'taskId' is set
-      if (taskId === undefined || taskId === null) {
-        throw new Error("Missing the required parameter 'taskId' when calling taskUpdate");
+    taskUpdateWithHttpInfo(task_id, TaskUpdate) {
+      let postBody = TaskUpdate;
+      // verify the required parameter 'task_id' is set
+      if (task_id === undefined || task_id === null) {
+        throw new Error("Missing the required parameter 'task_id' when calling taskUpdate");
       }
-      // verify the required parameter 'taskUpdate' is set
-      if (taskUpdate === undefined || taskUpdate === null) {
-        throw new Error("Missing the required parameter 'taskUpdate' when calling taskUpdate");
+      // verify the required parameter 'TaskUpdate' is set
+      if (TaskUpdate === undefined || TaskUpdate === null) {
+        throw new Error("Missing the required parameter 'TaskUpdate' when calling taskUpdate");
       }
 
       let pathParams = {
-        'task_id': taskId
+        'task_id': task_id
       };
       let queryParams = {
       };
@@ -251,12 +251,12 @@ export default class WorkerApi {
 
     /**
      * Update the task, typically to indicate progress, completion, or failure.
-     * @param {String} taskId 
-     * @param {module:model/TaskUpdate} taskUpdate Task update information
+     * @param {String} task_id 
+     * @param {module:model/TaskUpdate} TaskUpdate Task update information
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}
      */
-    taskUpdate(taskId, taskUpdate) {
-      return this.taskUpdateWithHttpInfo(taskId, taskUpdate)
+    taskUpdate(task_id, TaskUpdate) {
+      return this.taskUpdateWithHttpInfo(task_id, TaskUpdate)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -302,14 +302,14 @@ export default class WorkerApi {
 
     /**
      * Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
-     * @param {module:model/WorkerStateChanged} workerStateChanged New worker state
+     * @param {module:model/WorkerStateChanged} WorkerStateChanged New worker state
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
      */
-    workerStateChangedWithHttpInfo(workerStateChanged) {
-      let postBody = workerStateChanged;
-      // verify the required parameter 'workerStateChanged' is set
-      if (workerStateChanged === undefined || workerStateChanged === null) {
-        throw new Error("Missing the required parameter 'workerStateChanged' when calling workerStateChanged");
+    workerStateChangedWithHttpInfo(WorkerStateChanged) {
+      let postBody = WorkerStateChanged;
+      // verify the required parameter 'WorkerStateChanged' is set
+      if (WorkerStateChanged === undefined || WorkerStateChanged === null) {
+        throw new Error("Missing the required parameter 'WorkerStateChanged' when calling workerStateChanged");
       }
 
       let pathParams = {
@@ -334,11 +334,11 @@ export default class WorkerApi {
 
     /**
      * Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
-     * @param {module:model/WorkerStateChanged} workerStateChanged New worker state
+     * @param {module:model/WorkerStateChanged} WorkerStateChanged New worker state
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}
      */
-    workerStateChanged(workerStateChanged) {
-      return this.workerStateChangedWithHttpInfo(workerStateChanged)
+    workerStateChanged(WorkerStateChanged) {
+      return this.workerStateChangedWithHttpInfo(WorkerStateChanged)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

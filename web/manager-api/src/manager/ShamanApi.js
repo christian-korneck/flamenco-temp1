@@ -42,14 +42,14 @@ export default class ShamanApi {
 
     /**
      * Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
-     * @param {module:model/ShamanCheckout} shamanCheckout Set of files to check out.
+     * @param {module:model/ShamanCheckout} ShamanCheckout Set of files to check out.
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/ShamanCheckoutResult} and HTTP response
      */
-    shamanCheckoutWithHttpInfo(shamanCheckout) {
-      let postBody = shamanCheckout;
-      // verify the required parameter 'shamanCheckout' is set
-      if (shamanCheckout === undefined || shamanCheckout === null) {
-        throw new Error("Missing the required parameter 'shamanCheckout' when calling shamanCheckout");
+    shamanCheckoutWithHttpInfo(ShamanCheckout) {
+      let postBody = ShamanCheckout;
+      // verify the required parameter 'ShamanCheckout' is set
+      if (ShamanCheckout === undefined || ShamanCheckout === null) {
+        throw new Error("Missing the required parameter 'ShamanCheckout' when calling shamanCheckout");
       }
 
       let pathParams = {
@@ -74,11 +74,11 @@ export default class ShamanApi {
 
     /**
      * Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
-     * @param {module:model/ShamanCheckout} shamanCheckout Set of files to check out.
+     * @param {module:model/ShamanCheckout} ShamanCheckout Set of files to check out.
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/ShamanCheckoutResult}
      */
-    shamanCheckout(shamanCheckout) {
-      return this.shamanCheckoutWithHttpInfo(shamanCheckout)
+    shamanCheckout(ShamanCheckout) {
+      return this.shamanCheckoutWithHttpInfo(ShamanCheckout)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -87,14 +87,14 @@ export default class ShamanApi {
 
     /**
      * Checks a Shaman Requirements file, and reports which files are unknown.
-     * @param {module:model/ShamanRequirementsRequest} shamanRequirementsRequest Set of files to check
+     * @param {module:model/ShamanRequirementsRequest} ShamanRequirementsRequest Set of files to check
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/ShamanRequirementsResponse} and HTTP response
      */
-    shamanCheckoutRequirementsWithHttpInfo(shamanRequirementsRequest) {
-      let postBody = shamanRequirementsRequest;
-      // verify the required parameter 'shamanRequirementsRequest' is set
-      if (shamanRequirementsRequest === undefined || shamanRequirementsRequest === null) {
-        throw new Error("Missing the required parameter 'shamanRequirementsRequest' when calling shamanCheckoutRequirements");
+    shamanCheckoutRequirementsWithHttpInfo(ShamanRequirementsRequest) {
+      let postBody = ShamanRequirementsRequest;
+      // verify the required parameter 'ShamanRequirementsRequest' is set
+      if (ShamanRequirementsRequest === undefined || ShamanRequirementsRequest === null) {
+        throw new Error("Missing the required parameter 'ShamanRequirementsRequest' when calling shamanCheckoutRequirements");
       }
 
       let pathParams = {
@@ -119,11 +119,11 @@ export default class ShamanApi {
 
     /**
      * Checks a Shaman Requirements file, and reports which files are unknown.
-     * @param {module:model/ShamanRequirementsRequest} shamanRequirementsRequest Set of files to check
+     * @param {module:model/ShamanRequirementsRequest} ShamanRequirementsRequest Set of files to check
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/ShamanRequirementsResponse}
      */
-    shamanCheckoutRequirements(shamanRequirementsRequest) {
-      return this.shamanCheckoutRequirementsWithHttpInfo(shamanRequirementsRequest)
+    shamanCheckoutRequirements(ShamanRequirementsRequest) {
+      return this.shamanCheckoutRequirementsWithHttpInfo(ShamanRequirementsRequest)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -136,8 +136,8 @@ export default class ShamanApi {
      * @param {Number} filesize Size of the file in bytes.
      * @param {File} body Contents of the file
      * @param {Object} opts Optional parameters
-     * @param {Boolean} opts.xShamanCanDeferUpload The client indicates that it can defer uploading this file. The \"208\" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file. 
-     * @param {String} opts.xShamanOriginalFilename The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging. 
+     * @param {Boolean} opts.X_Shaman_Can_Defer_Upload The client indicates that it can defer uploading this file. The \"208\" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file. 
+     * @param {String} opts.X_Shaman_Original_Filename The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging. 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
      */
     shamanFileStoreWithHttpInfo(checksum, filesize, body, opts) {
@@ -163,8 +163,8 @@ export default class ShamanApi {
       let queryParams = {
       };
       let headerParams = {
-        'X-Shaman-Can-Defer-Upload': opts['xShamanCanDeferUpload'],
-        'X-Shaman-Original-Filename': opts['xShamanOriginalFilename']
+        'X-Shaman-Can-Defer-Upload': opts['X_Shaman_Can_Defer_Upload'],
+        'X-Shaman-Original-Filename': opts['X_Shaman_Original_Filename']
       };
       let formParams = {
       };
@@ -186,8 +186,8 @@ export default class ShamanApi {
      * @param {Number} filesize Size of the file in bytes.
      * @param {File} body Contents of the file
      * @param {Object} opts Optional parameters
-     * @param {Boolean} opts.xShamanCanDeferUpload The client indicates that it can defer uploading this file. The \"208\" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file. 
-     * @param {String} opts.xShamanOriginalFilename The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging. 
+     * @param {Boolean} opts.X_Shaman_Can_Defer_Upload The client indicates that it can defer uploading this file. The \"208\" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file. 
+     * @param {String} opts.X_Shaman_Original_Filename The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging. 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}
      */
     shamanFileStore(checksum, filesize, body, opts) {

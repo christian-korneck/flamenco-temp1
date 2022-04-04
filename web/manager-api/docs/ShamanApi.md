@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 ## shamanCheckout
 
-> ShamanCheckoutResult shamanCheckout(shamanCheckout)
+> ShamanCheckoutResult shamanCheckout(ShamanCheckout)
 
 Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
 
@@ -23,8 +23,8 @@ Create a directory, and symlink the required files into it. The files must all h
 import flamencoManager from 'flamenco-manager';
 
 let apiInstance = new flamencoManager.ShamanApi();
-let shamanCheckout = new flamencoManager.ShamanCheckout(); // ShamanCheckout | Set of files to check out.
-apiInstance.shamanCheckout(shamanCheckout).then((data) => {
+let ShamanCheckout = new flamencoManager.ShamanCheckout(); // ShamanCheckout | Set of files to check out.
+apiInstance.shamanCheckout(ShamanCheckout).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -37,7 +37,7 @@ apiInstance.shamanCheckout(shamanCheckout).then((data) => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **shamanCheckout** | [**ShamanCheckout**](ShamanCheckout.md)| Set of files to check out. | 
+ **ShamanCheckout** | [**ShamanCheckout**](ShamanCheckout.md)| Set of files to check out. | 
 
 ### Return type
 
@@ -55,7 +55,7 @@ No authorization required
 
 ## shamanCheckoutRequirements
 
-> ShamanRequirementsResponse shamanCheckoutRequirements(shamanRequirementsRequest)
+> ShamanRequirementsResponse shamanCheckoutRequirements(ShamanRequirementsRequest)
 
 Checks a Shaman Requirements file, and reports which files are unknown.
 
@@ -65,8 +65,8 @@ Checks a Shaman Requirements file, and reports which files are unknown.
 import flamencoManager from 'flamenco-manager';
 
 let apiInstance = new flamencoManager.ShamanApi();
-let shamanRequirementsRequest = new flamencoManager.ShamanRequirementsRequest(); // ShamanRequirementsRequest | Set of files to check
-apiInstance.shamanCheckoutRequirements(shamanRequirementsRequest).then((data) => {
+let ShamanRequirementsRequest = new flamencoManager.ShamanRequirementsRequest(); // ShamanRequirementsRequest | Set of files to check
+apiInstance.shamanCheckoutRequirements(ShamanRequirementsRequest).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -79,7 +79,7 @@ apiInstance.shamanCheckoutRequirements(shamanRequirementsRequest).then((data) =>
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **shamanRequirementsRequest** | [**ShamanRequirementsRequest**](ShamanRequirementsRequest.md)| Set of files to check | 
+ **ShamanRequirementsRequest** | [**ShamanRequirementsRequest**](ShamanRequirementsRequest.md)| Set of files to check | 
 
 ### Return type
 
@@ -111,8 +111,8 @@ let checksum = "checksum_example"; // String | SHA256 checksum of the file.
 let filesize = 56; // Number | Size of the file in bytes.
 let body = "/path/to/file"; // File | Contents of the file
 let opts = {
-  'xShamanCanDeferUpload': true, // Boolean | The client indicates that it can defer uploading this file. The \"208\" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file. 
-  'xShamanOriginalFilename': "xShamanOriginalFilename_example" // String | The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging. 
+  'X_Shaman_Can_Defer_Upload': true, // Boolean | The client indicates that it can defer uploading this file. The \"208\" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file. 
+  'X_Shaman_Original_Filename': "X_Shaman_Original_Filename_example" // String | The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging. 
 };
 apiInstance.shamanFileStore(checksum, filesize, body, opts).then(() => {
   console.log('API called successfully.');
@@ -130,8 +130,8 @@ Name | Type | Description  | Notes
  **checksum** | **String**| SHA256 checksum of the file. | 
  **filesize** | **Number**| Size of the file in bytes. | 
  **body** | **File**| Contents of the file | 
- **xShamanCanDeferUpload** | **Boolean**| The client indicates that it can defer uploading this file. The \&quot;208\&quot; response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file.  | [optional] 
- **xShamanOriginalFilename** | **String**| The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging.  | [optional] 
+ **X_Shaman_Can_Defer_Upload** | **Boolean**| The client indicates that it can defer uploading this file. The \&quot;208\&quot; response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file.  | [optional] 
+ **X_Shaman_Original_Filename** | **String**| The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging.  | [optional] 
 
 ### Return type
 

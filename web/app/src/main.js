@@ -22,12 +22,16 @@ console.log("Flamenco API:", flamencoAPIURL);
 console.log("Websocket   :", websocketURL);
 
 let flamencoManager = require('flamenco-manager');
-
 let apiClient = new flamencoManager.ApiClient(flamencoAPIURL);
-var api = new flamencoManager.JobsApi(apiClient);
-var jobId = "07d134bc-0614-4477-9b1f-e238f0f0391a";
-api.fetchJob(jobId).then(function(data) {
-  console.log('API called successfully. Returned data: ', data);
+
+let query = new flamencoManager.JobsQuery();
+// query.status_in = ["active"];
+query.metadata = {project: "Heist"};
+
+let JobsApi = new flamencoManager.JobsApi(apiClient);
+JobsApi.queryJobs(query).then(function(data) {
+  console.log('API called successfully.');
+  console.log(data);
 }, function(error) {
   console.error(error);
 });

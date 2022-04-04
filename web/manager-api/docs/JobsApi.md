@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 ## fetchJob
 
-> Job fetchJob(jobId)
+> Job fetchJob(job_id)
 
 Fetch info about the job.
 
@@ -23,8 +23,8 @@ Fetch info about the job.
 import flamencoManager from 'flamenco-manager';
 
 let apiInstance = new flamencoManager.JobsApi();
-let jobId = "jobId_example"; // String | 
-apiInstance.fetchJob(jobId).then((data) => {
+let job_id = "job_id_example"; // String | 
+apiInstance.fetchJob(job_id).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -37,7 +37,7 @@ apiInstance.fetchJob(jobId).then((data) => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | **String**|  | 
+ **job_id** | **String**|  | 
 
 ### Return type
 
@@ -93,7 +93,7 @@ No authorization required
 
 ## queryJobs
 
-> JobsQueryResult queryJobs(jobsQuery)
+> JobsQueryResult queryJobs(JobsQuery)
 
 Fetch list of jobs.
 
@@ -103,8 +103,8 @@ Fetch list of jobs.
 import flamencoManager from 'flamenco-manager';
 
 let apiInstance = new flamencoManager.JobsApi();
-let jobsQuery = new flamencoManager.JobsQuery(); // JobsQuery | Specification of which jobs to get.
-apiInstance.queryJobs(jobsQuery).then((data) => {
+let JobsQuery = new flamencoManager.JobsQuery(); // JobsQuery | Specification of which jobs to get.
+apiInstance.queryJobs(JobsQuery).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -117,7 +117,7 @@ apiInstance.queryJobs(jobsQuery).then((data) => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobsQuery** | [**JobsQuery**](JobsQuery.md)| Specification of which jobs to get. | 
+ **JobsQuery** | [**JobsQuery**](JobsQuery.md)| Specification of which jobs to get. | 
 
 ### Return type
 
@@ -135,7 +135,7 @@ No authorization required
 
 ## submitJob
 
-> Job submitJob(submittedJob)
+> Job submitJob(SubmittedJob)
 
 Submit a new job for Flamenco Manager to execute.
 
@@ -145,8 +145,8 @@ Submit a new job for Flamenco Manager to execute.
 import flamencoManager from 'flamenco-manager';
 
 let apiInstance = new flamencoManager.JobsApi();
-let submittedJob = new flamencoManager.SubmittedJob(); // SubmittedJob | Job to submit
-apiInstance.submitJob(submittedJob).then((data) => {
+let SubmittedJob = new flamencoManager.SubmittedJob(); // SubmittedJob | Job to submit
+apiInstance.submitJob(SubmittedJob).then((data) => {
   console.log('API called successfully. Returned data: ' + data);
 }, (error) => {
   console.error(error);
@@ -159,7 +159,7 @@ apiInstance.submitJob(submittedJob).then((data) => {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **submittedJob** | [**SubmittedJob**](SubmittedJob.md)| Job to submit | 
+ **SubmittedJob** | [**SubmittedJob**](SubmittedJob.md)| Job to submit | 
 
 ### Return type
 

@@ -23,12 +23,12 @@ class WorkerSignOn {
      * Constructs a new <code>WorkerSignOn</code>.
      * @alias module:model/WorkerSignOn
      * @param nickname {String} 
-     * @param supportedTaskTypes {Array.<String>} 
-     * @param softwareVersion {String} 
+     * @param supported_task_types {Array.<String>} 
+     * @param software_version {String} 
      */
-    constructor(nickname, supportedTaskTypes, softwareVersion) { 
+    constructor(nickname, supported_task_types, software_version) { 
         
-        WorkerSignOn.initialize(this, nickname, supportedTaskTypes, softwareVersion);
+        WorkerSignOn.initialize(this, nickname, supported_task_types, software_version);
     }
 
     /**
@@ -36,10 +36,10 @@ class WorkerSignOn {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, nickname, supportedTaskTypes, softwareVersion) { 
+    static initialize(obj, nickname, supported_task_types, software_version) { 
         obj['nickname'] = nickname;
-        obj['supported_task_types'] = supportedTaskTypes;
-        obj['software_version'] = softwareVersion;
+        obj['supported_task_types'] = supported_task_types;
+        obj['software_version'] = software_version;
     }
 
     /**

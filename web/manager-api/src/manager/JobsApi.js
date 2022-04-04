@@ -42,18 +42,18 @@ export default class JobsApi {
 
     /**
      * Fetch info about the job.
-     * @param {String} jobId 
+     * @param {String} job_id 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/Job} and HTTP response
      */
-    fetchJobWithHttpInfo(jobId) {
+    fetchJobWithHttpInfo(job_id) {
       let postBody = null;
-      // verify the required parameter 'jobId' is set
-      if (jobId === undefined || jobId === null) {
-        throw new Error("Missing the required parameter 'jobId' when calling fetchJob");
+      // verify the required parameter 'job_id' is set
+      if (job_id === undefined || job_id === null) {
+        throw new Error("Missing the required parameter 'job_id' when calling fetchJob");
       }
 
       let pathParams = {
-        'job_id': jobId
+        'job_id': job_id
       };
       let queryParams = {
       };
@@ -75,11 +75,11 @@ export default class JobsApi {
 
     /**
      * Fetch info about the job.
-     * @param {String} jobId 
+     * @param {String} job_id 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/Job}
      */
-    fetchJob(jobId) {
-      return this.fetchJobWithHttpInfo(jobId)
+    fetchJob(job_id) {
+      return this.fetchJobWithHttpInfo(job_id)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -127,14 +127,14 @@ export default class JobsApi {
 
     /**
      * Fetch list of jobs.
-     * @param {module:model/JobsQuery} jobsQuery Specification of which jobs to get.
+     * @param {module:model/JobsQuery} JobsQuery Specification of which jobs to get.
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/JobsQueryResult} and HTTP response
      */
-    queryJobsWithHttpInfo(jobsQuery) {
-      let postBody = jobsQuery;
-      // verify the required parameter 'jobsQuery' is set
-      if (jobsQuery === undefined || jobsQuery === null) {
-        throw new Error("Missing the required parameter 'jobsQuery' when calling queryJobs");
+    queryJobsWithHttpInfo(JobsQuery) {
+      let postBody = JobsQuery;
+      // verify the required parameter 'JobsQuery' is set
+      if (JobsQuery === undefined || JobsQuery === null) {
+        throw new Error("Missing the required parameter 'JobsQuery' when calling queryJobs");
       }
 
       let pathParams = {
@@ -159,11 +159,11 @@ export default class JobsApi {
 
     /**
      * Fetch list of jobs.
-     * @param {module:model/JobsQuery} jobsQuery Specification of which jobs to get.
+     * @param {module:model/JobsQuery} JobsQuery Specification of which jobs to get.
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/JobsQueryResult}
      */
-    queryJobs(jobsQuery) {
-      return this.queryJobsWithHttpInfo(jobsQuery)
+    queryJobs(JobsQuery) {
+      return this.queryJobsWithHttpInfo(JobsQuery)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -172,14 +172,14 @@ export default class JobsApi {
 
     /**
      * Submit a new job for Flamenco Manager to execute.
-     * @param {module:model/SubmittedJob} submittedJob Job to submit
+     * @param {module:model/SubmittedJob} SubmittedJob Job to submit
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/Job} and HTTP response
      */
-    submitJobWithHttpInfo(submittedJob) {
-      let postBody = submittedJob;
-      // verify the required parameter 'submittedJob' is set
-      if (submittedJob === undefined || submittedJob === null) {
-        throw new Error("Missing the required parameter 'submittedJob' when calling submitJob");
+    submitJobWithHttpInfo(SubmittedJob) {
+      let postBody = SubmittedJob;
+      // verify the required parameter 'SubmittedJob' is set
+      if (SubmittedJob === undefined || SubmittedJob === null) {
+        throw new Error("Missing the required parameter 'SubmittedJob' when calling submitJob");
       }
 
       let pathParams = {
@@ -204,11 +204,11 @@ export default class JobsApi {
 
     /**
      * Submit a new job for Flamenco Manager to execute.
-     * @param {module:model/SubmittedJob} submittedJob Job to submit
+     * @param {module:model/SubmittedJob} SubmittedJob Job to submit
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/Job}
      */
-    submitJob(submittedJob) {
-      return this.submitJobWithHttpInfo(submittedJob)
+    submitJob(SubmittedJob) {
+      return this.submitJobWithHttpInfo(SubmittedJob)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

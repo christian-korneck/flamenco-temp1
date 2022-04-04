@@ -103,8 +103,8 @@ var flamencoManager = require('flamenco-manager');
 
 
 var api = new flamencoManager.JobsApi()
-var jobId = "jobId_example"; // {String} 
-api.fetchJob(jobId).then(function(data) {
+var job_id = "job_id_example"; // {String} 
+api.fetchJob(job_id).then(function(data) {
   console.log('API called successfully. Returned data: ' + data);
 }, function(error) {
   console.error(error);

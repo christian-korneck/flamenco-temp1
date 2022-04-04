@@ -4,6 +4,6 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**jobTypes** | [**[AvailableJobType]**](AvailableJobType.md) |  | 
+**job_types** | [**[AvailableJobType]**](AvailableJobType.md) |  | 
 
 

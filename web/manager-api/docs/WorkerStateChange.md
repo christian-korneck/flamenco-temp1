@@ -4,6 +4,6 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**statusRequested** | [**WorkerStatus**](WorkerStatus.md) |  | 
+**status_requested** | [**WorkerStatus**](WorkerStatus.md) |  | 
 
 

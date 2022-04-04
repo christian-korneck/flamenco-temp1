@@ -9,9 +9,9 @@ Name | Type | Description | Notes
 **name** | **String** |  | 
 **status** | [**TaskStatus**](TaskStatus.md) |  | 
 **priority** | **Number** |  | 
-**jobPriority** | **Number** |  | 
-**jobType** | **String** |  | 
-**taskType** | **String** |  | 
+**job_priority** | **Number** |  | 
+**job_type** | **String** |  | 
+**task_type** | **String** |  | 
 **commands** | [**[Command]**](Command.md) |  | 
 
 

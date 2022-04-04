@@ -28,13 +28,13 @@ class RegisteredWorker {
      * @param address {String} 
      * @param status {module:model/WorkerStatus} 
      * @param platform {String} 
-     * @param lastActivity {String} 
+     * @param last_activity {String} 
      * @param software {String} 
-     * @param supportedTaskTypes {Array.<String>} 
+     * @param supported_task_types {Array.<String>} 
      */
-    constructor(uuid, nickname, address, status, platform, lastActivity, software, supportedTaskTypes) { 
+    constructor(uuid, nickname, address, status, platform, last_activity, software, supported_task_types) { 
         
-        RegisteredWorker.initialize(this, uuid, nickname, address, status, platform, lastActivity, software, supportedTaskTypes);
+        RegisteredWorker.initialize(this, uuid, nickname, address, status, platform, last_activity, software, supported_task_types);
     }
 
     /**
@@ -42,15 +42,15 @@ class RegisteredWorker {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, uuid, nickname, address, status, platform, lastActivity, software, supportedTaskTypes) { 
+    static initialize(obj, uuid, nickname, address, status, platform, last_activity, software, supported_task_types) { 
         obj['uuid'] = uuid;
         obj['nickname'] = nickname;
         obj['address'] = address;
         obj['status'] = status;
         obj['platform'] = platform;
-        obj['last_activity'] = lastActivity;
+        obj['last_activity'] = last_activity;
         obj['software'] = software;
-        obj['supported_task_types'] = supportedTaskTypes;
+        obj['supported_task_types'] = supported_task_types;
     }
 
     /**

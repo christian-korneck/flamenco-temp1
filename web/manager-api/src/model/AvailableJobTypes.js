@@ -24,11 +24,11 @@ class AvailableJobTypes {
      * Constructs a new <code>AvailableJobTypes</code>.
      * List of job types supported by this Manager.
      * @alias module:model/AvailableJobTypes
-     * @param jobTypes {Array.<module:model/AvailableJobType>} 
+     * @param job_types {Array.<module:model/AvailableJobType>} 
      */
-    constructor(jobTypes) { 
+    constructor(job_types) { 
         
-        AvailableJobTypes.initialize(this, jobTypes);
+        AvailableJobTypes.initialize(this, job_types);
     }
 
     /**
@@ -36,8 +36,8 @@ class AvailableJobTypes {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, jobTypes) { 
-        obj['job_types'] = jobTypes;
+    static initialize(obj, job_types) { 
+        obj['job_types'] = job_types;
     }
 
     /**
