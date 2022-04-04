@@ -16,6 +16,8 @@ import ApiClient from "../ApiClient";
 import AvailableJobTypes from '../model/AvailableJobTypes';
 import Error from '../model/Error';
 import Job from '../model/Job';
+import JobsQuery from '../model/JobsQuery';
+import JobsQueryResult from '../model/JobsQueryResult';
 import SubmittedJob from '../model/SubmittedJob';
 
 /**
@@ -117,6 +119,51 @@ export default class JobsApi {
      */
     getJobTypes() {
       return this.getJobTypesWithHttpInfo()
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Fetch list of jobs.
+     * @param {module:model/JobsQuery} jobsQuery Specification of which jobs to get.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/JobsQueryResult} and HTTP response
+     */
+    queryJobsWithHttpInfo(jobsQuery) {
+      let postBody = jobsQuery;
+      // verify the required parameter 'jobsQuery' is set
+      if (jobsQuery === undefined || jobsQuery === null) {
+        throw new Error("Missing the required parameter 'jobsQuery' when calling queryJobs");
+      }
+
+      let pathParams = {
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = JobsQueryResult;
+      return this.apiClient.callApi(
+        '/api/jobs/query', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch list of jobs.
+     * @param {module:model/JobsQuery} jobsQuery Specification of which jobs to get.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/JobsQueryResult}
+     */
+    queryJobs(jobsQuery) {
+      return this.queryJobsWithHttpInfo(jobsQuery)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

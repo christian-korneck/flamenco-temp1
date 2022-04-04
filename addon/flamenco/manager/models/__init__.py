@@ -23,6 +23,8 @@ from flamenco.manager.model.job_all_of import JobAllOf
 from flamenco.manager.model.job_metadata import JobMetadata
 from flamenco.manager.model.job_settings import JobSettings
 from flamenco.manager.model.job_status import JobStatus
+from flamenco.manager.model.jobs_query import JobsQuery
+from flamenco.manager.model.jobs_query_result import JobsQueryResult
 from flamenco.manager.model.manager_configuration import ManagerConfiguration
 from flamenco.manager.model.registered_worker import RegisteredWorker
 from flamenco.manager.model.security_error import SecurityError

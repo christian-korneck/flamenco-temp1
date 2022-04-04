@@ -25,6 +25,8 @@ import FlamencoVersion from './model/FlamencoVersion';
 import Job from './model/Job';
 import JobAllOf from './model/JobAllOf';
 import JobStatus from './model/JobStatus';
+import JobsQuery from './model/JobsQuery';
+import JobsQueryResult from './model/JobsQueryResult';
 import ManagerConfiguration from './model/ManagerConfiguration';
 import RegisteredWorker from './model/RegisteredWorker';
 import SecurityError from './model/SecurityError';
@@ -159,6 +161,18 @@ export {
      * @property {module:model/JobStatus}
      */
     JobStatus,
+
+    /**
+     * The JobsQuery model constructor.
+     * @property {module:model/JobsQuery}
+     */
+    JobsQuery,
+
+    /**
+     * The JobsQueryResult model constructor.
+     * @property {module:model/JobsQueryResult}
+     */
+    JobsQueryResult,
 
     /**
      * The ManagerConfiguration model constructor.

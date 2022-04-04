@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**fetch_job**](JobsApi.md#fetch_job) | **GET** /api/jobs/{job_id} | Fetch info about the job.
 [**get_job_types**](JobsApi.md#get_job_types) | **GET** /api/jobs/types | Get list of job types and their parameters.
+[**query_jobs**](JobsApi.md#query_jobs) | **POST** /api/jobs/query | Fetch list of jobs.
 [**submit_job**](JobsApi.md#submit_job) | **POST** /api/jobs | Submit a new job for Flamenco Manager to execute.
 
 
@@ -132,6 +133,87 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Available job types |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **query_jobs**
+> JobsQueryResult query_jobs(jobs_query)
+
+Fetch list of jobs.
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import jobs_api
+from flamenco.manager.model.error import Error
+from flamenco.manager.model.jobs_query import JobsQuery
+from flamenco.manager.model.jobs_query_result import JobsQueryResult
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = jobs_api.JobsApi(api_client)
+    jobs_query = JobsQuery(
+        offset=0,
+        limit=1,
+        order_by=[
+            "order_by_example",
+        ],
+        status_in=[
+            JobStatus("active"),
+        ],
+        metadata={
+            "key": "key_example",
+        },
+        settings={},
+    ) # JobsQuery | Specification of which jobs to get.
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Fetch list of jobs.
+        api_response = api_instance.query_jobs(jobs_query)
+        pprint(api_response)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling JobsApi->query_jobs: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **jobs_query** | [**JobsQuery**](JobsQuery.md)| Specification of which jobs to get. |
+
+### Return type
+
+[**JobsQueryResult**](JobsQueryResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Normal query response, can be empty list if nothing matched the query. |  -  |
+**0** | Error message |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

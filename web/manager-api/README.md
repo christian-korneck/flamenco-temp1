@@ -121,6 +121,7 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *flamencoManager.JobsApi* | [**fetchJob**](docs/JobsApi.md#fetchJob) | **GET** /api/jobs/{job_id} | Fetch info about the job.
 *flamencoManager.JobsApi* | [**getJobTypes**](docs/JobsApi.md#getJobTypes) | **GET** /api/jobs/types | Get list of job types and their parameters.
+*flamencoManager.JobsApi* | [**queryJobs**](docs/JobsApi.md#queryJobs) | **POST** /api/jobs/query | Fetch list of jobs.
 *flamencoManager.JobsApi* | [**submitJob**](docs/JobsApi.md#submitJob) | **POST** /api/jobs | Submit a new job for Flamenco Manager to execute.
 *flamencoManager.MetaApi* | [**getConfiguration**](docs/MetaApi.md#getConfiguration) | **GET** /api/configuration | Get the configuration of this Manager.
 *flamencoManager.MetaApi* | [**getVersion**](docs/MetaApi.md#getVersion) | **GET** /api/version | Get the Flamenco version of this Manager
@@ -151,6 +152,8 @@ Class | Method | HTTP request | Description
  - [flamencoManager.Job](docs/Job.md)
  - [flamencoManager.JobAllOf](docs/JobAllOf.md)
  - [flamencoManager.JobStatus](docs/JobStatus.md)
+ - [flamencoManager.JobsQuery](docs/JobsQuery.md)
+ - [flamencoManager.JobsQueryResult](docs/JobsQueryResult.md)
  - [flamencoManager.ManagerConfiguration](docs/ManagerConfiguration.md)
  - [flamencoManager.RegisteredWorker](docs/RegisteredWorker.md)
  - [flamencoManager.SecurityError](docs/SecurityError.md)
