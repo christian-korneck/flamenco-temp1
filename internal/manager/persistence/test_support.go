@@ -30,7 +30,7 @@ func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 
 	var err error
 
-	dblogger := NewDBLogger(log.Level(zerolog.InfoLevel).Output(os.Stdout))
+	dblogger := NewDBLogger(log.Level(zerolog.TraceLevel).Output(os.Stdout))
 
 	// Open the database ourselves, so that we have a low-level connection that
 	// can be closed when the unit test is done running.
@@ -67,7 +67,17 @@ func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 // Tests should call the returned cancel function when they're done.
 func persistenceTestFixtures(t *testing.T, testContextTimeout time.Duration) (context.Context, context.CancelFunc, *DB) {
 	db, dbCloser := CreateTestDB(t)
-	ctx, ctxCancel := context.WithTimeout(context.Background(), testContextTimeout)
+
+	var (
+		ctx       context.Context
+		ctxCancel context.CancelFunc
+	)
+	if testContextTimeout > 0 {
+		ctx, ctxCancel = context.WithTimeout(context.Background(), testContextTimeout)
+	} else {
+		ctx = context.Background()
+		ctxCancel = func() {}
+	}
 
 	cancel := func() {
 		ctxCancel()

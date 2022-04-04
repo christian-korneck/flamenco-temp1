@@ -19,6 +19,9 @@ type ServerInterface interface {
 	// Submit a new job for Flamenco Manager to execute.
 	// (POST /api/jobs)
 	SubmitJob(ctx echo.Context) error
+	// Fetch list of jobs.
+	// (POST /api/jobs/query)
+	QueryJobs(ctx echo.Context) error
 	// Get list of job types and their parameters.
 	// (GET /api/jobs/types)
 	GetJobTypes(ctx echo.Context) error
@@ -84,6 +87,15 @@ func (w *ServerInterfaceWrapper) SubmitJob(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.SubmitJob(ctx)
+	return err
+}
+
+// QueryJobs converts echo context to params.
+func (w *ServerInterfaceWrapper) QueryJobs(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.QueryJobs(ctx)
 	return err
 }
 
@@ -334,6 +346,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/api/configuration", wrapper.GetConfiguration)
 	router.POST(baseURL+"/api/jobs", wrapper.SubmitJob)
+	router.POST(baseURL+"/api/jobs/query", wrapper.QueryJobs)
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.GET(baseURL+"/api/version", wrapper.GetVersion)

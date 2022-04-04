@@ -275,10 +275,7 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 	return job
 }
 
-func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *DB, *Job, job_compilers.AuthoredJob) {
-	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
-
-	authoredJob := createTestAuthoredJobWithTasks()
+func persistAuthoredJob(t *testing.T, ctx context.Context, db *DB, authoredJob job_compilers.AuthoredJob) *Job {
 	err := db.StoreAuthoredJob(ctx, authoredJob)
 	if err != nil {
 		t.Fatalf("error storing authored job in DB: %v", err)
@@ -291,6 +288,14 @@ func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *D
 	if dbJob == nil {
 		t.Fatalf("nil job obtained from DB but with no error!")
 	}
+	return dbJob
+}
+
+func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *DB, *Job, job_compilers.AuthoredJob) {
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+
+	authoredJob := createTestAuthoredJobWithTasks()
+	dbJob := persistAuthoredJob(t, ctx, db, authoredJob)
 
 	return ctx, cancel, db, dbJob, authoredJob
 }

@@ -225,6 +225,37 @@ type JobSettings struct {
 // JobStatus defines model for JobStatus.
 type JobStatus string
 
+// JobsQuery defines model for JobsQuery.
+type JobsQuery struct {
+	Limit *int `json:"limit,omitempty"`
+
+	// Filter by metadata, using `LIKE` notation.
+	Metadata *JobsQuery_Metadata `json:"metadata,omitempty"`
+	Offset   *int                `json:"offset,omitempty"`
+	OrderBy  *[]string           `json:"order_by,omitempty"`
+
+	// Filter by job settings, using `LIKE` notation.
+	Settings *JobsQuery_Settings `json:"settings,omitempty"`
+
+	// Return only jobs with a status in this array.
+	StatusIn *[]JobStatus `json:"status_in,omitempty"`
+}
+
+// Filter by metadata, using `LIKE` notation.
+type JobsQuery_Metadata struct {
+	AdditionalProperties map[string]string `json:"-"`
+}
+
+// Filter by job settings, using `LIKE` notation.
+type JobsQuery_Settings struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// JobsQueryResult defines model for JobsQueryResult.
+type JobsQueryResult struct {
+	Jobs []Job `json:"jobs"`
+}
+
 // ManagerConfiguration defines model for ManagerConfiguration.
 type ManagerConfiguration struct {
 	// Whether the Shaman file transfer API is available.
@@ -361,6 +392,9 @@ type WorkerStatus string
 // SubmitJobJSONBody defines parameters for SubmitJob.
 type SubmitJobJSONBody SubmittedJob
 
+// QueryJobsJSONBody defines parameters for QueryJobs.
+type QueryJobsJSONBody JobsQuery
+
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
 
@@ -390,6 +424,9 @@ type ShamanFileStoreParams struct {
 
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody
+
+// QueryJobsJSONRequestBody defines body for QueryJobs for application/json ContentType.
+type QueryJobsJSONRequestBody QueryJobsJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody
@@ -503,6 +540,112 @@ func (a *JobSettings) UnmarshalJSON(b []byte) error {
 
 // Override default JSON handling for JobSettings to handle AdditionalProperties
 func (a JobSettings) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for JobsQuery_Metadata. Returns the specified
+// element and whether it was found
+func (a JobsQuery_Metadata) Get(fieldName string) (value string, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for JobsQuery_Metadata
+func (a *JobsQuery_Metadata) Set(fieldName string, value string) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]string)
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for JobsQuery_Metadata to handle AdditionalProperties
+func (a *JobsQuery_Metadata) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]string)
+		for fieldName, fieldBuf := range object {
+			var fieldVal string
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for JobsQuery_Metadata to handle AdditionalProperties
+func (a JobsQuery_Metadata) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for JobsQuery_Settings. Returns the specified
+// element and whether it was found
+func (a JobsQuery_Settings) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for JobsQuery_Settings
+func (a *JobsQuery_Settings) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for JobsQuery_Settings to handle AdditionalProperties
+func (a *JobsQuery_Settings) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for JobsQuery_Settings to handle AdditionalProperties
+func (a JobsQuery_Settings) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 

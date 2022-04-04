@@ -92,6 +92,9 @@ function compileJob(job) {
 // Do field replacement on the render output path.
 function renderOutputPath(job) {
     let path = job.settings.render_output_path;
+    if (!path) {
+        throw "no render_output_path setting!";
+    }
     return path.replace(/{([^}]+)}/g, (match, group0) => {
         switch (group0) {
         case "timestamp":

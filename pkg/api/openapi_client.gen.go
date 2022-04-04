@@ -98,6 +98,11 @@ type ClientInterface interface {
 
 	SubmitJob(ctx context.Context, body SubmitJobJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// QueryJobs request with any body
+	QueryJobsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	QueryJobs(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetJobTypes request
 	GetJobTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -179,6 +184,30 @@ func (c *Client) SubmitJobWithBody(ctx context.Context, contentType string, body
 
 func (c *Client) SubmitJob(ctx context.Context, body SubmitJobJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSubmitJobRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) QueryJobsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewQueryJobsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) QueryJobs(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewQueryJobsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -477,6 +506,46 @@ func NewSubmitJobRequestWithBody(server string, contentType string, body io.Read
 	}
 
 	operationPath := fmt.Sprintf("/api/jobs")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewQueryJobsRequest calls the generic QueryJobs builder with application/json body
+func NewQueryJobsRequest(server string, body QueryJobsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewQueryJobsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewQueryJobsRequestWithBody generates requests for QueryJobs with any type of body
+func NewQueryJobsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/query")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1069,6 +1138,11 @@ type ClientWithResponsesInterface interface {
 
 	SubmitJobWithResponse(ctx context.Context, body SubmitJobJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error)
 
+	// QueryJobs request with any body
+	QueryJobsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryJobsResponse, error)
+
+	QueryJobsWithResponse(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryJobsResponse, error)
+
 	// GetJobTypes request
 	GetJobTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetJobTypesResponse, error)
 
@@ -1163,6 +1237,29 @@ func (r SubmitJobResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SubmitJobResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type QueryJobsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *JobsQueryResult
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r QueryJobsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r QueryJobsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1513,6 +1610,23 @@ func (c *ClientWithResponses) SubmitJobWithResponse(ctx context.Context, body Su
 	return ParseSubmitJobResponse(rsp)
 }
 
+// QueryJobsWithBodyWithResponse request with arbitrary body returning *QueryJobsResponse
+func (c *ClientWithResponses) QueryJobsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryJobsResponse, error) {
+	rsp, err := c.QueryJobsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseQueryJobsResponse(rsp)
+}
+
+func (c *ClientWithResponses) QueryJobsWithResponse(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryJobsResponse, error) {
+	rsp, err := c.QueryJobs(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseQueryJobsResponse(rsp)
+}
+
 // GetJobTypesWithResponse request returning *GetJobTypesResponse
 func (c *ClientWithResponses) GetJobTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetJobTypesResponse, error) {
 	rsp, err := c.GetJobTypes(ctx, reqEditors...)
@@ -1729,6 +1843,39 @@ func ParseSubmitJobResponse(rsp *http.Response) (*SubmitJobResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Job
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseQueryJobsResponse parses an HTTP response from a QueryJobsWithResponse call
+func ParseQueryJobsResponse(rsp *http.Response) (*QueryJobsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &QueryJobsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest JobsQueryResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

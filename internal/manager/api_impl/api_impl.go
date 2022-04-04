@@ -48,6 +48,9 @@ type PersistenceService interface {
 	// ScheduleTask finds a task to execute by the given worker, and assigns it to that worker.
 	// If no task is available, (nil, nil) is returned, as this is not an error situation.
 	ScheduleTask(ctx context.Context, w *persistence.Worker) (*persistence.Task, error)
+
+	// Database queries.
+	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
 }
 
 var _ PersistenceService = (*persistence.DB)(nil)

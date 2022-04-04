@@ -255,6 +255,32 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/Error"}
 
+  /api/jobs/query:
+    summary: Obtain jobs with filtering and sorting.
+    post:
+      operationId: queryJobs
+      summary: Fetch list of jobs.
+      tags: [jobs]
+      requestBody:
+        description: Specification of which jobs to get.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobsQuery"
+      responses:
+        "200":
+          description: Normal query response, can be empty list if nothing matched the query.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/JobsQueryResult"}
+        default:
+          description: Error message
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Error"}
+
+
   /api/jobs/{job_id}:
     summary: Job info and management
     get:
@@ -699,6 +725,45 @@ components:
         "user.name": Sybren Stüvel
         "user.email": sybren@blender.org
         "project": "Sprite Fright"
+
+    JobsQuery:
+      type: object
+      properties:
+        "offset":
+          type: integer
+          minimum: 0
+        "limit":
+          type: integer
+          minimum: 1
+        "order_by":
+          type: array
+          items: {type: string}
+        "status_in":
+          type: array
+          items: {$ref: "#/components/schemas/JobStatus"}
+          description: Return only jobs with a status in this array.
+        "metadata":
+          type: object
+          additionalProperties:
+            type: string
+          description: Filter by metadata, using `LIKE` notation.
+        "settings":
+          type: object
+          additionalProperties: true
+          description: Filter by job settings, using `LIKE` notation.
+      example:
+        "limit": 5
+        "order_by": ["updated", "status"]
+        "status_in": ["active", "queued", "failed"]
+        "metadata": {project: "Sprite Fright"}
+
+    JobsQueryResult:
+      type: object
+      properties:
+        jobs:
+          type: array
+          items: {$ref: "#/components/schemas/Job"}
+      required: [jobs]
 
     Error:
       type: object
