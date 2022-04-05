@@ -141,7 +141,7 @@ func buildFlamencoAPI(configService *config.Service, persist *persistence.DB, we
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater)
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
-	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService, taskStateMachine, shamanServer)
+	flamenco := api_impl.NewFlamenco(compiler, persist, webUpdater, logStorage, configService, taskStateMachine, shamanServer)
 	return flamenco
 }
 

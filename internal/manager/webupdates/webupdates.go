@@ -32,39 +32,28 @@ func socketIOServer() *gosocketio.Server {
 	sio := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
 	log.Info().Msg("initialising SocketIO")
 
-	var err error
+	// the sio.On() and c.Join() calls only return an error when there is no
+	// server connected to them, but that's not possible with our setup.
+	// Errors are explicitly silenced (by assigning to _) to reduce clutter.
 
 	// socket connection
-	err = sio.On(gosocketio.OnConnection, func(c *gosocketio.Channel) {
+	_ = sio.On(gosocketio.OnConnection, func(c *gosocketio.Channel) {
 		log.Debug().Str("clientID", c.Id()).Msg("socketIO: connected")
-		if err := c.Join(string(SocketIORoomChat)); err != nil {
-			log.Warn().Err(err).Str("clientID", c.Id()).Msg("socketIO: unable to make client join broadcast message room")
-		}
+		_ = c.Join(string(SocketIORoomChat)) // All clients connect to the chat room.
+		_ = c.Join(string(SocketIORoomJobs)) // All clients subscribe to job updates.
 	})
-	if err != nil {
-		log.Error().Err(err).Msg("socketIO: unable to register OnConnection handler")
-	}
 
 	// socket disconnection
-	err = sio.On(gosocketio.OnDisconnection, func(c *gosocketio.Channel) {
+	_ = sio.On(gosocketio.OnDisconnection, func(c *gosocketio.Channel) {
 		log.Debug().Str("clientID", c.Id()).Msg("socketIO: disconnected")
-		if err := c.Leave(string(SocketIORoomChat)); err != nil {
-			log.Warn().Err(err).Str("clientID", c.Id()).Msg("socketIO: unable to make client leave broadcast message room")
-		}
 	})
-	if err != nil {
-		log.Error().Err(err).Msg("socketIO: unable to register OnDisconnection handler")
-	}
 
-	err = sio.On(gosocketio.OnError, func(c *gosocketio.Channel) {
+	_ = sio.On(gosocketio.OnError, func(c *gosocketio.Channel) {
 		log.Warn().Interface("c", c).Msg("socketIO: socketio error")
 	})
-	if err != nil {
-		log.Error().Err(err).Msg("socketIO: unable to register OnError handler")
-	}
 
 	// chat socket
-	err = sio.On(string(SIOEventChatMessageRcv), func(c *gosocketio.Channel, message Message) string {
+	_ = sio.On(string(SIOEventChatMessageRcv), func(c *gosocketio.Channel, message Message) string {
 		log.Info().Str("clientID", c.Id()).
 			Str("text", message.Text).
 			Str("name", message.Name).
@@ -72,9 +61,6 @@ func socketIOServer() *gosocketio.Server {
 		c.BroadcastTo(string(SocketIORoomChat), string(SIOEventChatMessageSend), message)
 		return "message sent successfully."
 	})
-	if err != nil {
-		log.Error().Err(err).Msg("socketIO: unable to register /chat handler")
-	}
 
 	return sio
 }

@@ -5,7 +5,9 @@ package api_impl
 import (
 	"context"
 	"testing"
+	"time"
 
+	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/golang/mock/gomock"
@@ -14,6 +16,63 @@ import (
 
 func ptr[T any](value T) *T {
 	return &value
+}
+
+func TestSubmitJob(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	submittedJob := api.SubmittedJob{
+		Name:     "поднео посао",
+		Type:     "test",
+		Priority: 50,
+	}
+
+	// Expect the job compiler to be called.
+	authoredJob := job_compilers.AuthoredJob{
+		JobID:    "afc47568-bd9d-4368-8016-e91d945db36d",
+		Name:     submittedJob.Name,
+		JobType:  submittedJob.Type,
+		Priority: submittedJob.Priority,
+		Status:   api.JobStatusUnderConstruction,
+		Created:  time.Now(),
+	}
+	mf.jobCompiler.EXPECT().Compile(gomock.Any(), submittedJob).Return(&authoredJob, nil)
+
+	// Expect the job to be saved with 'queued' status:
+	queuedJob := authoredJob
+	queuedJob.Status = api.JobStatusQueued
+	mf.persistence.EXPECT().StoreAuthoredJob(gomock.Any(), queuedJob).Return(nil)
+
+	// Expect the job to be fetched from the database again:
+	dbJob := persistence.Job{
+		UUID:     queuedJob.JobID,
+		Name:     queuedJob.Name,
+		JobType:  queuedJob.JobType,
+		Priority: queuedJob.Priority,
+		Status:   queuedJob.Status,
+		Settings: persistence.StringInterfaceMap{},
+		Metadata: persistence.StringStringMap{},
+	}
+	mf.persistence.EXPECT().FetchJob(gomock.Any(), queuedJob.JobID).Return(&dbJob, nil)
+
+	// Expect the new job to be broadcast.
+	jobUpdate := api.JobUpdate{
+		Id:      dbJob.UUID,
+		Updated: dbJob.UpdatedAt,
+		Status:  dbJob.Status,
+	}
+	mf.broadcaster.EXPECT().BroadcastNewJob(jobUpdate)
+
+	// Do the call.
+	echoCtx := mf.prepareMockedJSONRequest(submittedJob)
+	requestWorkerStore(echoCtx, &worker)
+	err := mf.flamenco.SubmitJob(echoCtx)
+	assert.NoError(t, err)
+
 }
 
 func TestTaskUpdate(t *testing.T) {

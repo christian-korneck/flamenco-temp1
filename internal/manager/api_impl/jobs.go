@@ -67,6 +67,13 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error retrieving job from database")
 	}
 
+	jobUpdate := api.JobUpdate{
+		Id:      dbJob.UUID,
+		Status:  dbJob.Status,
+		Updated: dbJob.UpdatedAt,
+	}
+	f.broadcaster.BroadcastNewJob(jobUpdate)
+
 	apiJob := jobDBtoAPI(dbJob)
 	return e.JSON(http.StatusOK, apiJob)
 }

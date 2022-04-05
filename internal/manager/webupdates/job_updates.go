@@ -10,7 +10,7 @@ import (
 // BroadcastJobUpdate sends the job update to clients.
 func (b *BiDirComms) BroadcastJobUpdate(jobUpdate api.JobUpdate) {
 	log.Debug().Interface("jobUpdate", jobUpdate).Msg("socketIO: broadcasting job update")
-	b.sockserv.BroadcastTo(string(SocketIORoomJobs), "/jobs", jobUpdate)
+	b.BroadcastTo(SocketIORoomJobs, SIOEventJobUpdate, jobUpdate)
 }
 
 // BroadcastNewJob sends a "new job" notification to clients.
@@ -21,5 +21,5 @@ func (b *BiDirComms) BroadcastNewJob(jobUpdate api.JobUpdate) {
 	}
 
 	log.Debug().Interface("jobUpdate", jobUpdate).Msg("socketIO: broadcasting new job")
-	b.sockserv.BroadcastTo(string(SocketIORoomJobs), "/jobs", jobUpdate)
+	b.BroadcastTo(SocketIORoomJobs, SIOEventJobUpdate, jobUpdate)
 }

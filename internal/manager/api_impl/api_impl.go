@@ -21,6 +21,7 @@ import (
 type Flamenco struct {
 	jobCompiler  JobCompiler
 	persist      PersistenceService
+	broadcaster  ChangeBroadcaster
 	logStorage   LogStorage
 	config       ConfigService
 	stateMachine TaskStateMachine
@@ -30,7 +31,7 @@ type Flamenco struct {
 var _ api.ServerInterface = (*Flamenco)(nil)
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -123,6 +124,7 @@ var _ Shaman = (*shaman.Server)(nil)
 func NewFlamenco(
 	jc JobCompiler,
 	jps PersistenceService,
+	b ChangeBroadcaster,
 	ls LogStorage,
 	cs ConfigService,
 	sm TaskStateMachine,
@@ -131,6 +133,7 @@ func NewFlamenco(
 	return &Flamenco{
 		jobCompiler:  jc,
 		persist:      jps,
+		broadcaster:  b,
 		logStorage:   ls,
 		config:       cs,
 		stateMachine: sm,

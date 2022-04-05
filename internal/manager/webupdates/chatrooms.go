@@ -17,3 +17,7 @@ const (
 	SIOEventChatMessageSend SocketIOEventType = "/message" // messages are broadcasted here
 	SIOEventJobUpdate       SocketIOEventType = "/jobs"    // sends api.JobUpdate
 )
+
+func (b *BiDirComms) BroadcastTo(room SocketIORoomName, eventType SocketIOEventType, payload interface{}) {
+	b.sockserv.BroadcastTo(string(room), string(eventType), payload)
+}
