@@ -41,9 +41,15 @@ export default {
     },
     onJobUpdate(jobUpdate) {
       console.log("job update received:", jobUpdate);
+      if (jobUpdate.previous_status) {
+        this.messages.push(`Job update: ${jobUpdate.id} (${jobUpdate.previous_status} → ${jobUpdate.status})`);
+      } else {
+        this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
+      }
     },
     onChatMessage(message) {
       console.log("chat message received:", message);
+      this.messages.push(`${message.text}`);
     },
   },
 };
