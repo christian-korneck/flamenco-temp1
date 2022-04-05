@@ -6,6 +6,7 @@ import (
 	gosocketio "github.com/graarh/golang-socketio"
 	"github.com/graarh/golang-socketio/transport"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,48 +20,60 @@ type Message struct {
 }
 
 func New() *BiDirComms {
-	return &BiDirComms{
-		sockserv: socketIOServer(),
+	bdc := BiDirComms{
+		sockserv: gosocketio.NewServer(transport.GetDefaultWebsocketTransport()),
 	}
+	bdc.registerSIOEventHandlers()
+	return &bdc
 }
 
 func (b *BiDirComms) RegisterHandlers(router *echo.Echo) {
 	router.Any("/socket.io/", echo.WrapHandler(b.sockserv))
 }
 
-func socketIOServer() *gosocketio.Server {
-	sio := gosocketio.NewServer(transport.GetDefaultWebsocketTransport())
-	log.Info().Msg("initialising SocketIO")
+func (b *BiDirComms) registerSIOEventHandlers() {
+	log.Debug().Msg("initialising SocketIO")
 
+	sio := b.sockserv
 	// the sio.On() and c.Join() calls only return an error when there is no
 	// server connected to them, but that's not possible with our setup.
 	// Errors are explicitly silenced (by assigning to _) to reduce clutter.
 
 	// socket connection
 	_ = sio.On(gosocketio.OnConnection, func(c *gosocketio.Channel) {
-		log.Debug().Str("clientID", c.Id()).Msg("socketIO: connected")
+		logger := sioLogger(c)
+		logger.Debug().Msg("socketIO: connected")
 		_ = c.Join(string(SocketIORoomChat)) // All clients connect to the chat room.
 		_ = c.Join(string(SocketIORoomJobs)) // All clients subscribe to job updates.
 	})
 
 	// socket disconnection
 	_ = sio.On(gosocketio.OnDisconnection, func(c *gosocketio.Channel) {
-		log.Debug().Str("clientID", c.Id()).Msg("socketIO: disconnected")
+		logger := sioLogger(c)
+		logger.Debug().Msg("socketIO: disconnected")
 	})
 
 	_ = sio.On(gosocketio.OnError, func(c *gosocketio.Channel) {
-		log.Warn().Interface("c", c).Msg("socketIO: socketio error")
+		logger := sioLogger(c)
+		logger.Warn().Msg("socketIO: socketio error")
 	})
 
 	// chat socket
 	_ = sio.On(string(SIOEventChatMessageRcv), func(c *gosocketio.Channel, message Message) string {
-		log.Info().Str("clientID", c.Id()).
+		logger := sioLogger(c)
+		logger.Info().
 			Str("text", message.Text).
 			Str("name", message.Name).
 			Msg("socketIO: message received")
-		c.BroadcastTo(string(SocketIORoomChat), string(SIOEventChatMessageSend), message)
+		b.BroadcastTo(SocketIORoomChat, SIOEventChatMessageSend, message)
 		return "message sent successfully."
 	})
+}
 
-	return sio
+func sioLogger(c *gosocketio.Channel) zerolog.Logger {
+	logger := log.With().
+		Str("clientID", c.Id()).
+		Str("remoteAddr", c.Ip()).
+		Logger()
+	return logger
 }
