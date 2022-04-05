@@ -6,26 +6,59 @@ Blender add-on sources are all combined in this one repository.
 
 ## Building
 
-1. Install [Go 1.18 or newer](https://go.dev/), Java (just a JRE is enough), and Node 16 (see below)
-2. Set the environment variable `GOPATH` to where you want Go to put its packages. Defaults to `$HOME/go` if not set. Run `go env GOPATH` if you're not sure.
-3. Ensure `$GOPATH/bin` is included in your `$PATH` environment variable.
-4. Magically build the web frontend (still under development, no concrete steps documentable quite yet)
+1. Install [Go 1.18 or newer](https://go.dev/), and Node 16 (see "Node / Web UI" below).
+2. Optional: set the environment variable `GOPATH` to where you want Go to put its packages.
+3. Ensure `$GOPATH/bin` is included in your `$PATH` environment variable. `$GOPATH` defaults to `$HOME/go` if not set. Run `go env GOPATH` if you're not sure.
+4. Set up the web frontend for development (see "Node / Web UI" below).
 5. Run `make with-deps` to install build-time dependencies and build the application. Subsequent builds can just run `make` without arguments.
 
 You should now have two executables: `flamenco-manager` and `flamenco-worker`.
+Both can be run with the `-help` CLI argument to see the available options.
+
+To rebuild only the Manager or Worker, run `make flamenco-manager` or `make flamenco-worker`.
 
 
 ## Node / Web UI
 
-The web UI is built with Vue, Bootstrap, and Socket.IO for communication with the backend.
-
-NodeJS is used to collect all of those and build the frontend files. It's recommended to install Node v16 via Snap:
+The web UI is built with Vue, Bootstrap, and Socket.IO for communication with the backend. NodeJS/NPM is used to collect all of those and build the frontend files. It's recommended to install Node v16 via Snap:
 
 ```
 sudo snap install node --classic --channel=16
 ```
 
 This also gives you the Yarn package manager, which can be used to install web dependencies and build the frontend files.
+
+To set up the development environment, follow these steps:
+
+```
+# Ensure /usr/local/lib/node_modules exists and is writable by you:
+sudo mkdir /usr/local/lib/node_modules
+sudo chown youruser /usr/local/lib/node_modules
+
+# Set up the symlinks necessary for development:
+cd web/manager-api
+npm link
+cd ../app
+npm link flamenco-manager
+npm install
+
+# Run the web frontend:
+yarn serve
+```
+
+
+## Generating the OpenAPI/Swagger API
+
+Some code is generated from the OpenAPI specs in
+`pkg/api/flamenco-manager.yaml`. The generated code is committed to Git, so that
+after a checkout you shouldn't need to re-run the generator to build Flamenco.
+
+After changing `pkg/api/flamenco-manager.yaml`, run `make generate` to generate
+the code, then commit to Git.
+
+The JavaScript and Python generator is made in Java, so it requires a JRE/JDK to
+be installed. On Ubuntu Linux, `sudo apt install default-jre-headless` should be
+enough.
 
 
 ## Swagger UI
