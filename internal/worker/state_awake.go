@@ -55,7 +55,12 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 		// to the Manager. This code only needs to fetch a task and run it.
 		err := w.taskRunner.Run(ctx, *task)
 		if err != nil {
-			log.Warn().Err(err).Interface("task", *task).Msg("error executing task")
+			select {
+			case <-ctx.Done():
+				log.Warn().Err(err).Interface("task", *task).Msg("task aborted due to context being closed")
+			default:
+				log.Warn().Err(err).Interface("task", *task).Msg("error executing task")
+			}
 		}
 
 		// Do some rate limiting. This is mostly useful while developing.
