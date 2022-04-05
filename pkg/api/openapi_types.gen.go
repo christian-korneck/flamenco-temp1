@@ -225,6 +225,17 @@ type JobSettings struct {
 // JobStatus defines model for JobStatus.
 type JobStatus string
 
+// JobUpdate defines model for JobUpdate.
+type JobUpdate struct {
+	// UUID of the Job
+	Id             string     `json:"id"`
+	PreviousStatus *JobStatus `json:"previous_status,omitempty"`
+	Status         JobStatus  `json:"status"`
+
+	// Timestamp of last update
+	Updated time.Time `json:"updated"`
+}
+
 // JobsQuery defines model for JobsQuery.
 type JobsQuery struct {
 	Limit *int `json:"limit,omitempty"`

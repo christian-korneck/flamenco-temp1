@@ -892,6 +892,25 @@ components:
         "status": {$ref: "#/components/schemas/ShamanFileStatus"}
       required: [status]
 
+    # SocketIO API. These types are not used in any HTTP operation defined in
+    # the 'paths' section of this document, so some code generators may choose
+    # to skip these.
+
+    JobUpdate:
+      type: object
+      properties:
+        "id":
+          type: string
+          format: uuid
+          description: UUID of the Job
+        "updated":
+          type: string
+          format: date-time
+          description: Timestamp of last update
+        "status": {$ref: "#/components/schemas/JobStatus"}
+        "previous_status": {$ref: "#/components/schemas/JobStatus"}
+      required: [id, updated, status]
+
   securitySchemes:
     worker_auth:
       description: Username is the worker ID, password is the secret given at worker registration.

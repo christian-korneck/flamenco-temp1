@@ -5,46 +5,45 @@
     <chat-chatbox
       @sendMessage="sendMessage"
       :chatHistory="messages"
-    ></chat-chatbox>
+    />
+    <jobs-listener
+      ref="jobsListener"
+      :websocketURL="websocketURL"
+      @jobUpdate="onJobUpdate"
+      @message="onChatMessage"
+    />
   </div>
 </template>
 
 <script>
-import io from "socket.io-client";
 import ChatNavbar from "./components/ChatNavbar.vue";
 import ChatChatbox from "./components/ChatChatbox.vue";
+import JobsListener from "./components/JobsListener.vue";
 
 export default {
-  name: "App",
+  name: "FlamencoWebApp",
   components: {
     ChatNavbar,
     ChatChatbox,
+    JobsListener,
   },
   data: () => {
     return {
-      socket: null,
-      serverUrl: process.env.VUE_APP_SOCKET_URL || "ws://localhost:8080",
+      websocketURL: "ws://localhost:8080",
       messages: [],
     };
   },
   mounted: function () {
-    this.connectToWebsocket();
   },
   methods: {
-    connectToWebsocket() {
-      console.log("connecting to WS", this.serverUrl);
-      this.socket = io(this.serverUrl, {
-        transports: ["websocket"],
-      });
-      this.socket.on("/message", (message) => {
-        console.log("message received: ", message);
-        this.messages.push(message);
-      });
-    },
     sendMessage(message) {
-      const payload = { name: "Nikita", text: message };
-      console.log("sending:", payload);
-      this.socket.emit("/chat", payload);
+      this.$refs.jobsListener.sendBroadcastMessage("typer", message);
+    },
+    onJobUpdate(jobUpdate) {
+      console.log("job update received:", jobUpdate);
+    },
+    onChatMessage(message) {
+      console.log("chat message received:", message);
     },
   },
 };

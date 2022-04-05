@@ -152,6 +152,7 @@ Class | Method | HTTP request | Description
  - [flamencoManager.Job](docs/Job.md)
  - [flamencoManager.JobAllOf](docs/JobAllOf.md)
  - [flamencoManager.JobStatus](docs/JobStatus.md)
+ - [flamencoManager.JobUpdate](docs/JobUpdate.md)
  - [flamencoManager.JobsQuery](docs/JobsQuery.md)
  - [flamencoManager.JobsQueryResult](docs/JobsQueryResult.md)
  - [flamencoManager.ManagerConfiguration](docs/ManagerConfiguration.md)

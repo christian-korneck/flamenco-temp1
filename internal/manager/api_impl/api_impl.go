@@ -11,6 +11,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/shaman"
 	"github.com/labstack/echo/v4"
@@ -65,6 +66,14 @@ type TaskStateMachine interface {
 
 // TaskStateMachine should be a subset of task_state_machine.StateMachine.
 var _ TaskStateMachine = (*task_state_machine.StateMachine)(nil)
+
+type ChangeBroadcaster interface {
+	// BroadcastNewJob sends a 'new job' notification to all SocketIO clients.
+	BroadcastNewJob(jobUpdate api.JobUpdate)
+}
+
+// ChangeBroadcaster should be a subset of webupdates.BiDirComms.
+var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
 
 type JobCompiler interface {
 	ListJobTypes() api.AvailableJobTypes

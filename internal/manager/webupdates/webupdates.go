@@ -37,7 +37,7 @@ func socketIOServer() *gosocketio.Server {
 	// socket connection
 	err = sio.On(gosocketio.OnConnection, func(c *gosocketio.Channel) {
 		log.Debug().Str("clientID", c.Id()).Msg("socketIO: connected")
-		if err := c.Join("Room"); err != nil {
+		if err := c.Join(string(SocketIORoomChat)); err != nil {
 			log.Warn().Err(err).Str("clientID", c.Id()).Msg("socketIO: unable to make client join broadcast message room")
 		}
 	})
@@ -48,7 +48,7 @@ func socketIOServer() *gosocketio.Server {
 	// socket disconnection
 	err = sio.On(gosocketio.OnDisconnection, func(c *gosocketio.Channel) {
 		log.Debug().Str("clientID", c.Id()).Msg("socketIO: disconnected")
-		if err := c.Leave("Room"); err != nil {
+		if err := c.Leave(string(SocketIORoomChat)); err != nil {
 			log.Warn().Err(err).Str("clientID", c.Id()).Msg("socketIO: unable to make client leave broadcast message room")
 		}
 	})
@@ -64,12 +64,12 @@ func socketIOServer() *gosocketio.Server {
 	}
 
 	// chat socket
-	err = sio.On("/chat", func(c *gosocketio.Channel, message Message) string {
+	err = sio.On(string(SIOEventChatMessageRcv), func(c *gosocketio.Channel, message Message) string {
 		log.Info().Str("clientID", c.Id()).
 			Str("text", message.Text).
 			Str("name", message.Name).
 			Msg("socketIO: message received")
-		c.BroadcastTo("Room", "/message", message.Text)
+		c.BroadcastTo(string(SocketIORoomChat), string(SIOEventChatMessageSend), message)
 		return "message sent successfully."
 	})
 	if err != nil {

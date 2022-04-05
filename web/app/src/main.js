@@ -10,34 +10,27 @@ import {
   BButton,
 } from "bootstrap-vue";
 
+import URLs from './urls'
+
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 
-let url = new URL(window.location);
-url.port = "8080";
-const flamencoAPIURL = url.href;
-url.protocol = "ws:";
-const websocketURL = url.href;
-console.log("Flamenco API:", flamencoAPIURL);
-console.log("Websocket   :", websocketURL);
+// let flamencoManager = require('flamenco-manager');
+// let apiClient = new flamencoManager.ApiClient(URLs.api);
 
-let flamencoManager = require('flamenco-manager');
-let apiClient = new flamencoManager.ApiClient(flamencoAPIURL);
+// let query = new flamencoManager.JobsQuery();
+// // query.status_in = ["active"];
+// query.metadata = {project: "Heist"};
 
-let query = new flamencoManager.JobsQuery();
-// query.status_in = ["active"];
-query.metadata = {project: "Heist"};
-
-let JobsApi = new flamencoManager.JobsApi(apiClient);
-JobsApi.queryJobs(query).then(function(data) {
-  console.log('API called successfully.');
-  console.log(data);
-}, function(error) {
-  console.error(error);
-});
+// let JobsApi = new flamencoManager.JobsApi(apiClient);
+// JobsApi.queryJobs(query).then(function(data) {
+//   console.log('API called successfully.');
+//   console.log(data);
+// }, function(error) {
+//   console.error(error);
+// });
 
 Vue.config.productionTip = false
-Vue.config.serverUrl = websocketURL;
 
 Vue.use(FormInputPlugin);
 Vue.use(NavbarPlugin);
@@ -47,8 +40,7 @@ Vue.component("b-input-group", BInputGroup);
 Vue.component("b-button", BButton);
 Vue.use(IconsPlugin);
 
-var vueApp = new Vue({
-  render: h => h(App),
-});
+var vueApp = new Vue(App);
+vueApp.websocketURL = URLs.ws;
 
 vueApp.$mount("#app");

@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -19,11 +20,12 @@ const taskFailJobPercentage = 10 // Integer from 0 to 100.
 
 // StateMachine handles task and job status changes.
 type StateMachine struct {
-	persist PersistenceService
+	persist     PersistenceService
+	broadcaster ChangeBroadcaster
 }
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/task_state_machine PersistenceService
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/task_state_machine PersistenceService,ChangeBroadcaster
 
 type PersistenceService interface {
 	SaveTask(ctx context.Context, task *persistence.Task) error
@@ -45,9 +47,18 @@ type PersistenceService interface {
 // PersistenceService should be a subset of persistence.DB
 var _ PersistenceService = (*persistence.DB)(nil)
 
-func NewStateMachine(persist PersistenceService) *StateMachine {
+type ChangeBroadcaster interface {
+	// BroadcastJobUpdate sends the job update to clients.
+	BroadcastJobUpdate(jobUpdate api.JobUpdate)
+}
+
+// ChangeBroadcaster should be a subset of webupdates.BiDirComms
+var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
+
+func NewStateMachine(persist PersistenceService, broadcaster ChangeBroadcaster) *StateMachine {
 	return &StateMachine{
-		persist: persist,
+		persist:     persist,
+		broadcaster: broadcaster,
 	}
 }
 
@@ -244,6 +255,15 @@ func (sm *StateMachine) JobStatusChange(ctx context.Context, job *persistence.Jo
 		if err != nil {
 			return fmt.Errorf("updating job's tasks after job status change: %w", err)
 		}
+
+		// Broadcast this change to the SocketIO clients.
+		jobUpdate := api.JobUpdate{
+			Id:             job.UUID,
+			Updated:        job.UpdatedAt,
+			PreviousStatus: &oldJobStatus,
+			Status:         job.Status,
+		}
+		sm.broadcaster.BroadcastJobUpdate(jobUpdate)
 	}
 
 	return nil

@@ -94,8 +94,8 @@ func main() {
 	//
 	// go persist.PeriodicMaintenanceLoop(mainCtx)
 
-	flamenco := buildFlamencoAPI(configService, persist)
 	webUpdater := webupdates.New()
+	flamenco := buildFlamencoAPI(configService, persist, webUpdater)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater)
 
 	installSignalHandler(mainCtxCancel)
@@ -132,14 +132,14 @@ func main() {
 	log.Info().Msg("shutdown complete")
 }
 
-func buildFlamencoAPI(configService *config.Service, persist *persistence.DB) api.ServerInterface {
+func buildFlamencoAPI(configService *config.Service, persist *persistence.DB, webUpdater *webupdates.BiDirComms) api.ServerInterface {
 	timeService := clock.New()
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
-	taskStateMachine := task_state_machine.NewStateMachine(persist)
+	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater)
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(compiler, persist, logStorage, configService, taskStateMachine, shamanServer)
 	return flamenco
