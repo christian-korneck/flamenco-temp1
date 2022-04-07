@@ -4,8 +4,23 @@ package webupdates
 import (
 	"github.com/rs/zerolog/log"
 
+	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 )
+
+// NewJobUpdate returns a partial JobUpdate struct for the given job.
+// It only fills in the fields that represent the current state of the job. For
+// example, it omits `PreviousStatus`. The ommitted fields can be filled in by
+// the caller.
+func NewJobUpdate(job *persistence.Job) api.JobUpdate {
+	jobUpdate := api.JobUpdate{
+		Id:      job.UUID,
+		Name:    &job.Name,
+		Updated: job.UpdatedAt,
+		Status:  job.Status,
+	}
+	return jobUpdate
+}
 
 // BroadcastJobUpdate sends the job update to clients.
 func (b *BiDirComms) BroadcastJobUpdate(jobUpdate api.JobUpdate) {

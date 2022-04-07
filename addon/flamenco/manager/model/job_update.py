@@ -90,6 +90,7 @@ class JobUpdate(ModelNormal):
             'id': (str,),  # noqa: E501
             'updated': (datetime,),  # noqa: E501
             'status': (JobStatus,),  # noqa: E501
+            'name': (str,),  # noqa: E501
             'previous_status': (JobStatus,),  # noqa: E501
         }
 
@@ -102,6 +103,7 @@ class JobUpdate(ModelNormal):
         'id': 'id',  # noqa: E501
         'updated': 'updated',  # noqa: E501
         'status': 'status',  # noqa: E501
+        'name': 'name',  # noqa: E501
         'previous_status': 'previous_status',  # noqa: E501
     }
 
@@ -151,6 +153,7 @@ class JobUpdate(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            name (str): Name of the job. [optional]  # noqa: E501
             previous_status (JobStatus): [optional]  # noqa: E501
         """
 
@@ -241,6 +244,7 @@ class JobUpdate(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            name (str): Name of the job. [optional]  # noqa: E501
             previous_status (JobStatus): [optional]  # noqa: E501
         """
 

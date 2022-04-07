@@ -57,6 +57,9 @@ class JobUpdate {
             if (data.hasOwnProperty('id')) {
                 obj['id'] = ApiClient.convertToType(data['id'], 'String');
             }
+            if (data.hasOwnProperty('name')) {
+                obj['name'] = ApiClient.convertToType(data['name'], 'String');
+            }
             if (data.hasOwnProperty('updated')) {
                 obj['updated'] = ApiClient.convertToType(data['updated'], 'Date');
             }
@@ -78,6 +81,12 @@ class JobUpdate {
  * @member {String} id
  */
 JobUpdate.prototype['id'] = undefined;
+
+/**
+ * Name of the job
+ * @member {String} name
+ */
+JobUpdate.prototype['name'] = undefined;
 
 /**
  * Timestamp of last update

@@ -3,7 +3,7 @@
     <flamenco-navbar></flamenco-navbar>
     <br />
 
-    <flamenco-jobs-table :apiClient="apiClient" />
+    <flamenco-jobs-table ref="jobsTable" :apiClient="apiClient" />
 
     <chat-chatbox
       @sendMessage="sendMessage"
@@ -49,8 +49,10 @@ export default {
       console.log("job update received:", jobUpdate);
       if (jobUpdate.previous_status) {
         this.messages.push(`Job update: ${jobUpdate.id} (${jobUpdate.previous_status} → ${jobUpdate.status})`);
+        this.$refs.jobsTable.processJobUpdate(jobUpdate);
       } else {
         this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
+        this.$refs.jobsTable.processNewJob(jobUpdate);
       }
     },
     onChatMessage(message) {

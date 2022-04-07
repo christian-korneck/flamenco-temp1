@@ -257,12 +257,8 @@ func (sm *StateMachine) JobStatusChange(ctx context.Context, job *persistence.Jo
 		}
 
 		// Broadcast this change to the SocketIO clients.
-		jobUpdate := api.JobUpdate{
-			Id:             job.UUID,
-			Updated:        job.UpdatedAt,
-			PreviousStatus: &oldJobStatus,
-			Status:         job.Status,
-		}
+		jobUpdate := webupdates.NewJobUpdate(job)
+		jobUpdate.PreviousStatus = &oldJobStatus
 		sm.broadcaster.BroadcastJobUpdate(jobUpdate)
 	}
 

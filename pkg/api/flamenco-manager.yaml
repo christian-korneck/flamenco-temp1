@@ -903,6 +903,7 @@ components:
           type: string
           format: uuid
           description: UUID of the Job
+        "name": {type: string, description: "Name of the job"}
         "updated":
           type: string
           format: date-time

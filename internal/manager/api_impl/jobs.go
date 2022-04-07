@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -67,11 +68,7 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error retrieving job from database")
 	}
 
-	jobUpdate := api.JobUpdate{
-		Id:      dbJob.UUID,
-		Status:  dbJob.Status,
-		Updated: dbJob.UpdatedAt,
-	}
+	jobUpdate := webupdates.NewJobUpdate(dbJob)
 	f.broadcaster.BroadcastNewJob(jobUpdate)
 
 	apiJob := jobDBtoAPI(dbJob)

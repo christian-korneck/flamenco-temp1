@@ -228,7 +228,10 @@ type JobStatus string
 // JobUpdate defines model for JobUpdate.
 type JobUpdate struct {
 	// UUID of the Job
-	Id             string     `json:"id"`
+	Id string `json:"id"`
+
+	// Name of the job
+	Name           *string    `json:"name,omitempty"`
 	PreviousStatus *JobStatus `json:"previous_status,omitempty"`
 	Status         JobStatus  `json:"status"`
 
