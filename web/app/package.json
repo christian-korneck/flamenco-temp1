@@ -8,6 +8,7 @@
   "dependencies": {
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
+    "moment": "^2.29.2",
     "sass": "^1.50.0",
     "sass-loader": "^10",
     "socket.io-client": "2.4.0",

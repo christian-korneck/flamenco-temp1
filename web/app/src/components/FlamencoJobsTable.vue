@@ -6,6 +6,7 @@
 
 <script>
 import { TabulatorComponent } from "vue-tabulator";
+import moment from "moment";
 
 const flamencoManager = require('flamenco-manager');
 
@@ -21,9 +22,16 @@ export default {
         { title: 'Name', field: 'name', sorter: 'string', width: 200 },
         { title: 'Status', field: 'status', sorter: 'string', width: 100 },
         { title: 'Type', field: 'type', sorter: 'string', width: 150 },
-        { title: 'Prio', field: 'priority', sorter: 'int', width: 60 },
-        { title: 'Updated', field: 'updated', sorter: 'date', width: 300 },
-      ]
+        { title: 'Prio', field: 'priority', sorter: 'number'},
+        { title: 'Updated', field: 'updated', sorter: 'string',
+          formatter: function (cell, formatterParams) { // eslint-disable-line no-unused-vars
+            return moment(cell.getData().value).format('YYYY-MM-DD HH:mm')
+          }
+        },
+      ],
+      initialSort:[
+          {column:"updated", dir:"desc"},
+      ],
     };
 
     return {
