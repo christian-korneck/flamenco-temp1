@@ -33,7 +33,7 @@ export default {
 
 <style scoped>
 .container {
-  height: calc(100% - 100px);
+  height: 25ex;
 }
 .chatbox {
   padding: 10px;

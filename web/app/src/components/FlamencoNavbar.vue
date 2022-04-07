@@ -1,5 +1,5 @@
 <template>
   <b-navbar toggleable type="dark" variant="dark">
-    <b-navbar-brand href="#">Chat Application</b-navbar-brand>
+    <b-navbar-brand href="#">Flamenco</b-navbar-brand>
   </b-navbar>
 </template>

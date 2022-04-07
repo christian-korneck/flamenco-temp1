@@ -15,8 +15,8 @@ import URLs from './urls'
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 
-// let flamencoManager = require('flamenco-manager');
-// let apiClient = new flamencoManager.ApiClient(URLs.api);
+let flamencoManager = require('flamenco-manager');
+let apiClient = new flamencoManager.ApiClient(URLs.api);
 
 // let query = new flamencoManager.JobsQuery();
 // // query.status_in = ["active"];
@@ -42,5 +42,6 @@ Vue.use(IconsPlugin);
 
 var vueApp = new Vue(App);
 vueApp.websocketURL = URLs.ws;
+vueApp.apiClient = apiClient;
 
 vueApp.$mount("#app");

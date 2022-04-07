@@ -3,13 +3,16 @@
   "version": "3.0.0",
   "private": true,
   "author": {
-    "name": "Sybren Stüvel"
+    "name": "Sybren A. Stüvel"
   },
   "dependencies": {
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
+    "sass": "^1.50.0",
+    "sass-loader": "^10",
     "socket.io-client": "2.4.0",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-tabulator": "^1.3.0"
   },
   "licenses": [
     {
@@ -43,10 +46,7 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {},
-    "ignorePatterns": [
-      "../manager-api/src/**"
-    ]
+    "rules": {}
   },
   "browserslist": [
     "> 1%",

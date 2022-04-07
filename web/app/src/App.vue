@@ -1,7 +1,10 @@
 <template>
   <div id="app">
-    <chat-navbar></chat-navbar>
+    <flamenco-navbar></flamenco-navbar>
     <br />
+
+    <flamenco-jobs-table :apiClient="apiClient" />
+
     <chat-chatbox
       @sendMessage="sendMessage"
       :chatHistory="messages"
@@ -16,17 +19,20 @@
 </template>
 
 <script>
-import ChatNavbar from "./components/ChatNavbar.vue";
+import FlamencoNavbar from "./components/FlamencoNavbar.vue";
+import FlamencoJobsTable from "./components/FlamencoJobsTable.vue";
 import ChatChatbox from "./components/ChatChatbox.vue";
 import JobsListener from "./components/JobsListener.vue";
 
 export default {
   name: "FlamencoWebApp",
   components: {
-    ChatNavbar,
+    FlamencoNavbar,
+    FlamencoJobsTable,
     ChatChatbox,
     JobsListener,
   },
+  props: ["apiClient"],
   data: () => {
     return {
       websocketURL: "ws://localhost:8080",
