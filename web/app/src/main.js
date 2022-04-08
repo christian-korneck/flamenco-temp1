@@ -18,6 +18,11 @@ import "bootstrap-vue/dist/bootstrap-vue.css";
 let flamencoManager = require('flamenco-manager');
 let apiClient = new flamencoManager.ApiClient(URLs.api);
 
+// Ensure Tabulator can find `moment`, which it needs for sorting by
+// date/time/datetime.
+import moment from 'moment';
+window.moment = moment;
+
 // let query = new flamencoManager.JobsQuery();
 // // query.status_in = ["active"];
 // query.metadata = {project: "Heist"};
