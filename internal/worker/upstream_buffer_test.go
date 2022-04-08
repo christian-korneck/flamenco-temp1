@@ -46,7 +46,7 @@ func TestUpstreamBufferCloseUnopened(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	ub, _ := mockUpstreamBufferDB(t, mockCtrl)
-	err := ub.Close(context.Background())
+	err := ub.Close()
 	assert.NoError(t, err, "Closing without opening should be OK")
 }
 
@@ -76,7 +76,7 @@ func TestUpstreamBufferManagerUnavailable(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Check the queue size, it should have an item queued.
-	queueSize, err := ub.queueSize(ctx)
+	queueSize, err := ub.queueSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, queueSize)
 
@@ -94,10 +94,10 @@ func TestUpstreamBufferManagerUnavailable(t *testing.T) {
 
 	// Queue should be empty now.
 	ub.dbMutex.Lock()
-	queueSize, err = ub.queueSize(ctx)
+	queueSize, err = ub.queueSize()
 	ub.dbMutex.Unlock()
 	assert.NoError(t, err)
 	assert.Equal(t, 0, queueSize)
 
-	assert.NoError(t, ub.Close(ctx))
+	assert.NoError(t, ub.Close())
 }
