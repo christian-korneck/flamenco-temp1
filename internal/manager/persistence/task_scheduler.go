@@ -33,6 +33,10 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 		var err error
 		task, err = findTaskForWorker(tx, w)
 		if err != nil {
+			if isDatabaseBusyError(err) {
+				logger.Trace().Err(err).Msg("database busy while finding task for worker")
+				return errDatabaseBusy
+			}
 			logger.Error().Err(err).Msg("finding task for worker")
 			return fmt.Errorf("finding task for worker: %w", err)
 		}
@@ -43,6 +47,11 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 
 		// Found a task, now assign it to the requesting worker.
 		if err := assignTaskToWorker(tx, w, task); err != nil {
+			if isDatabaseBusyError(err) {
+				logger.Trace().Err(err).Msg("database busy while assigning task to worker")
+				return errDatabaseBusy
+			}
+
 			logger.Warn().
 				Str("taskID", task.UUID).
 				Err(err).

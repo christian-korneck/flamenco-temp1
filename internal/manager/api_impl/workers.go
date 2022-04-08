@@ -49,6 +49,9 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 	}
 	if err := f.persist.CreateWorker(e.Request().Context(), &dbWorker); err != nil {
 		logger.Warn().Err(err).Msg("error creating new worker in DB")
+		if persistence.ErrIsDBBusy(err) {
+			return sendAPIErrorDBBusy(e, "too busy to register worker, try again later")
+		}
 		return sendAPIError(e, http.StatusBadRequest, "error registering worker")
 	}
 
@@ -264,6 +267,10 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	// Get a task to execute:
 	dbTask, err := f.persist.ScheduleTask(e.Request().Context(), worker)
 	if err != nil {
+		if persistence.ErrIsDBBusy(err) {
+			logger.Warn().Msg("database busy scheduling task for worker")
+			return sendAPIErrorDBBusy(e, "too busy to find a task for you, try again later")
+		}
 		logger.Warn().Err(err).Msg("error scheduling task for worker")
 		return sendAPIError(e, http.StatusInternalServerError, "internal error finding a task for you: %v", err)
 	}

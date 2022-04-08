@@ -7,6 +7,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
+	"strconv"
+	"time"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -154,4 +157,24 @@ func sendAPIError(e echo.Context, code int, message string, args ...interface{})
 		Message: message,
 	}
 	return e.JSON(code, petErr)
+}
+
+// sendAPIErrorDBBusy sends a HTTP 503 Service Unavailable, with a hopefully
+// reasonable "retry after" header.
+func sendAPIErrorDBBusy(e echo.Context, message string, args ...interface{}) error {
+	if len(args) > 0 {
+		// Only interpret 'message' as format string if there are actually format parameters.
+		message = fmt.Sprintf(message, args)
+	}
+
+	code := http.StatusServiceUnavailable
+	apiErr := api.Error{
+		Code:    int32(code),
+		Message: message,
+	}
+
+	retryAfter := 1 * time.Second
+	seconds := int64(retryAfter.Seconds())
+	e.Response().Header().Set("Retry-After", strconv.FormatInt(seconds, 10))
+	return e.JSON(code, apiErr)
 }

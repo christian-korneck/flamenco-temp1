@@ -29,6 +29,10 @@ func OpenDB(ctx context.Context, dsn string) (*DB, error) {
 		return nil, err
 	}
 
+	if err := setBusyTimeout(db.gormDB, 5*time.Second); err != nil {
+		return nil, err
+	}
+
 	if err := db.migrate(); err != nil {
 		return nil, err
 	}
