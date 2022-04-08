@@ -288,6 +288,7 @@ func (m *StateMachineMocks) expectBroadcastJobChange(
 ) *gomock.Call {
 	expectUpdate := api.JobUpdate{
 		Id:             job.UUID,
+		Name:           &job.Name,
 		Updated:        job.UpdatedAt,
 		PreviousStatus: &fromStatus,
 		Status:         toStatus,

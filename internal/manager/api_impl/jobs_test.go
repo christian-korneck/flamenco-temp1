@@ -62,6 +62,7 @@ func TestSubmitJob(t *testing.T) {
 	// Expect the new job to be broadcast.
 	jobUpdate := api.JobUpdate{
 		Id:      dbJob.UUID,
+		Name:    &dbJob.Name,
 		Updated: dbJob.UpdatedAt,
 		Status:  dbJob.Status,
 	}
