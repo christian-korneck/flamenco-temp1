@@ -184,8 +184,10 @@ type Command struct {
 	Parameters map[string]interface{} `json:"parameters"`
 }
 
-// Error defines model for Error.
+// Generic error response.
 type Error struct {
+	// HTTP status code of this response. Is included in the payload so that a single object represents all error information.
+	// Code 503 is used when the database is busy. The HTTP response will contain a 'Retry-After' HTTP header that indicates after which time the request can be retried. Following the header is not mandatory, and it's up to the client to do something reasonable like exponential backoff.
 	Code    int32  `json:"code"`
 	Message string `json:"message"`
 }

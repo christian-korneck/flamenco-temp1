@@ -106,7 +106,7 @@ class Error(ModelNormal):
         """Error - a model defined in OpenAPI
 
         Args:
-            code (int):
+            code (int): HTTP status code of this response. Is included in the payload so that a single object represents all error information. Code 503 is used when the database is busy. The HTTP response will contain a 'Retry-After' HTTP header that indicates after which time the request can be retried. Following the header is not mandatory, and it's up to the client to do something reasonable like exponential backoff. 
             message (str):
 
         Keyword Args:
@@ -193,7 +193,7 @@ class Error(ModelNormal):
         """Error - a model defined in OpenAPI
 
         Args:
-            code (int):
+            code (int): HTTP status code of this response. Is included in the payload so that a single object represents all error information. Code 503 is used when the database is busy. The HTTP response will contain a 'Retry-After' HTTP header that indicates after which time the request can be retried. Following the header is not mandatory, and it's up to the client to do something reasonable like exponential backoff. 
             message (str):
 
         Keyword Args:

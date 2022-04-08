@@ -21,8 +21,9 @@ import ApiClient from '../ApiClient';
 class Error {
     /**
      * Constructs a new <code>Error</code>.
+     * Generic error response.
      * @alias module:model/Error
-     * @param code {Number} 
+     * @param code {Number} HTTP status code of this response. Is included in the payload so that a single object represents all error information. Code 503 is used when the database is busy. The HTTP response will contain a 'Retry-After' HTTP header that indicates after which time the request can be retried. Following the header is not mandatory, and it's up to the client to do something reasonable like exponential backoff. 
      * @param message {String} 
      */
     constructor(code, message) { 
@@ -65,6 +66,7 @@ class Error {
 }
 
 /**
+ * HTTP status code of this response. Is included in the payload so that a single object represents all error information. Code 503 is used when the database is busy. The HTTP response will contain a 'Retry-After' HTTP header that indicates after which time the request can be retried. Following the header is not mandatory, and it's up to the client to do something reasonable like exponential backoff. 
  * @member {Number} code
  */
 Error.prototype['code'] = undefined;
