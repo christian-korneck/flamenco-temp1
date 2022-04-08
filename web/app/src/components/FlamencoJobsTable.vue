@@ -66,6 +66,11 @@ export default {
     this.fetchAllJobs();
   },
   methods: {
+    onReconnected() {
+      // If the connection to the backend was lost, we have likely missed some
+      // updates. Just fetch the data and start from scratch.
+      this.fetchAllJobs();
+    },
     tabulator: function() {
       const tab = this.$refs.tabulator.getInstance();
       return tab;

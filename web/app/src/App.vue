@@ -14,6 +14,7 @@
       :websocketURL="websocketURL"
       @jobUpdate="onJobUpdate"
       @message="onChatMessage"
+      @reconnected="onReconnected"
     />
   </div>
 </template>
@@ -58,6 +59,9 @@ export default {
     onChatMessage(message) {
       console.log("chat message received:", message);
       this.messages.push(`${message.text}`);
+    },
+    onReconnected() {
+      this.$refs.jobsTable.onReconnected();
     },
   },
 };

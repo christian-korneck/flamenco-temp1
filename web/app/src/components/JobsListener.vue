@@ -6,7 +6,7 @@
 import io from "socket.io-client";
 
 export default {
-  emits: ["jobUpdate", "taskUpdate", "message"],
+  emits: ["jobUpdate", "taskUpdate", "message", "reconnected"],
   props: ["websocketURL"],
   data() {
     return {
@@ -30,6 +30,7 @@ export default {
 
       this.socket.on("reconnect", (attemptNumber) => {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
+        this.$emit("reconnected");
       })
 
       this.socket.on("/jobs", (jobUpdate) => {
