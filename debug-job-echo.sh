@@ -12,7 +12,7 @@ curl -X 'POST' \
   "name": "Talk & Sleep",
   "priority": 50,
   "settings": {
-    "sleep_duration_seconds": 3,
+    "sleep_duration_seconds": 2,
     "message": "{blender}"
   },
   "type": "echo-sleep-test"
