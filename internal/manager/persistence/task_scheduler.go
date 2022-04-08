@@ -14,8 +14,8 @@ import (
 
 var (
 	schedulableTaskStatuses = []api.TaskStatus{api.TaskStatusQueued, api.TaskStatusSoftFailed, api.TaskStatusActive}
-	completedTaskStatuses   = []api.TaskStatus{api.TaskStatusCompleted}
 	schedulableJobStatuses  = []api.JobStatus{api.JobStatusActive, api.JobStatusQueued, api.JobStatusRequeued}
+	// completedTaskStatuses   = []api.TaskStatus{api.TaskStatusCompleted}
 )
 
 // ScheduleTask finds a task to execute by the given worker.

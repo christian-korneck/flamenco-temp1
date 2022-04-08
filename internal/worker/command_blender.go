@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"time"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
@@ -21,8 +20,6 @@ import (
 // The buffer size used to read stdout/stderr output from Blender.
 // Effectively this determines the maximum line length that can be handled.
 const StdoutBufferSize = 40 * 1024
-
-const timeFormat = time.RFC3339Nano
 
 type BlenderParameters struct {
 	exe        string   // Expansion of `{blender}`: executable path + its CLI parameters defined by the Manager.
