@@ -133,7 +133,7 @@ func shutdown(signum os.Signal) {
 			w.SignOff(shutdownCtx)
 			w.Close()
 			listener.Wait()
-			if err := buffer.Close(shutdownCtx); err != nil {
+			if err := buffer.Close(); err != nil {
 				log.Error().Err(err).Msg("closing upstream task buffer")
 			}
 		}
