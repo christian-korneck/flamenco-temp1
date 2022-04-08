@@ -156,7 +156,9 @@ func TestTimestampedPathFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	fileCreateEmpty("somefile.txt")
-	os.Chtimes("somefile.txt", mtime, mtime)
+	if err := os.Chtimes("somefile.txt", mtime, mtime); err != nil {
+		t.Fatalf(err.Error())
+	}
 
 	newpath, err := timestampedPath("somefile.txt")
 
@@ -174,8 +176,12 @@ func TestTimestampedPathDir(t *testing.T) {
 	mtime, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05-07:00")
 	assert.NoError(t, err)
 
-	os.Mkdir("somedir", os.ModePerm)
-	os.Chtimes("somedir", mtime, mtime)
+	if err := os.Mkdir("somedir", os.ModePerm); err != nil {
+		t.Fatal(err.Error())
+	}
+	if err := os.Chtimes("somedir", mtime, mtime); err != nil {
+		t.Fatal(err.Error())
+	}
 
 	newpath, err := timestampedPath("somedir")
 

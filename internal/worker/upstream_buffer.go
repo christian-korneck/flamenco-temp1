@@ -139,7 +139,7 @@ func (ub *UpstreamBufferDB) prepareDatabase(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("beginning database transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer rollbackTransaction(tx)
 
 	stmt := `CREATE TABLE IF NOT EXISTS task_update_queue(task_id VARCHAR(36), payload BLOB)`
 	log.Debug().Str("sql", stmt).Msg("creating database table")
@@ -185,7 +185,7 @@ func (ub *UpstreamBufferDB) queueTaskUpdate(ctx context.Context, taskID string, 
 	if err != nil {
 		return fmt.Errorf("beginning database transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer rollbackTransaction(tx)
 
 	blob, err := json.Marshal(update)
 	if err != nil {
@@ -241,7 +241,7 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 	if err != nil {
 		return false, fmt.Errorf("beginning database transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer rollbackTransaction(tx)
 
 	stmt := `SELECT rowid, task_id, payload FROM task_update_queue ORDER BY rowid LIMIT 1`
 	log.Trace().Str("sql", stmt).Msg("fetching queued task updates")
@@ -330,5 +330,11 @@ func (ub *UpstreamBufferDB) periodicFlushLoop() {
 				log.Warn().Err(err).Msg("error flushing task update queue")
 			}
 		}
+	}
+}
+
+func rollbackTransaction(tx *sql.Tx) {
+	if err := tx.Rollback(); err != nil {
+		log.Error().Err(err).Msg("rolling back transaction")
 	}
 }

@@ -73,9 +73,13 @@ func (ce *CommandExecutor) cmdFramesToVideo(ctx context.Context, logger zerolog.
 		}
 
 		logger.Debug().Msg(line)
-		logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", ffmpegPID, line))
+		if err := logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", ffmpegPID, line)); err != nil {
+			return fmt.Errorf("appending log entry to log chunker: %w", err)
+		}
 	}
-	logChunker.Flush(ctx)
+	if err := logChunker.Flush(ctx); err != nil {
+		return fmt.Errorf("flushing log chunker: %w", err)
+	}
 
 	if err := execCmd.Wait(); err != nil {
 		logger.Error().Err(err).Msg("error in CLI execution")

@@ -31,7 +31,7 @@ type BlenderParameters struct {
 // cmdBlender executes the "blender-render" command.
 func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 	cmdCtx, cmdCtxCancel := context.WithCancel(ctx)
-	defer cmdCtxCancel()
+	defer cmdCtxCancel() // Ensure the subprocess exits whenever this function returns.
 
 	execCmd, err := ce.cmdBlenderRenderCommand(cmdCtx, logger, taskID, cmd)
 	if err != nil {
@@ -73,9 +73,13 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		}
 
 		logger.Debug().Msg(line)
-		logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", blenderPID, line))
+		if err := logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", blenderPID, line)); err != nil {
+			return fmt.Errorf("appending log entry to log chunker: %w", err)
+		}
 	}
-	logChunker.Flush(ctx)
+	if err := logChunker.Flush(ctx); err != nil {
+		return fmt.Errorf("flushing log chunker: %w", err)
+	}
 
 	if err := execCmd.Wait(); err != nil {
 		logger.Error().Err(err).Msg("error in CLI execution")
