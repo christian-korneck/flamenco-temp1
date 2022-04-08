@@ -21,7 +21,7 @@ func (f *Flamenco) QueryJobs(e echo.Context) error {
 	dbJobs, err := f.persist.QueryJobs(ctx, api.JobsQuery(jobsQuery))
 	if err != nil {
 		logger.Warn().Err(err).Msg("error querying for jobs")
-		sendAPIError(e, http.StatusInternalServerError, "error querying for jobs")
+		return sendAPIError(e, http.StatusInternalServerError, "error querying for jobs")
 	}
 
 	apiJobs := make([]api.Job, len(dbJobs))
