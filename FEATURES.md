@@ -46,8 +46,8 @@ Note that list is **not** in any specific order.
 - [ ] POSIX signal handling (sleep/wake up)
 - [x] Implement `frames-to-video` command.
 - [x] Implement `move-directory` command.
-- [ ] Refactor CLI-running code by analyzing the current Blender and FFmpeg commands.
-- [ ] Re-queueing of task at shutdown of the main context (i.e. when pressing Ctrl+C). Since the context is closed, everything shuts down, but then it's too late to cleanly communicate to the Manager that the current task should be requeued.
+- [x] Refactor CLI-running code by analyzing the current Blender and FFmpeg commands.
+- [x] Re-queueing of task at shutdown of the main context (i.e. when pressing Ctrl+C). Since the context is closed, everything shuts down, but then it's too late to cleanly communicate to the Manager that the current task should be requeued.
 
 
 ## Both
