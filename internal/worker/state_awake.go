@@ -4,6 +4,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -55,10 +56,9 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 		// to the Manager. This code only needs to fetch a task and run it.
 		err := w.taskRunner.Run(ctx, *task)
 		if err != nil {
-			select {
-			case <-ctx.Done():
-				log.Warn().Err(err).Interface("task", *task).Msg("task aborted due to context being closed")
-			default:
+			if errors.Is(err, context.Canceled) {
+				log.Warn().Interface("task", *task).Msg("task aborted due to context being closed")
+			} else {
 				log.Warn().Err(err).Interface("task", *task).Msg("error executing task")
 			}
 		}
@@ -72,7 +72,6 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 // Returns nil when a task could not be obtained and the period loop was cancelled.
 func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 	logger := log.With().Str("status", string(w.state)).Logger()
-	logger.Info().Msg("fetching tasks")
 
 	// Initially don't wait at all.
 	var wait time.Duration
@@ -88,6 +87,7 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 		case <-time.After(wait):
 		}
 
+		logger.Info().Msg("fetching tasks")
 		resp, err := w.client.ScheduleTaskWithResponse(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("error obtaining task")

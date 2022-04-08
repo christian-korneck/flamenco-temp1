@@ -4,6 +4,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/rs/zerolog/log"
@@ -71,6 +72,10 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 		if runErr == nil {
 			// All was fine, go run the next command.
 			continue
+		}
+		if errors.Is(runErr, context.Canceled) {
+			logger.Warn().Msg("task execution aborted due to context shutdown")
+			return nil
 		}
 
 		// Notify Manager that this task failed.
