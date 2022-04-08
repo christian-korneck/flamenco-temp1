@@ -144,7 +144,7 @@ func NewFlamenco(
 	}
 }
 
-// sendPetstoreError wraps sending of an error in the Error format, and
+// sendAPIError wraps sending of an error in the Error format, and
 // handling the failure to marshal that.
 func sendAPIError(e echo.Context, code int, message string, args ...interface{}) error {
 	if len(args) > 0 {
@@ -152,11 +152,11 @@ func sendAPIError(e echo.Context, code int, message string, args ...interface{})
 		message = fmt.Sprintf(message, args)
 	}
 
-	petErr := api.Error{
+	apiErr := api.Error{
 		Code:    int32(code),
 		Message: message,
 	}
-	return e.JSON(code, petErr)
+	return e.JSON(code, apiErr)
 }
 
 // sendAPIErrorDBBusy sends a HTTP 503 Service Unavailable, with a hopefully
