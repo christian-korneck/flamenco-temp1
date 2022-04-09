@@ -38,11 +38,11 @@ func (ce *CommandExecutor) cmdFramesToVideo(ctx context.Context, logger zerolog.
 	}
 	defer cleanup()
 
-	execCmd.Stderr = execCmd.Stdout // Redirect stderr to stdout.
 	outPipe, err := execCmd.StdoutPipe()
 	if err != nil {
 		return err
 	}
+	execCmd.Stderr = execCmd.Stdout // Redirect stderr to stdout.
 
 	if err := execCmd.Start(); err != nil {
 		logger.Error().Err(err).Msg("error starting CLI execution")
