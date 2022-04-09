@@ -59,13 +59,11 @@ func (te *TaskExecutor) Run(ctx context.Context, task api.AssignedTask) error {
 	}
 
 	for _, cmd := range task.Commands {
-		select {
-		case <-ctx.Done():
+		if ctx.Err() != nil {
 			// Shutdown does not mean task failure; cleanly shutting down will hand
 			// back the task for requeueing on the Manager.
 			logger.Warn().Msg("task execution aborted due to context shutdown")
-			return nil
-		default:
+			return ctx.Err()
 		}
 
 		runErr := te.cmdRunner.Run(ctx, task.Uuid, cmd)

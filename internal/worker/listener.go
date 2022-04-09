@@ -109,12 +109,8 @@ func (l *Listener) OutputProduced(ctx context.Context, taskID string, outputLoca
 }
 
 func (l *Listener) sendTaskUpdate(ctx context.Context, taskID string, update api.TaskUpdateJSONRequestBody) error {
-	// Check whether the context is closed before doing anything.
-	select {
-	default:
-	case <-ctx.Done():
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
 	return l.buffer.SendTaskUpdate(ctx, taskID, update)
 }
