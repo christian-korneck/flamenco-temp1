@@ -87,7 +87,7 @@ func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
 		case <-time.After(wait):
 		}
 
-		logger.Info().Msg("fetching tasks")
+		logger.Debug().Msg("fetching tasks")
 		resp, err := w.client.ScheduleTaskWithResponse(ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("error obtaining task")
