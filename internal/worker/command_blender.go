@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
@@ -107,6 +108,21 @@ func (ce *CommandExecutor) cmdBlenderRenderCommand(
 	parameters, err := cmdBlenderRenderParams(logger, cmd)
 	if err != nil {
 		return nil, err
+	}
+
+	if filepath.Dir(parameters.exe) == "." {
+		// No directory path given. Check that the executable can be found on the
+		// path.
+		if _, err := exec.LookPath(parameters.exe); err != nil {
+			// Attempt a platform-specific way to find which Blender executable to
+			// use. If Blender cannot not be found, just use the configured command
+			// and let the OS produce the errors.
+			path, err := FindBlender()
+			if err == nil {
+				logger.Info().Str("path", path).Msg("found Blender")
+				parameters.exe = path
+			}
+		}
 	}
 
 	cliArgs := make([]string, 0)
