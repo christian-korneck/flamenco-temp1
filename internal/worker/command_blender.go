@@ -15,6 +15,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
 
+	"git.blender.org/flamenco/internal/worker/find_blender"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -117,7 +118,7 @@ func (ce *CommandExecutor) cmdBlenderRenderCommand(
 			// Attempt a platform-specific way to find which Blender executable to
 			// use. If Blender cannot not be found, just use the configured command
 			// and let the OS produce the errors.
-			path, err := FindBlender()
+			path, err := find_blender.FindBlender()
 			if err == nil {
 				logger.Info().Str("path", path).Msg("found Blender")
 				parameters.exe = path

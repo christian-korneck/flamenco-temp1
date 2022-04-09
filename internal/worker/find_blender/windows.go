@@ -1,16 +1,45 @@
 //go:build windows
 
 // SPDX-License-Identifier: GPL-3.0-or-later
-package worker
+package find_blender
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"syscall"
 	"unsafe"
 )
 
-// FindBlender returns the path of `blender.exe` associated with ".blend" files.
+// FindBlender returns the full path of `blender.exe` associated with ".blend" files.
 func FindBlender() (string, error) {
+	exe, err := fileAssociation(".blend")
+	if err != nil {
+		return "", err
+	}
+
+	// Often the association will be with blender-launcher.exe, which is
+	// unsuitable for use in Flamenco. Use its path to find its `blender.exe`.
+	dir, file := filepath.Split(exe)
+	if file != "blender-launcher.exe" {
+		return exe, nil
+	}
+
+	blenderPath := filepath.Join(dir, "blender.exe")
+	_, err = os.Stat(blenderPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("blender-launcher found at %s but not its blender.exe", exe)
+		}
+		return "", fmt.Errorf("investigating %s: %w", blenderPath, err)
+	}
+
+	return blenderPath, nil
+}
+
+// fileAssociation finds the executable associated with the given extension.
+// The extension must be a string like ".blend".
+func fileAssociation(extension string) (string, error) {
 	// Load library.
 	libname := "shlwapi.dll"
 	libshlwapi, err := syscall.LoadLibrary(libname)
@@ -27,7 +56,7 @@ func FindBlender() (string, error) {
 	}
 
 	// https://docs.microsoft.com/en-gb/windows/win32/api/shlwapi/nf-shlwapi-assocquerystringw
-	pszAssoc, err := syscall.UTF16PtrFromString(".blend")
+	pszAssoc, err := syscall.UTF16PtrFromString(extension)
 	if err != nil {
 		return "", fmt.Errorf("converting string to UTF16: %w", err)
 	}
