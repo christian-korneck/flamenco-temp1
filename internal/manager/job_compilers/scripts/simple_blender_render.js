@@ -154,6 +154,7 @@ function authorCreateVideoTask(settings, renderDir) {
     const task = author.Task('preview-video', 'ffmpeg');
     const command = author.Command("frames-to-video", {
         exe: "{ffmpeg}",
+        fps: settings.fps,
         inputGlob: path.join(renderDir, `*${outfileExt}`),
         outputFile: outfile,
         args: [
