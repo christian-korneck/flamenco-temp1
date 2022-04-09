@@ -245,6 +245,15 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 }
 
 func (c *Conf) processStorage() {
+	storagePath, err := filepath.Abs(c.StoragePath)
+	if err != nil {
+		log.Error().Err(err).
+			Str("storage_path", c.StoragePath).
+			Msg("unable to determine absolute storage path")
+	} else {
+		c.StoragePath = storagePath
+	}
+
 	// Shaman should use the Flamenco storage location.
 	if c.Shaman.Enabled {
 		c.Shaman.StoragePath = c.StoragePath
