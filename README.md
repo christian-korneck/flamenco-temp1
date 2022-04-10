@@ -3,6 +3,16 @@
 This repository contains the sources for Flamenco 3. The Manager, Worker, and
 Blender add-on sources are all combined in this one repository.
 
+## Using Shaman on Windows
+
+The Shaman storage system uses *symbolic links*. On Windows the creation of symbolic links requires a change in security policy. Follow these steps:
+
+1. Press Win+R, in the popup type `secpol.msc`. Then click OK.
+2. In the *Local Security Policy* window that opens, go to *Security Settings* > *Local Policies* > *User Rights Assignment*.
+3. In the list, find the *Create Symbolic Links* item.
+4. Double-click the item and add yourself (or the user running Flamenco Manager or the whole users group) to the list.
+5. Log out & back in again, or reboot the machine.
+
 
 ## Building
 
