@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 package worker
 
 import (
@@ -11,8 +12,6 @@ import (
 
 	"git.blender.org/flamenco/pkg/api"
 )
-
-// SPDX-License-Identifier: GPL-3.0-or-later
 
 func TestCmdFramesToVideoSimplePosix(t *testing.T) {
 	// Windows and non-Windows platforms differ in how they communicate globs to FFmpeg.
@@ -31,6 +30,7 @@ func TestCmdFramesToVideoSimplePosix(t *testing.T) {
 			"exe":        "/path/to/ffmpeg -v quiet",
 			"argsBefore": []string{"-report"},
 			"inputGlob":  "path/to/renders/*.png",
+			"fps":        10.0,
 			"args": []string{
 				"-c:v", "hevc",
 				"-crf", "31",
@@ -45,6 +45,7 @@ func TestCmdFramesToVideoSimplePosix(t *testing.T) {
 		"-report",                                              // argsBefore
 		"-pattern_type", "glob", "-i", "path/to/renders/*.png", // inputGlob
 		"-c:v", "hevc", "-crf", "31", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", // args
+		"-r", "10", // fps
 		"path/to/renders/preview.mkv", // outputFile
 	}
 	mocks.cli.EXPECT().CommandContext(gomock.Any(), "/path/to/ffmpeg", cliArgs).Return(nil)
@@ -70,6 +71,7 @@ func TestCmdFramesToVideoSimpleWindows(t *testing.T) {
 			"exe":        "/path/to/ffmpeg -v quiet",
 			"argsBefore": []string{"-report"},
 			"inputGlob":  "path/to/renders/*.png",
+			"fps":        10.0,
 			"args": []string{
 				"-c:v", "hevc",
 				"-crf", "31",
@@ -84,6 +86,7 @@ func TestCmdFramesToVideoSimpleWindows(t *testing.T) {
 		"-report",                                  // argsBefore
 		"-f", "concat", "-i", "this-is-random.txt", // input glob
 		"-c:v", "hevc", "-crf", "31", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", // args
+		"-r", "10", // fps
 		"path/to/renders/preview.mkv", // outputFile
 	}
 	mocks.cli.EXPECT().

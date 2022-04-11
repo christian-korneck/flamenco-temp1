@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/google/shlex"
@@ -185,6 +186,8 @@ func cmdFramesToVideoParams(logger zerolog.Logger, cmd api.Command) (CreateVideo
 		parameters.exe = exeArgs[0]
 		parameters.argsBefore = allArgsBefore
 	}
+	parameters.args = append(parameters.args,
+		"-r", strconv.FormatFloat(parameters.fps, 'f', -1, 64))
 
 	return parameters, nil
 }
