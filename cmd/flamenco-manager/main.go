@@ -176,7 +176,7 @@ func buildWebService(
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		// Just some hard-coded URLs for now, just to get some tests going.
-		AllowOrigins: []string{"http://localhost:8080/", "http://localhost:8081/", "http://10.161.30.150:8081"},
+		AllowOrigins: []string{"http://localhost:8080", "http://localhost:8081", "http://10.161.30.150:8081"},
 
 		// List taken from https://www.bacancytechnology.com/blog/real-time-chat-application-using-socketio-golang-vuejs/
 		AllowHeaders: []string{
