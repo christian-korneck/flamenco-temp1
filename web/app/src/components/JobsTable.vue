@@ -87,14 +87,12 @@ export default {
         .then(this.sortData);
     },
     processNewJob(jobUpdate) {
-      console.log("processNewJob:", jobUpdate);
       // The update doesn't have all the info we need, so just fetch the job via
       // an API call. If this is ever changed, and the jobUpdate does have
       // everything needed for this table, JobDetails.vue also needs to be
       // adjusted for this.
       const jobsApi = new JobsApi(this.apiClient);
       jobsApi.fetchJob(jobUpdate.id).then((job) => {
-        console.log('API called successfully. Returned data: ' + job);
         console.log("Fetched job:", JSON.parse(JSON.stringify(job)));
         this.tabulator.addData([job])
           .then(this.sortData);

@@ -48,7 +48,6 @@ export default {
   methods: {
     // UI component event handlers:
     onActiveJobChanged(jobSummary) {
-      console.log("Selected:", jobSummary);
       this.activeJobSummary = jobSummary;
     },
 
@@ -83,7 +82,6 @@ export default {
     fetchManagerInfo() {
       const metaAPI = new API.MetaApi(this.apiClient);
       metaAPI.getVersion().then((version) => {
-        console.log("version:", version);
         this.flamencoName = version.name;
         this.flamencoVersion = version.version;
       })
