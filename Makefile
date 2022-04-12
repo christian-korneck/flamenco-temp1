@@ -63,7 +63,8 @@ generate-py:
 generate-js:
 # The generator doesn't consistently overwrite existing files, nor does it
 # remove no-longer-generated files.
-	rm -rf web/manager-api
+	rm -rf web/app/src/manager-api
+	rm -rf web/_tmp-manager-api-javascript
 
 # See https://openapi-generator.tech/docs/generators/javascript for the options.
 # Version '0.0.0' is used as NPM doesn't like Git hashes as versions.
@@ -75,23 +76,20 @@ generate-js:
 		generate \
 		-i pkg/api/flamenco-manager.yaml \
 		-g javascript \
-		-o web/manager-api \
+		-o web/_tmp-manager-api-javascript \
 		--http-user-agent "Flamenco/${VERSION} / webbrowser" \
 		-p projectName=flamenco-manager \
 		-p projectVersion="0.0.0" \
 		-p apiPackage="${JS_API_PKG_NAME}" \
 		-p disallowAdditionalPropertiesIfNotPresent=false \
 		-p usePromises=true \
-		-p moduleName=flamencoManager \
-		-p modelPropertyNaming=original
+		-p moduleName=flamencoManager
 
-# The generator outputs files so that we can write our own tests. We don't,
-# though, so it's better to just remove those placeholders.
-	rm -rf web/manager-api/test
-
-# Ensure that the API package can actually be imported by the webapp (if
-# symlinks are in place).
-	cd web/manager-api && npm install && npm run build
+# Cherry-pick the generated sources, and remove everything else.
+# The only relevant bit is that the generated code depends on `superagent`,
+# which is listed in our `.
+	mv web/_tmp-manager-api-javascript/src web/app/src/manager-api
+	rm -rf web/_tmp-manager-api-javascript
 
 version:
 	@echo "OS     : ${OS}"

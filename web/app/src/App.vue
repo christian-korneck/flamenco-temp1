@@ -1,47 +1,35 @@
 <template>
-  <div id="app">
-    <flamenco-navbar></flamenco-navbar>
-    <br />
-
-    <flamenco-jobs-table ref="jobsTable" :apiClient="apiClient" />
-
-    <chat-chatbox
-      @sendMessage="sendMessage"
-      :chatHistory="messages"
-    />
-    <jobs-listener
-      ref="jobsListener"
-      :websocketURL="websocketURL"
-      @jobUpdate="onJobUpdate"
-      @message="onChatMessage"
-      @reconnected="onReconnected"
-    />
+  <header>Flamenco</header>
+  <div class="col-1">
+    <jobs-table ref="jobsTable" :apiClient="apiClient" />
   </div>
+  <div class="col-2">Job Details</div>
+  <div class="col-3">Task Details</div>
+  <footer>Footer
+    <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onJobUpdate" @message="onChatMessage"
+      @reconnected="onReconnected" />
+  </footer>
 </template>
 
 <script>
-import FlamencoNavbar from "./components/FlamencoNavbar.vue";
-import FlamencoJobsTable from "./components/FlamencoJobsTable.vue";
-import ChatChatbox from "./components/ChatChatbox.vue";
-import JobsListener from "./components/JobsListener.vue";
+import * as urls from './urls'
+import { ApiClient } from './manager-api';
+import JobsTable from './components/JobsTable.vue'
+import UpdateListener from './components/UpdateListener.vue'
 
 export default {
-  name: "FlamencoWebApp",
+  name: 'App',
   components: {
-    FlamencoNavbar,
-    FlamencoJobsTable,
-    ChatChatbox,
-    JobsListener,
+    JobsTable, UpdateListener,
   },
-  props: ["apiClient"],
   data: () => {
     return {
-      websocketURL: "ws://localhost:8080",
+      apiClient: new ApiClient(urls.api()),
+      websocketURL: urls.ws(),
       messages: [],
     };
   },
-  mounted: function () {
-  },
+  mounted() { },
   methods: {
     sendMessage(message) {
       this.$refs.jobsListener.sendBroadcastMessage("typer", message);
@@ -64,22 +52,53 @@ export default {
       this.$refs.jobsTable.onReconnected();
     },
   },
-};
+}
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+@import "tabulator-tables/dist/css/tabulator.min.css";
+
+body {
+  margin: 0;
 }
 
-html,
-body,
-#app,
-.card {
-  height: 100%;
+#app {
+  font-family: 'Noto Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+
+  display: grid;
+  width: 100%;
+  height: 100vh;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 20px 1fr 10px;
+  grid-gap: 1rem;
+  grid-template-areas:
+    "header header header"
+    "col-1 col-2 col-3"
+    "footer footer footer";
+}
+
+header {
+  grid-area: header;
+  background-color: #333;
+  color: #EEE;
+}
+
+.col-1 {
+  grid-area: col-1;
+}
+
+.col-2 {
+  grid-area: col-2;
+}
+
+.col-3 {
+  grid-area: col-3;
+}
+
+footer {
+  grid-area: footer;
 }
 </style>

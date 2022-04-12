@@ -137,6 +137,7 @@ function authorRenderTasks(settings, renderDir, renderOutput) {
 function authorCreateVideoTask(settings, renderDir) {
     if (settings.images_or_video == "video") {
         print("Not authoring video task, render output is already a video");
+        return;
     }
     if (ffmpegIncompatibleImageFormats.has(settings.format)) {
         print("Not authoring video task, FFmpeg-incompatible render output")

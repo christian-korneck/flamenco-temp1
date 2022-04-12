@@ -1,52 +1,31 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+
 import App from './App.vue'
-import {
-  FormInputPlugin,
-  NavbarPlugin,
-  LayoutPlugin,
-  IconsPlugin,
-  BCard,
-  BInputGroup,
-  BButton,
-} from "bootstrap-vue";
+import router from './router'
 
-import URLs from './urls'
-
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-vue/dist/bootstrap-vue.css";
-
-let flamencoManager = require('flamenco-manager');
-let apiClient = new flamencoManager.ApiClient(URLs.api);
-
-// Ensure Tabulator can find `moment`, which it needs for sorting by
+// Ensure Tabulator can find `luxon`, which it needs for sorting by
 // date/time/datetime.
-import moment from 'moment';
-window.moment = moment;
+import { DateTime } from 'luxon';
+window.DateTime = DateTime;
 
-// let query = new flamencoManager.JobsQuery();
-// // query.status_in = ["active"];
-// query.metadata = {project: "Heist"};
+// // Example of how to use the Flamenco Manager API:
+// import * as urls from './urls'
+// import {
+//   ApiClient,
+//   MetaApi,
+// } from './manager-api'
 
-// let JobsApi = new flamencoManager.JobsApi(apiClient);
-// JobsApi.queryJobs(query).then(function(data) {
-//   console.log('API called successfully.');
-//   console.log(data);
-// }, function(error) {
-//   console.error(error);
-// });
+// let apiClient = new ApiClient(urls.api());
+// console.log('ApiClient:', apiClient);
+// const metaAPI = new MetaApi(apiClient);
+// console.log("metaAPI:", metaAPI);
+// metaAPI.getVersion().then(function (version) {
+//   console.log("version:", version);
+// })
+// metaAPI.getConfiguration().then(function (config) {
+//   console.log("config:", config);
+// })
 
-Vue.config.productionTip = false
-
-Vue.use(FormInputPlugin);
-Vue.use(NavbarPlugin);
-Vue.use(LayoutPlugin);
-Vue.component("b-card", BCard);
-Vue.component("b-input-group", BInputGroup);
-Vue.component("b-button", BButton);
-Vue.use(IconsPlugin);
-
-var vueApp = new Vue(App);
-vueApp.websocketURL = URLs.ws;
-vueApp.apiClient = apiClient;
-
-vueApp.$mount("#app");
+const app = createApp(App)
+app.use(router)
+app.mount('#app')

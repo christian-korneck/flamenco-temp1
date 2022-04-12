@@ -1,4 +1,5 @@
-let url = new URL(window.location);
+
+let url = new URL(window.location.href);
 url.port = "8080";
 const flamencoAPIURL = url.href;
 
@@ -13,4 +14,9 @@ const URLs = {
 console.log("Flamenco API:", URLs.api);
 console.log("Websocket   :", URLs.ws);
 
-export default URLs;
+export function ws() {
+  return URLs.ws;
+}
+export function api() {
+  return URLs.api;
+}
