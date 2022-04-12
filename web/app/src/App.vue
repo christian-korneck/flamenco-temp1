@@ -3,8 +3,12 @@
   <div class="col-1">
     <jobs-table ref="jobsTable" :apiClient="apiClient" />
   </div>
-  <div class="col-2">Job Details</div>
-  <div class="col-3">Task Details</div>
+  <div class="col-2">
+    <job-details :apiClient="apiClient" />
+  </div>
+  <div class="col-3">
+    <task-details :apiClient="apiClient" />
+  </div>
   <footer>Footer
     <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onJobUpdate" @message="onChatMessage"
       @reconnected="onReconnected" />
@@ -15,12 +19,14 @@
 import * as urls from './urls'
 import { ApiClient } from './manager-api';
 import JobsTable from './components/JobsTable.vue'
+import JobDetails from './components/JobDetails.vue'
+import TaskDetails from './components/TaskDetails.vue'
 import UpdateListener from './components/UpdateListener.vue'
 
 export default {
   name: 'App',
   components: {
-    JobsTable, UpdateListener,
+    JobsTable, JobDetails, TaskDetails, UpdateListener,
   },
   data: () => {
     return {
@@ -84,6 +90,12 @@ header {
   grid-area: header;
   background-color: #333;
   color: #EEE;
+}
+
+h2.column-title {
+  margin-top: 0;
+  font-size: 12pt;
+  border-bottom: 1px solid grey
 }
 
 .col-1 {
