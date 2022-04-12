@@ -74,6 +74,8 @@ export default {
       });
     },
     onJobsFetched(data) {
+      // "Down-cast" to JobUpdate to only get those fields, just for debugging things.
+      // data.jobs = data.jobs.map((j) => API.JobUpdate.constructFromObject(j));
       this.tabulator.setData(data.jobs);
       this.restoreRowSelection();
     },
