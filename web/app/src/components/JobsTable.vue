@@ -17,10 +17,11 @@ export default {
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
-        { title: 'ID', field: 'id', sorter: 'string', width: "15ex" },
+        { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        { title: 'ID', field: 'id', sorter: 'string', width: "12%" },
         { title: 'Name', field: 'name', sorter: 'string' },
-        { title: 'Status', field: 'status', sorter: 'string', width: 100 },
-        { title: 'Type', field: 'type', sorter: 'string', width: 150 },
+        { title: 'Status', field: 'status', sorter: 'string' },
+        { title: 'Type', field: 'type', sorter: 'string' },
         { title: 'Prio', field: 'priority', sorter: 'number' },
         {
           title: 'Updated', field: 'updated',
