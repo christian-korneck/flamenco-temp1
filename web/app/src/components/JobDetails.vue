@@ -72,7 +72,10 @@ export default {
     jobSummary(newSummary, oldSummary) {
       console.log("Updating job details:", JSON.parse(JSON.stringify(newSummary)));
       this.jobData = newSummary;
-      // TODO: Fetch the rest of the job.
+      // TODO later: Fetch the rest of the job. This isn't necessary now,
+      // because the jobs table already performs the fetch and the "summary" is
+      // actually the entire job. If this changes, this is the place to trigger
+      // an actual fetch.
     },
   },
   methods: {
