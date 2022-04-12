@@ -4,6 +4,7 @@
 
 <script>
 import io from "socket.io-client";
+import * as API from "../manager-api"
 
 export default {
   emits: ["jobUpdate", "taskUpdate", "message", "reconnected"],
@@ -47,7 +48,10 @@ export default {
       });
 
       this.socket.on("/jobs", (jobUpdate) => {
-        this.$emit("jobUpdate", jobUpdate);
+        // Convert to API object, in order to have the same parsing of data as
+        // when we'd do an API call.
+        const apiJobUpdate = API.JobUpdate.constructFromObject(jobUpdate)
+        this.$emit("jobUpdate", apiJobUpdate);
       });
 
       // Chat system, useful for debugging.
