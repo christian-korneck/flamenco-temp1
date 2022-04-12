@@ -28,23 +28,21 @@ sudo snap install node --classic --channel=16
 
 This also gives you the Yarn package manager, which can be used to install web dependencies and build the frontend files.
 
-To set up the development environment, follow these steps:
-
 ```
-# Ensure /usr/local/lib/node_modules exists and is writable by you:
-sudo mkdir /usr/local/lib/node_modules
-sudo chown youruser /usr/local/lib/node_modules
-
-# Set up the symlinks necessary for development:
-cd web/manager-api
-npm link
-cd ../app
-npm link flamenco-manager
-npm install
-
-# Run the web frontend:
-yarn serve
+cd web/app
+yarn install
 ```
+
+Then run the frontend development server with:
+```
+yarn run dev --host
+```
+
+The `--host` parameter is optional but recommended. The downside is that it
+exposes the devserver to others on the network. The upside is that it makes it
+easier to detect configuration issues. The generated OpenAPI client defaults to
+using `localhost`, and if you're not testing on `localhost` this stands out
+more.
 
 
 ## Generating the OpenAPI/Swagger API
