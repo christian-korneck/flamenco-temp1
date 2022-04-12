@@ -91,7 +91,7 @@ export default {
 </script>
 
 <style>
-@import "tabulator-tables/dist/css/tabulator.min.css";
+@import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 
 body {
   margin: 0;
@@ -101,14 +101,14 @@ body {
   font-family: 'Noto Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: #EEEEEE;
+  background-color: #222222;
 
   display: grid;
   width: 100%;
   height: 100vh;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 20px 1fr 10px;
-  grid-gap: 1rem;
+  grid-template-rows: 25px 1fr 25px;
   grid-template-areas:
     "header header header"
     "col-1 col-2 col-3"
@@ -152,5 +152,7 @@ h3.sub-title {
 
 footer {
   grid-area: footer;
+  background-color: #333333;
+  color: #EEE;
 }
 </style>

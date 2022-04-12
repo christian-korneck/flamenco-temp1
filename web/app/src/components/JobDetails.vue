@@ -133,7 +133,7 @@ export default {
 }
 
 tr:hover {
-  background-color: lightgrey;
+  background-color: #333333;
 }
 
 tr.field-id td {
