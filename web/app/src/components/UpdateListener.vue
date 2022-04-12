@@ -38,7 +38,8 @@ export default {
         transports: ["websocket"],
       });
       this.socket.on('connect_error', (error) => {
-        console.log("socketIO connection error:", error);
+        // Don't log the error here, it's too long and noisy for regular logs.
+        console.log("socketIO connection error");
       });
       this.socket.on('error', (error) => {
         console.log("socketIO error:", error);
@@ -50,6 +51,12 @@ export default {
       this.socket.on("disconnect", (reason) => {
         console.log("socketIO disconnected:", reason);
         this.$emit("sioDisconnected", reason);
+        if (reason === 'io server disconnect') {
+          // The disconnection was initiated by the server, need to reconnect
+          // manually. If the disconnect was for other reasons, the socket
+          // should automatically try to reconnect.
+          socket.connect();
+        }
       });
       this.socket.on("reconnect", (attemptNumber) => {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
@@ -67,9 +74,6 @@ export default {
       this.socket.on("/message", (message) => {
         this.$emit("message", message);
       });
-
-      // Only connect after the handlers have been set up.
-      // this.socket.open();
     },
 
     disconnectWebsocket() {

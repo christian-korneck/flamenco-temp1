@@ -73,7 +73,7 @@ export default {
 
     // SocketIO connection event handlers:
     onSIOReconnected() {
-      this.$refs.jobsTable.onSIOReconnected();
+      this.$refs.jobsTable.onReconnected();
       this.fetchManagerInfo();
     },
     onSIODisconnected(reason) {
