@@ -37,8 +37,23 @@
         <td>{{ datetime.relativeTime(jobData.updated) }}</td>
       </tr>
     </table>
-    <dl class="metadata">
-    </dl>
+
+    <h3 class="sub-title">Meta-data</h3>
+    <table class="metadata">
+      <tr v-for="value, key in jobData.metadata" :class="`field-${key}`">
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+      </tr>
+    </table>
+
+    <h3 class="sub-title">Settings</h3>
+    <table class="settings">
+      <tr v-for="value, key in jobData.settings" :class="`field-${key}`">
+        <th>{{ key }}</th>
+        <td>{{ value }}</td>
+      </tr>
+    </table>
+
   </div>
 </template>
 

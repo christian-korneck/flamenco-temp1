@@ -134,6 +134,12 @@ h2.column-title {
   border-bottom: 1px solid grey
 }
 
+h3.sub-title {
+  margin-bottom: 0;
+  font-size: 10pt;
+  border-bottom: 1px solid grey
+}
+
 .col-1 {
   grid-area: col-1;
 }
