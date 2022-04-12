@@ -60,69 +60,20 @@
 <script lang="js">
 import * as datetime from "../datetime";
 
-import {
-  JobsApi,
-} from '../manager-api'
-
 export default {
   props: [
     "apiClient",  // Flamenco Manager API client.
-
-    // Object, subset of job info, should at least contain an 'id' key. This ID
-    // determines the job that's shown here. The rest of the fields are used to
-    // initialise the details until the full job has been fetched from the API.
-    "jobSummary",
+    "jobData", // Job data to show.
   ],
   data: () => {
     return {
-      jobData: {},
-      datetime: datetime,
+      datetime: datetime, // So that the template can access it.
     };
   },
   mounted() {
     // Allow testing from the JS console:
     window.jobDetailsVue = this;
   },
-  watch: {
-    jobSummary(newSummary, oldSummary) {
-      console.log("Updating job details:", JSON.parse(JSON.stringify(newSummary)));
-      this.jobData = newSummary;
-      // TODO later: Fetch the rest of the job. This isn't necessary now,
-      // because the jobs table already performs the fetch and the "summary" is
-      // actually the entire job. If this changes, this is the place to trigger
-      // an actual fetch.
-    },
-  },
-  methods: {
-    onReconnected() {
-      // If the connection to the backend was lost, we have likely missed some
-      // updates. Just fetch the data and start from scratch.
-      this.fetchJob();
-    },
-    fetchJob() {
-      if (!this.apiClient) {
-        throw "no apiClient set on JobDetails component";
-      }
-      if (!this.jobSummary || !this.jobSummary.id) {
-        // no job selected, which is fine.
-        this.clearJobDetails();
-        return "";
-      }
-      const jobsApi = new JobsApi(this.apiClient);
-      const jobID = this.jobSummary.id;
-      jobsApi.fetchJob(jobID).then(this.onJobFetched, function (error) {
-        // TODO: error handling.
-        console.error(error);
-      });
-      return jobID;
-    },
-    onJobFetched(data) {
-      console.log("Job fetched:", data);
-    },
-    clearJobDetails() {
-      this.jobData = {};
-    },
-  }
 };
 </script>
 

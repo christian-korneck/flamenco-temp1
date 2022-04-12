@@ -4,17 +4,17 @@
     <span class='flamenco-version'>version: {{ flamencoVersion }}</span>
   </header>
   <div class="col-1">
-    <jobs-table ref="jobsTable" :apiClient="apiClient" @activeJobChange="onActiveJobChanged" />
+    <jobs-table ref="jobsTable" :apiClient="apiClient" @selectedJobChange="onSelectedJobChanged" />
   </div>
   <div class="col-2">
-    <job-details :apiClient="apiClient" :jobSummary="activeJobSummary" />
+    <job-details :apiClient="apiClient" :jobData="selectedJob" />
   </div>
   <div class="col-3">
     <task-details :apiClient="apiClient" />
   </div>
   <footer>Footer
-    <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onJobUpdate" @message="onChatMessage"
-      @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
+    <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onSioJobUpdate"
+      @message="onChatMessage" @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
   </footer>
 </template>
 
@@ -41,7 +41,7 @@ export default {
       websocketURL: urls.ws(),
       messages: [],
 
-      activeJobSummary: {},
+      selectedJob: {},
       flamencoName: DEFAULT_FLAMENCO_NAME,
       flamencoVersion: DEFAULT_FLAMENCO_VERSION,
 
@@ -53,23 +53,42 @@ export default {
   },
   methods: {
     // UI component event handlers:
-    onActiveJobChanged(jobSummary) {
-      this.activeJobSummary = jobSummary;
+    onSelectedJobChanged(jobSummary) {
+      const jobsAPI = new API.JobsApi(this.apiClient);
+      this._wrap(jobsAPI.fetchJob(jobSummary.id))
+        .then((job) => {
+          this.selectedJob = job;
+        });
     },
-
-    // SocketIO data event handlers:
     sendMessage(message) {
       this.$refs.jobsListener.sendBroadcastMessage("typer", message);
     },
+
+    // SocketIO data event handlers:
+    onSioJobUpdate(jobUpdate) {
+      if (!jobUpdate.previous_status)
+        return this.onJobNew(jobUpdate);
+      return this.onJobUpdate(jobUpdate);
+    },
     onJobUpdate(jobUpdate) {
-      console.log("job update received:", jobUpdate);
-      if (jobUpdate.previous_status) {
-        this.messages.push(`Job update: ${jobUpdate.id} (${jobUpdate.previous_status} → ${jobUpdate.status})`);
+      // this.messages.push(`Job update: ${jobUpdate.id} (${jobUpdate.previous_status} → ${jobUpdate.status})`);
+      if (this.$refs.jobsTable) {
         this.$refs.jobsTable.processJobUpdate(jobUpdate);
       } else {
-        this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
-        this.$refs.jobsTable.processNewJob(jobUpdate);
+        console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
       }
+      if (this.selectedJob && this.selectedJob.id == jobUpdate.id) {
+        this.onSelectedJobChanged(jobUpdate);
+      }
+    },
+    onJobNew(jobUpdate) {
+      if (!this.$refs.jobsTable) {
+        console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
+        return;
+      }
+
+      // this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
+      this.$refs.jobsTable.processNewJob(jobUpdate);
     },
     onChatMessage(message) {
       console.log("chat message received:", message);

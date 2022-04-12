@@ -22,14 +22,17 @@ import JobStatus from './JobStatus';
 class JobUpdate {
     /**
      * Constructs a new <code>JobUpdate</code>.
+     * Subset of a Job, sent over SocketIO when a job changes. For new jobs, &#x60;previous_status&#x60; will be excluded. 
      * @alias module:model/JobUpdate
      * @param id {String} UUID of the Job
      * @param updated {Date} Timestamp of last update
      * @param status {module:model/JobStatus} 
+     * @param type {String} 
+     * @param priority {Number} 
      */
-    constructor(id, updated, status) { 
+    constructor(id, updated, status, type, priority) { 
         
-        JobUpdate.initialize(this, id, updated, status);
+        JobUpdate.initialize(this, id, updated, status, type, priority);
     }
 
     /**
@@ -37,10 +40,12 @@ class JobUpdate {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, updated, status) { 
+    static initialize(obj, id, updated, status, type, priority) { 
         obj['id'] = id;
         obj['updated'] = updated;
         obj['status'] = status;
+        obj['type'] = type;
+        obj['priority'] = priority || 50;
     }
 
     /**
@@ -68,6 +73,12 @@ class JobUpdate {
             }
             if (data.hasOwnProperty('previous_status')) {
                 obj['previous_status'] = JobStatus.constructFromObject(data['previous_status']);
+            }
+            if (data.hasOwnProperty('type')) {
+                obj['type'] = ApiClient.convertToType(data['type'], 'String');
+            }
+            if (data.hasOwnProperty('priority')) {
+                obj['priority'] = ApiClient.convertToType(data['priority'], 'Number');
             }
         }
         return obj;
@@ -103,6 +114,17 @@ JobUpdate.prototype['status'] = undefined;
  * @member {module:model/JobStatus} previous_status
  */
 JobUpdate.prototype['previous_status'] = undefined;
+
+/**
+ * @member {String} type
+ */
+JobUpdate.prototype['type'] = undefined;
+
+/**
+ * @member {Number} priority
+ * @default 50
+ */
+JobUpdate.prototype['priority'] = 50;
 
 
 

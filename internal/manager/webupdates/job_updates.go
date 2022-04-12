@@ -14,10 +14,12 @@ import (
 // the caller.
 func NewJobUpdate(job *persistence.Job) api.JobUpdate {
 	jobUpdate := api.JobUpdate{
-		Id:      job.UUID,
-		Name:    &job.Name,
-		Updated: job.UpdatedAt,
-		Status:  job.Status,
+		Id:       job.UUID,
+		Name:     &job.Name,
+		Updated:  job.UpdatedAt,
+		Status:   job.Status,
+		Type:     job.JobType,
+		Priority: job.Priority,
 	}
 	return jobUpdate
 }

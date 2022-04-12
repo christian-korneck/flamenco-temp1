@@ -5,13 +5,10 @@
 <script lang="js">
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "../datetime";
-
-import {
-  JobsApi,
-} from '../manager-api'
+import * as API from '../manager-api'
 
 export default {
-  emits: ["activeJobChange"],
+  emits: ["selectedJobChange"],
   props: ["apiClient"],
   data: () => {
     const options = {
@@ -69,7 +66,7 @@ export default {
       if (!this.apiClient) {
         throw "no apiClient set on JobsTable component";
       }
-      const jobsApi = new JobsApi(this.apiClient);
+      const jobsApi = new API.JobsApi(this.apiClient);
       const jobsQuery = {};
       jobsApi.queryJobs(jobsQuery).then(this.onJobsFetched, function (error) {
         // TODO: error handling.
@@ -87,25 +84,15 @@ export default {
         .then(this.sortData);
     },
     processNewJob(jobUpdate) {
-      // The update doesn't have all the info we need, so just fetch the job via
-      // an API call. If this is ever changed, and the jobUpdate does have
-      // everything needed for this table, JobDetails.vue also needs to be
-      // adjusted for this.
-      const jobsApi = new JobsApi(this.apiClient);
-      jobsApi.fetchJob(jobUpdate.id).then((job) => {
-        console.log("Fetched job:", JSON.parse(JSON.stringify(job)));
-        this.tabulator.addData([job])
-          .then(this.sortData);
-      }, (error) => {
-        console.error(error);
-      });
+      this.tabulator.addData([jobUpdate])
+        .then(this.sortData);
     },
 
     // Selection handling.
     onRowSelected(row) {
       this.storeRowSelection();
       const rowData = row.getData();
-      this.$emit("activeJobChange", rowData);
+      this.$emit("selectedJobChange", rowData);
     },
     storeRowSelection() {
       const selectedData = this.tabulator.getSelectedData();

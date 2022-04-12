@@ -404,7 +404,7 @@ conf = flamenco.manager.Configuration(
                "OS: {env}\n"\
                "Python Version: {pyversion}\n"\
                "Version of the API: 1.0.0\n"\
-               "SDK Package Version: 930d7497-dirty".\
+               "SDK Package Version: 61618531-dirty".\
                format(env=sys.platform, pyversion=sys.version)
 
     def get_host_settings(self):

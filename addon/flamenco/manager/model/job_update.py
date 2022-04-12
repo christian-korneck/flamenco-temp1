@@ -90,6 +90,8 @@ class JobUpdate(ModelNormal):
             'id': (str,),  # noqa: E501
             'updated': (datetime,),  # noqa: E501
             'status': (JobStatus,),  # noqa: E501
+            'type': (str,),  # noqa: E501
+            'priority': (int,),  # noqa: E501
             'name': (str,),  # noqa: E501
             'previous_status': (JobStatus,),  # noqa: E501
         }
@@ -103,6 +105,8 @@ class JobUpdate(ModelNormal):
         'id': 'id',  # noqa: E501
         'updated': 'updated',  # noqa: E501
         'status': 'status',  # noqa: E501
+        'type': 'type',  # noqa: E501
+        'priority': 'priority',  # noqa: E501
         'name': 'name',  # noqa: E501
         'previous_status': 'previous_status',  # noqa: E501
     }
@@ -114,15 +118,17 @@ class JobUpdate(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, id, updated, status, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, id, updated, status, type, *args, **kwargs):  # noqa: E501
         """JobUpdate - a model defined in OpenAPI
 
         Args:
             id (str): UUID of the Job
             updated (datetime): Timestamp of last update
             status (JobStatus):
+            type (str):
 
         Keyword Args:
+            priority (int): defaults to 50  # noqa: E501
             _check_type (bool): if True, values for parameters in openapi_types
                                 will be type checked and a TypeError will be
                                 raised if the wrong type is input.
@@ -157,6 +163,7 @@ class JobUpdate(ModelNormal):
             previous_status (JobStatus): [optional]  # noqa: E501
         """
 
+        priority = kwargs.get('priority', 50)
         _check_type = kwargs.pop('_check_type', True)
         _spec_property_naming = kwargs.pop('_spec_property_naming', False)
         _path_to_item = kwargs.pop('_path_to_item', ())
@@ -185,6 +192,8 @@ class JobUpdate(ModelNormal):
         self.id = id
         self.updated = updated
         self.status = status
+        self.type = type
+        self.priority = priority
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -205,15 +214,17 @@ class JobUpdate(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, id, updated, status, *args, **kwargs):  # noqa: E501
+    def __init__(self, id, updated, status, type, *args, **kwargs):  # noqa: E501
         """JobUpdate - a model defined in OpenAPI
 
         Args:
             id (str): UUID of the Job
             updated (datetime): Timestamp of last update
             status (JobStatus):
+            type (str):
 
         Keyword Args:
+            priority (int): defaults to 50  # noqa: E501
             _check_type (bool): if True, values for parameters in openapi_types
                                 will be type checked and a TypeError will be
                                 raised if the wrong type is input.
@@ -248,6 +259,7 @@ class JobUpdate(ModelNormal):
             previous_status (JobStatus): [optional]  # noqa: E501
         """
 
+        priority = kwargs.get('priority', 50)
         _check_type = kwargs.pop('_check_type', True)
         _spec_property_naming = kwargs.pop('_spec_property_naming', False)
         _path_to_item = kwargs.pop('_path_to_item', ())
@@ -274,6 +286,8 @@ class JobUpdate(ModelNormal):
         self.id = id
         self.updated = updated
         self.status = status
+        self.type = type
+        self.priority = priority
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

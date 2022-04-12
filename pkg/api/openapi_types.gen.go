@@ -227,7 +227,7 @@ type JobSettings struct {
 // JobStatus defines model for JobStatus.
 type JobStatus string
 
-// JobUpdate defines model for JobUpdate.
+// Subset of a Job, sent over SocketIO when a job changes. For new jobs, `previous_status` will be excluded.
 type JobUpdate struct {
 	// UUID of the Job
 	Id string `json:"id"`
@@ -235,7 +235,9 @@ type JobUpdate struct {
 	// Name of the job
 	Name           *string    `json:"name,omitempty"`
 	PreviousStatus *JobStatus `json:"previous_status,omitempty"`
+	Priority       int        `json:"priority"`
 	Status         JobStatus  `json:"status"`
+	Type           string     `json:"type"`
 
 	// Timestamp of last update
 	Updated time.Time `json:"updated"`
