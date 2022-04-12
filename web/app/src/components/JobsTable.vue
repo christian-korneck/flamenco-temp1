@@ -1,17 +1,17 @@
 <template>
-  <div class="job-list" id="flamenco_job_list">
-  </div>
+  <div class="job-list" id="flamenco_job_list"></div>
 </template>
 
 <script lang="js">
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import { DateTime } from "luxon";
+import * as datetime from "../datetime";
 
 import {
   JobsApi,
 } from '../manager-api'
 
 export default {
+  emits: ["activeJobChange"],
   props: ["apiClient"],
   data: () => {
     const options = {
@@ -28,17 +28,10 @@ export default {
           sorter: 'alphanum', sorterParams: { alignEmptyValues: "top" },
           formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
             const cellValue = cell.getData().updated;
-            let updated = null;
-            if (cellValue instanceof Date) {
-              updated = DateTime.fromJSDate(cellValue);
-            } else {
-              updated = DateTime.fromISO(cellValue);
-            }
-            const now = DateTime.local();
-            const ageInDays = now.diff(updated).as('days');
-            if (ageInDays > 14)
-              return updated.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY);
-            return updated.toRelative();
+            // TODO: if any "{amount} {units} ago" shown, the table should be
+            // refreshed every few {units}, so that it doesn't show any stale "4
+            // seconds ago" for days.
+            return datetime.relativeTime(cellValue);
           }
         },
       ],
@@ -46,7 +39,8 @@ export default {
         { column: "updated", dir: "desc" },
       ],
       height: "80%",
-      data: [],
+      data: [], // Will be filled via a Flamenco API request.
+      selectable: 1, // Only allow a single row to be selected at a time.
     };
     return {
       options: options,
@@ -58,6 +52,7 @@ export default {
     // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
     window.jobsTableVue = this;
     this.tabulator = new Tabulator('#flamenco_job_list', this.options);
+    this.tabulator.on("rowSelected", this.onRowSelected);
     this.fetchAllJobs();
   },
   methods: {
@@ -71,7 +66,7 @@ export default {
       tab.setSort(tab.getSorters()); // This triggers re-sorting.
     },
     fetchAllJobs() {
-      if (this.apiClient === undefined) {
+      if (!this.apiClient) {
         throw "no apiClient set on JobsTable component";
       }
       const jobsApi = new JobsApi(this.apiClient);
@@ -83,6 +78,7 @@ export default {
     },
     onJobsFetched(data) {
       this.tabulator.setData(data.jobs);
+      this.restoreRowSelection();
     },
     processJobUpdate(jobUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -103,13 +99,31 @@ export default {
         console.error(error);
       });
     },
+
+    // Selection handling.
+    onRowSelected(row) {
+      this.storeRowSelection();
+      const rowData = row.getData();
+      this.$emit("activeJobChange", rowData);
+    },
+    storeRowSelection() {
+      const selectedData = this.tabulator.getSelectedData();
+      const selectedJobIDs = selectedData.map((row) => row.id);
+      localStorage.setItem("selectedJobIDs", selectedJobIDs);
+    },
+    restoreRowSelection() {
+      const selectedJobIDs = localStorage.getItem('selectedJobIDs');
+      if (!selectedJobIDs) {
+        return;
+      }
+      this.tabulator.selectRow(selectedJobIDs);
+    },
   }
 };
 </script>
 
 <style scoped>
 .job-list {
-  border: thick solid fuchsia;
   font-family: 'Noto Mono', monospace;
   font-size: smaller;
 }

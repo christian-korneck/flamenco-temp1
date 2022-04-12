@@ -1,10 +1,10 @@
 <template>
   <header>Flamenco</header>
   <div class="col-1">
-    <jobs-table ref="jobsTable" :apiClient="apiClient" />
+    <jobs-table ref="jobsTable" :apiClient="apiClient" @activeJobChange="onActiveJobChanged" />
   </div>
   <div class="col-2">
-    <job-details :apiClient="apiClient" />
+    <job-details :apiClient="apiClient" :jobSummary="activeJobSummary" />
   </div>
   <div class="col-3">
     <task-details :apiClient="apiClient" />
@@ -33,10 +33,19 @@ export default {
       apiClient: new ApiClient(urls.api()),
       websocketURL: urls.ws(),
       messages: [],
+
+      activeJobSummary: {},
     };
   },
   mounted() { },
   methods: {
+    // UI component event handlers:
+    onActiveJobChanged(jobSummary) {
+      console.log("Selected:", jobSummary);
+      this.activeJobSummary = jobSummary;
+    },
+
+    // SocketIO event handlers:
     sendMessage(message) {
       this.$refs.jobsListener.sendBroadcastMessage("typer", message);
     },
