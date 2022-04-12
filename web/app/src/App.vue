@@ -54,22 +54,11 @@ export default {
   methods: {
     // UI component event handlers:
     onSelectedJobChanged(jobSummary) {
-      const fullJob = API.Job.constructFromObject(jobSummary);
-      if (fullJob.created) {
-        // The 'created' field is not part of the JobUpdate, but it is part of
-        // Job, so if that field is there, we can assume that this is an
-        // already-fetched job.
-        // TODO: keep track of when this was fetched, and re-fetch if necessary.
-        this.selectedJob = fullJob;
-        return;
-      }
-
       const jobsAPI = new API.JobsApi(this.apiClient);
       this._wrap(jobsAPI.fetchJob(jobSummary.id))
         .then((job) => {
           this.selectedJob = job;
-          // Forward the full job to Tabulator, so that the next selection
-          // doesn't have to re-fetch it.
+          // Forward the full job to Tabulator, so that that gets updated too.
           this.$refs.jobsTable.processJobUpdate(job);
         });
     },
