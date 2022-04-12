@@ -1,5 +1,8 @@
 <template>
-  <header>{{ flamencoName }}<span class='flamenco-version'>version: {{ flamencoVersion }}</span></header>
+  <header>{{ flamencoName }}
+    <api-spinner :numRunningQueries="numRunningQueries" />
+    <span class='flamenco-version'>version: {{ flamencoVersion }}</span>
+  </header>
   <div class="col-1">
     <jobs-table ref="jobsTable" :apiClient="apiClient" @activeJobChange="onActiveJobChanged" />
   </div>
@@ -18,6 +21,7 @@
 <script>
 import * as urls from './urls'
 import * as API from './manager-api';
+import ApiSpinner from './components/ApiSpinner.vue'
 import JobsTable from './components/JobsTable.vue'
 import JobDetails from './components/JobDetails.vue'
 import TaskDetails from './components/TaskDetails.vue'
@@ -29,7 +33,7 @@ const DEFAULT_FLAMENCO_VERSION = "unknown";
 export default {
   name: 'App',
   components: {
-    JobsTable, JobDetails, TaskDetails, UpdateListener,
+    ApiSpinner, JobsTable, JobDetails, TaskDetails, UpdateListener,
   },
   data: () => {
     return {
@@ -40,6 +44,8 @@ export default {
       activeJobSummary: {},
       flamencoName: DEFAULT_FLAMENCO_NAME,
       flamencoVersion: DEFAULT_FLAMENCO_VERSION,
+
+      numRunningQueries: 0,
     };
   },
   mounted() {
@@ -85,7 +91,16 @@ export default {
         this.flamencoName = version.name;
         this.flamencoVersion = version.version;
       })
-    }
+    },
+
+    // Wrap a Flamenco API promise, to keep track of how many queries are running.
+    // This is just a test to see how this works, not a final functional design.
+    _wrap(promise) {
+      this.numRunningQueries++;
+      return promise.finally(() => {
+        this.numRunningQueries--;
+      });
+    },
   },
 }
 </script>
