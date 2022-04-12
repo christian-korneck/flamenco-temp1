@@ -7,7 +7,12 @@ import io from "socket.io-client";
 import * as API from "../manager-api"
 
 export default {
-  emits: ["jobUpdate", "taskUpdate", "message", "reconnected"],
+  emits: [
+    // Data from Flamenco Manager:
+    "jobUpdate", "taskUpdate", "message",
+    // SocketIO events:
+    "sioReconnected", "sioDisconnected"
+  ],
   props: ["websocketURL"],
   data() {
     return {
@@ -42,9 +47,13 @@ export default {
         console.log("socketIO connection timeout:", timeout);
       });
 
+      this.socket.on("disconnect", (reason) => {
+        console.log("socketIO disconnected:", reason);
+        this.$emit("sioDisconnected", reason);
+      });
       this.socket.on("reconnect", (attemptNumber) => {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
-        this.$emit("reconnected");
+        this.$emit("sioReconnected", attemptNumber);
       });
 
       this.socket.on("/jobs", (jobUpdate) => {
