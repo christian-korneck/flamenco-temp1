@@ -35,7 +35,7 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
-      height: "80%",
+      height: "100%",
       data: [], // Will be filled via a Flamenco API request.
       selectable: 1, // Only allow a single row to be selected at a time.
     };

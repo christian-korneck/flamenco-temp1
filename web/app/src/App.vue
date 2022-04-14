@@ -129,6 +129,12 @@ export default {
 <style>
 @import "tabulator-tables/dist/css/tabulator_midnight.min.css";
 
+:root {
+  --header-height: 25px;
+  --footer-height: 25px;
+  --grid-gap: 4px;
+}
+
 body {
   margin: 0;
 }
@@ -144,7 +150,8 @@ body {
   width: 100%;
   height: 100vh;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 25px 1fr 25px;
+  grid-template-rows: var(--header-height) 1fr var(--footer-height);
+  grid-gap: var(--grid-gap);
   grid-template-areas:
     "header header header"
     "col-1 col-2 col-3"
@@ -176,6 +183,7 @@ h3.sub-title {
 
 .col-1 {
   grid-area: col-1;
+  max-height: calc(100vh - var(--header-height) - var(--footer-height) - 2*var(--grid-gap));
 }
 
 .col-2 {
