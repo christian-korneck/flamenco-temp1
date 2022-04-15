@@ -5,12 +5,15 @@ package api_impl
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 
 	"git.blender.org/flamenco/internal/manager/api_impl/mocks"
@@ -64,6 +67,7 @@ func (mf *mockedFlamenco) prepareMockedJSONRequest(requestBody interface{}) echo
 }
 
 // prepareMockedJSONRequest returns an `echo.Context` that has an empty request body attached to it.
+// `body` may be `nil` to indicate "no body".
 func (mf *mockedFlamenco) prepareMockedRequest(body io.Reader) echo.Context {
 	e := echo.New()
 
@@ -72,6 +76,39 @@ func (mf *mockedFlamenco) prepareMockedRequest(body io.Reader) echo.Context {
 	c := e.NewContext(req, rec)
 
 	return c
+}
+
+func getRecordedResponse(echoCtx echo.Context) *http.Response {
+	writer := echoCtx.Response().Writer
+	resp, ok := writer.(*httptest.ResponseRecorder)
+	if !ok {
+		panic(fmt.Sprintf("response writer was not a `*httptest.ResponseRecorder` but a %T", writer))
+	}
+	return resp.Result()
+}
+
+// assertJSONResponse asserts that a recorded response is JSON with the given HTTP status code.
+func assertJSONResponse(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectBody interface{}) {
+	resp := getRecordedResponse(echoCtx)
+	assert.Equal(t, expectStatusCode, resp.StatusCode)
+	contentType := resp.Header.Get(echo.HeaderContentType)
+
+	if !assert.Equal(t, "application/json; charset=UTF-8", contentType) {
+		t.Fatalf("response not JSON but %q, not going to compare body", contentType)
+		return
+	}
+
+	expectJSON, err := json.Marshal(expectBody)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	actualJSON, err := io.ReadAll(resp.Body)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	assert.JSONEq(t, string(expectJSON), string(actualJSON))
 }
 
 func testWorker() persistence.Worker {

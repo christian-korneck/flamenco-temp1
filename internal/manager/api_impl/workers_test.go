@@ -4,9 +4,7 @@ package api_impl
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -39,9 +37,15 @@ func TestTaskScheduleHappy(t *testing.T) {
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
 
-	resp := echo.Response().Writer.(*httptest.ResponseRecorder)
-	assert.Equal(t, http.StatusOK, resp.Code)
-	// TODO: check that the returned JSON actually matches what we expect.
+	// Check the response
+	assignedTask := api.AssignedTask{
+		Uuid:     task.UUID,
+		Job:      job.UUID,
+		Commands: []api.Command{},
+	}
+	assertJSONResponse(t, echo, http.StatusOK, assignedTask)
+	resp := getRecordedResponse(echo)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
 func TestTaskScheduleNonActiveStatus(t *testing.T) {
@@ -60,8 +64,8 @@ func TestTaskScheduleNonActiveStatus(t *testing.T) {
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
 
-	resp := echoCtx.Response().Writer.(*httptest.ResponseRecorder)
-	assert.Equal(t, http.StatusConflict, resp.Code)
+	resp := getRecordedResponse(echoCtx)
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
 }
 
 func TestTaskScheduleOtherStatusRequested(t *testing.T) {
@@ -80,13 +84,8 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
 
-	resp := echoCtx.Response().Writer.(*httptest.ResponseRecorder)
-	assert.Equal(t, http.StatusLocked, resp.Code)
-
-	responseBody := api.WorkerStateChange{}
-	err = json.Unmarshal(resp.Body.Bytes(), &responseBody)
-	assert.NoError(t, err)
-	assert.Equal(t, worker.StatusRequested, responseBody.StatusRequested)
+	expectBody := api.WorkerStateChange{StatusRequested: api.WorkerStatusAsleep}
+	assertJSONResponse(t, echoCtx, http.StatusLocked, expectBody)
 }
 
 func TestWorkerSignoffTaskRequeue(t *testing.T) {
@@ -137,6 +136,6 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	err := mf.flamenco.SignOff(echo)
 	assert.NoError(t, err)
 
-	resp := echo.Response().Writer.(*httptest.ResponseRecorder)
-	assert.Equal(t, http.StatusNoContent, resp.Code)
+	resp := getRecordedResponse(echo)
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 }
