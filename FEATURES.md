@@ -35,6 +35,10 @@ Note that list is **not** in any specific order.
 - [ ] Shaman/Job settings: Distinction between "can be auto-deleted" jobs and "must be kept around" jobs.
 - [ ] Sending data upstream to Flamenco Overwatch
 - [ ] Job archival / task cleanup
+- [ ] Caching of job compilers. Currently every operation (including "fetch job
+  type info", which is done by the web interface whenever job details are shown)
+  will just parse the JS from disk again. It'll be better to only do this when
+  the file on disk changed.
 
 ## Worker
 
