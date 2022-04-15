@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
@@ -26,6 +27,26 @@ func (f *Flamenco) GetJobTypes(e echo.Context) error {
 	logger.Debug().Msg("listing job types")
 	jobTypes := f.jobCompiler.ListJobTypes()
 	return e.JSON(http.StatusOK, &jobTypes)
+}
+
+func (f *Flamenco) GetJobType(e echo.Context, typeName string) error {
+	logger := requestLogger(e)
+
+	if f.jobCompiler == nil {
+		logger.Error().Msg("Flamenco is running without job compiler")
+		return sendAPIError(e, http.StatusInternalServerError, "no job types available")
+	}
+
+	logger.Debug().Str("typeName", typeName).Msg("getting job type")
+	jobType, err := f.jobCompiler.GetJobType(typeName)
+	if err != nil {
+		if err == job_compilers.ErrJobTypeUnknown {
+			return sendAPIError(e, http.StatusNotFound, "no such job type known")
+		}
+		return sendAPIError(e, http.StatusInternalServerError, "error getting job type")
+	}
+
+	return e.JSON(http.StatusOK, jobType)
 }
 
 func (f *Flamenco) SubmitJob(e echo.Context) error {

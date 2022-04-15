@@ -287,6 +287,21 @@ func (mr *MockJobCompilerMockRecorder) Compile(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compile", reflect.TypeOf((*MockJobCompiler)(nil).Compile), arg0, arg1)
 }
 
+// GetJobType mocks base method.
+func (m *MockJobCompiler) GetJobType(arg0 string) (api.AvailableJobType, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetJobType", arg0)
+	ret0, _ := ret[0].(api.AvailableJobType)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetJobType indicates an expected call of GetJobType.
+func (mr *MockJobCompilerMockRecorder) GetJobType(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobType", reflect.TypeOf((*MockJobCompiler)(nil).GetJobType), arg0)
+}
+
 // ListJobTypes mocks base method.
 func (m *MockJobCompiler) ListJobTypes() api.AvailableJobTypes {
 	m.ctrl.T.Helper()

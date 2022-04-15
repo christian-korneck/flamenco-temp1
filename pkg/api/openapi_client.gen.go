@@ -103,6 +103,9 @@ type ClientInterface interface {
 
 	QueryJobs(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetJobType request
+	GetJobType(ctx context.Context, typeName string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetJobTypes request
 	GetJobTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -208,6 +211,18 @@ func (c *Client) QueryJobsWithBody(ctx context.Context, contentType string, body
 
 func (c *Client) QueryJobs(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewQueryJobsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetJobType(ctx context.Context, typeName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetJobTypeRequest(c.Server, typeName)
 	if err != nil {
 		return nil, err
 	}
@@ -561,6 +576,40 @@ func NewQueryJobsRequestWithBody(server string, contentType string, body io.Read
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetJobTypeRequest generates requests for GetJobType
+func NewGetJobTypeRequest(server string, typeName string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "typeName", runtime.ParamLocationPath, typeName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/type/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -1143,6 +1192,9 @@ type ClientWithResponsesInterface interface {
 
 	QueryJobsWithResponse(ctx context.Context, body QueryJobsJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryJobsResponse, error)
 
+	// GetJobType request
+	GetJobTypeWithResponse(ctx context.Context, typeName string, reqEditors ...RequestEditorFn) (*GetJobTypeResponse, error)
+
 	// GetJobTypes request
 	GetJobTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetJobTypesResponse, error)
 
@@ -1260,6 +1312,28 @@ func (r QueryJobsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r QueryJobsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetJobTypeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AvailableJobType
+}
+
+// Status returns HTTPResponse.Status
+func (r GetJobTypeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetJobTypeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1627,6 +1701,15 @@ func (c *ClientWithResponses) QueryJobsWithResponse(ctx context.Context, body Qu
 	return ParseQueryJobsResponse(rsp)
 }
 
+// GetJobTypeWithResponse request returning *GetJobTypeResponse
+func (c *ClientWithResponses) GetJobTypeWithResponse(ctx context.Context, typeName string, reqEditors ...RequestEditorFn) (*GetJobTypeResponse, error) {
+	rsp, err := c.GetJobType(ctx, typeName, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetJobTypeResponse(rsp)
+}
+
 // GetJobTypesWithResponse request returning *GetJobTypesResponse
 func (c *ClientWithResponses) GetJobTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetJobTypesResponse, error) {
 	rsp, err := c.GetJobTypes(ctx, reqEditors...)
@@ -1887,6 +1970,32 @@ func ParseQueryJobsResponse(rsp *http.Response) (*QueryJobsResponse, error) {
 			return nil, err
 		}
 		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetJobTypeResponse parses an HTTP response from a GetJobTypeWithResponse call
+func ParseGetJobTypeResponse(rsp *http.Response) (*GetJobTypeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetJobTypeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AvailableJobType
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

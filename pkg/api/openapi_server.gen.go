@@ -22,6 +22,9 @@ type ServerInterface interface {
 	// Fetch list of jobs.
 	// (POST /api/jobs/query)
 	QueryJobs(ctx echo.Context) error
+	// Get single job type and its parameters.
+	// (GET /api/jobs/type/{typeName})
+	GetJobType(ctx echo.Context, typeName string) error
 	// Get list of job types and their parameters.
 	// (GET /api/jobs/types)
 	GetJobTypes(ctx echo.Context) error
@@ -96,6 +99,22 @@ func (w *ServerInterfaceWrapper) QueryJobs(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.QueryJobs(ctx)
+	return err
+}
+
+// GetJobType converts echo context to params.
+func (w *ServerInterfaceWrapper) GetJobType(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "typeName" -------------
+	var typeName string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "typeName", runtime.ParamLocationPath, ctx.Param("typeName"), &typeName)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter typeName: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetJobType(ctx, typeName)
 	return err
 }
 
@@ -347,6 +366,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/configuration", wrapper.GetConfiguration)
 	router.POST(baseURL+"/api/jobs", wrapper.SubmitJob)
 	router.POST(baseURL+"/api/jobs/query", wrapper.QueryJobs)
+	router.GET(baseURL+"/api/jobs/type/:typeName", wrapper.GetJobType)
 	router.GET(baseURL+"/api/jobs/types", wrapper.GetJobTypes)
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.GET(baseURL+"/api/version", wrapper.GetVersion)

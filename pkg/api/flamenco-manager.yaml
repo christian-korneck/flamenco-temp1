@@ -236,6 +236,24 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/AvailableJobTypes"}
 
+  /api/jobs/type/{typeName}:
+    summary: Info about a specific job type.
+    get:
+      operationId: getJobType
+      summary: Get single job type and its parameters.
+      tags: [jobs]
+      parameters:
+        - name: typeName
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        "200":
+          description: Job type
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AvailableJobType"}
+
   /api/jobs:
     summary: Job submission endpoint.
     post:

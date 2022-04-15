@@ -13,6 +13,7 @@
 
 
 import ApiClient from "../ApiClient";
+import AvailableJobType from '../model/AvailableJobType';
 import AvailableJobTypes from '../model/AvailableJobTypes';
 import Error from '../model/Error';
 import Job from '../model/Job';
@@ -80,6 +81,52 @@ export default class JobsApi {
      */
     fetchJob(jobId) {
       return this.fetchJobWithHttpInfo(jobId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Get single job type and its parameters.
+     * @param {String} typeName 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/AvailableJobType} and HTTP response
+     */
+    getJobTypeWithHttpInfo(typeName) {
+      let postBody = null;
+      // verify the required parameter 'typeName' is set
+      if (typeName === undefined || typeName === null) {
+        throw new Error("Missing the required parameter 'typeName' when calling getJobType");
+      }
+
+      let pathParams = {
+        'typeName': typeName
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = AvailableJobType;
+      return this.apiClient.callApi(
+        '/api/jobs/type/{typeName}', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Get single job type and its parameters.
+     * @param {String} typeName 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/AvailableJobType}
+     */
+    getJobType(typeName) {
+      return this.getJobTypeWithHttpInfo(typeName)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

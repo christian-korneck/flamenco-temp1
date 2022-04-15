@@ -147,6 +147,16 @@ func (s *Service) ListJobTypes() api.AvailableJobTypes {
 	return api.AvailableJobTypes{JobTypes: jobTypes}
 }
 
+// GetJobType returns information about the named job type.
+// Returns ErrJobTypeUnknown when the name doesn't correspond with a known job type.
+func (s *Service) GetJobType(typeName string) (api.AvailableJobType, error) {
+	compiler, err := s.compilerForJobType(typeName)
+	if err != nil {
+		return api.AvailableJobType{}, err
+	}
+	return compiler.getJobTypeInfo()
+}
+
 func (vm *VM) getCompileJob() (jobCompileFunc, error) {
 	compileJob, isCallable := goja.AssertFunction(vm.runtime.Get("compileJob"))
 	if !isCallable {

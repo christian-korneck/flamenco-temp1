@@ -4,6 +4,8 @@ package api_impl
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"testing"
 	"time"
 
@@ -137,4 +139,59 @@ func TestTaskUpdate(t *testing.T) {
 	assert.Equal(t, mockTask.UUID, actUpdatedTask.UUID)
 	assert.Equal(t, "pre-update activity", statusChangedtask.Activity) // the 'save' should come from the change in status.
 	assert.Equal(t, "testing", actUpdatedTask.Activity)                // the activity should be saved separately.
+}
+
+func TestGetJobTypeHappy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mf := newMockedFlamenco(mockCtrl)
+
+	// Get an existing job type.
+	jt := api.AvailableJobType{
+		Name:  "test-job-type",
+		Label: "Test Job Type",
+		Settings: []api.AvailableJobSetting{
+			{Key: "setting", Type: api.AvailableJobSettingTypeString},
+		},
+	}
+	mf.jobCompiler.EXPECT().GetJobType("test-job-type").
+		Return(jt, nil)
+
+	echoCtx := mf.prepareMockedRequest(nil)
+	err := mf.flamenco.GetJobType(echoCtx, "test-job-type")
+	assert.NoError(t, err)
+
+	assertJSONResponse(t, echoCtx, http.StatusOK, jt)
+}
+
+func TestGetJobTypeUnknown(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mf := newMockedFlamenco(mockCtrl)
+
+	// Get a non-existing job type.
+	mf.jobCompiler.EXPECT().GetJobType("nonexistent-type").
+		Return(api.AvailableJobType{}, job_compilers.ErrJobTypeUnknown)
+
+	echoCtx := mf.prepareMockedRequest(nil)
+	err := mf.flamenco.GetJobType(echoCtx, "nonexistent-type")
+	assert.NoError(t, err)
+	assertJSONResponse(t, echoCtx, http.StatusNotFound, api.Error{
+		Code:    http.StatusNotFound,
+		Message: "no such job type known",
+	})
+}
+
+func TestGetJobTypeError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mf := newMockedFlamenco(mockCtrl)
+
+	// Get an error situation.
+	mf.jobCompiler.EXPECT().GetJobType("error").
+		Return(api.AvailableJobType{}, errors.New("didn't expect this"))
+	echoCtx := mf.prepareMockedRequest(nil)
+	err := mf.flamenco.GetJobType(echoCtx, "error")
+	assert.NoError(t, err)
+	assertAPIErrorResponse(t, echoCtx, http.StatusInternalServerError, "error getting job type")
 }

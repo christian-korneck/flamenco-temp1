@@ -81,6 +81,7 @@ var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
 
 type JobCompiler interface {
 	ListJobTypes() api.AvailableJobTypes
+	GetJobType(typeName string) (api.AvailableJobType, error)
 	Compile(ctx context.Context, job api.SubmittedJob) (*job_compilers.AuthoredJob, error)
 }
 

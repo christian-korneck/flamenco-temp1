@@ -111,6 +111,13 @@ func assertJSONResponse(t *testing.T, echoCtx echo.Context, expectStatusCode int
 	assert.JSONEq(t, string(expectJSON), string(actualJSON))
 }
 
+func assertAPIErrorResponse(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectMessage string) {
+	assertJSONResponse(t, echoCtx, expectStatusCode, api.Error{
+		Code:    int32(expectStatusCode),
+		Message: expectMessage,
+	})
+}
+
 func testWorker() persistence.Worker {
 	return persistence.Worker{
 		Model:              gorm.Model{ID: 1},
