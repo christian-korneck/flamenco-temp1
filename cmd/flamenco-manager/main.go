@@ -6,11 +6,14 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -42,6 +45,8 @@ var cliArgs struct {
 	version     bool
 	writeConfig bool
 }
+
+const developmentWebInterfacePort = 8081
 
 func main() {
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
@@ -83,7 +88,12 @@ func main() {
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
-	ssdp := makeAutoDiscoverable("http", listen)
+	urls, err := own_url.AvailableURLs("http", listen)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to figure out my own URL")
+	}
+
+	ssdp := makeAutoDiscoverable(urls)
 
 	// Construct the services.
 	persist := openDB(*configService)
@@ -96,7 +106,7 @@ func main() {
 
 	webUpdater := webupdates.New()
 	flamenco := buildFlamencoAPI(configService, persist, webUpdater)
-	e := buildWebService(flamenco, persist, ssdp, webUpdater)
+	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
 
 	installSignalHandler(mainCtxCancel)
 
@@ -150,6 +160,7 @@ func buildWebService(
 	persist api_impl.PersistenceService,
 	ssdp *upnp_ssdp.Server,
 	webUpdater *webupdates.BiDirComms,
+	ownURLs []url.URL,
 ) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
@@ -175,8 +186,7 @@ func buildWebService(
 	// e.Use(middleware.Gzip())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		// Just some hard-coded URLs for now, just to get some tests going.
-		AllowOrigins: []string{"http://localhost:8080", "http://localhost:8081", "http://10.161.30.150:8081"},
+		AllowOrigins: corsOrigins(ownURLs),
 
 		// List taken from https://www.bacancytechnology.com/blog/real-time-chat-application-using-socketio-golang-vuejs/
 		AllowHeaders: []string{
@@ -346,13 +356,7 @@ func installSignalHandler(cancelFunc context.CancelFunc) {
 	}()
 }
 
-func makeAutoDiscoverable(scheme, listen string) *upnp_ssdp.Server {
-	urls, err := own_url.AvailableURLs("http", listen)
-	if err != nil {
-		log.Error().Err(err).Msg("unable to figure out my own URL")
-		return nil
-	}
-
+func makeAutoDiscoverable(urls []url.URL) *upnp_ssdp.Server {
 	ssdp, err := upnp_ssdp.NewServer(log.Logger)
 	if err != nil {
 		log.Error().Err(err).Msg("error creating UPnP/SSDP server")
@@ -361,4 +365,23 @@ func makeAutoDiscoverable(scheme, listen string) *upnp_ssdp.Server {
 
 	ssdp.AddAdvertisementURLs(urls)
 	return ssdp
+}
+
+// corsOrigins strips everything from the URL that follows the hostname:port, so
+// that it's suitable for checking Origin headers of CORS OPTIONS requests.
+func corsOrigins(urls []url.URL) []string {
+	origins := make([]string, len(urls))
+
+	// TODO: find a way to allow CORS requests during development, but not when
+	// running in production.
+
+	for i, url := range urls {
+		// Allow the `yarn run dev` webserver do cross-origin requests to this Manager.
+		url.Path = ""
+		url.Fragment = ""
+		url.Host = fmt.Sprintf("%s:%d", url.Hostname(), developmentWebInterfacePort)
+		origins[i] = url.String()
+	}
+	log.Debug().Str("origins", strings.Join(origins, " ")).Msg("accepted CORS origins")
+	return origins
 }
