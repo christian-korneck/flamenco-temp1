@@ -319,9 +319,9 @@ func (c *Conf) constructVariableLookupTable() {
 	c.constructVariableLookupTableForVars(c.Variables)
 	c.constructVariableLookupTableForVars(c.implicitVariables)
 
-	log.Trace().
-		Interface("variables", c.Variables).
-		Msg("constructed lookup table")
+	// log.Trace().
+	// 	Interface("variables", c.Variables).
+	// 	Msg("constructed lookup table")
 }
 
 func (c *Conf) constructVariableLookupTableForVars(vars map[string]Variable) {
@@ -334,10 +334,10 @@ func (c *Conf) constructVariableLookupTableForVars(vars map[string]Variable) {
 		}
 		concreteAudiences = append(concreteAudiences, audience)
 	}
-	log.Trace().
-		Interface("concreteAudiences", concreteAudiences).
-		Interface("isWildcard", isWildcard).
-		Msg("constructing variable lookup table")
+	// log.Trace().
+	// 	Interface("concreteAudiences", concreteAudiences).
+	// 	Interface("isWildcard", isWildcard).
+	// 	Msg("constructing variable lookup table")
 
 	// Just for brevity.
 	lookup := c.VariablesLookup
@@ -358,21 +358,21 @@ func (c *Conf) constructVariableLookupTableForVars(vars map[string]Variable) {
 		if lookup[audience][platform] == nil {
 			lookup[audience][platform] = map[string]string{}
 		}
-		log.Trace().
-			Str("audience", string(audience)).
-			Str("platform", string(platform)).
-			Str("name", name).
-			Str("value", value).
-			Msg("setting variable")
+		// log.Trace().
+		// 	Str("audience", string(audience)).
+		// 	Str("platform", string(platform)).
+		// 	Str("name", name).
+		// 	Str("value", value).
+		// 	Msg("setting variable")
 		lookup[audience][platform][name] = value
 	}
 
 	// Construct the lookup table for each audience+platform+name
 	for name, variable := range vars {
-		log.Trace().
-			Str("name", name).
-			Interface("variable", variable).
-			Msg("handling variable")
+		// log.Trace().
+		// 	Str("name", name).
+		// 	Interface("variable", variable).
+		// 	Msg("handling variable")
 		for _, value := range variable.Values {
 
 			// Two-way values should not end in path separator.
