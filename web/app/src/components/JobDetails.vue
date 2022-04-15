@@ -65,6 +65,7 @@ function objectEmpty(o) {
   if (!o) return true;
   return Object.entries(o).length == 0;
 }
+window.objectEmpty = objectEmpty;
 
 export default {
   props: [
