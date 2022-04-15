@@ -137,14 +137,15 @@ export default {
 
 body {
   margin: 0;
+
+  color: #EEEEEE;
+  background-color: #222222;
 }
 
 #app {
   font-family: 'Noto Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #EEEEEE;
-  background-color: #222222;
 
   display: grid;
   width: 100%;
