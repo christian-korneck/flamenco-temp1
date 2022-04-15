@@ -1,7 +1,8 @@
 <template>
-  <header>{{ flamencoName }}
+  <header>{{ flamencoName }}</header>
+  <header class="right">
     <api-spinner :numRunningQueries="numRunningQueries" />
-    <span class='flamenco-version'>version: {{ flamencoVersion }}</span>
+    version: {{ flamencoVersion }}
   </header>
   <div class="col-1">
     <jobs-table ref="jobsTable" :apiClient="apiClient" @selectedJobChange="onSelectedJobChanged" />
@@ -157,20 +158,27 @@ body {
   grid-template-rows: var(--header-height) 1fr var(--footer-height);
   grid-gap: var(--grid-gap);
   grid-template-areas:
-    "header header header"
+    "header header header-right"
     "col-1 col-2 col-3"
     "footer footer footer";
 }
 
-header {
-  grid-area: header;
+header,
+header.right {
   background-color: #333;
   color: #EEE;
 }
 
-header span.flamenco-version {
-  float: right;
-  font-size: small;
+header {
+  grid-area: header;
+  padding-left: 0.2rem;
+}
+
+header.right {
+  grid-area: header-right;
+  text-align: right;
+  font-size: smaller;
+  padding-right: 0.4rem;
 }
 
 h2.column-title {
