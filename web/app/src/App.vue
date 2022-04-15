@@ -55,6 +55,11 @@ export default {
   methods: {
     // UI component event handlers:
     onSelectedJobChanged(jobSummary) {
+      if (!jobSummary) { // There is no selected job.
+        this.selectedJob = {}
+        return;
+      }
+
       const jobsAPI = new API.JobsApi(this.apiClient);
       this._wrap(jobsAPI.fetchJob(jobSummary.id))
         .then((job) => {

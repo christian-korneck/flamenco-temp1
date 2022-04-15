@@ -50,6 +50,7 @@ export default {
     window.jobsTableVue = this;
     this.tabulator = new Tabulator('#flamenco_job_list', this.options);
     this.tabulator.on("rowSelected", this.onRowSelected);
+    this.tabulator.on("rowDeselected", this.onRowDeselected);
     this.fetchAllJobs();
   },
   methods: {
@@ -74,10 +75,10 @@ export default {
       });
     },
     onJobsFetched(data) {
-      // "Down-cast" to JobUpdate to only get those fields, just for debugging things.
+      // "Down-cast" to JobUpdate to only get those fields, just for debugging things:
       // data.jobs = data.jobs.map((j) => API.JobUpdate.constructFromObject(j));
       this.tabulator.setData(data.jobs);
-      this.restoreRowSelection();
+      this._restoreRowSelection();
     },
     processJobUpdate(jobUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -91,17 +92,20 @@ export default {
     },
 
     // Selection handling.
-    onRowSelected(row) {
-      this.storeRowSelection();
-      const rowData = row.getData();
-      this.$emit("selectedJobChange", rowData);
+    onRowSelected(selectedRow) {
+      const selectedData = selectedRow.getData();
+      this._storeRowSelection([selectedData]);
+      this.$emit("selectedJobChange", selectedData);
     },
-    storeRowSelection() {
-      const selectedData = this.tabulator.getSelectedData();
+    onRowDeselected(deselectedRow) {
+      this._storeRowSelection([]);
+      this.$emit("selectedJobChange", null);
+    },
+    _storeRowSelection(selectedData) {
       const selectedJobIDs = selectedData.map((row) => row.id);
       localStorage.setItem("selectedJobIDs", selectedJobIDs);
     },
-    restoreRowSelection() {
+    _restoreRowSelection() {
       const selectedJobIDs = localStorage.getItem('selectedJobIDs');
       if (!selectedJobIDs) {
         return;
