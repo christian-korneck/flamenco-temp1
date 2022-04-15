@@ -55,7 +55,11 @@ export default {
           // The disconnection was initiated by the server, need to reconnect
           // manually. If the disconnect was for other reasons, the socket
           // should automatically try to reconnect.
-          socket.connect();
+
+          // Intentionally commented out function call, because this should
+          // happen with some nice exponential backoff instead of hammering the
+          // server:
+          // socket.connect();
         }
       });
       this.socket.on("reconnect", (attemptNumber) => {
