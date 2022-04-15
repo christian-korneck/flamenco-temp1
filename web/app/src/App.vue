@@ -135,8 +135,11 @@ export default {
   --grid-gap: 4px;
 }
 
+html,
 body {
+  height: calc(100vh - 1px);
   margin: 0;
+  padding: 0;
 
   color: #EEEEEE;
   background-color: #222222;
@@ -149,7 +152,7 @@ body {
 
   display: grid;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: var(--header-height) 1fr var(--footer-height);
   grid-gap: var(--grid-gap);
