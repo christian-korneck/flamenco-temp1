@@ -48,7 +48,7 @@
 
     <h3 class="sub-title" v-if="hasSettings">Settings</h3>
     <table class="settings">
-      <tr v-for="value, key in settings" :class="`field-${key}`">
+      <tr v-for="value, key in settingsToDisplay" :class="`field-${key}`">
         <th>{{ key }}</th>
         <td>{{ value }}</td>
       </tr>
@@ -74,44 +74,101 @@ export default {
   data() {
     return {
       datetime: datetime, // So that the template can access it.
-      settings: null, // Object with filtered job settings, or null if there is no job.
+      simpleSettings: null, // Object with filtered job settings, or null if there is no job.
       jobsApi: new API.JobsApi(this.apiClient),
       jobType: null, // API.AvailableJobType object for the current job type.
+      jobTypeSettings: null, // Mapping from setting key to its definition in the job type.
+      showAllSettings: false,
     };
   },
   mounted() {
     // Allow testing from the JS console:
     window.jobDetailsVue = this;
+
+    if (!objectEmpty(this.jobData)) {
+      this._refreshJobSettings(this.jobData);
+    }
   },
   computed: {
     hasMetadata() {
       return this.jobData && !objectEmpty(this.jobData.metadata);
     },
     hasSettings() {
-      return this.jobData && !objectEmpty(this.settings);
+      return this.jobData && !objectEmpty(this.settingsToDisplay);
+    },
+    settingsToDisplay() {
+      if (!this.showAllSettings) {
+        return this.simpleSettings;
+      }
+      if (objectEmpty(this.jobData) || objectEmpty(this.jobData.settings)) {
+        return {};
+      }
+      return this.jobData.settings;
     },
   },
   watch: {
     jobData(newJobData) {
+      this._refreshJobSettings(newJobData);
+    },
+  },
+  methods: {
+    _refreshJobSettings(newJobData) {
       if (objectEmpty(newJobData)) {
-        this.settings = null;
+        this.simpleSettings = null;
         return;
       }
 
-      this.settings = newJobData.settings;
-
       // Only fetch the job type if it's different from what's already loaded.
       if (objectEmpty(this.jobType) || this.jobType.name != newJobData.type) {
+        this.simpleSettings = null; // They should only be shown when the type info is known.
+
         this.jobsApi.getJobType(newJobData.type)
           .then(this.onJobTypeLoaded)
-          .catch((error) => { console.warn(error) });
+          .catch((error) => { console.warn("error fetching job type:", error) });
+      } else {
+        this._setJobSettings(newJobData.settings);
       }
-    }
-  },
-  methods: {
+    },
+
     onJobTypeLoaded(jobType) {
       console.log("Job type loaded: ", jobType);
       this.jobType = jobType;
+
+      // Construct a lookup table for the settings.
+      const jobTypeSettings = {};
+      for (let setting of jobType.settings)
+        jobTypeSettings[setting.key] = setting;
+      this.jobTypeSettings = jobTypeSettings;
+
+      this._setJobSettings(this.jobData.settings);
+    },
+
+    _setJobSettings(newJobSettings) {
+      if (objectEmpty(newJobSettings)) {
+        this.simpleSettings = null;
+        return;
+      }
+
+      if (objectEmpty(this.jobTypeSettings)) {
+        console.warn("empty job type settings");
+        return;
+      }
+
+      const filtered = {};
+      for (let key in newJobSettings) {
+        const setting = this.jobTypeSettings[key];
+        if (typeof setting == 'undefined') {
+          // Jobs can have settings beyond what the job type defines, for
+          // example when the job is older than the latest change to a job type,
+          // or when the submission system simply added custom settings.
+          continue;
+        }
+        if (setting.visible !== false) {
+          filtered[key] = newJobSettings[key];
+        }
+      }
+
+      this.simpleSettings = filtered;
     }
   }
 };
