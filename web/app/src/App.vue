@@ -222,4 +222,38 @@ footer {
   background-color: #333333;
   color: #EEE;
 }
+
+section.action-bar button.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.1rem 0.75rem;
+  border-radius: 0.3rem;
+  border: thin solid white;
+
+  background: #6E6D70;
+  color: #DFDEDF;
+  touch-action: manipulation;
+
+  transition-duration: 150ms;
+  transition-property: color, background-color, border-color, box-shadow
+}
+
+section.action-bar button.action[disabled] {
+  background-color: #4c4b4d;
+  color: #858585;
+  border: thin solid #858585;
+}
+
+section.action-bar button.action:focus {
+  background-color: cadetblue;
+}
+
+section.action-bar button.action.dangerous {
+  background-color: darkred;
+}
+
+section.action-bar button.action.dangerous[disabled] {
+  background-color: #53413e;
+}
 </style>

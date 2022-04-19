@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 
+import * as urls from '@/urls'
 import * as API from '@/manager-api';
 
 // 'use' prefix is idiomatic for Pinia stores.
@@ -14,6 +15,9 @@ export const useJobs = defineStore('jobs', {
   getters: {
     numSelected() {
       return this.selectedJobs.length;
+    },
+    canDelete() {
+      return this._anyJobWithStatus(["queued", "paused", "failed", "completed"])
     },
   },
   actions: {
@@ -30,5 +34,17 @@ export const useJobs = defineStore('jobs', {
       this.selectedJobs = [];
       this.activeJob = null;
     },
+
+    // Actions on the selected jobs.
+    deleteJobs() {
+      const deletionPromise = new Promise( (resolutionFunc, rejectionFunc) => {
+        rejectionFunc({code: 327, message: "deleting jobs is not implemented in JS yet"});
+      });
+      return deletionPromise;
+    },
+    // Internal methods.
+    _anyJobWithStatus(statuses) {
+      return this.selectedJobs.reduce((foundJob, job) => (foundJob || statuses.includes(job.status)), false);
+    }
   },
 })

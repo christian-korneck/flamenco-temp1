@@ -1,4 +1,5 @@
 <template>
+  <job-actions-bar />
   <div class="job-list" id="flamenco_job_list"></div>
 </template>
 
@@ -6,10 +7,14 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
+import JobActionsBar from '@/components/JobActionsBar.vue'
 
 export default {
   emits: ["selectedJobChange"],
   props: ["apiClient"],
+  components: {
+    JobActionsBar,
+  },
   data: () => {
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
