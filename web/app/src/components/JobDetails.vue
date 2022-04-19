@@ -1,6 +1,6 @@
 <template>
   <h2 class="column-title">Job Details</h2>
-  <div class="job-details">
+  <div v-if="hasJobData" class="job-details">
     <table class="details">
       <tr class="field-id">
         <th>ID</th>
@@ -55,6 +55,9 @@
     </table>
 
   </div>
+  <div v-else class="no-job-selected">
+    <p>No job selected, pick one from the list on the left.</p>
+  </div>
 </template>
 
 <script lang="js">
@@ -91,6 +94,9 @@ export default {
     }
   },
   computed: {
+    hasJobData() {
+      return !!this.jobData && !!this.jobData.id;
+    },
     hasMetadata() {
       return this.jobData && !objectEmpty(this.jobData.metadata);
     },
