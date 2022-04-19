@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 
-import App from './App.vue'
-import router from './router'
+import App from '@/App.vue'
+import router from '@/router'
 
 // Ensure Tabulator can find `luxon`, which it needs for sorting by
 // date/time/datetime.

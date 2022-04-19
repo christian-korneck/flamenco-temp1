@@ -58,8 +58,8 @@
 </template>
 
 <script lang="js">
-import * as datetime from "../datetime";
-import * as API from "../manager-api";
+import * as datetime from "@/datetime";
+import * as API from '@/manager-api';
 
 function objectEmpty(o) {
   if (!o) return true;

@@ -4,7 +4,7 @@
 
 <script>
 import io from "socket.io-client";
-import * as API from "../manager-api"
+import * as API from "@/manager-api"
 
 export default {
   emits: [

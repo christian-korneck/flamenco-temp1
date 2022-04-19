@@ -20,13 +20,14 @@
 </template>
 
 <script>
-import * as urls from './urls'
-import * as API from './manager-api';
-import ApiSpinner from './components/ApiSpinner.vue'
-import JobsTable from './components/JobsTable.vue'
-import JobDetails from './components/JobDetails.vue'
-import TaskDetails from './components/TaskDetails.vue'
-import UpdateListener from './components/UpdateListener.vue'
+import * as urls from '@/urls'
+import * as API from '@/manager-api';
+
+import ApiSpinner from '@/components/ApiSpinner.vue'
+import JobsTable from '@/components/JobsTable.vue'
+import JobDetails from '@/components/JobDetails.vue'
+import TaskDetails from '@/components/TaskDetails.vue'
+import UpdateListener from '@/components/UpdateListener.vue'
 
 const DEFAULT_FLAMENCO_NAME = "Flamenco";
 const DEFAULT_FLAMENCO_VERSION = "unknown";
