@@ -22,6 +22,7 @@
 <script>
 import * as urls from '@/urls'
 import * as API from '@/manager-api';
+import { useJobs } from '@/stores/jobs';
 
 import ApiSpinner from '@/components/ApiSpinner.vue'
 import JobsTable from '@/components/JobsTable.vue'
@@ -42,27 +43,32 @@ export default {
     websocketURL: urls.ws(),
     messages: [],
 
-    selectedJob: {},
+    jobs: useJobs(),
+
     flamencoName: DEFAULT_FLAMENCO_NAME,
     flamencoVersion: DEFAULT_FLAMENCO_VERSION,
 
     numRunningQueries: 0,
   }),
   mounted() {
+    window.app = this;
     this.fetchManagerInfo();
+  },
+  computed: {
+    selectedJob() { return this.jobs ? this.jobs.activeJob : null; },
   },
   methods: {
     // UI component event handlers:
     onSelectedJobChanged(jobSummary) {
       if (!jobSummary) { // There is no selected job.
-        this.selectedJob = {}
+        this.jobs.deselectAllJobs();
         return;
       }
 
       const jobsAPI = new API.JobsApi(this.apiClient);
       this._wrap(jobsAPI.fetchJob(jobSummary.id))
         .then((job) => {
-          this.selectedJob = job;
+          this.jobs.setSelectedJob(job);
           // Forward the full job to Tabulator, so that that gets updated too.
           this.$refs.jobsTable.processJobUpdate(job);
         });
@@ -84,7 +90,8 @@ export default {
       } else {
         console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
       }
-      if (this.selectedJob && this.selectedJob.id == jobUpdate.id) {
+      const selectedJob = this.selectedJob;
+      if (selectedJob && selectedJob.id == jobUpdate.id) {
         this.onSelectedJobChanged(jobUpdate);
       }
     },
