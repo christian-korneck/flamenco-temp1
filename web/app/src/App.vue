@@ -14,6 +14,7 @@
     <task-details :apiClient="apiClient" />
   </div>
   <footer>Footer
+    <span class='notifications' v-if="notifs.last">{{ notifs.last.msg }}</span>
     <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onSioJobUpdate"
       @message="onChatMessage" @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
   </footer>
@@ -23,6 +24,7 @@
 import * as urls from '@/urls'
 import * as API from '@/manager-api';
 import { useJobs } from '@/stores/jobs';
+import { useNotifs } from '@/stores/notifications';
 
 import ApiSpinner from '@/components/ApiSpinner.vue'
 import JobsTable from '@/components/JobsTable.vue'
@@ -44,6 +46,7 @@ export default {
     messages: [],
 
     jobs: useJobs(),
+    notifs: useNotifs(),
 
     flamencoName: DEFAULT_FLAMENCO_NAME,
     flamencoVersion: DEFAULT_FLAMENCO_VERSION,
@@ -145,6 +148,8 @@ export default {
   --header-height: 25px;
   --footer-height: 25px;
   --grid-gap: 4px;
+
+  --action-bar-height: 3em;
 }
 
 html,
@@ -221,6 +226,12 @@ footer {
   grid-area: footer;
   background-color: #333333;
   color: #EEE;
+  padding-top: 0.2rem;
+  padding-left: 0.2rem;
+}
+
+section.action-bar {
+  height: var(--action-bar-height);
 }
 
 section.action-bar button.action {

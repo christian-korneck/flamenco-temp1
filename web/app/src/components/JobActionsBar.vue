@@ -6,12 +6,14 @@
 
 <script>
 import { useJobs } from '@/stores/jobs';
+import { useNotifs } from '@/stores/notifications';
 
 export default {
   name: "JobActionsBar",
   events: ["actionDone", "apiError"],
   data: () => ({
     jobs: useJobs(),
+    notifs: useNotifs(),
   }),
   computed: {
   },
@@ -20,10 +22,11 @@ export default {
       const numJobs = this.jobs.numSelected;
       this.jobs.deleteJobs()
         .then(() => {
-          this.$emit("actionDone", `${numJobs} jobs marked for deletion`)
+          this.notifs.add(`${numJobs} jobs marked for deletion`);
         })
         .catch((error) => {
-          this.$emit("apiError", error);
+          const errorMsg = JSON.stringify(error); // TODO: handle API errors better.
+          this.notifs.add(`Error: ${errorMsg}`);
         })
     },
   }

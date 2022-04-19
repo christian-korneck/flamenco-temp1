@@ -1,6 +1,8 @@
 <template>
   <job-actions-bar />
-  <div class="job-list" id="flamenco_job_list"></div>
+  <div class="job-list-container">
+    <div class="job-list" id="flamenco_job_list"></div>
+  </div>
 </template>
 
 <script lang="js">
@@ -121,9 +123,10 @@ export default {
 };
 </script>
 
-<style scoped>
-.job-list {
+<style>
+.job-list-container {
   font-family: 'Noto Mono', monospace;
   font-size: smaller;
+  height: calc(100% - var(--action-bar-height));
 }
 </style>
