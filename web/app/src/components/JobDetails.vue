@@ -19,7 +19,7 @@
 
       <tr class="field-type">
         <th>Type</th>
-        <td>{{ jobType.label }}</td>
+        <td>{{ jobType ? jobType.label : jobData.type }}</td>
       </tr>
 
       <tr class="field-priority">
