@@ -37,19 +37,17 @@ export default {
   components: {
     ApiSpinner, JobsTable, JobDetails, TaskDetails, UpdateListener,
   },
-  data: () => {
-    return {
-      apiClient: new API.ApiClient(urls.api()),
-      websocketURL: urls.ws(),
-      messages: [],
+  data: () => ({
+    apiClient: new API.ApiClient(urls.api()),
+    websocketURL: urls.ws(),
+    messages: [],
 
-      selectedJob: {},
-      flamencoName: DEFAULT_FLAMENCO_NAME,
-      flamencoVersion: DEFAULT_FLAMENCO_VERSION,
+    selectedJob: {},
+    flamencoName: DEFAULT_FLAMENCO_NAME,
+    flamencoVersion: DEFAULT_FLAMENCO_VERSION,
 
-      numRunningQueries: 0,
-    };
-  },
+    numRunningQueries: 0,
+  }),
   mounted() {
     this.fetchManagerInfo();
   },
