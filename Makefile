@@ -28,6 +28,12 @@ flamenco-manager:
 flamenco-worker:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
 
+flamenco-manager_race:
+	CGO_ENABLED=1 go build -race -o $@ -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
+
+flamenco-worker_race:
+	CGO_ENABLED=1 go build -race -o $@ -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
+
 generate: generate-go generate-py generate-js
 
 generate-go:
