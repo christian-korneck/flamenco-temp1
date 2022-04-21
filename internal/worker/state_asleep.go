@@ -6,8 +6,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -25,7 +23,7 @@ func (w *Worker) gotoStateAsleep(ctx context.Context) {
 
 func (w *Worker) runStateAsleep(ctx context.Context) {
 	defer w.doneWg.Done()
-	logger := log.With().Str("status", string(w.state)).Logger()
+	logger := w.loggerWithStatus()
 	logger.Info().Msg("sleeping")
 
 	for {

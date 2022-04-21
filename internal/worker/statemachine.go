@@ -5,6 +5,7 @@ package worker
 import (
 	"context"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"git.blender.org/flamenco/pkg/api"
@@ -64,4 +65,14 @@ func (w *Worker) ackStateChange(ctx context.Context, state api.WorkerStatus) {
 			Msg("error sending status change to Manager")
 		return
 	}
+}
+
+// loggerWithStatus returns a logger with its current status mentioned.
+// This is a thread-safe way of getting the logger.
+func (w *Worker) loggerWithStatus() zerolog.Logger {
+	w.stateMutex.Lock()
+	defer w.stateMutex.Unlock()
+
+	logger := log.With().Str("workerStatus", string(w.state)).Logger()
+	return logger
 }

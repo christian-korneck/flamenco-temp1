@@ -36,9 +36,9 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 		err := recover()
 		if err != nil {
 			w.SignOff(ctx)
-			log.Panic().
+			logger := w.loggerWithStatus()
+			logger.Panic().
 				Interface("panic", err).
-				Str("workerStatus", string(w.state)).
 				Msg("panic, so signed off and going to stop")
 		}
 	}()
@@ -71,7 +71,7 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 // fetchTasks periodically tries to fetch a task from the Manager, returning it when obtained.
 // Returns nil when a task could not be obtained and the period loop was cancelled.
 func (w *Worker) fetchTask(ctx context.Context) *api.AssignedTask {
-	logger := log.With().Str("status", string(w.state)).Logger()
+	logger := w.loggerWithStatus()
 
 	// Initially don't wait at all.
 	var wait time.Duration
