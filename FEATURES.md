@@ -21,7 +21,7 @@ Note that list is **not** in any specific order.
 - [x] Variable replacement
 - [x] Configuration file reading
 - [ ] Configuration provisioning support
-- [ ] Shaman integration
+- [x] Shaman integration
 - [ ] Worker sleep schedule
 - [ ] Web frontend for Worker management
 - [ ] Web frontend for Job & Task management
@@ -39,6 +39,7 @@ Note that list is **not** in any specific order.
   type info", which is done by the web interface whenever job details are shown)
   will just parse the JS from disk again. It'll be better to only do this when
   the file on disk changed.
+- [ ] Split up OpenAPI-generated server code into an interface per tag. This'll help splitting up the rather large `Flamenco` struct into smaller pieces.
 
 ## Worker
 
@@ -68,11 +69,11 @@ Note that list is **not** in any specific order.
 ## Blender Add-on
 
 - [x] Communication with the Flamenco Manager API
-- [ ] Job construction
+- [x] Job construction
 - [x] BAT-packing
-- [ ] uploading to Shaman
+- [x] uploading to Shaman
 - [ ] User authentication
-- [ ] Editable job names (for rendering multiple jobs from the same filename)
+- [x] Editable job names (for rendering multiple jobs from the same filename)
 - [ ] Add `options={'HIDDEN'}` to the Flamenco RNA properties.
 - [ ] Add eTag-like checksum to the job types. The aim is to prevent artists from sending in a new job with an old job. This can happen when the job type is changed on the Manager, but in Blender the "refresh" button wasn't pressed yet. This should only cover the job settings, not the rest of the compiler script.
 - [ ] Frame Range: allow automatically syncing with scene frame start/end.
