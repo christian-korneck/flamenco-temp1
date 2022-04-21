@@ -153,7 +153,7 @@ func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 		logger.Error().Err(err).Msg("error changing job status")
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing job status")
 	}
-	return e.String(http.StatusNoContent, "")
+	return e.NoContent(http.StatusNoContent)
 }
 
 func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
@@ -199,7 +199,7 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 		return sendAPIError(e, http.StatusInternalServerError, "unable to handle status update: %v", err)
 	}
 
-	return e.String(http.StatusNoContent, "")
+	return e.NoContent(http.StatusNoContent)
 }
 
 func (f *Flamenco) doTaskUpdate(

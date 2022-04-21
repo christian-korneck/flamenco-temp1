@@ -156,7 +156,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error re-queueing your tasks")
 	}
 
-	return e.String(http.StatusNoContent, "")
+	return e.NoContent(http.StatusNoContent)
 }
 
 // workerRequeueActiveTasks re-queues all active tasks (should be max one) of this worker.
@@ -190,7 +190,7 @@ func (f *Flamenco) WorkerState(e echo.Context) error {
 	worker := requestWorkerOrPanic(e)
 
 	if worker.StatusRequested == "" {
-		return e.String(http.StatusNoContent, "")
+		return e.NoContent(http.StatusNoContent)
 	}
 
 	return e.JSON(http.StatusOK, api.WorkerStateChange{
@@ -236,7 +236,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
 
-	return e.String(http.StatusNoContent, "")
+	return e.NoContent(http.StatusNoContent)
 }
 
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
@@ -275,7 +275,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error finding a task for you: %v", err)
 	}
 	if dbTask == nil {
-		return e.String(http.StatusNoContent, "")
+		return e.NoContent(http.StatusNoContent)
 	}
 
 	// Convert database objects to API objects:
