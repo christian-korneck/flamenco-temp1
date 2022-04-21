@@ -171,7 +171,10 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	dbTask, err := f.persist.FetchTask(ctx, taskID)
 	if err != nil {
 		logger.Warn().Err(err).Msg("cannot fetch task")
-		return sendAPIError(e, http.StatusNotFound, "task %+v not found", taskID)
+		if errors.Is(err, persistence.ErrTaskNotFound) {
+			return sendAPIError(e, http.StatusNotFound, "task %+v not found", taskID)
+		}
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task")
 	}
 	if dbTask == nil {
 		panic("task could not be fetched, but database gave no error either")
