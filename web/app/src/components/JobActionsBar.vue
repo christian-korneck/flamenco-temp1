@@ -19,25 +19,23 @@ export default {
   },
   methods: {
     onButtonDelete() {
-      const numJobs = this.jobs.numSelected;
-      this.jobs.deleteJobs()
-        .then(() => {
-          this.notifs.add(`${numJobs} jobs marked for deletion`);
-        })
-        .catch((error) => {
-          const errorMsg = JSON.stringify(error); // TODO: handle API errors better.
-          this.notifs.add(`Error: ${errorMsg}`);
-        })
+      return this._handleJobActionPromise(
+        this.jobs.deleteJobs(), "marked for deletion");
     },
     onButtonCancel() {
+      return this._handleJobActionPromise(
+        this.jobs.cancelJobs(), "marked for cancellation");
+    },
+
+    _handleJobActionPromise(promise, description) {
       const numJobs = this.jobs.numSelected;
-      this.jobs.cancelJobs()
+      return promise
         .then(() => {
           let message;
           if (numJobs == 1) {
-            message = `Job marked for cancellation`;
+            message = `Job ${description}`;
           } else {
-            message = `${numJobs} jobs marked for cancellation`;
+            message = `${numJobs} jobs ${description}`;
           }
           this.notifs.add(message);
         })

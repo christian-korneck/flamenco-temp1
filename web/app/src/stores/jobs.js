@@ -55,14 +55,27 @@ export const useJobs = defineStore('jobs', {
       });
       return deletionPromise;
     },
-    cancelJobs() {
-      const statuschange = new API.JobStatusChange("cancel-requested", "requested from web interface");
-      return jobsAPI.setJobStatus(this.activeJob.id, statuschange);
-    },
+    cancelJobs() { return this._setJobStatus("cancel-requested"); },
 
     // Internal methods.
+
+    /**
+     *
+     * @param {string[]} statuses
+     * @returns bool indicating whether there is a selected job with any of the given statuses.
+     */
     _anyJobWithStatus(statuses) {
       return this.selectedJobs.reduce((foundJob, job) => (foundJob || statuses.includes(job.status)), false);
-    }
+    },
+
+    /**
+     * Transition the selected job(s) to the new status.
+     * @param {string} newStatus
+     * @returns a Promise for the API request.
+     */
+    _setJobStatus(newStatus) {
+      const statuschange = new API.JobStatusChange(newStatus, "requested from web interface");
+      return jobsAPI.setJobStatus(this.activeJob.id, statuschange);
+    },
   },
 })
