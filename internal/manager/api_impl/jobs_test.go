@@ -161,7 +161,7 @@ func TestGetJobTypeHappy(t *testing.T) {
 	err := mf.flamenco.GetJobType(echoCtx, "test-job-type")
 	assert.NoError(t, err)
 
-	assertJSONResponse(t, echoCtx, http.StatusOK, jt)
+	assertResponseJSON(t, echoCtx, http.StatusOK, jt)
 }
 
 func TestGetJobTypeUnknown(t *testing.T) {
@@ -176,7 +176,7 @@ func TestGetJobTypeUnknown(t *testing.T) {
 	echoCtx := mf.prepareMockedRequest(nil)
 	err := mf.flamenco.GetJobType(echoCtx, "nonexistent-type")
 	assert.NoError(t, err)
-	assertJSONResponse(t, echoCtx, http.StatusNotFound, api.Error{
+	assertResponseJSON(t, echoCtx, http.StatusNotFound, api.Error{
 		Code:    http.StatusNotFound,
 		Message: "no such job type known",
 	})
@@ -193,5 +193,5 @@ func TestGetJobTypeError(t *testing.T) {
 	echoCtx := mf.prepareMockedRequest(nil)
 	err := mf.flamenco.GetJobType(echoCtx, "error")
 	assert.NoError(t, err)
-	assertAPIErrorResponse(t, echoCtx, http.StatusInternalServerError, "error getting job type")
+	assertResponseAPIError(t, echoCtx, http.StatusInternalServerError, "error getting job type")
 }

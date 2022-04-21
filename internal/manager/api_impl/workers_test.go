@@ -43,7 +43,7 @@ func TestTaskScheduleHappy(t *testing.T) {
 		Job:      job.UUID,
 		Commands: []api.Command{},
 	}
-	assertJSONResponse(t, echo, http.StatusOK, assignedTask)
+	assertResponseJSON(t, echo, http.StatusOK, assignedTask)
 	resp := getRecordedResponse(echo)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
@@ -85,7 +85,7 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	assert.NoError(t, err)
 
 	expectBody := api.WorkerStateChange{StatusRequested: api.WorkerStatusAsleep}
-	assertJSONResponse(t, echoCtx, http.StatusLocked, expectBody)
+	assertResponseJSON(t, echoCtx, http.StatusLocked, expectBody)
 }
 
 func TestWorkerSignoffTaskRequeue(t *testing.T) {

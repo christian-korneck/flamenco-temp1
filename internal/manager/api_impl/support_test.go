@@ -87,8 +87,8 @@ func getRecordedResponse(echoCtx echo.Context) *http.Response {
 	return resp.Result()
 }
 
-// assertJSONResponse asserts that a recorded response is JSON with the given HTTP status code.
-func assertJSONResponse(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectBody interface{}) {
+// assertResponseJSON asserts that a recorded response is JSON with the given HTTP status code.
+func assertResponseJSON(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectBody interface{}) {
 	resp := getRecordedResponse(echoCtx)
 	assert.Equal(t, expectStatusCode, resp.StatusCode)
 	contentType := resp.Header.Get(echo.HeaderContentType)
@@ -111,8 +111,8 @@ func assertJSONResponse(t *testing.T, echoCtx echo.Context, expectStatusCode int
 	assert.JSONEq(t, string(expectJSON), string(actualJSON))
 }
 
-func assertAPIErrorResponse(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectMessage string) {
-	assertJSONResponse(t, echoCtx, expectStatusCode, api.Error{
+func assertResponseAPIError(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectMessage string) {
+	assertResponseJSON(t, echoCtx, expectStatusCode, api.Error{
 		Code:    int32(expectStatusCode),
 		Message: expectMessage,
 	})
