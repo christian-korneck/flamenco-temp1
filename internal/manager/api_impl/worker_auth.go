@@ -65,12 +65,16 @@ func requestWorkerStore(e echo.Context, w *persistence.Worker) {
 	req := e.Request()
 	reqCtx := context.WithValue(req.Context(), workerKey, w)
 
+	// Take copies now to avoid race conditions later.
+	wUUID := w.UUID
+	wName := w.Name
+
 	// Update the logger in this context to reflect the Worker.
 	l := zerolog.Ctx(reqCtx)
 	l.UpdateContext(func(c zerolog.Context) zerolog.Context {
 		return c.
-			Str("wUUID", w.UUID).
-			Str("wName", w.Name)
+			Str("wUUID", wUUID).
+			Str("wName", wName)
 	})
 
 	e.SetRequest(req.WithContext(reqCtx))
