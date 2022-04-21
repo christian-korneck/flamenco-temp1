@@ -23,7 +23,7 @@ export const useJobs = defineStore('jobs', {
       return this._anyJobWithStatus(["queued", "paused", "failed", "completed", "canceled"])
     },
     canCancel() {
-      return this._anyJobWithStatus(["queued", "active"])
+      return this._anyJobWithStatus(["queued", "active", "failed"])
     },
   },
   actions: {
