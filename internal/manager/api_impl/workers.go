@@ -18,6 +18,10 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 )
 
+// The default BCrypt cost is made for important passwords. For Flamenco, the
+// Worker password is not that important.
+const bcryptCost = bcrypt.MinCost
+
 // RegisterWorker registers a new worker and stores it in the database.
 func (f *Flamenco) RegisterWorker(e echo.Context) error {
 	logger := requestLogger(e)
@@ -33,7 +37,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 
 	logger.Info().Str("nickname", req.Nickname).Msg("registering new worker")
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Secret), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Secret), bcryptCost)
 	if err != nil {
 		logger.Warn().Err(err).Msg("error hashing worker password")
 		return sendAPIError(e, http.StatusBadRequest, "error hashing password")
