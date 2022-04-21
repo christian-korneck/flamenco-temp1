@@ -31,8 +31,11 @@ var (
 )
 
 var cliArgs struct {
+	// Do-and-quit flags.
 	version bool
+	flush   bool
 
+	// Logging level flags.
 	quiet, debug, trace bool
 
 	managerURL  *url.URL
@@ -94,8 +97,20 @@ func main() {
 
 	timeService := clock.New()
 	buffer = upstreamBufferOrDie(client, timeService)
-	// Flush any updates before actually starting the Worker.
-	buffer.Flush(workerCtx)
+	if queueSize, err := buffer.QueueSize(); err != nil {
+		log.Fatal().Err(err).Msg("error checking upstream buffer")
+	} else if queueSize > 0 {
+		// Flush any updates before actually starting the Worker.
+		log.Info().Int("queueSize", queueSize).Msg("flushing upstream buffer")
+		buffer.Flush(workerCtx)
+	}
+
+	if cliArgs.flush {
+		log.Info().Msg("upstream buffer flushed, shutting down")
+		workerCtxCancel()
+		shutdown()
+		return
+	}
 
 	cliRunner := worker.NewCLIRunner()
 	listener = worker.NewListener(client, buffer)
@@ -109,9 +124,11 @@ func main() {
 	signal.Notify(c, syscall.SIGTERM)
 	go func() {
 		for signum := range c {
-			workerCtxCancel()
+			log.Info().Str("signal", signum.String()).Msg("signal received, shutting down.")
+
 			// Run the shutdown sequence in a goroutine, so that multiple Ctrl+C presses can be handled in parallel.
-			go shutdown(signum)
+			workerCtxCancel()
+			go shutdown()
 		}
 	}()
 
@@ -123,11 +140,9 @@ func main() {
 	log.Debug().Msg("process shutting down")
 }
 
-func shutdown(signum os.Signal) {
+func shutdown() {
 	done := make(chan struct{})
 	go func() {
-		log.Info().Str("signal", signum.String()).Msg("signal received, shutting down.")
-
 		if w != nil {
 			shutdownCtx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancelFunc()
@@ -155,6 +170,8 @@ func shutdown(signum os.Signal) {
 
 func parseCliArgs() {
 	flag.BoolVar(&cliArgs.version, "version", false, "Shows the application version, then exits.")
+	flag.BoolVar(&cliArgs.flush, "flush", false, "Flush any buffered task updates to the Manager, then exits.")
+
 	flag.BoolVar(&cliArgs.quiet, "quiet", false, "Only log warning-level and worse.")
 	flag.BoolVar(&cliArgs.debug, "debug", false, "Enable debug-level logging.")
 	flag.BoolVar(&cliArgs.trace, "trace", false, "Enable trace-level logging.")

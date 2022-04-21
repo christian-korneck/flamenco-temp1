@@ -220,6 +220,12 @@ func (ub *UpstreamBufferDB) queueTaskUpdate(taskID string, update api.TaskUpdate
 	return nil
 }
 
+func (ub *UpstreamBufferDB) QueueSize() (int, error) {
+	ub.dbMutex.Lock()
+	defer ub.dbMutex.Unlock()
+	return ub.queueSize()
+}
+
 func (ub *UpstreamBufferDB) Flush(ctx context.Context) error {
 	ub.dbMutex.Lock()
 	defer ub.dbMutex.Unlock()
@@ -242,6 +248,7 @@ func (ub *UpstreamBufferDB) Flush(ctx context.Context) error {
 	var done bool
 	for !done {
 		done, err = ub.flushFirstItem(ctx)
+
 		if err != nil {
 			return err
 		}
@@ -251,6 +258,7 @@ func (ub *UpstreamBufferDB) Flush(ctx context.Context) error {
 }
 
 func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err error) {
+	startTime := time.Now()
 	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), databaseContextTimeout)
 	defer dbCtxCancel()
 
@@ -267,6 +275,8 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 	var taskID string
 	var blob []byte
 
+	beforeQuery := time.Now()
+
 	err = tx.QueryRowContext(dbCtx, stmt).Scan(&rowID, &taskID, &blob)
 	switch {
 	case err == sql.ErrNoRows:
@@ -278,6 +288,7 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 	}
 
 	logger := log.With().Str("task", taskID).Logger()
+	beforeUnmarshal := time.Now()
 
 	var update api.TaskUpdateJSONRequestBody
 	if err := json.Unmarshal(blob, &update); err != nil {
@@ -290,6 +301,7 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 		}
 		return false, tx.Commit()
 	}
+	beforeAPICall := time.Now()
 
 	// actually attempt delivery.
 	resp, err := ub.client.TaskUpdateWithResponse(ctx, taskID, update)
@@ -297,6 +309,8 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 		logger.Info().Err(err).Msg("communication with Manager still problematic")
 		return true, err
 	}
+
+	afterAPICall := time.Now()
 
 	// Regardless of the response, there is little else to do but to discard the
 	// update from the queue.
@@ -312,10 +326,28 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 			Msg("queued task update discarded by Manager, unknown reason")
 	}
 
+	beforeDiscard := time.Now()
+
 	if err := ub.discardRow(tx, rowID); err != nil {
 		return false, err
 	}
-	return false, tx.Commit()
+
+	beforeCommit := time.Now()
+	err = tx.Commit()
+
+	finalTime := time.Now()
+
+	log.Debug().
+		Stringer("prepare", beforeQuery.Sub(startTime)).
+		Stringer("query", beforeUnmarshal.Sub(beforeQuery)).
+		Stringer("unmarshal", beforeAPICall.Sub(beforeUnmarshal)).
+		Stringer("api", afterAPICall.Sub(beforeAPICall)).
+		Stringer("discard", beforeCommit.Sub(beforeDiscard)).
+		Stringer("commit", finalTime.Sub(beforeCommit)).
+		Stringer("total", finalTime.Sub(startTime)).
+		Msg("single flush")
+
+	return false, err
 }
 
 func (ub *UpstreamBufferDB) discardRow(tx *sql.Tx, rowID int64) error {
@@ -355,6 +387,7 @@ func (ub *UpstreamBufferDB) periodicFlushLoop() {
 
 func rollbackTransaction(tx *sql.Tx) {
 	if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-		log.Error().Err(err).Msg("rolling back transaction")
+		// log.Error().Err(err).Msg("rolling back transaction")
+		log.Panic().Err(err).Msg("rolling back transaction")
 	}
 }
