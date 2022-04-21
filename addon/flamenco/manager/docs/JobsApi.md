@@ -8,6 +8,7 @@ Method | HTTP request | Description
 [**get_job_type**](JobsApi.md#get_job_type) | **GET** /api/jobs/type/{typeName} | Get single job type and its parameters.
 [**get_job_types**](JobsApi.md#get_job_types) | **GET** /api/jobs/types | Get list of job types and their parameters.
 [**query_jobs**](JobsApi.md#query_jobs) | **POST** /api/jobs/query | Fetch list of jobs.
+[**set_job_status**](JobsApi.md#set_job_status) | **POST** /api/jobs/{job_id}/setstatus | 
 [**submit_job**](JobsApi.md#submit_job) | **POST** /api/jobs | Submit a new job for Flamenco Manager to execute.
 
 
@@ -280,6 +281,77 @@ No authorization required
 |-------------|-------------|------------------|
 **200** | Normal query response, can be empty list if nothing matched the query. |  -  |
 **0** | Error message |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **set_job_status**
+> set_job_status(job_id, job_status_change)
+
+
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import jobs_api
+from flamenco.manager.model.error import Error
+from flamenco.manager.model.job_status_change import JobStatusChange
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = jobs_api.JobsApi(api_client)
+    job_id = "job_id_example" # str | 
+    job_status_change = JobStatusChange(
+        status=JobStatus("active"),
+        reason="reason_example",
+    ) # JobStatusChange | The status change to request.
+
+    # example passing only required values which don't have defaults set
+    try:
+        api_instance.set_job_status(job_id, job_status_change)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling JobsApi->set_job_status: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **job_id** | **str**|  |
+ **job_status_change** | [**JobStatusChange**](JobStatusChange.md)| The status change to request. |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Status change was accepted. |  -  |
+**422** | The requested status change is not valid for the current status of the job. |  -  |
+**0** | Unexpected error. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

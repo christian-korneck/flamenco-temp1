@@ -195,3 +195,57 @@ func TestGetJobTypeError(t *testing.T) {
 	assert.NoError(t, err)
 	assertResponseAPIError(t, echoCtx, http.StatusInternalServerError, "error getting job type")
 }
+
+func TestSetJobStatus_nonexistentJob(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobID := "18a9b096-d77e-438c-9be2-74397038298b"
+	statusUpdate := api.JobStatusChange{
+		Status: api.JobStatusCancelRequested,
+		Reason: "someone pushed a button",
+	}
+
+	mf.persistence.EXPECT().FetchJob(gomock.Any(), jobID).Return(nil, persistence.ErrJobNotFound)
+
+	// Do the call.
+	echoCtx := mf.prepareMockedJSONRequest(statusUpdate)
+	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
+	assert.NoError(t, err)
+
+	assertResponseAPIError(t, echoCtx, http.StatusNotFound, "no such job")
+}
+
+func TestSetJobStatus_happy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobID := "18a9b096-d77e-438c-9be2-74397038298b"
+	statusUpdate := api.JobStatusChange{
+		Status: api.JobStatusCancelRequested,
+		Reason: "someone pushed a button",
+	}
+	dbJob := persistence.Job{
+		UUID:     jobID,
+		Name:     "test job",
+		Status:   api.JobStatusActive,
+		Settings: persistence.StringInterfaceMap{},
+		Metadata: persistence.StringStringMap{},
+	}
+
+	// Set up expectations.
+	ctx := gomock.Any()
+	mf.persistence.EXPECT().FetchJob(ctx, jobID).Return(&dbJob, nil)
+	mf.stateMachine.EXPECT().JobStatusChange(ctx, &dbJob, statusUpdate.Status, "someone pushed a button")
+
+	// Do the call.
+	echoCtx := mf.prepareMockedJSONRequest(statusUpdate)
+	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
+	assert.NoError(t, err)
+
+	assertResponseEmpty(t, echoCtx)
+}

@@ -322,6 +322,36 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/Job"}
 
+  /api/jobs/{job_id}/setstatus:
+    summary: Request a status change for the given job.
+    post:
+      operationId: setJobStatus
+      tags: [jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        description: The status change to request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobStatusChange"
+      responses:
+        "204":
+          description: Status change was accepted.
+        "422":
+          description: The requested status change is not valid for the current status of the job.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
   ## Shaman
 
   /shaman/checkout/requirements:
@@ -790,6 +820,13 @@ components:
           type: array
           items: {$ref: "#/components/schemas/Job"}
       required: [jobs]
+
+    JobStatusChange:
+      type: object
+      properties:
+        status: {$ref: "#/components/schemas/JobStatus"}
+        reason: {type: string, description: The reason for this status change.}
+      required: [status, reason]
 
     Error:
       description: Generic error response.

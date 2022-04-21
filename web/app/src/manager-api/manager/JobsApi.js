@@ -17,6 +17,7 @@ import AvailableJobType from '../model/AvailableJobType';
 import AvailableJobTypes from '../model/AvailableJobTypes';
 import Error from '../model/Error';
 import Job from '../model/Job';
+import JobStatusChange from '../model/JobStatusChange';
 import JobsQuery from '../model/JobsQuery';
 import JobsQueryResult from '../model/JobsQueryResult';
 import SubmittedJob from '../model/SubmittedJob';
@@ -211,6 +212,56 @@ export default class JobsApi {
      */
     queryJobs(jobsQuery) {
       return this.queryJobsWithHttpInfo(jobsQuery)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * @param {String} jobId 
+     * @param {module:model/JobStatusChange} jobStatusChange The status change to request.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
+     */
+    setJobStatusWithHttpInfo(jobId, jobStatusChange) {
+      let postBody = jobStatusChange;
+      // verify the required parameter 'jobId' is set
+      if (jobId === undefined || jobId === null) {
+        throw new Error("Missing the required parameter 'jobId' when calling setJobStatus");
+      }
+      // verify the required parameter 'jobStatusChange' is set
+      if (jobStatusChange === undefined || jobStatusChange === null) {
+        throw new Error("Missing the required parameter 'jobStatusChange' when calling setJobStatus");
+      }
+
+      let pathParams = {
+        'job_id': jobId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = null;
+      return this.apiClient.callApi(
+        '/api/jobs/{job_id}/setstatus', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * @param {String} jobId 
+     * @param {module:model/JobStatusChange} jobStatusChange The status change to request.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}
+     */
+    setJobStatus(jobId, jobStatusChange) {
+      return this.setJobStatusWithHttpInfo(jobId, jobStatusChange)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

@@ -78,13 +78,17 @@ func (mf *mockedFlamenco) prepareMockedRequest(body io.Reader) echo.Context {
 	return c
 }
 
-func getRecordedResponse(echoCtx echo.Context) *http.Response {
+func getRecordedResponseRecorder(echoCtx echo.Context) *httptest.ResponseRecorder {
 	writer := echoCtx.Response().Writer
 	resp, ok := writer.(*httptest.ResponseRecorder)
 	if !ok {
 		panic(fmt.Sprintf("response writer was not a `*httptest.ResponseRecorder` but a %T", writer))
 	}
-	return resp.Result()
+	return resp
+}
+
+func getRecordedResponse(echoCtx echo.Context) *http.Response {
+	return getRecordedResponseRecorder(echoCtx).Result()
 }
 
 // assertResponseJSON asserts that a recorded response is JSON with the given HTTP status code.
@@ -116,6 +120,13 @@ func assertResponseAPIError(t *testing.T, echoCtx echo.Context, expectStatusCode
 		Code:    int32(expectStatusCode),
 		Message: expectMessage,
 	})
+}
+
+// assertResponseEmpty asserts the response is an empty 204 No Content response.
+func assertResponseEmpty(t *testing.T, echoCtx echo.Context) {
+	resp := getRecordedResponseRecorder(echoCtx)
+	assert.Equal(t, http.StatusNoContent, resp.Code, "Unexpected status: %v", resp.Result().Status)
+	assert.Zero(t, resp.Body.Len(), "HTTP 204 No Content should have no content, got %v", resp.Body.String())
 }
 
 func testWorker() persistence.Worker {

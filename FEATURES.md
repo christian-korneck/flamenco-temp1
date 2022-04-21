@@ -25,6 +25,7 @@ Note that list is **not** in any specific order.
 - [ ] Worker sleep schedule
 - [ ] Web frontend for Worker management
 - [ ] Web frontend for Job & Task management
+- [ ] API: only allow valid job & task status changes. Currently any change is allowed by the API.
 - [ ] Web frontend for configuration management
 - [ ] Frontend authentication
 - [x] Worker API authentication

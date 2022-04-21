@@ -4,6 +4,7 @@ package api_impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -117,6 +118,42 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 
 	apiJob := jobDBtoAPI(dbJob)
 	return e.JSON(http.StatusOK, apiJob)
+}
+
+func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
+	logger := requestLogger(e)
+	ctx := e.Request().Context()
+
+	logger = logger.With().Str("job", jobID).Logger()
+
+	var statusChange api.SetJobStatusJSONRequestBody
+	if err := e.Bind(&statusChange); err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	dbJob, err := f.persist.FetchJob(ctx, jobID)
+	if err != nil {
+		if errors.Is(err, persistence.ErrJobNotFound) {
+			return sendAPIError(e, http.StatusNotFound, "no such job")
+		}
+		logger.Error().Err(err).Msg("error fetching job")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching job")
+	}
+
+	logger = logger.With().
+		Str("currentstatus", string(dbJob.Status)).
+		Str("requestedStatus", string(statusChange.Status)).
+		Str("reason", statusChange.Reason).
+		Logger()
+	logger.Info().Msg("job status change requested")
+
+	err = f.stateMachine.JobStatusChange(ctx, dbJob, statusChange.Status, statusChange.Reason)
+	if err != nil {
+		logger.Error().Err(err).Msg("error changing job status")
+		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing job status")
+	}
+	return e.String(http.StatusNoContent, "")
 }
 
 func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {

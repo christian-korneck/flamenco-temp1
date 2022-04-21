@@ -230,6 +230,13 @@ type JobSettings struct {
 // JobStatus defines model for JobStatus.
 type JobStatus string
 
+// JobStatusChange defines model for JobStatusChange.
+type JobStatusChange struct {
+	// The reason for this status change.
+	Reason string    `json:"reason"`
+	Status JobStatus `json:"status"`
+}
+
 // Subset of a Job, sent over SocketIO when a job changes. For new jobs, `previous_status` will be excluded.
 type JobUpdate struct {
 	// UUID of the Job
@@ -416,6 +423,9 @@ type SubmitJobJSONBody SubmittedJob
 // QueryJobsJSONBody defines parameters for QueryJobs.
 type QueryJobsJSONBody JobsQuery
 
+// SetJobStatusJSONBody defines parameters for SetJobStatus.
+type SetJobStatusJSONBody JobStatusChange
+
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
 
@@ -448,6 +458,9 @@ type SubmitJobJSONRequestBody SubmitJobJSONBody
 
 // QueryJobsJSONRequestBody defines body for QueryJobs for application/json ContentType.
 type QueryJobsJSONRequestBody QueryJobsJSONBody
+
+// SetJobStatusJSONRequestBody defines body for SetJobStatus for application/json ContentType.
+type SetJobStatusJSONRequestBody SetJobStatusJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody
