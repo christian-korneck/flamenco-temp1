@@ -149,7 +149,7 @@ export default {
   --footer-height: 25px;
   --grid-gap: 4px;
 
-  --action-bar-height: 3em;
+  --action-bar-height: 2em;
 }
 
 html,
@@ -232,12 +232,11 @@ footer {
 
 section.action-bar {
   height: var(--action-bar-height);
+  display: flex;
+  flex-direction: row;
 }
 
 section.action-bar button.action {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 0.1rem 0.75rem;
   border-radius: 0.3rem;
   border: thin solid white;
