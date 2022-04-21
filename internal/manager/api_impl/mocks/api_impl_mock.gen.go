@@ -440,17 +440,17 @@ func (m *MockTaskStateMachine) EXPECT() *MockTaskStateMachineMockRecorder {
 }
 
 // JobStatusChange mocks base method.
-func (m *MockTaskStateMachine) JobStatusChange(arg0 context.Context, arg1 *persistence.Job, arg2 api.JobStatus) error {
+func (m *MockTaskStateMachine) JobStatusChange(arg0 context.Context, arg1 *persistence.Job, arg2 api.JobStatus, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JobStatusChange", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "JobStatusChange", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // JobStatusChange indicates an expected call of JobStatusChange.
-func (mr *MockTaskStateMachineMockRecorder) JobStatusChange(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockTaskStateMachineMockRecorder) JobStatusChange(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobStatusChange", reflect.TypeOf((*MockTaskStateMachine)(nil).JobStatusChange), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobStatusChange", reflect.TypeOf((*MockTaskStateMachine)(nil).JobStatusChange), arg0, arg1, arg2, arg3)
 }
 
 // TaskStatusChange mocks base method.

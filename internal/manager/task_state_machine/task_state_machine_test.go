@@ -213,7 +213,7 @@ func TestJobRequeueWithSomeCompletedTasks(t *testing.T) {
 	mocks.expectBroadcastJobChange(job, api.JobStatusActive, api.JobStatusRequeued)
 	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusQueued)
 
-	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusRequeued))
+	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusRequeued, "someone wrote a unittest"))
 }
 
 func TestJobRequeueWithAllCompletedTasks(t *testing.T) {
@@ -244,7 +244,7 @@ func TestJobRequeueWithAllCompletedTasks(t *testing.T) {
 	mocks.expectBroadcastJobChange(job, api.JobStatusCompleted, api.JobStatusRequeued)
 	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusQueued)
 
-	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusRequeued))
+	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusRequeued, "someone wrote a unit test"))
 }
 
 func mockedTaskStateMachine(mockCtrl *gomock.Controller) (*StateMachine, *StateMachineMocks) {

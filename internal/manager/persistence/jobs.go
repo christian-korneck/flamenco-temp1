@@ -22,6 +22,7 @@ type Job struct {
 	JobType  string        `gorm:"type:varchar(32);default:''"`
 	Priority int           `gorm:"type:smallint;default:0"`
 	Status   api.JobStatus `gorm:"type:varchar(32);default:''"`
+	Activity string        `gorm:"type:varchar(255);default:''"`
 
 	Settings StringInterfaceMap `gorm:"type:jsonb"`
 	Metadata StringStringMap    `gorm:"type:jsonb"`
@@ -178,10 +179,11 @@ func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	return &dbJob, nil
 }
 
+// SaveJobStatus saves the job's Status and Activity fields.
 func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
 	tx := db.gormDB.WithContext(ctx).
 		Model(j).
-		Updates(Job{Status: j.Status})
+		Updates(Job{Status: j.Status, Activity: j.Activity})
 	if tx.Error != nil {
 		return jobError(tx.Error, "saving job status")
 	}

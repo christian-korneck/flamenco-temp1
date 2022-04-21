@@ -113,7 +113,7 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 	switch task.Status {
 	case api.TaskStatusQueued:
 		// Re-queueing a task on a completed job should re-queue the job too.
-		return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusCompleted, api.JobStatusRequeued)
+		return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusCompleted, api.JobStatusRequeued, "task was queued")
 
 	case api.TaskStatusCancelRequested:
 		// Requesting cancellation of a single task has no influence on the job itself.
@@ -136,7 +136,8 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 			return nil
 		default:
 			logger.Info().Msg("job became active because one of its task changed status")
-			return sm.JobStatusChange(ctx, job, api.JobStatusActive)
+			reason := fmt.Sprintf("task became %s", task.Status)
+			return sm.JobStatusChange(ctx, job, api.JobStatusActive, reason)
 		}
 
 	case api.TaskStatusCompleted:
@@ -154,6 +155,7 @@ func (sm *StateMachine) jobStatusIfAThenB(
 	logger zerolog.Logger,
 	job *persistence.Job,
 	ifStatus, thenStatus api.JobStatus,
+	reason string,
 ) error {
 	if job.Status != ifStatus {
 		return nil
@@ -162,7 +164,7 @@ func (sm *StateMachine) jobStatusIfAThenB(
 		Str("jobStatusOld", string(ifStatus)).
 		Str("jobStatusNew", string(thenStatus)).
 		Msg("Job will change status because one of its task changed status")
-	return sm.JobStatusChange(ctx, job, thenStatus)
+	return sm.JobStatusChange(ctx, job, thenStatus, reason)
 }
 
 // onTaskStatusCanceled conditionally escalates the cancellation of a task to cancel the job.
@@ -180,7 +182,7 @@ func (sm *StateMachine) onTaskStatusCanceled(ctx context.Context, logger zerolog
 	}
 	if !hasCancelReq {
 		logger.Info().Msg("last task of job went from cancel-requested to canceled")
-		return sm.JobStatusChange(ctx, job, api.JobStatusCanceled)
+		return sm.JobStatusChange(ctx, job, api.JobStatusCanceled, "tasks were canceled")
 	}
 	return nil
 }
@@ -202,11 +204,12 @@ func (sm *StateMachine) onTaskStatusFailed(ctx context.Context, logger zerolog.L
 
 	if failedPercentage >= taskFailJobPercentage {
 		failLogger.Info().Msg("failing job because too many of its tasks failed")
-		return sm.JobStatusChange(ctx, job, api.JobStatusFailed)
+		return sm.JobStatusChange(ctx, job, api.JobStatusFailed, "too many tasks failed")
 	}
 	// If the job didn't fail, this failure indicates that at least the job is active.
 	failLogger.Info().Msg("task failed, but not enough to fail the job")
-	return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusQueued, api.JobStatusActive)
+	return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusQueued, api.JobStatusActive,
+		"task failed, but not enough to fail the job")
 }
 
 // onTaskStatusCompleted conditionally escalates the completion of a task to complete the entire job.
@@ -217,17 +220,22 @@ func (sm *StateMachine) onTaskStatusCompleted(ctx context.Context, logger zerolo
 	}
 	if numComplete == numTotal {
 		logger.Info().Msg("all tasks of job are completed, job is completed")
-		return sm.JobStatusChange(ctx, job, api.JobStatusCompleted)
+		return sm.JobStatusChange(ctx, job, api.JobStatusCompleted, "all tasks completed")
 	}
 	logger.Info().
 		Int("taskNumTotal", numTotal).
 		Int("taskNumComplete", numComplete).
 		Msg("task completed; there are more tasks to do")
-	return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusQueued, api.JobStatusActive)
+	return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusQueued, api.JobStatusActive, "no more tasks to do")
 }
 
 // JobStatusChange gives a Job a new status, and handles the resulting status changes on its tasks.
-func (sm *StateMachine) JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus) error {
+func (sm *StateMachine) JobStatusChange(
+	ctx context.Context,
+	job *persistence.Job,
+	newJobStatus api.JobStatus,
+	reason string,
+) error {
 	// Job status changes can trigger task status changes, which can trigger the
 	// next job status change. Keep looping over these job status changes until
 	// there is no more change left to do.
@@ -235,11 +243,13 @@ func (sm *StateMachine) JobStatusChange(ctx context.Context, job *persistence.Jo
 	for newJobStatus != "" && newJobStatus != job.Status {
 		oldJobStatus := job.Status
 		job.Status = newJobStatus
+		job.Activity = fmt.Sprintf("Changed to status %q: %s", newJobStatus, reason)
 
 		logger := log.With().
 			Str("job", job.UUID).
 			Str("jobStatusOld", string(oldJobStatus)).
 			Str("jobStatusNew", string(newJobStatus)).
+			Str("reason", reason).
 			Logger()
 		logger.Info().Msg("job status changed")
 

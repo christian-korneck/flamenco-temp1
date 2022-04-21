@@ -65,7 +65,7 @@ type TaskStateMachine interface {
 	TaskStatusChange(ctx context.Context, task *persistence.Task, newStatus api.TaskStatus) error
 
 	// JobStatusChange gives a Job a new status, and handles the resulting status changes on its tasks.
-	JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus) error
+	JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus, reason string) error
 }
 
 // TaskStateMachine should be a subset of task_state_machine.StateMachine.
