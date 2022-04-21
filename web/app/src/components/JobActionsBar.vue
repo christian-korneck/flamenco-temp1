@@ -2,6 +2,7 @@
   <section class="action-bar jobs">
     <button class="action delete dangerous" :disabled="!jobs.canDelete" v-on:click="onButtonDelete">Delete</button>
     <button class="action cancel" :disabled="!jobs.canCancel" v-on:click="onButtonCancel">Cancel</button>
+    <button class="action requeue" :disabled="!jobs.canRequeue" v-on:click="onButtonRequeue">Requeue</button>
   </section>
 </template>
 
@@ -25,6 +26,10 @@ export default {
     onButtonCancel() {
       return this._handleJobActionPromise(
         this.jobs.cancelJobs(), "marked for cancellation");
+    },
+    onButtonRequeue() {
+      return this._handleJobActionPromise(
+        this.jobs.requeueJobs(), "requeued");
     },
 
     _handleJobActionPromise(promise, description) {

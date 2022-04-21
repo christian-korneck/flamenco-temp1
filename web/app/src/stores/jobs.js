@@ -25,6 +25,9 @@ export const useJobs = defineStore('jobs', {
     canCancel() {
       return this._anyJobWithStatus(["queued", "active", "failed"])
     },
+    canRequeue() {
+      return this._anyJobWithStatus(["canceled", "completed", "failed", "paused"])
+    },
   },
   actions: {
     // Selection of jobs.
@@ -56,6 +59,7 @@ export const useJobs = defineStore('jobs', {
       return deletionPromise;
     },
     cancelJobs() { return this._setJobStatus("cancel-requested"); },
+    requeueJobs() { return this._setJobStatus("requeued"); },
 
     // Internal methods.
 
