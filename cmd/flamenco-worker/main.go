@@ -94,7 +94,8 @@ func main() {
 
 	timeService := clock.New()
 	buffer = upstreamBufferOrDie(client, timeService)
-	go buffer.Flush(workerCtx) // Immediately try to flush any updates.
+	// Flush any updates before actually starting the Worker.
+	buffer.Flush(workerCtx)
 
 	cliRunner := worker.NewCLIRunner()
 	listener = worker.NewListener(client, buffer)
