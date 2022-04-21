@@ -2,6 +2,7 @@
 *.sqlite
 *.db
 *.blend[0-9]
+*.flamenco.blend
 
 /flamenco-manager
 /flamenco-worker
