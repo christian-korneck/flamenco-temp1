@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **created** | **datetime** | Creation timestamp | 
 **updated** | **datetime** | Creation timestamp | 
 **status** | [**JobStatus**](JobStatus.md) |  | 
+**activity** | **str** | Description of the last activity on this job. | 
 **priority** | **int** |  | defaults to 50
 **settings** | [**JobSettings**](JobSettings.md) |  | [optional] 
 **metadata** | [**JobMetadata**](JobMetadata.md) |  | [optional] 

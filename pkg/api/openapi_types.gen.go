@@ -203,6 +203,9 @@ type Job struct {
 	// Embedded struct due to allOf(#/components/schemas/SubmittedJob)
 	SubmittedJob `yaml:",inline"`
 	// Embedded fields due to inline allOf schema
+	// Description of the last activity on this job.
+	Activity string `json:"activity"`
+
 	// Creation timestamp
 	Created time.Time `json:"created"`
 

@@ -27,10 +27,11 @@ class JobAllOf {
      * @param created {Date} Creation timestamp
      * @param updated {Date} Creation timestamp
      * @param status {module:model/JobStatus} 
+     * @param activity {String} Description of the last activity on this job.
      */
-    constructor(id, created, updated, status) { 
+    constructor(id, created, updated, status, activity) { 
         
-        JobAllOf.initialize(this, id, created, updated, status);
+        JobAllOf.initialize(this, id, created, updated, status, activity);
     }
 
     /**
@@ -38,11 +39,12 @@ class JobAllOf {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, created, updated, status) { 
+    static initialize(obj, id, created, updated, status, activity) { 
         obj['id'] = id;
         obj['created'] = created;
         obj['updated'] = updated;
         obj['status'] = status;
+        obj['activity'] = activity;
     }
 
     /**
@@ -67,6 +69,9 @@ class JobAllOf {
             }
             if (data.hasOwnProperty('status')) {
                 obj['status'] = JobStatus.constructFromObject(data['status']);
+            }
+            if (data.hasOwnProperty('activity')) {
+                obj['activity'] = ApiClient.convertToType(data['activity'], 'String');
             }
         }
         return obj;
@@ -97,6 +102,12 @@ JobAllOf.prototype['updated'] = undefined;
  * @member {module:model/JobStatus} status
  */
 JobAllOf.prototype['status'] = undefined;
+
+/**
+ * Description of the last activity on this job.
+ * @member {String} activity
+ */
+JobAllOf.prototype['activity'] = undefined;
 
 
 

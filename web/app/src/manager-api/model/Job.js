@@ -34,10 +34,11 @@ class Job {
      * @param created {Date} Creation timestamp
      * @param updated {Date} Creation timestamp
      * @param status {module:model/JobStatus} 
+     * @param activity {String} Description of the last activity on this job.
      */
-    constructor(name, type, priority, id, created, updated, status) { 
-        SubmittedJob.initialize(this, name, type, priority);JobAllOf.initialize(this, id, created, updated, status);
-        Job.initialize(this, name, type, priority, id, created, updated, status);
+    constructor(name, type, priority, id, created, updated, status, activity) { 
+        SubmittedJob.initialize(this, name, type, priority);JobAllOf.initialize(this, id, created, updated, status, activity);
+        Job.initialize(this, name, type, priority, id, created, updated, status, activity);
     }
 
     /**
@@ -45,7 +46,7 @@ class Job {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, name, type, priority, id, created, updated, status) { 
+    static initialize(obj, name, type, priority, id, created, updated, status, activity) { 
         obj['name'] = name;
         obj['type'] = type;
         obj['priority'] = priority || 50;
@@ -53,6 +54,7 @@ class Job {
         obj['created'] = created;
         obj['updated'] = updated;
         obj['status'] = status;
+        obj['activity'] = activity;
     }
 
     /**
@@ -94,6 +96,9 @@ class Job {
             }
             if (data.hasOwnProperty('status')) {
                 obj['status'] = JobStatus.constructFromObject(data['status']);
+            }
+            if (data.hasOwnProperty('activity')) {
+                obj['activity'] = ApiClient.convertToType(data['activity'], 'String');
             }
         }
         return obj;
@@ -152,6 +157,12 @@ Job.prototype['updated'] = undefined;
  */
 Job.prototype['status'] = undefined;
 
+/**
+ * Description of the last activity on this job.
+ * @member {String} activity
+ */
+Job.prototype['activity'] = undefined;
+
 
 // Implement SubmittedJob interface:
 /**
@@ -196,6 +207,11 @@ JobAllOf.prototype['updated'] = undefined;
  * @member {module:model/JobStatus} status
  */
 JobAllOf.prototype['status'] = undefined;
+/**
+ * Description of the last activity on this job.
+ * @member {String} activity
+ */
+JobAllOf.prototype['activity'] = undefined;
 
 
 

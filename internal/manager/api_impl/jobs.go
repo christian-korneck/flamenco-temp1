@@ -217,10 +217,11 @@ func jobDBtoAPI(dbJob *persistence.Job) api.Job {
 			Type:     dbJob.JobType,
 		},
 
-		Id:      dbJob.UUID,
-		Created: dbJob.CreatedAt,
-		Updated: dbJob.UpdatedAt,
-		Status:  api.JobStatus(dbJob.Status),
+		Id:       dbJob.UUID,
+		Created:  dbJob.CreatedAt,
+		Updated:  dbJob.UpdatedAt,
+		Status:   api.JobStatus(dbJob.Status),
+		Activity: dbJob.Activity,
 	}
 
 	apiJob.Settings = &api.JobSettings{AdditionalProperties: dbJob.Settings}

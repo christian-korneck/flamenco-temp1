@@ -102,6 +102,7 @@ class Job(ModelComposed):
             'created': (datetime,),  # noqa: E501
             'updated': (datetime,),  # noqa: E501
             'status': (JobStatus,),  # noqa: E501
+            'activity': (str,),  # noqa: E501
             'settings': (JobSettings,),  # noqa: E501
             'metadata': (JobMetadata,),  # noqa: E501
         }
@@ -119,6 +120,7 @@ class Job(ModelComposed):
         'created': 'created',  # noqa: E501
         'updated': 'updated',  # noqa: E501
         'status': 'status',  # noqa: E501
+        'activity': 'activity',  # noqa: E501
         'settings': 'settings',  # noqa: E501
         'metadata': 'metadata',  # noqa: E501
     }
@@ -139,6 +141,7 @@ class Job(ModelComposed):
             created (datetime): Creation timestamp
             updated (datetime): Creation timestamp
             status (JobStatus):
+            activity (str): Description of the last activity on this job.
             _check_type (bool): if True, values for parameters in openapi_types
                                 will be type checked and a TypeError will be
                                 raised if the wrong type is input.
@@ -248,6 +251,7 @@ class Job(ModelComposed):
             created (datetime): Creation timestamp
             updated (datetime): Creation timestamp
             status (JobStatus):
+            activity (str): Description of the last activity on this job.
             _check_type (bool): if True, values for parameters in openapi_types
                                 will be type checked and a TypeError will be
                                 raised if the wrong type is input.

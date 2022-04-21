@@ -735,7 +735,8 @@ components:
               format: date-time
               description: Creation timestamp
             status: {$ref: "#/components/schemas/JobStatus"}
-          required: [id, created, updated, status]
+            activity: {type: string, description: "Description of the last activity on this job."}
+          required: [id, created, updated, status, activity]
 
     JobSettings:
       type: object

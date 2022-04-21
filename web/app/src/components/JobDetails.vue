@@ -36,6 +36,11 @@
         <th>Updated</th>
         <td>{{ datetime.relativeTime(jobData.updated) }}</td>
       </tr>
+
+      <tr class="field-activity">
+        <th>Activity</th>
+        <td>{{ jobData.activity }}</td>
+      </tr>
     </table>
 
     <h3 class="sub-title" v-if="hasMetadata">Meta-data</h3>
