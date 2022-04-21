@@ -132,4 +132,4 @@ package: flamenco-manager flamenco-worker
 	rm -rf dist/flamenco
 
 
-.PHONY: application version flamenco-manager flamenco-worker generate generate-go generate-py with-deps swagger-ui list-embedded test clean
+.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race generate generate-go generate-py with-deps swagger-ui list-embedded test clean
