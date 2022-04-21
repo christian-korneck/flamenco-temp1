@@ -234,6 +234,7 @@ section.action-bar {
   height: var(--action-bar-height);
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 section.action-bar button.action {
@@ -244,6 +245,7 @@ section.action-bar button.action {
   background: #6E6D70;
   color: #DFDEDF;
   touch-action: manipulation;
+  margin-right: 0.3rem;
 
   transition-duration: 150ms;
   transition-property: color, background-color, border-color, box-shadow
@@ -261,7 +263,9 @@ section.action-bar button.action:focus {
 }
 
 section.action-bar button.action.dangerous {
-  background-color: darkred;
+  background-color: #7c4d41;
+  color: #e4c5c0;
+  margin-left: 1rem;
 }
 
 section.action-bar button.action.dangerous[disabled] {
