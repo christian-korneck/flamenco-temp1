@@ -256,7 +256,8 @@ section.action-bar button.action[disabled] {
 }
 
 section.action-bar button.action:focus {
-  background-color: cadetblue;
+  /* Make sure the outline is clearly visible inside the button. */
+  outline-offset: -0.5em;
 }
 
 section.action-bar button.action.dangerous {
