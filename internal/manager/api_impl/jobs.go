@@ -97,29 +97,6 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 	return e.JSON(http.StatusOK, apiJob)
 }
 
-func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
-	logger := requestLogger(e).With().
-		Str("job", jobId).
-		Logger()
-
-	if _, err := uuid.Parse(jobId); err != nil {
-		logger.Debug().Msg("invalid job ID received")
-		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
-	}
-
-	logger.Debug().Msg("fetching job")
-
-	ctx := e.Request().Context()
-	dbJob, err := f.persist.FetchJob(ctx, jobId)
-	if err != nil {
-		logger.Warn().Err(err).Msg("cannot fetch job")
-		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobId))
-	}
-
-	apiJob := jobDBtoAPI(dbJob)
-	return e.JSON(http.StatusOK, apiJob)
-}
-
 func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 	logger := requestLogger(e)
 	ctx := e.Request().Context()

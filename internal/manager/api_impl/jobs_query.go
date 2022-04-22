@@ -2,11 +2,36 @@
 package api_impl
 
 import (
+	"fmt"
 	"net/http"
 
 	"git.blender.org/flamenco/pkg/api"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
+
+func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
+	logger := requestLogger(e).With().
+		Str("job", jobId).
+		Logger()
+
+	if _, err := uuid.Parse(jobId); err != nil {
+		logger.Debug().Msg("invalid job ID received")
+		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
+	}
+
+	logger.Debug().Msg("fetching job")
+
+	ctx := e.Request().Context()
+	dbJob, err := f.persist.FetchJob(ctx, jobId)
+	if err != nil {
+		logger.Warn().Err(err).Msg("cannot fetch job")
+		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobId))
+	}
+
+	apiJob := jobDBtoAPI(dbJob)
+	return e.JSON(http.StatusOK, apiJob)
+}
 
 func (f *Flamenco) QueryJobs(e echo.Context) error {
 	logger := requestLogger(e)
