@@ -10,12 +10,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
+func (f *Flamenco) FetchJob(e echo.Context, jobID string) error {
 	logger := requestLogger(e).With().
-		Str("job", jobId).
+		Str("job", jobID).
 		Logger()
 
-	if _, err := uuid.Parse(jobId); err != nil {
+	if _, err := uuid.Parse(jobID); err != nil {
 		logger.Debug().Msg("invalid job ID received")
 		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
 	}
@@ -23,10 +23,10 @@ func (f *Flamenco) FetchJob(e echo.Context, jobId string) error {
 	logger.Debug().Msg("fetching job")
 
 	ctx := e.Request().Context()
-	dbJob, err := f.persist.FetchJob(ctx, jobId)
+	dbJob, err := f.persist.FetchJob(ctx, jobID)
 	if err != nil {
 		logger.Warn().Err(err).Msg("cannot fetch job")
-		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobId))
+		return sendAPIError(e, http.StatusNotFound, fmt.Sprintf("job %+v not found", jobID))
 	}
 
 	apiJob := jobDBtoAPI(dbJob)
