@@ -1,0 +1,23 @@
+{
+  "go.coverOnSave": true,
+  "go.coverOnTestPackage": true,
+  "go.coverOnSingleTest": true,
+  "go.coverageDecorator": {
+    "type": "highlight",
+    "coveredHighlightColor": "rgba(30, 64, 10, 0.06)",
+    "coveredBorderColor": "rgba(30, 64, 10, 0.06)",
+    "uncoveredHighlightColor": "rgba(146, 38, 20, 0.06)",
+    "uncoveredBorderColor": "rgba(146, 38, 20, 0.06)",
+    "coveredGutterStyle": "blockgreen",
+    "uncoveredGutterStyle": "blockred"
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "keep",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "johnsoncodehk.volar",
+  },
+}

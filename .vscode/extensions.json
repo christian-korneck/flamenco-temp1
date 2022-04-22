@@ -2,6 +2,7 @@
   "recommendations": [
     "golang.go",
     "alexcvzz.vscode-sqlite",
-    "netcorext.uuid-generator"
+    "netcorext.uuid-generator",
+    "esbenp.prettier-vscode",
   ]
 }

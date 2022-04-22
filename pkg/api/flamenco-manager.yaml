@@ -39,7 +39,7 @@ paths:
           description: normal response
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/ManagerConfiguration"}
+              schema: { $ref: "#/components/schemas/ManagerConfiguration" }
 
   ## Worker
 
@@ -68,14 +68,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/worker/sign-on:
     summary: Called by Workers to let the Manager know they're ready to work, and to update their metadata.
     post:
       summary: Authenticate & sign in the worker.
       operationId: signOn
-      security: [{worker_auth: []}]
+      security: [{ worker_auth: [] }]
       tags: [worker]
       requestBody:
         description: Worker metadata
@@ -96,14 +96,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/worker/sign-off:
     summary: Called by Workers to let the Manager know they're going offline.
     post:
       summary: Mark the worker as offline
       operationId: signOff
-      security: [{worker_auth: []}]
+      security: [{ worker_auth: [] }]
       tags: [worker]
       responses:
         "204":
@@ -113,13 +113,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/worker/state:
     summary: Called by Workers to check whether there is any state change requested.
     get:
       operationId: workerState
-      security: [{worker_auth: []}]
+      security: [{ worker_auth: [] }]
       tags: [worker]
       responses:
         "204":
@@ -135,14 +135,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/worker/state-changed:
     summary: Called by Workers to let the Manager know they've changed status.
     post:
       summary: Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
       operationId: workerStateChanged
-      security: [{worker_auth: []}]
+      security: [{ worker_auth: [] }]
       tags: [worker]
       requestBody:
         description: New worker state
@@ -159,14 +159,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/worker/task:
     summary: Task scheduler endpoint.
     post:
       operationId: scheduleTask
       summary: Obtain a new task to execute
-      security: [{worker_auth: []}]
+      security: [{ worker_auth: [] }]
       tags: [worker]
       responses:
         "204":
@@ -175,12 +175,12 @@ paths:
           description: Task to execute.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/AssignedTask"}
+              schema: { $ref: "#/components/schemas/AssignedTask" }
         "403":
           description: Permission Denied
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/SecurityError"}
+              schema: { $ref: "#/components/schemas/SecurityError" }
         "409":
           description: Worker is not in the active state, so is not allowed to execute tasks right now.
         "423":
@@ -195,13 +195,13 @@ paths:
     post:
       operationId: taskUpdate
       summary: Update the task, typically to indicate progress, completion, or failure.
-      security: [{worker_auth: []}]
+      security: [{ worker_auth: [] }]
       tags: [worker]
       parameters:
         - name: task_id
           in: path
           required: true
-          schema: {type: string, format: uuid}
+          schema: { type: string, format: uuid }
       requestBody:
         description: Task update information
         required: true
@@ -219,7 +219,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   ## Jobs
 
@@ -234,7 +234,7 @@ paths:
           description: Available job types
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/AvailableJobTypes"}
+              schema: { $ref: "#/components/schemas/AvailableJobTypes" }
 
   /api/jobs/type/{typeName}:
     summary: Info about a specific job type.
@@ -246,13 +246,13 @@ paths:
         - name: typeName
           in: path
           required: true
-          schema: {type: string}
+          schema: { type: string }
       responses:
         "200":
           description: Job type
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/AvailableJobType"}
+              schema: { $ref: "#/components/schemas/AvailableJobType" }
 
   /api/jobs:
     summary: Job submission endpoint.
@@ -272,12 +272,12 @@ paths:
           description: Job was succesfully compiled into individual tasks.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Job"}
+              schema: { $ref: "#/components/schemas/Job" }
         default:
           description: Error message
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Error"}
+              schema: { $ref: "#/components/schemas/Error" }
 
   /api/jobs/query:
     summary: Obtain jobs with filtering and sorting.
@@ -297,12 +297,12 @@ paths:
           description: Normal query response, can be empty list if nothing matched the query.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/JobsQueryResult"}
+              schema: { $ref: "#/components/schemas/JobsQueryResult" }
         default:
           description: Error message
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Error"}
+              schema: { $ref: "#/components/schemas/Error" }
 
   /api/jobs/{job_id}:
     summary: Job info and management
@@ -314,13 +314,13 @@ paths:
         - name: job_id
           in: path
           required: true
-          schema: {type: string, format: uuid}
+          schema: { type: string, format: uuid }
       responses:
         "200":
           description: Job info
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Job"}
+              schema: { $ref: "#/components/schemas/Job" }
 
   /api/jobs/{job_id}/setstatus:
     summary: Request a status change for the given job.
@@ -331,7 +331,7 @@ paths:
         - name: job_id
           in: path
           required: true
-          schema: {type: string, format: uuid}
+          schema: { type: string, format: uuid }
       requestBody:
         description: The status change to request.
         required: true
@@ -349,7 +349,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 
   ## Shaman
@@ -372,13 +372,13 @@ paths:
           description: Subset of the posted requirements, indicating the unknown files.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/ShamanRequirementsResponse"}
+              schema: { $ref: "#/components/schemas/ShamanRequirementsResponse" }
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /shaman/checkout/create:
     summary: Symlink a set of files into the checkout area.
@@ -399,25 +399,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShamanCheckoutResult'
+                $ref: "#/components/schemas/ShamanCheckoutResult"
         "424":
           description: There were files missing. Use `shamanCheckoutRequirements` to figure out which ones.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "409":
           description: Checkout already exists.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /shaman/files/{checksum}/{filesize}:
     summary: Upload files to the Shaman server.
@@ -430,25 +430,25 @@ paths:
         - name: checksum
           in: path
           required: true
-          schema: {type: string}
+          schema: { type: string }
           description: SHA256 checksum of the file.
         - name: filesize
           in: path
           required: true
-          schema: {type: integer}
+          schema: { type: integer }
           description: Size of the file in bytes.
       responses:
         "200":
           description: Normal response.
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/ShamanSingleFileStatus"}
+              schema: { $ref: "#/components/schemas/ShamanSingleFileStatus" }
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     post:
       operationId: shamanFileStore
@@ -463,17 +463,17 @@ paths:
         - name: checksum
           in: path
           required: true
-          schema: {type: string}
+          schema: { type: string }
           description: SHA256 checksum of the file.
         - name: filesize
           in: path
           required: true
-          schema: {type: integer}
+          schema: { type: integer }
           description: Size of the file in bytes.
         - name: X-Shaman-Can-Defer-Upload
           in: header
           required: false
-          schema: {type: boolean}
+          schema: { type: boolean }
           description: >
             The client indicates that it can defer uploading this file. The
             "208" response will not only be returned when the file is already
@@ -482,7 +482,7 @@ paths:
         - name: X-Shaman-Original-Filename
           in: header
           required: false
-          schema: {type: string}
+          schema: { type: string }
           description: >
             The original filename. If sent along with the request, it will be
             included in the server logs, which can aid in debugging.
@@ -514,7 +514,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 tags:
   - name: meta
@@ -550,26 +550,26 @@ components:
       type: object
       required: [secret, platform, supported_task_types, nickname]
       properties:
-        secret: {type: string}
-        platform: {type: string}
+        secret: { type: string }
+        platform: { type: string }
         supported_task_types:
           type: array
-          items: {type: string}
-        nickname: {type: string}
+          items: { type: string }
+        nickname: { type: string }
 
     RegisteredWorker:
       type: object
       properties:
-        uuid: {type: string, format: uuid}
-        nickname: {type: string}
-        address: {type: string}
-        status: {$ref: "#/components/schemas/WorkerStatus"}
-        platform: {type: string}
-        last_activity: {type: string}
-        software: {type: string}
+        uuid: { type: string, format: uuid }
+        nickname: { type: string }
+        address: { type: string }
+        status: { $ref: "#/components/schemas/WorkerStatus" }
+        platform: { type: string }
+        last_activity: { type: string }
+        software: { type: string }
         supported_task_types:
           type: array
-          items: {type: string}
+          items: { type: string }
       required: [uuid, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
 
     WorkerStatus:
@@ -579,53 +579,73 @@ components:
     WorkerSignOn:
       type: object
       properties:
-        nickname: {type: string}
+        nickname: { type: string }
         supported_task_types:
           type: array
-          items: {type: string}
-        software_version: {type: string}
+          items: { type: string }
+        software_version: { type: string }
       required: [nickname, supported_task_types, software_version]
 
     WorkerStateChange:
       type: object
       properties:
-        status_requested: {$ref: "#/components/schemas/WorkerStatus"}
+        status_requested: { $ref: "#/components/schemas/WorkerStatus" }
       required: [status_requested]
 
     WorkerStateChanged:
       type: object
       properties:
-        status: {$ref: "#/components/schemas/WorkerStatus"}
+        status: { $ref: "#/components/schemas/WorkerStatus" }
       required: [status]
 
     AssignedTask:
       type: object
       description: AssignedTask is a task as it is received by the Worker.
       properties:
-        uuid: {type: string, format: uuid}
-        job: {type: string}
-        name: {type: string}
-        status: {$ref: "#/components/schemas/TaskStatus"}
-        priority: {type: integer}
-        job_priority: {type: integer}
-        job_type: {type: string}
-        task_type: {type: string}
+        uuid: { type: string, format: uuid }
+        job: { type: string }
+        name: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { type: integer }
+        job_priority: { type: integer }
+        job_type: { type: string }
+        task_type: { type: string }
         commands:
           type: array
-          items: {$ref: "#/components/schemas/Command"}
+          items: { $ref: "#/components/schemas/Command" }
       required: [uuid, job, name, status, priority, job_priority, job_type, task_type, commands]
 
     TaskUpdate:
       type: object
       description: TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
       properties:
-        taskStatus: {$ref: "#/components/schemas/TaskStatus", description: The new task status.}
-        activity: {type: string, description: One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.}
-        log: {type: string, description: "Log lines for this task, will be appended to logs sent earlier."}
+        taskStatus: { $ref: "#/components/schemas/TaskStatus", description: The new task status. }
+        activity:
+          {
+            type: string,
+            description: One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.,
+          }
+        log: { type: string, description: "Log lines for this task, will be appended to logs sent earlier." }
 
     JobStatus:
       type: string
-      enum: [active, canceled, completed, construction-failed, failed, paused, queued, archived, archiving, cancel-requested, fail-requested, requeued, under-construction, waiting-for-files]
+      enum:
+        [
+          active,
+          canceled,
+          completed,
+          construction-failed,
+          failed,
+          paused,
+          queued,
+          archived,
+          archiving,
+          cancel-requested,
+          fail-requested,
+          requeued,
+          under-construction,
+          waiting-for-files,
+        ]
 
     TaskStatus:
       type: string
@@ -635,8 +655,8 @@ components:
       type: object
       description: Command represents a single command to execute by the Worker.
       properties:
-        name: {type: string}
-        parameters: {type: object}
+        name: { type: string }
+        parameters: { type: object }
       required: [name, parameters]
 
     AvailableJobTypes:
@@ -645,18 +665,18 @@ components:
       properties:
         "job_types":
           type: array
-          items: {$ref: "#/components/schemas/AvailableJobType"}
+          items: { $ref: "#/components/schemas/AvailableJobType" }
       required: [job_types]
 
     AvailableJobType:
       type: object
       description: Job type supported by this Manager, and its parameters.
       properties:
-        "name": {type: string}
-        "label": {type: string}
+        "name": { type: string }
+        "label": { type: string }
         "settings":
           type: array
-          items: {$ref: "#/components/schemas/AvailableJobSetting"}
+          items: { $ref: "#/components/schemas/AvailableJobSetting" }
       required: [name, label, settings]
 
     AvailableJobSetting:
@@ -666,12 +686,12 @@ components:
         "key":
           type: string
           description: Identifier for the setting, must be unique within the job type.
-        "type": {$ref: "#/components/schemas/AvailableJobSettingType"}
-        "subtype": {$ref: "#/components/schemas/AvailableJobSettingSubtype"}
+        "type": { $ref: "#/components/schemas/AvailableJobSettingType" }
+        "subtype": { $ref: "#/components/schemas/AvailableJobSettingSubtype" }
         "choices":
           description: When given, limit the valid values to these choices. Only usable with string type.
           type: array
-          items: {type: string}
+          items: { type: string }
         "propargs":
           description: Any extra arguments to the bpy.props.SomeProperty() call used to create this property.
           type: object
@@ -722,11 +742,11 @@ components:
       type: object
       description: Job definition submitted to Flamenco.
       properties:
-        "name": {type: string}
-        "type": {type: string}
-        "priority": {type: integer, default: 50}
-        "settings": {$ref: "#/components/schemas/JobSettings"}
-        "metadata": {$ref: "#/components/schemas/JobMetadata"}
+        "name": { type: string }
+        "type": { type: string }
+        "priority": { type: integer, default: 50 }
+        "settings": { $ref: "#/components/schemas/JobSettings" }
+        "metadata": { $ref: "#/components/schemas/JobMetadata" }
       required: [name, type, priority]
       example:
         type: "simple-blender-render"
@@ -750,7 +770,7 @@ components:
           "project": "Sprite Fright"
     Job:
       allOf:
-        - $ref: '#/components/schemas/SubmittedJob'
+        - $ref: "#/components/schemas/SubmittedJob"
         - properties:
             id:
               type: string
@@ -764,8 +784,8 @@ components:
               type: string
               format: date-time
               description: Creation timestamp
-            status: {$ref: "#/components/schemas/JobStatus"}
-            activity: {type: string, description: "Description of the last activity on this job."}
+            status: { $ref: "#/components/schemas/JobStatus" }
+            activity: { type: string, description: "Description of the last activity on this job." }
           required: [id, created, updated, status, activity]
 
     JobSettings:
@@ -793,10 +813,10 @@ components:
           minimum: 1
         "order_by":
           type: array
-          items: {type: string}
+          items: { type: string }
         "status_in":
           type: array
-          items: {$ref: "#/components/schemas/JobStatus"}
+          items: { $ref: "#/components/schemas/JobStatus" }
           description: Return only jobs with a status in this array.
         "metadata":
           type: object
@@ -811,21 +831,21 @@ components:
         "limit": 5
         "order_by": ["updated", "status"]
         "status_in": ["active", "queued", "failed"]
-        "metadata": {project: "Sprite Fright"}
+        "metadata": { project: "Sprite Fright" }
 
     JobsQueryResult:
       type: object
       properties:
         jobs:
           type: array
-          items: {$ref: "#/components/schemas/Job"}
+          items: { $ref: "#/components/schemas/Job" }
       required: [jobs]
 
     JobStatusChange:
       type: object
       properties:
-        status: {$ref: "#/components/schemas/JobStatus"}
-        reason: {type: string, description: The reason for this status change.}
+        status: { $ref: "#/components/schemas/JobStatus" }
+        reason: { type: string, description: The reason for this status change. }
       required: [status, reason]
 
     Error:
@@ -845,13 +865,13 @@ components:
             the request can be retried. Following the header is not mandatory,
             and it's up to the client to do something reasonable like
             exponential backoff.
-        message: {type: string}
+        message: { type: string }
 
     SecurityError:
       type: object
       required: [message]
       properties:
-        message: {type: string}
+        message: { type: string }
 
     ShamanRequirementsRequest:
       type: object
@@ -859,7 +879,7 @@ components:
       properties:
         "files":
           type: array
-          items: {$ref: "#/components/schemas/ShamanFileSpec"}
+          items: { $ref: "#/components/schemas/ShamanFileSpec" }
       required: [files]
       example:
         files:
@@ -874,7 +894,7 @@ components:
       properties:
         "files":
           type: array
-          items: {$ref: "#/components/schemas/ShamanFileSpecWithStatus"}
+          items: { $ref: "#/components/schemas/ShamanFileSpecWithStatus" }
       required: [files]
       example:
         files:
@@ -889,9 +909,9 @@ components:
       type: object
       description: Specification of a file in the Shaman storage.
       properties:
-        "sha": {type: string, description: "SHA256 checksum of the file"}
-        "size": {type: integer, description: "File size in bytes"}
-        "path": {type: string, description: "Location of the file in the checkout"}
+        "sha": { type: string, description: "SHA256 checksum of the file" }
+        "size": { type: integer, description: "File size in bytes" }
+        "path": { type: string, description: "Location of the file in the checkout" }
       required: [sha, size, path]
 
     ShamanFileSpecWithStatus:
@@ -913,10 +933,10 @@ components:
       type: object
       description: Specification of a file, which could be in the Shaman storage, or not, depending on its status.
       properties:
-        "sha": {type: string, description: "SHA256 checksum of the file"}
-        "size": {type: integer, description: "File size in bytes"}
-        "path": {type: string, description: "Location of the file in the checkout"}
-        "status": {$ref: "#/components/schemas/ShamanFileStatus"}
+        "sha": { type: string, description: "SHA256 checksum of the file" }
+        "size": { type: integer, description: "File size in bytes" }
+        "path": { type: string, description: "Location of the file in the checkout" }
+        "status": { $ref: "#/components/schemas/ShamanFileStatus" }
       required: [sha, size, path, status]
 
     ShamanCheckout:
@@ -925,7 +945,7 @@ components:
       properties:
         "files":
           type: array
-          items: {$ref: "#/components/schemas/ShamanFileSpec"}
+          items: { $ref: "#/components/schemas/ShamanFileSpec" }
         "checkoutPath":
           type: string
           description: >
@@ -964,7 +984,7 @@ components:
       type: object
       description: Status of a file in the Shaman storage.
       properties:
-        "status": {$ref: "#/components/schemas/ShamanFileStatus"}
+        "status": { $ref: "#/components/schemas/ShamanFileStatus" }
       required: [status]
 
     # SocketIO API. These types are not used in any HTTP operation defined in
@@ -981,15 +1001,15 @@ components:
           type: string
           format: uuid
           description: UUID of the Job
-        "name": {type: string, description: "Name of the job"}
+        "name": { type: string, description: "Name of the job" }
         "updated":
           type: string
           format: date-time
           description: Timestamp of last update
-        "status": {$ref: "#/components/schemas/JobStatus"}
-        "previous_status": {$ref: "#/components/schemas/JobStatus"}
-        "type": {type: string}
-        "priority": {type: integer, default: 50}
+        "status": { $ref: "#/components/schemas/JobStatus" }
+        "previous_status": { $ref: "#/components/schemas/JobStatus" }
+        "type": { type: string }
+        "priority": { type: integer, default: 50 }
       required: [id, updated, status, type, priority]
 
   securitySchemes:
