@@ -247,14 +247,19 @@ section.action-bar button.action {
   touch-action: manipulation;
   margin-right: 0.3rem;
 
-  transition-duration: 150ms;
-  transition-property: color, background-color, border-color, box-shadow
+  transition-duration: 300ms;
+  transition-property: color, background-color, border-color, box-shadow;
 }
 
 section.action-bar button.action[disabled] {
   background-color: #4c4b4d;
   color: #858585;
   border: thin solid #858585;
+}
+
+section.action-bar button.action:hover:not([disabled]) {
+  transition: all 100ms;
+  box-shadow: inset 0 0 0.3rem rgba(255, 255, 255, 0.8);
 }
 
 section.action-bar button.action:focus {
