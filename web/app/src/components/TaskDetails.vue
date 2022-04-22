@@ -6,7 +6,6 @@
 
 <script lang="js">
 export default {
-  props: ["apiClient"],
   data: () => {
     return {
     };

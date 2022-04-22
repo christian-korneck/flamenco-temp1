@@ -2,8 +2,9 @@ import { defineStore } from 'pinia'
 
 import * as urls from '@/urls'
 import * as API from '@/manager-api';
+import { apiClient } from '@/stores/api-query-count';
 
-const apiClient = new API.ApiClient(urls.api());
+
 const jobsAPI = new API.JobsApi(apiClient);
 
 // 'use' prefix is idiomatic for Pinia stores.

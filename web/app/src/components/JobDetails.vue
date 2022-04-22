@@ -68,6 +68,7 @@
 <script lang="js">
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
+import { apiClient } from '@/stores/api-query-count';
 
 function objectEmpty(o) {
   if (!o) return true;
@@ -77,14 +78,13 @@ window.objectEmpty = objectEmpty;
 
 export default {
   props: [
-    "apiClient",  // Flamenco Manager API client.
     "jobData", // Job data to show.
   ],
   data() {
     return {
       datetime: datetime, // So that the template can access it.
       simpleSettings: null, // Object with filtered job settings, or null if there is no job.
-      jobsApi: new API.JobsApi(this.apiClient),
+      jobsApi: new API.JobsApi(apiClient),
       jobType: null, // API.AvailableJobType object for the current job type.
       jobTypeSettings: null, // Mapping from setting key to its definition in the job type.
       showAllSettings: false,

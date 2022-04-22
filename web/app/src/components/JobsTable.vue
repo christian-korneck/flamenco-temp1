@@ -9,11 +9,12 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
+import { apiClient } from '@/stores/api-query-count';
+
 import JobActionsBar from '@/components/JobActionsBar.vue'
 
 export default {
   emits: ["selectedJobChange"],
-  props: ["apiClient"],
   components: {
     JobActionsBar,
   },
@@ -71,10 +72,7 @@ export default {
       tab.setSort(tab.getSorters()); // This triggers re-sorting.
     },
     fetchAllJobs() {
-      if (!this.apiClient) {
-        throw "no apiClient set on JobsTable component";
-      }
-      const jobsApi = new API.JobsApi(this.apiClient);
+      const jobsApi = new API.JobsApi(apiClient);
       const jobsQuery = {};
       jobsApi.queryJobs(jobsQuery).then(this.onJobsFetched, function (error) {
         // TODO: error handling.
@@ -127,6 +125,11 @@ export default {
 .job-list-container {
   font-family: 'Noto Mono', monospace;
   font-size: smaller;
-  height: calc(100% - var(--action-bar-height));
+  height: calc(100% - var(--action-bar-height) - 2em);
+}
+
+.job-list {
+  outline: 2px solid lime;
+  outline-offset: -1px;
 }
 </style>

@@ -1,19 +1,19 @@
 <template>
   <header>{{ flamencoName }}</header>
   <header class="right">
-    <api-spinner :numRunningQueries="numRunningQueries" />
+    <api-spinner />
     version: {{ flamencoVersion }}
   </header>
   <div class="col-1">
-    <jobs-table ref="jobsTable" :apiClient="apiClient" @selectedJobChange="onSelectedJobChanged" />
+    <jobs-table ref="jobsTable" @selectedJobChange="onSelectedJobChanged" />
   </div>
   <div class="col-2">
-    <job-details :apiClient="apiClient" :jobData="selectedJob" />
+    <job-details :jobData="selectedJob" />
   </div>
   <div class="col-3">
-    <task-details :apiClient="apiClient" />
+    <task-details />
   </div>
-  <footer>Footer
+  <footer>
     <span class='notifications' v-if="notifs.last">{{ notifs.last.msg }}</span>
     <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onSioJobUpdate"
       @message="onChatMessage" @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
@@ -25,6 +25,7 @@ import * as urls from '@/urls'
 import * as API from '@/manager-api';
 import { useJobs } from '@/stores/jobs';
 import { useNotifs } from '@/stores/notifications';
+import { apiClient } from '@/stores/api-query-count';
 
 import ApiSpinner from '@/components/ApiSpinner.vue'
 import JobsTable from '@/components/JobsTable.vue'
@@ -41,7 +42,6 @@ export default {
     ApiSpinner, JobsTable, JobDetails, TaskDetails, UpdateListener,
   },
   data: () => ({
-    apiClient: new API.ApiClient(urls.api()),
     websocketURL: urls.ws(),
     messages: [],
 
@@ -50,8 +50,6 @@ export default {
 
     flamencoName: DEFAULT_FLAMENCO_NAME,
     flamencoVersion: DEFAULT_FLAMENCO_VERSION,
-
-    numRunningQueries: 0,
   }),
   mounted() {
     window.app = this;
@@ -68,8 +66,8 @@ export default {
         return;
       }
 
-      const jobsAPI = new API.JobsApi(this.apiClient);
-      this._wrap(jobsAPI.fetchJob(jobSummary.id))
+      const jobsAPI = new API.JobsApi(apiClient);
+      jobsAPI.fetchJob(jobSummary.id)
         .then((job) => {
           this.jobs.setSelectedJob(job);
           // Forward the full job to Tabulator, so that that gets updated too.
@@ -122,20 +120,11 @@ export default {
       this.flamencoVersion = DEFAULT_FLAMENCO_VERSION;
     },
     fetchManagerInfo() {
-      const metaAPI = new API.MetaApi(this.apiClient);
+      const metaAPI = new API.MetaApi(apiClient);
       metaAPI.getVersion().then((version) => {
         this.flamencoName = version.name;
         this.flamencoVersion = version.version;
       })
-    },
-
-    // Wrap a Flamenco API promise, to keep track of how many queries are running.
-    // This is just a test to see how this works, not a final functional design.
-    _wrap(promise) {
-      this.numRunningQueries++;
-      return promise.finally(() => {
-        this.numRunningQueries--;
-      });
     },
   },
 }

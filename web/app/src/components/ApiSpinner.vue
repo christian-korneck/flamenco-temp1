@@ -1,10 +1,14 @@
 <template>
-  <span class="api-spinner" :class="{ running: numRunningQueries > 0 }">&#128008;</span>
+  <span class="api-spinner" :class="{ running: apiQueryCount.num > 0 }">&#128008;</span>
 </template>
 
 <script>
+import { useAPIQueryCount } from '@/stores/api-query-count';
+
 export default {
-  props: ["numRunningQueries"],
+  data: () => ({
+    apiQueryCount: useAPIQueryCount(),
+  }),
 };
 </script>
 
