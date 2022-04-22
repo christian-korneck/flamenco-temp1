@@ -139,6 +139,8 @@ export default {
   --grid-gap: 4px;
 
   --action-bar-height: 2em;
+
+  --blender-blue: #265787;
 }
 
 html,
@@ -201,6 +203,7 @@ h3.sub-title {
 .col-1 {
   grid-area: col-1;
   max-height: calc(100vh - var(--header-height) - var(--footer-height) - 2*var(--grid-gap));
+  overflow: scroll;
 }
 
 .col-2 {
@@ -213,7 +216,7 @@ h3.sub-title {
 
 footer {
   grid-area: footer;
-  background-color: #333333;
+  background-color: var(--blender-blue);
   color: #EEE;
   padding-top: 0.2rem;
   padding-left: 0.2rem;
@@ -231,7 +234,7 @@ section.action-bar button.action {
   border-radius: 0.3rem;
   border: thin solid white;
 
-  background: #6E6D70;
+  background: var(--blender-blue);
   color: #DFDEDF;
   touch-action: manipulation;
   margin-right: 0.3rem;
