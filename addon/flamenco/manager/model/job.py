@@ -139,7 +139,7 @@ class Job(ModelComposed):
             priority (int): defaults to 50  # noqa: E501
             id (str): UUID of the Job
             created (datetime): Creation timestamp
-            updated (datetime): Creation timestamp
+            updated (datetime): Timestamp of last update.
             status (JobStatus):
             activity (str): Description of the last activity on this job.
             _check_type (bool): if True, values for parameters in openapi_types
@@ -249,7 +249,7 @@ class Job(ModelComposed):
             priority (int): defaults to 50  # noqa: E501
             id (str): UUID of the Job
             created (datetime): Creation timestamp
-            updated (datetime): Creation timestamp
+            updated (datetime): Timestamp of last update.
             status (JobStatus):
             activity (str): Description of the last activity on this job.
             _check_type (bool): if True, values for parameters in openapi_types

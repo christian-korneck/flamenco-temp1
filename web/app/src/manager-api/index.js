@@ -26,6 +26,7 @@ import Job from './model/Job';
 import JobAllOf from './model/JobAllOf';
 import JobStatus from './model/JobStatus';
 import JobStatusChange from './model/JobStatusChange';
+import JobTasksSummary from './model/JobTasksSummary';
 import JobUpdate from './model/JobUpdate';
 import JobsQuery from './model/JobsQuery';
 import JobsQueryResult from './model/JobsQueryResult';
@@ -42,6 +43,7 @@ import ShamanRequirementsResponse from './model/ShamanRequirementsResponse';
 import ShamanSingleFileStatus from './model/ShamanSingleFileStatus';
 import SubmittedJob from './model/SubmittedJob';
 import TaskStatus from './model/TaskStatus';
+import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
 import WorkerRegistration from './model/WorkerRegistration';
 import WorkerSignOn from './model/WorkerSignOn';
@@ -171,6 +173,12 @@ export {
     JobStatusChange,
 
     /**
+     * The JobTasksSummary model constructor.
+     * @property {module:model/JobTasksSummary}
+     */
+    JobTasksSummary,
+
+    /**
      * The JobUpdate model constructor.
      * @property {module:model/JobUpdate}
      */
@@ -265,6 +273,12 @@ export {
      * @property {module:model/TaskStatus}
      */
     TaskStatus,
+
+    /**
+     * The TaskSummary model constructor.
+     * @property {module:model/TaskSummary}
+     */
+    TaskSummary,
 
     /**
      * The TaskUpdate model constructor.

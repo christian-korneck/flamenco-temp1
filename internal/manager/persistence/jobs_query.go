@@ -68,3 +68,19 @@ func (db *DB) QueryJobs(ctx context.Context, apiQ api.JobsQuery) ([]*Job, error)
 	tx := q.Scan(&result)
 	return result, tx.Error
 }
+
+// QueryJobTaskSummaries retrieves all tasks of the job, but not all fields of those tasks.
+// Fields are synchronised with api.TaskSummary.
+func (db *DB) QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*Task, error) {
+	logger := log.Ctx(ctx)
+	logger.Debug().Str("job", jobUUID).Msg("queryingtask summaries")
+
+	var result []*Task
+	tx := db.gormDB.WithContext(ctx).Model(&Task{}).
+		Select("tasks.id", "tasks.uuid", "tasks.name", "tasks.priority", "tasks.status", "tasks.type", "tasks.updated_at").
+		Joins("left join jobs on jobs.uuid = ?", jobUUID).
+		// Where("jobs.uuid=?", jobUUID).
+		Scan(&result)
+
+	return result, tx.Error
+}

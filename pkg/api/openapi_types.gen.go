@@ -213,7 +213,7 @@ type Job struct {
 	Id     string    `json:"id"`
 	Status JobStatus `json:"status"`
 
-	// Creation timestamp
+	// Timestamp of last update.
 	Updated time.Time `json:"updated"`
 }
 
@@ -235,6 +235,11 @@ type JobStatusChange struct {
 	// The reason for this status change.
 	Reason string    `json:"reason"`
 	Status JobStatus `json:"status"`
+}
+
+// Simplified list of tasks of a job. Contains all tasks, but not all info of each task.
+type JobTasksSummary struct {
+	Tasks *[]TaskSummary `json:"tasks,omitempty"`
 }
 
 // Subset of a Job, sent over SocketIO when a job changes. For new jobs, `previous_status` will be excluded.
@@ -378,6 +383,16 @@ type SubmittedJob struct {
 
 // TaskStatus defines model for TaskStatus.
 type TaskStatus string
+
+// Just enough information about the task to show in the job's task list.
+type TaskSummary struct {
+	Id       string     `json:"id"`
+	Name     string     `json:"name"`
+	Priority int        `json:"priority"`
+	Status   TaskStatus `json:"status"`
+	TaskType string     `json:"task_type"`
+	Updated  time.Time  `json:"updated"`
+}
 
 // TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
 type TaskUpdate struct {

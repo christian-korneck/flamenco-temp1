@@ -32,7 +32,7 @@ class Job {
      * @param priority {Number} 
      * @param id {String} UUID of the Job
      * @param created {Date} Creation timestamp
-     * @param updated {Date} Creation timestamp
+     * @param updated {Date} Timestamp of last update.
      * @param status {module:model/JobStatus} 
      * @param activity {String} Description of the last activity on this job.
      */
@@ -147,7 +147,7 @@ Job.prototype['id'] = undefined;
 Job.prototype['created'] = undefined;
 
 /**
- * Creation timestamp
+ * Timestamp of last update.
  * @member {Date} updated
  */
 Job.prototype['updated'] = undefined;
@@ -199,7 +199,7 @@ JobAllOf.prototype['id'] = undefined;
  */
 JobAllOf.prototype['created'] = undefined;
 /**
- * Creation timestamp
+ * Timestamp of last update.
  * @member {Date} updated
  */
 JobAllOf.prototype['updated'] = undefined;

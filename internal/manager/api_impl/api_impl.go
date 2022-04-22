@@ -56,6 +56,7 @@ type PersistenceService interface {
 
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
+	QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*persistence.Task, error)
 }
 
 var _ PersistenceService = (*persistence.DB)(nil)

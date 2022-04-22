@@ -117,6 +117,9 @@ type ClientInterface interface {
 
 	SetJobStatus(ctx context.Context, jobId string, body SetJobStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchJobTasks request
+	FetchJobTasks(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetVersion request
 	GetVersion(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -276,6 +279,18 @@ func (c *Client) SetJobStatusWithBody(ctx context.Context, jobId string, content
 
 func (c *Client) SetJobStatus(ctx context.Context, jobId string, body SetJobStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSetJobStatusRequest(c.Server, jobId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchJobTasks(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchJobTasksRequest(c.Server, jobId)
 	if err != nil {
 		return nil, err
 	}
@@ -747,6 +762,40 @@ func NewSetJobStatusRequestWithBody(server string, jobId string, contentType str
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewFetchJobTasksRequest generates requests for FetchJobTasks
+func NewFetchJobTasksRequest(server string, jobId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "job_id", runtime.ParamLocationPath, jobId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/%s/tasks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -1282,6 +1331,9 @@ type ClientWithResponsesInterface interface {
 
 	SetJobStatusWithResponse(ctx context.Context, jobId string, body SetJobStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*SetJobStatusResponse, error)
 
+	// FetchJobTasks request
+	FetchJobTasksWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobTasksResponse, error)
+
 	// GetVersion request
 	GetVersionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetVersionResponse, error)
 
@@ -1481,6 +1533,29 @@ func (r SetJobStatusResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SetJobStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchJobTasksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *JobTasksSummary
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchJobTasksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchJobTasksResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1848,6 +1923,15 @@ func (c *ClientWithResponses) SetJobStatusWithResponse(ctx context.Context, jobI
 	return ParseSetJobStatusResponse(rsp)
 }
 
+// FetchJobTasksWithResponse request returning *FetchJobTasksResponse
+func (c *ClientWithResponses) FetchJobTasksWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobTasksResponse, error) {
+	rsp, err := c.FetchJobTasks(ctx, jobId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchJobTasksResponse(rsp)
+}
+
 // GetVersionWithResponse request returning *GetVersionResponse
 func (c *ClientWithResponses) GetVersionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetVersionResponse, error) {
 	rsp, err := c.GetVersion(ctx, reqEditors...)
@@ -2188,6 +2272,39 @@ func ParseSetJobStatusResponse(rsp *http.Response) (*SetJobStatusResponse, error
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchJobTasksResponse parses an HTTP response from a FetchJobTasksWithResponse call
+func ParseFetchJobTasksResponse(rsp *http.Response) (*FetchJobTasksResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchJobTasksResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest JobTasksSummary
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

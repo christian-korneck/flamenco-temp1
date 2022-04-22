@@ -18,6 +18,7 @@ import AvailableJobTypes from '../model/AvailableJobTypes';
 import Error from '../model/Error';
 import Job from '../model/Job';
 import JobStatusChange from '../model/JobStatusChange';
+import JobTasksSummary from '../model/JobTasksSummary';
 import JobsQuery from '../model/JobsQuery';
 import JobsQueryResult from '../model/JobsQueryResult';
 import SubmittedJob from '../model/SubmittedJob';
@@ -82,6 +83,52 @@ export default class JobsApi {
      */
     fetchJob(jobId) {
       return this.fetchJobWithHttpInfo(jobId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Fetch a summary of all tasks of the given job.
+     * @param {String} jobId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/JobTasksSummary} and HTTP response
+     */
+    fetchJobTasksWithHttpInfo(jobId) {
+      let postBody = null;
+      // verify the required parameter 'jobId' is set
+      if (jobId === undefined || jobId === null) {
+        throw new Error("Missing the required parameter 'jobId' when calling fetchJobTasks");
+      }
+
+      let pathParams = {
+        'job_id': jobId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = JobTasksSummary;
+      return this.apiClient.callApi(
+        '/api/jobs/{job_id}/tasks', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch a summary of all tasks of the given job.
+     * @param {String} jobId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/JobTasksSummary}
+     */
+    fetchJobTasks(jobId) {
+      return this.fetchJobTasksWithHttpInfo(jobId)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

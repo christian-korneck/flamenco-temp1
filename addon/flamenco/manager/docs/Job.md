@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **type** | **str** |  | 
 **id** | **str** | UUID of the Job | 
 **created** | **datetime** | Creation timestamp | 
-**updated** | **datetime** | Creation timestamp | 
+**updated** | **datetime** | Timestamp of last update. | 
 **status** | [**JobStatus**](JobStatus.md) |  | 
 **activity** | **str** | Description of the last activity on this job. | 
 **priority** | **int** |  | defaults to 50

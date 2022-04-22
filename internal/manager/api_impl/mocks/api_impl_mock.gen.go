@@ -114,6 +114,21 @@ func (mr *MockPersistenceServiceMockRecorder) FetchWorker(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorker", reflect.TypeOf((*MockPersistenceService)(nil).FetchWorker), arg0, arg1)
 }
 
+// QueryJobTaskSummaries mocks base method.
+func (m *MockPersistenceService) QueryJobTaskSummaries(arg0 context.Context, arg1 string) ([]*persistence.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryJobTaskSummaries", arg0, arg1)
+	ret0, _ := ret[0].([]*persistence.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryJobTaskSummaries indicates an expected call of QueryJobTaskSummaries.
+func (mr *MockPersistenceServiceMockRecorder) QueryJobTaskSummaries(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryJobTaskSummaries", reflect.TypeOf((*MockPersistenceService)(nil).QueryJobTaskSummaries), arg0, arg1)
+}
+
 // QueryJobs mocks base method.
 func (m *MockPersistenceService) QueryJobs(arg0 context.Context, arg1 api.JobsQuery) ([]*persistence.Job, error) {
 	m.ctrl.T.Helper()

@@ -104,3 +104,29 @@ func TestQueryMetadata(t *testing.T) {
 	assert.Equal(t, otherJob.ID, result[0].ID, "status is %s", result[0].Status)
 	assert.Equal(t, testJob.ID, result[1].ID, "status is %s", result[1].Status)
 }
+
+func TestFetchJobSummary(t *testing.T) {
+	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
+	defer close()
+
+	expectTaskUUIDs := map[string]bool{}
+	for _, task := range authoredJob.Tasks {
+		expectTaskUUIDs[task.UUID] = true
+	}
+
+	// Create another test job, just to check we get the right tasks back.
+	otherAuthoredJob := createTestAuthoredJobWithTasks()
+	otherAuthoredJob.Status = api.JobStatusActive
+	otherAuthoredJob.Tasks = []job_compilers.AuthoredTask{}
+	otherAuthoredJob.JobID = "138678c8-efd0-452b-ac05-397ff4c02b26"
+	otherAuthoredJob.Metadata["project"] = "Other Project"
+	persistAuthoredJob(t, ctx, db, otherAuthoredJob)
+
+	summaries, err := db.QueryJobTaskSummaries(ctx, job.UUID)
+	assert.NoError(t, err)
+
+	assert.Len(t, summaries, len(expectTaskUUIDs))
+	for _, summary := range summaries {
+		assert.True(t, expectTaskUUIDs[summary.UUID], "%q should be in %v", summary.UUID, expectTaskUUIDs)
+	}
+}

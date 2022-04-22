@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -57,4 +58,42 @@ func (f *Flamenco) QueryJobs(e echo.Context) error {
 		Jobs: apiJobs,
 	}
 	return e.JSON(http.StatusOK, result)
+}
+
+func (f *Flamenco) FetchJobTasks(e echo.Context, jobID string) error {
+	logger := requestLogger(e).With().
+		Str("job", jobID).
+		Logger()
+	ctx := e.Request().Context()
+
+	if _, err := uuid.Parse(jobID); err != nil {
+		logger.Debug().Msg("invalid job ID received")
+		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
+	}
+
+	tasks, err := f.persist.QueryJobTaskSummaries(ctx, jobID)
+	if err != nil {
+		logger.Warn().Err(err).Msg("error querying for jobs")
+		return sendAPIError(e, http.StatusInternalServerError, "error querying for jobs")
+	}
+
+	summaries := make([]api.TaskSummary, len(tasks))
+	for i, task := range tasks {
+		summaries[i] = taskDBtoSummary(task)
+	}
+	result := api.JobTasksSummary{
+		Tasks: &summaries,
+	}
+	return e.JSON(http.StatusOK, result)
+}
+
+func taskDBtoSummary(task *persistence.Task) api.TaskSummary {
+	return api.TaskSummary{
+		Id:       task.UUID,
+		Name:     task.Name,
+		Priority: task.Priority,
+		Status:   task.Status,
+		TaskType: task.Type,
+		Updated:  task.UpdatedAt,
+	}
 }

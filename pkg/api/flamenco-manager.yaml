@@ -351,6 +351,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/jobs/{job_id}/tasks:
+    summary: Access tasks of this job.
+    get:
+      operationId: fetchJobTasks
+      summary: Fetch a summary of all tasks of the given job.
+      tags: [jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Get summaries of the tasks of this job.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobTasksSummary" }
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   ## Shaman
 
@@ -783,7 +806,7 @@ components:
             updated:
               type: string
               format: date-time
-              description: Creation timestamp
+              description: Timestamp of last update.
             status: { $ref: "#/components/schemas/JobStatus" }
             activity: { type: string, description: "Description of the last activity on this job." }
           required: [id, created, updated, status, activity]
@@ -840,6 +863,27 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Job" }
       required: [jobs]
+
+    JobTasksSummary:
+      description: "Simplified list of tasks of a job. Contains all tasks, but not all info of each task."
+      type: object
+      properties:
+        tasks:
+          type: array
+          items: { $ref: "#/components/schemas/TaskSummary" }
+      required: [jobs]
+
+    TaskSummary:
+      type: object
+      description: Just enough information about the task to show in the job's task list.
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { type: integer }
+        task_type: { type: string }
+        updated: { type: string, format: date-time }
+      required: [id, name, status, priority, task_type, updated]
 
     JobStatusChange:
       type: object
