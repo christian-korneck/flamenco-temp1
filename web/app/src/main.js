@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from '@/App.vue'
-import router from '@/router'
 
 // Ensure Tabulator can find `luxon`, which it needs for sorting by
 // date/time/datetime.
@@ -15,6 +14,5 @@ window.plain = (x) => { return JSON.parse(JSON.stringify(x)) };
 const app = createApp(App)
 const pinia = createPinia()
 
-app.use(router)
 app.use(pinia)
 app.mount('#app')
