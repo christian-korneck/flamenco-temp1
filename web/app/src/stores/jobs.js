@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 
-import * as urls from '@/urls'
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 
