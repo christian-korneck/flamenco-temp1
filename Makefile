@@ -20,7 +20,7 @@ with-deps:
 	go install github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) application
 
-application: flamenco-manager flamenco-worker
+application: flamenco-manager flamenco-worker webapp
 
 flamenco-manager:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
@@ -33,6 +33,9 @@ flamenco-manager_race:
 
 flamenco-worker_race:
 	CGO_ENABLED=1 go build -race -o $@ -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
+
+webapp:
+	yarn --cwd web/app install
 
 generate: generate-go generate-py generate-js
 
@@ -132,4 +135,4 @@ package: flamenco-manager flamenco-worker
 	rm -rf dist/flamenco
 
 
-.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race generate generate-go generate-py with-deps swagger-ui list-embedded test clean
+.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp generate generate-go generate-py with-deps swagger-ui list-embedded test clean
