@@ -8,7 +8,8 @@
     <jobs-table ref="jobsTable" @selectedJobChange="onSelectedJobChanged" />
   </div>
   <div class="col-2">
-    <job-details :jobData="selectedJob" />
+    <job-details :jobData="jobs.activeJob" />
+    <tasks-table ref="tasksTable" :jobID="jobs.activeJobID" @selectedTaskChange="onSelectedTaskChanged" />
   </div>
   <div class="col-3">
     <task-details />
@@ -24,6 +25,7 @@
 import * as urls from '@/urls'
 import * as API from '@/manager-api';
 import { useJobs } from '@/stores/jobs';
+import { useTasks } from '@/stores/tasks';
 import { useNotifs } from '@/stores/notifications';
 import { apiClient } from '@/stores/api-query-count';
 
@@ -31,6 +33,7 @@ import ApiSpinner from '@/components/ApiSpinner.vue'
 import JobsTable from '@/components/JobsTable.vue'
 import JobDetails from '@/components/JobDetails.vue'
 import TaskDetails from '@/components/TaskDetails.vue'
+import TasksTable from '@/components/TasksTable.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
 
 const DEFAULT_FLAMENCO_NAME = "Flamenco";
@@ -39,13 +42,14 @@ const DEFAULT_FLAMENCO_VERSION = "unknown";
 export default {
   name: 'App',
   components: {
-    ApiSpinner, JobsTable, JobDetails, TaskDetails, UpdateListener,
+    ApiSpinner, JobsTable, JobDetails, TaskDetails, TasksTable, UpdateListener,
   },
   data: () => ({
     websocketURL: urls.ws(),
     messages: [],
 
     jobs: useJobs(),
+    tasks: useTasks(),
     notifs: useNotifs(),
 
     flamencoName: DEFAULT_FLAMENCO_NAME,
@@ -54,9 +58,6 @@ export default {
   mounted() {
     window.app = this;
     this.fetchManagerInfo();
-  },
-  computed: {
-    selectedJob() { return this.jobs ? this.jobs.activeJob : null; },
   },
   methods: {
     // UI component event handlers:
@@ -74,6 +75,21 @@ export default {
           this.$refs.jobsTable.processJobUpdate(job);
         });
     },
+    onSelectedTaskChanged(taskSummary) {
+      if (!taskSummary) { // There is no selected task.
+        this.tasks.deselectAllTasks();
+        return;
+      }
+      console.log("selected task changed:", taskSummary);
+      // const jobsAPI = new API.JobsApi(apiClient);
+      // jobsAPI.fetchTask(taskSummary.id)
+      //   .then((task) => {
+      //     this.tasks.setSelectedTask(task);
+      //     // Forward the full task to Tabulator, so that that gets updated too.
+      //     this.$refs.tasksTable.processTaskUpdate(task);
+      //   });
+    },
+
     sendMessage(message) {
       this.$refs.jobsListener.sendBroadcastMessage("typer", message);
     },
@@ -91,8 +107,8 @@ export default {
       } else {
         console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
       }
-      const selectedJob = this.selectedJob;
-      if (selectedJob && selectedJob.id == jobUpdate.id) {
+      const activeJob = this.jobs.activeJob;
+      if (activeJob && activeJob.id == jobUpdate.id) {
         this.onSelectedJobChanged(jobUpdate);
       }
     },
@@ -113,6 +129,7 @@ export default {
     // SocketIO connection event handlers:
     onSIOReconnected() {
       this.$refs.jobsTable.onReconnected();
+      this.$refs.tasksTable.onReconnected();
       this.fetchManagerInfo();
     },
     onSIODisconnected(reason) {

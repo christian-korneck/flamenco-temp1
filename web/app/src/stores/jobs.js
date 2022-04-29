@@ -10,10 +10,15 @@ const jobsAPI = new API.JobsApi(apiClient);
 // See https://pinia.vuejs.org/core-concepts/
 export const useJobs = defineStore('jobs', {
   state: () => ({
-    /** @type API.Job[] */
+    /** @type {API.Job[]} */
     selectedJobs: [],
-    /** @type API.Job */
+    /** @type {API.Job} */
     activeJob: null,
+    /**
+     * ID of the active job. Easier to query than `activeJob ? activeJob.id : ""`.
+     * @type {string}
+     */
+    activeJobID: "",
   }),
   getters: {
     numSelected() {
@@ -32,16 +37,26 @@ export const useJobs = defineStore('jobs', {
   actions: {
     // Selection of jobs.
     setSelectedJob(job) {
-      this.selectedJobs = [job];
-      this.activeJob = job;
+      this.$patch({
+        selectedJobs: [job],
+        activeJob: job,
+        activeJobID: job.id,
+      });
     },
     setSelectedJobs(jobs) {
-      this.selectedJobs = jobs;
-      this.activeJob = jobs[jobs.length-1]; // Last-selected is the active one.
+      const activeJob =jobs[jobs.length-1]; // Last-selected is the active one.
+      this.$patch({
+        selectedJobs: jobs,
+        activeJob: activeJob,
+        activeJobID: activeJob.id,
+      });
     },
     deselectAllJobs() {
-      this.selectedJobs = [];
-      this.activeJob = null;
+      this.$patch({
+        selectedJobs: [],
+        activeJob: null,
+        activeJobID: "",
+      });
     },
 
     /**

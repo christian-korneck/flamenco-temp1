@@ -1,0 +1,49 @@
+<template>
+  <section class="action-bar tasks">
+    <button class="action cancel" :disabled="!tasks.canCancel" v-on:click="onButtonCancel">Cancel</button>
+    <button class="action requeue" :disabled="!tasks.canRequeue" v-on:click="onButtonRequeue">Requeue</button>
+  </section>
+</template>
+
+<script>
+import { useTasks } from '@/stores/tasks';
+import { useNotifs } from '@/stores/notifications';
+
+export default {
+  name: "TaskActionsBar",
+  data: () => ({
+    tasks: useTasks(),
+    notifs: useNotifs(),
+  }),
+  computed: {
+  },
+  methods: {
+    onButtonCancel() {
+      return this._handleTaskActionPromise(
+        this.tasks.cancelTasks(), "marked for cancellation");
+    },
+    onButtonRequeue() {
+      return this._handleTaskActionPromise(
+        this.tasks.requeueTasks(), "requeued");
+    },
+
+    _handleTaskActionPromise(promise, description) {
+      const numTasks = this.tasks.numSelected;
+      return promise
+        .then(() => {
+          let message;
+          if (numTasks == 1) {
+            message = `Task ${description}`;
+          } else {
+            message = `${numTasks} tasks ${description}`;
+          }
+          this.notifs.add(message);
+        })
+        .catch((error) => {
+          const errorMsg = JSON.stringify(error); // TODO: handle API errors better.
+          this.notifs.add(`Error: ${errorMsg}`);
+        })
+    },
+  }
+}
+</script>
