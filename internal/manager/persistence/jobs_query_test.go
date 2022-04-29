@@ -6,6 +6,7 @@ package persistence
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
@@ -105,7 +106,7 @@ func TestQueryMetadata(t *testing.T) {
 	assert.Equal(t, testJob.ID, result[1].ID, "status is %s", result[1].Status)
 }
 
-func TestFetchJobSummary(t *testing.T) {
+func TestQueryJobTaskSummaries(t *testing.T) {
 	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
 	defer close()
 
@@ -117,11 +118,21 @@ func TestFetchJobSummary(t *testing.T) {
 	// Create another test job, just to check we get the right tasks back.
 	otherAuthoredJob := createTestAuthoredJobWithTasks()
 	otherAuthoredJob.Status = api.JobStatusActive
-	otherAuthoredJob.Tasks = []job_compilers.AuthoredTask{}
+	for i := range otherAuthoredJob.Tasks {
+		otherAuthoredJob.Tasks[i].UUID = uuid.NewString()
+		otherAuthoredJob.Tasks[i].Dependencies = []*job_compilers.AuthoredTask{}
+	}
 	otherAuthoredJob.JobID = "138678c8-efd0-452b-ac05-397ff4c02b26"
 	otherAuthoredJob.Metadata["project"] = "Other Project"
 	persistAuthoredJob(t, ctx, db, otherAuthoredJob)
 
+	// Sanity check for the above code, there should be 6 tasks overall, 3 per job.
+	var numTasks int64
+	tx := db.gormDB.Model(&Task{}).Count(&numTasks)
+	assert.NoError(t, tx.Error)
+	assert.Equal(t, int64(6), numTasks)
+
+	// Get the task summaries of a particular job.
 	summaries, err := db.QueryJobTaskSummaries(ctx, job.UUID)
 	assert.NoError(t, err)
 

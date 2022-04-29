@@ -78,8 +78,8 @@ func (db *DB) QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*Tas
 	var result []*Task
 	tx := db.gormDB.WithContext(ctx).Model(&Task{}).
 		Select("tasks.id", "tasks.uuid", "tasks.name", "tasks.priority", "tasks.status", "tasks.type", "tasks.updated_at").
-		Joins("left join jobs on jobs.uuid = ?", jobUUID).
-		// Where("jobs.uuid=?", jobUUID).
+		Joins("left join jobs on jobs.id = tasks.job_id").
+		Where("jobs.uuid=?", jobUUID).
 		Scan(&result)
 
 	return result, tx.Error
