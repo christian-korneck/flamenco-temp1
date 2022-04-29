@@ -220,7 +220,6 @@ h3.sub-title {
 .col-1 {
   grid-area: col-1;
   max-height: calc(100vh - var(--header-height) - var(--footer-height) - 2*var(--grid-gap));
-  overflow: scroll;
 }
 
 .col-2 {

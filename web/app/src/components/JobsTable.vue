@@ -43,7 +43,7 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
-      height: "100%",
+      height: "99%",
       data: [], // Will be filled via a Flamenco API request.
       selectable: 1, // Only allow a single row to be selected at a time.
     };
@@ -125,11 +125,6 @@ export default {
 .job-list-container {
   font-family: 'Noto Mono', monospace;
   font-size: smaller;
-  height: calc(100% - var(--action-bar-height) - 2em);
-}
-
-.job-list {
-  outline: 2px solid lime;
-  outline-offset: -1px;
+  height: calc(100% - var(--action-bar-height));
 }
 </style>
