@@ -1056,6 +1056,32 @@ components:
         "priority": { type: integer, default: 50 }
       required: [id, updated, status, type, priority]
 
+    SocketIOSubscription:
+      type: object
+      description: >
+        Send by SocketIO clients as `/subscription` event type, to manage their
+        subscription to job updates. Clients always get job updates, but for
+        task updates or task logs they need to explicitly subscribe. For
+        simplicity, clients can only subscribe to one job (to get task updates
+        for that job) and one task's log at a time.
+      properties:
+        "op": { $ref: "#/components/schemas/SocketIOSubscriptionOperation" }
+        "type": { $ref: "#/components/schemas/SocketIOSubscriptionType" }
+        "uuid":
+          type: string
+          format: uuid
+          description: UUID of the thing to subscribe to / unsubscribe from.
+      required: [op, type, uuid]
+
+    SocketIOSubscriptionOperation:
+      type: string
+      enum: [subscribe, unsubscribe]
+
+    SocketIOSubscriptionType:
+      type: string
+      enum: [job]
+      description: What kind of thing to subscribe to / unsubscribe from.
+
   securitySchemes:
     worker_auth:
       description: Username is the worker ID, password is the secret given at worker registration.
