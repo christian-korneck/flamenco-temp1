@@ -75,6 +75,18 @@ const (
 	ShamanFileStatusUploading ShamanFileStatus = "uploading"
 )
 
+// Defines values for SocketIOSubscriptionOperation.
+const (
+	SocketIOSubscriptionOperationSubscribe SocketIOSubscriptionOperation = "subscribe"
+
+	SocketIOSubscriptionOperationUnsubscribe SocketIOSubscriptionOperation = "unsubscribe"
+)
+
+// Defines values for SocketIOSubscriptionType.
+const (
+	SocketIOSubscriptionTypeJob SocketIOSubscriptionType = "job"
+)
+
 // Defines values for TaskStatus.
 const (
 	TaskStatusActive TaskStatus = "active"
@@ -370,6 +382,23 @@ type ShamanRequirementsResponse struct {
 type ShamanSingleFileStatus struct {
 	Status ShamanFileStatus `json:"status"`
 }
+
+// Send by SocketIO clients as `/subscription` event type, to manage their subscription to job updates. Clients always get job updates, but for task updates or task logs they need to explicitly subscribe. For simplicity, clients can only subscribe to one job (to get task updates for that job) and one task's log at a time.
+type SocketIOSubscription struct {
+	Op SocketIOSubscriptionOperation `json:"op"`
+
+	// What kind of thing to subscribe to / unsubscribe from.
+	Type SocketIOSubscriptionType `json:"type"`
+
+	// UUID of the thing to subscribe to / unsubscribe from.
+	Uuid string `json:"uuid"`
+}
+
+// SocketIOSubscriptionOperation defines model for SocketIOSubscriptionOperation.
+type SocketIOSubscriptionOperation string
+
+// What kind of thing to subscribe to / unsubscribe from.
+type SocketIOSubscriptionType string
 
 // Job definition submitted to Flamenco.
 type SubmittedJob struct {

@@ -41,6 +41,9 @@ import ShamanFileStatus from './model/ShamanFileStatus';
 import ShamanRequirementsRequest from './model/ShamanRequirementsRequest';
 import ShamanRequirementsResponse from './model/ShamanRequirementsResponse';
 import ShamanSingleFileStatus from './model/ShamanSingleFileStatus';
+import SocketIOSubscription from './model/SocketIOSubscription';
+import SocketIOSubscriptionOperation from './model/SocketIOSubscriptionOperation';
+import SocketIOSubscriptionType from './model/SocketIOSubscriptionType';
 import SubmittedJob from './model/SubmittedJob';
 import TaskStatus from './model/TaskStatus';
 import TaskSummary from './model/TaskSummary';
@@ -261,6 +264,24 @@ export {
      * @property {module:model/ShamanSingleFileStatus}
      */
     ShamanSingleFileStatus,
+
+    /**
+     * The SocketIOSubscription model constructor.
+     * @property {module:model/SocketIOSubscription}
+     */
+    SocketIOSubscription,
+
+    /**
+     * The SocketIOSubscriptionOperation model constructor.
+     * @property {module:model/SocketIOSubscriptionOperation}
+     */
+    SocketIOSubscriptionOperation,
+
+    /**
+     * The SocketIOSubscriptionType model constructor.
+     * @property {module:model/SocketIOSubscriptionType}
+     */
+    SocketIOSubscriptionType,
 
     /**
      * The SubmittedJob model constructor.
