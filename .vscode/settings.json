@@ -12,8 +12,6 @@
     "uncoveredGutterStyle": "blockred"
   },
   "[yaml]": {
-    "editor.insertSpaces": true,
-    "editor.tabSize": 2,
     "editor.autoIndent": "keep",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
