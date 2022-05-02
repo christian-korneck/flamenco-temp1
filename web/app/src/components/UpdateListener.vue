@@ -13,7 +13,7 @@ export default {
     // SocketIO events:
     "sioReconnected", "sioDisconnected"
   ],
-  props: ["websocketURL"],
+  props: ["websocketURL", "subscribedJob"],
   data() {
     return {
       socket: null,
@@ -29,14 +29,31 @@ export default {
   beforeDestroy: function () {
     this.disconnectWebsocket();
   },
+  watch: {
+    subscribedJob(newJob, oldJob) {
+      if (oldJob) {
+        this._updateJobSubscription("unsubscribe", oldJob);
+      }
+      if (newJob) {
+        this._updateJobSubscription("subscribe", newJob);
+      }
+    },
+  },
   methods: {
     connectToWebsocket() {
       // The SocketIO client API docs are available at:
       // https://github.com/socketio/socket.io-client/blob/2.4.x/docs/API.md
       console.log("connecting JobsListener to WS", this.websocketURL);
-      this.socket = io(this.websocketURL, {
+      const ws = io(this.websocketURL, {
         transports: ["websocket"],
       });
+      this.socket = ws;
+
+      // For easy debugging. This assigns `ws` and not `this.socket`, as the
+      // latter is Vue-reactive, which gets in the way of using in the browser
+      // console.
+      window.ws = ws;
+
       this.socket.on('connect_error', (error) => {
         // Don't log the error here, it's too long and noisy for regular logs.
         console.log("socketIO connection error");
@@ -64,6 +81,10 @@ export default {
       });
       this.socket.on("reconnect", (attemptNumber) => {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
+
+        // Resubscribe to whatever we want to be subscribed to:
+        if (this.subscribedJob) this._updateJobSubscription("subscribe", newJob);
+
         this.$emit("sioReconnected", attemptNumber);
       });
 
@@ -72,6 +93,13 @@ export default {
         // when we'd do an API call.
         const apiJobUpdate = API.JobUpdate.constructFromObject(jobUpdate)
         this.$emit("jobUpdate", apiJobUpdate);
+      });
+
+      this.socket.on("/task", (taskUpdate) => {
+        // Convert to API object, in order to have the same parsing of data as
+        // when we'd do an API call.
+        const apiTaskUpdate = API.SocketIOTaskUpdate.constructFromObject(taskUpdate)
+        this.$emit("taskUpdate", apiTaskUpdate);
       });
 
       // Chat system, useful for debugging.
@@ -95,6 +123,12 @@ export default {
       const payload = { name: name, text: message };
       console.log("sending broadcast message:", payload);
       this.socket.emit("/chat", payload);
+    },
+
+    _updateJobSubscription(operation, jobID) {
+      const payload = new API.SocketIOSubscription(operation, "job", jobID);
+      console.log("sending job subscription:", payload);
+      this.socket.emit("/subscription", payload);
     },
   },
 };

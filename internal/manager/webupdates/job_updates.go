@@ -40,3 +40,13 @@ func (b *BiDirComms) BroadcastNewJob(jobUpdate api.JobUpdate) {
 	log.Debug().Interface("jobUpdate", jobUpdate).Msg("socketIO: broadcasting new job")
 	b.BroadcastTo(SocketIORoomJobs, SIOEventJobUpdate, jobUpdate)
 }
+
+// roomForJob will return the SocketIO room name for the given job. Clients in
+// this room will receive info scoped to this job, so for example updates to all
+// tasks of this job.
+//
+// Note that `api.JobUpdate`s themselves are sent to all SocketIO clients, and
+// not to this room.
+func roomForJob(jobUUID string) SocketIORoomName {
+	return SocketIORoomName("job-" + jobUUID)
+}

@@ -16,8 +16,9 @@
   </div>
   <footer>
     <span class='notifications' v-if="notifs.last">{{ notifs.last.msg }}</span>
-    <update-listener ref="updateListener" :websocketURL="websocketURL" @jobUpdate="onSioJobUpdate"
-      @message="onChatMessage" @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
+    <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobs.activeJobID"
+      @jobUpdate="onSioJobUpdate" @message="onChatMessage" @sioReconnected="onSIOReconnected"
+      @sioDisconnected="onSIODisconnected" />
   </footer>
 </template>
 

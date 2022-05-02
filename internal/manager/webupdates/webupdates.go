@@ -59,6 +59,7 @@ func (b *BiDirComms) registerSIOEventHandlers() {
 	})
 
 	b.registerChatEventHandlers()
+	b.registerRoomEventHandlers()
 }
 
 func sioLogger(c *gosocketio.Channel) zerolog.Logger {
