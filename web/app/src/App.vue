@@ -132,14 +132,10 @@ export default {
      * @param {API.SocketIOTaskUpdate} taskUpdate
      */
     onSioTaskUpdate(taskUpdate) {
-      if (!this.$refs.tasksTable) {
-        return;
-      }
-
-      this.$refs.tasksTable.processTaskUpdate(taskUpdate);
-      if (this.tasks.activeTaskID == taskUpdate.id) {
+      if (this.$refs.tasksTable)
+        this.$refs.tasksTable.processTaskUpdate(taskUpdate);
+      if (this.tasks.activeTaskID == taskUpdate.id)
         this.onSelectedTaskChanged(taskUpdate);
-      }
     },
 
     onChatMessage(message) {
@@ -150,7 +146,8 @@ export default {
     // SocketIO connection event handlers:
     onSIOReconnected() {
       this.$refs.jobsTable.onReconnected();
-      this.$refs.tasksTable.onReconnected();
+      if (this.$refs.tasksTable)
+        this.$refs.tasksTable.onReconnected();
       this.fetchManagerInfo();
     },
     onSIODisconnected(reason) {
