@@ -375,6 +375,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/tasks/{task_id}:
+    summary: Fetch a single task
+    get:
+      operationId: fetchTask
+      summary: Fetch a single task.
+      tags: [jobs]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The task info.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   ## Shaman
 
   /shaman/checkout/requirements:
@@ -863,6 +887,49 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Job" }
       required: [jobs]
+
+    Task:
+      type: object
+      description: The task as it exists in the Manager database, i.e. before variable replacement.
+      properties:
+        "id": { type: string, format: uuid }
+        "created":
+          type: string
+          format: date-time
+          description: Creation timestamp
+        "updated":
+          type: string
+          format: date-time
+          description: Timestamp of last update.
+        "job_id": { type: string, format: uuid }
+        "name": { type: string }
+        "status": { $ref: "#/components/schemas/TaskStatus" }
+        "priority": { type: integer }
+        "task_type": { type: string }
+        "activity": { type: string }
+        "commands":
+          type: array
+          items: { $ref: "#/components/schemas/Command" }
+        "worker": { $ref: "#/components/schemas/TaskWorker" }
+      required:
+        - id
+        - created
+        - updated
+        - job_id
+        - name
+        - status
+        - priority
+        - task_type
+        - activity
+        - commands
+
+    TaskWorker:
+      type: object
+      properties:
+        "id": { type: string, format: uuid }
+        "name": { type: string }
+        "address": { type: string }
+      required: [id, name, address]
 
     JobTasksSummary:
       description: "Simplified list of tasks of a job. Contains all tasks, but not all info of each task."
