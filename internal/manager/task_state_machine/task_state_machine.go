@@ -48,8 +48,11 @@ type PersistenceService interface {
 var _ PersistenceService = (*persistence.DB)(nil)
 
 type ChangeBroadcaster interface {
-	// BroadcastJobUpdate sends the job update to clients.
+	// BroadcastJobUpdate sends the job update to SocketIO clients.
 	BroadcastJobUpdate(jobUpdate api.JobUpdate)
+
+	// BroadcastTaskUpdate sends the task update to SocketIO clients.
+	BroadcastTaskUpdate(jobUpdate api.SocketIOTaskUpdate)
 }
 
 // ChangeBroadcaster should be a subset of webupdates.BiDirComms
@@ -89,6 +92,12 @@ func (sm *StateMachine) TaskStatusChange(
 	if err := sm.persist.SaveTask(ctx, task); err != nil {
 		return fmt.Errorf("saving task to database: %w", err)
 	}
+
+	// Broadcast this change to the SocketIO clients.
+	taskUpdate := webupdates.NewTaskUpdate(task)
+	taskUpdate.PreviousStatus = &oldTaskStatus
+	sm.broadcaster.BroadcastTaskUpdate(taskUpdate)
+
 	if err := sm.updateJobAfterTaskStatusChange(ctx, task, oldTaskStatus); err != nil {
 		return fmt.Errorf("updating job after task status change: %w", err)
 	}

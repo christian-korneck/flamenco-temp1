@@ -26,7 +26,10 @@ export default {
     }
     this.connectToWebsocket();
   },
-  beforeDestroy: function () {
+  unmounted() {
+    this.disconnectWebsocket();
+  },
+  beforeDestroy() {
     this.disconnectWebsocket();
   },
   watch: {

@@ -109,10 +109,6 @@ export default {
       this.tabulator.updateData([taskUpdate])
         .then(this.sortData);
     },
-    processNewTask(taskUpdate) {
-      this.tabulator.addData([taskUpdate])
-        .then(this.sortData);
-    },
 
     // Selection handling.
     onRowSelected(selectedRow) {

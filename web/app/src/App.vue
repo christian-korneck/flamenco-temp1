@@ -17,8 +17,8 @@
   <footer>
     <span class='notifications' v-if="notifs.last">{{ notifs.last.msg }}</span>
     <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobs.activeJobID"
-      @jobUpdate="onSioJobUpdate" @message="onChatMessage" @sioReconnected="onSIOReconnected"
-      @sioDisconnected="onSIODisconnected" />
+      @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @message="onChatMessage"
+      @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
   </footer>
 </template>
 
@@ -61,7 +61,9 @@ export default {
     this.fetchManagerInfo();
   },
   methods: {
-    // UI component event handlers:
+    // onSelectedJobChanged is called whenever the selected job changes; this is
+    // both when another job is selected and when the selected job itself gets
+    // updated.
     onSelectedJobChanged(jobSummary) {
       if (!jobSummary) { // There is no selected job.
         this.jobs.deselectAllJobs();
@@ -108,8 +110,8 @@ export default {
       } else {
         console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
       }
-      const activeJob = this.jobs.activeJob;
-      if (activeJob && activeJob.id == jobUpdate.id) {
+
+      if (this.jobs.activeJobID == jobUpdate.id) {
         this.onSelectedJobChanged(jobUpdate);
       }
     },
@@ -122,6 +124,20 @@ export default {
       // this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
       this.$refs.jobsTable.processNewJob(jobUpdate);
     },
+
+    /**
+     * Event handler for SocketIO task updates.
+     * @param {API.SocketIOTaskUpdate} taskUpdate
+     */
+    onSioTaskUpdate(taskUpdate) {
+      if (!this.$refs.tasksTable) {
+        console.warn("App: this.$refs.tasksTable is", this.$refs.tasksTable);
+        return;
+      }
+
+      this.$refs.tasksTable.processTaskUpdate(taskUpdate);
+    },
+
     onChatMessage(message) {
       console.log("chat message received:", message);
       this.messages.push(`${message.text}`);
