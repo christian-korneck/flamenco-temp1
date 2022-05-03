@@ -34,6 +34,7 @@ Note that list is **not** in any specific order.
 - [ ] Web frontend for Worker management
   - [ ] "Tabs" system + Vue Router support.
 - [ ] Port the old 'fail-requested' task status handling code to the new Manager
+- [ ] Ensure "task state machine" can run in a single database transaction.
 - [ ] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
 - [ ] Worker timeout monitoring
