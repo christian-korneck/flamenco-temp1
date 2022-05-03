@@ -38,6 +38,7 @@ var _ api.ServerInterface = (*Flamenco)(nil)
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
+	// FetchJob fetches a single job, without fetching its tasks.
 	FetchJob(ctx context.Context, jobID string) (*persistence.Job, error)
 	// FetchTask fetches the given task and the accompanying job.
 	FetchTask(ctx context.Context, taskID string) (*persistence.Task, error)

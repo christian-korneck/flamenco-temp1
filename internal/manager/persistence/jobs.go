@@ -169,6 +169,7 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 	})
 }
 
+// FetchJob fetches a single job, without fetching its tasks.
 func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	dbJob := Job{}
 	findResult := db.gormDB.WithContext(ctx).First(&dbJob, "uuid = ?", jobUUID)
