@@ -73,7 +73,7 @@ func (db *DB) QueryJobs(ctx context.Context, apiQ api.JobsQuery) ([]*Job, error)
 // Fields are synchronised with api.TaskSummary.
 func (db *DB) QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*Task, error) {
 	logger := log.Ctx(ctx)
-	logger.Debug().Str("job", jobUUID).Msg("queryingtask summaries")
+	logger.Debug().Str("job", jobUUID).Msg("querying task summaries")
 
 	var result []*Task
 	tx := db.gormDB.WithContext(ctx).Model(&Task{}).
