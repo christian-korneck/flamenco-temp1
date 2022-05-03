@@ -86,7 +86,7 @@ export default {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
 
         // Resubscribe to whatever we want to be subscribed to:
-        if (this.subscribedJob) this._updateJobSubscription("subscribe", newJob);
+        if (this.subscribedJob) this._updateJobSubscription("subscribe", this.subscribedJob);
 
         this.$emit("sioReconnected", attemptNumber);
       });

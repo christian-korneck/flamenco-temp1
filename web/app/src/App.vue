@@ -9,10 +9,11 @@
   </div>
   <div class="col-2">
     <job-details :jobData="jobs.activeJob" />
-    <tasks-table ref="tasksTable" :jobID="jobs.activeJobID" @selectedTaskChange="onSelectedTaskChanged" />
+    <tasks-table v-if="jobs.activeJobID" ref="tasksTable" :jobID="jobs.activeJobID"
+      @selectedTaskChange="onSelectedTaskChanged" />
   </div>
   <div class="col-3">
-    <task-details />
+    <task-details :taskData="tasks.activeTask" />
   </div>
   <footer>
     <span class='notifications' v-if="notifs.last">{{ notifs.last.msg }}</span>
@@ -84,13 +85,14 @@ export default {
         return;
       }
       console.log("selected task changed:", taskSummary);
-      // const jobsAPI = new API.JobsApi(apiClient);
-      // jobsAPI.fetchTask(taskSummary.id)
-      //   .then((task) => {
-      //     this.tasks.setSelectedTask(task);
-      //     // Forward the full task to Tabulator, so that that gets updated too.
-      //     this.$refs.tasksTable.processTaskUpdate(task);
-      //   });
+      const jobsAPI = new API.JobsApi(apiClient);
+      jobsAPI.fetchTask(taskSummary.id)
+        .then((task) => {
+          this.tasks.setSelectedTask(task);
+          // Forward the full task to Tabulator, so that that gets updated too.
+          if (this.$refs.tasksTable)
+            this.$refs.tasksTable.processTaskUpdate(task);
+        });
     },
 
     sendMessage(message) {
@@ -131,11 +133,13 @@ export default {
      */
     onSioTaskUpdate(taskUpdate) {
       if (!this.$refs.tasksTable) {
-        console.warn("App: this.$refs.tasksTable is", this.$refs.tasksTable);
         return;
       }
 
       this.$refs.tasksTable.processTaskUpdate(taskUpdate);
+      if (this.tasks.activeTaskID == taskUpdate.id) {
+        this.onSelectedTaskChanged(taskUpdate);
+      }
     },
 
     onChatMessage(message) {
@@ -152,6 +156,7 @@ export default {
     onSIODisconnected(reason) {
       this.flamencoName = DEFAULT_FLAMENCO_NAME;
       this.flamencoVersion = DEFAULT_FLAMENCO_VERSION;
+      this.jobs.deselectAllJobs();
     },
     fetchManagerInfo() {
       const metaAPI = new API.MetaApi(apiClient);

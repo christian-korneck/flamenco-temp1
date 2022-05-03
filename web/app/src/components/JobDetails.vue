@@ -152,7 +152,9 @@ export default {
         jobTypeSettings[setting.key] = setting;
       this.jobTypeSettings = jobTypeSettings;
 
-      this._setJobSettings(this.jobData.settings);
+      if (this.jobData) {
+        this._setJobSettings(this.jobData.settings);
+      }
     },
 
     _setJobSettings(newJobSettings) {
