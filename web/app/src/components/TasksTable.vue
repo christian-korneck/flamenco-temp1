@@ -125,11 +125,11 @@ export default {
       localStorage.setItem("selectedTaskIDs", selectedTaskIDs);
     },
     _restoreRowSelection() {
-      const selectedTaskIDs = localStorage.getItem('selectedTaskIDs');
-      if (!selectedTaskIDs) {
-        return;
-      }
-      this.tabulator.selectRow(selectedTaskIDs);
+      // const selectedTaskIDs = localStorage.getItem('selectedTaskIDs');
+      // if (!selectedTaskIDs) {
+      //   return;
+      // }
+      // this.tabulator.selectRow(selectedTaskIDs);
     },
   }
 };
