@@ -400,6 +400,21 @@ type SocketIOSubscriptionOperation string
 // What kind of thing to subscribe to / unsubscribe from.
 type SocketIOSubscriptionType string
 
+// Subset of a Task, sent over SocketIO when a task changes. For new tasks, `previous_status` will be excluded.
+type SocketIOTaskUpdate struct {
+	// UUID of the Task
+	Id    string `json:"id"`
+	JobId string `json:"job_id"`
+
+	// Name of the task
+	Name           string      `json:"name"`
+	PreviousStatus *TaskStatus `json:"previous_status,omitempty"`
+	Status         TaskStatus  `json:"status"`
+
+	// Timestamp of last update
+	Updated time.Time `json:"updated"`
+}
+
 // Job definition submitted to Flamenco.
 type SubmittedJob struct {
 	// Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
