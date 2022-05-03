@@ -75,6 +75,6 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 		return fmt.Sprintf("unable to perform subscription operation: %v", err)
 	}
 
-	logger.Info().Msg("socketIO: subscription")
+	logger.Debug().Msg("socketIO: subscription")
 	return "ok"
 }
