@@ -76,7 +76,7 @@ class ApiClient(object):
             self.default_headers[header_name] = header_value
         self.cookie = cookie
         # Set default User-Agent.
-        self.user_agent = 'Flamenco/a3752f31 (Blender add-on)'
+        self.user_agent = 'Flamenco/adba7217 (Blender add-on)'
 
     def __enter__(self):
         return self

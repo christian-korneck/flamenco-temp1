@@ -37,6 +37,9 @@ type ServerInterface interface {
 	// Fetch a summary of all tasks of the given job.
 	// (GET /api/jobs/{job_id}/tasks)
 	FetchJobTasks(ctx echo.Context, jobId string) error
+	// Fetch a single task.
+	// (GET /api/tasks/{task_id})
+	FetchTask(ctx echo.Context, taskId string) error
 	// Get the Flamenco version of this Manager
 	// (GET /api/version)
 	GetVersion(ctx echo.Context) error
@@ -178,6 +181,22 @@ func (w *ServerInterfaceWrapper) FetchJobTasks(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.FetchJobTasks(ctx, jobId)
+	return err
+}
+
+// FetchTask converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchTask(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "task_id" -------------
+	var taskId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "task_id", runtime.ParamLocationPath, ctx.Param("task_id"), &taskId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter task_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FetchTask(ctx, taskId)
 	return err
 }
 
@@ -409,6 +428,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.POST(baseURL+"/api/jobs/:job_id/setstatus", wrapper.SetJobStatus)
 	router.GET(baseURL+"/api/jobs/:job_id/tasks", wrapper.FetchJobTasks)
+	router.GET(baseURL+"/api/tasks/:task_id", wrapper.FetchTask)
 	router.GET(baseURL+"/api/version", wrapper.GetVersion)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/worker/sign-off", wrapper.SignOff)

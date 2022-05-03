@@ -120,6 +120,9 @@ type ClientInterface interface {
 	// FetchJobTasks request
 	FetchJobTasks(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchTask request
+	FetchTask(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetVersion request
 	GetVersion(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -291,6 +294,18 @@ func (c *Client) SetJobStatus(ctx context.Context, jobId string, body SetJobStat
 
 func (c *Client) FetchJobTasks(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchJobTasksRequest(c.Server, jobId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchTask(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchTaskRequest(c.Server, taskId)
 	if err != nil {
 		return nil, err
 	}
@@ -783,6 +798,40 @@ func NewFetchJobTasksRequest(server string, jobId string) (*http.Request, error)
 	}
 
 	operationPath := fmt.Sprintf("/api/jobs/%s/tasks", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewFetchTaskRequest generates requests for FetchTask
+func NewFetchTaskRequest(server string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/tasks/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1334,6 +1383,9 @@ type ClientWithResponsesInterface interface {
 	// FetchJobTasks request
 	FetchJobTasksWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobTasksResponse, error)
 
+	// FetchTask request
+	FetchTaskWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskResponse, error)
+
 	// GetVersion request
 	GetVersionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetVersionResponse, error)
 
@@ -1556,6 +1608,29 @@ func (r FetchJobTasksResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchJobTasksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Task
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchTaskResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1932,6 +2007,15 @@ func (c *ClientWithResponses) FetchJobTasksWithResponse(ctx context.Context, job
 	return ParseFetchJobTasksResponse(rsp)
 }
 
+// FetchTaskWithResponse request returning *FetchTaskResponse
+func (c *ClientWithResponses) FetchTaskWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskResponse, error) {
+	rsp, err := c.FetchTask(ctx, taskId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchTaskResponse(rsp)
+}
+
 // GetVersionWithResponse request returning *GetVersionResponse
 func (c *ClientWithResponses) GetVersionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetVersionResponse, error) {
 	rsp, err := c.GetVersion(ctx, reqEditors...)
@@ -2300,6 +2384,39 @@ func ParseFetchJobTasksResponse(rsp *http.Response) (*FetchJobTasksResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest JobTasksSummary
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchTaskResponse parses an HTTP response from a FetchTaskWithResponse call
+func ParseFetchTaskResponse(rsp *http.Response) (*FetchTaskResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Task
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

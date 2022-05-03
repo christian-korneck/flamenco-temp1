@@ -46,9 +46,11 @@ import SocketIOSubscriptionOperation from './model/SocketIOSubscriptionOperation
 import SocketIOSubscriptionType from './model/SocketIOSubscriptionType';
 import SocketIOTaskUpdate from './model/SocketIOTaskUpdate';
 import SubmittedJob from './model/SubmittedJob';
+import Task from './model/Task';
 import TaskStatus from './model/TaskStatus';
 import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
+import TaskWorker from './model/TaskWorker';
 import WorkerRegistration from './model/WorkerRegistration';
 import WorkerSignOn from './model/WorkerSignOn';
 import WorkerStateChange from './model/WorkerStateChange';
@@ -297,6 +299,12 @@ export {
     SubmittedJob,
 
     /**
+     * The Task model constructor.
+     * @property {module:model/Task}
+     */
+    Task,
+
+    /**
      * The TaskStatus model constructor.
      * @property {module:model/TaskStatus}
      */
@@ -313,6 +321,12 @@ export {
      * @property {module:model/TaskUpdate}
      */
     TaskUpdate,
+
+    /**
+     * The TaskWorker model constructor.
+     * @property {module:model/TaskWorker}
+     */
+    TaskWorker,
 
     /**
      * The WorkerRegistration model constructor.

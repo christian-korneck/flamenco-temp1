@@ -425,6 +425,25 @@ type SubmittedJob struct {
 	Type     string       `json:"type"`
 }
 
+// The task as it exists in the Manager database, i.e. before variable replacement.
+type Task struct {
+	Activity string    `json:"activity"`
+	Commands []Command `json:"commands"`
+
+	// Creation timestamp
+	Created  time.Time  `json:"created"`
+	Id       string     `json:"id"`
+	JobId    string     `json:"job_id"`
+	Name     string     `json:"name"`
+	Priority int        `json:"priority"`
+	Status   TaskStatus `json:"status"`
+	TaskType string     `json:"task_type"`
+
+	// Timestamp of last update.
+	Updated time.Time   `json:"updated"`
+	Worker  *TaskWorker `json:"worker,omitempty"`
+}
+
 // TaskStatus defines model for TaskStatus.
 type TaskStatus string
 
@@ -446,6 +465,13 @@ type TaskUpdate struct {
 	// Log lines for this task, will be appended to logs sent earlier.
 	Log        *string     `json:"log,omitempty"`
 	TaskStatus *TaskStatus `json:"taskStatus,omitempty"`
+}
+
+// TaskWorker defines model for TaskWorker.
+type TaskWorker struct {
+	Address string `json:"address"`
+	Id      string `json:"id"`
+	Name    string `json:"name"`
 }
 
 // WorkerRegistration defines model for WorkerRegistration.

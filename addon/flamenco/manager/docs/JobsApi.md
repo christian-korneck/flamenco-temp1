@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**fetch_job**](JobsApi.md#fetch_job) | **GET** /api/jobs/{job_id} | Fetch info about the job.
 [**fetch_job_tasks**](JobsApi.md#fetch_job_tasks) | **GET** /api/jobs/{job_id}/tasks | Fetch a summary of all tasks of the given job.
+[**fetch_task**](JobsApi.md#fetch_task) | **GET** /api/tasks/{task_id} | Fetch a single task.
 [**get_job_type**](JobsApi.md#get_job_type) | **GET** /api/jobs/type/{typeName} | Get single job type and its parameters.
 [**get_job_types**](JobsApi.md#get_job_types) | **GET** /api/jobs/types | Get list of job types and their parameters.
 [**query_jobs**](JobsApi.md#query_jobs) | **POST** /api/jobs/query | Fetch list of jobs.
@@ -141,6 +142,73 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Get summaries of the tasks of this job. |  -  |
+**0** | Unexpected error. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **fetch_task**
+> Task fetch_task(task_id)
+
+Fetch a single task.
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import jobs_api
+from flamenco.manager.model.task import Task
+from flamenco.manager.model.error import Error
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = jobs_api.JobsApi(api_client)
+    task_id = "task_id_example" # str | 
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Fetch a single task.
+        api_response = api_instance.fetch_task(task_id)
+        pprint(api_response)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling JobsApi->fetch_task: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **task_id** | **str**|  |
+
+### Return type
+
+[**Task**](Task.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | The task info. |  -  |
 **0** | Unexpected error. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

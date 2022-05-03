@@ -22,6 +22,7 @@ import JobTasksSummary from '../model/JobTasksSummary';
 import JobsQuery from '../model/JobsQuery';
 import JobsQueryResult from '../model/JobsQueryResult';
 import SubmittedJob from '../model/SubmittedJob';
+import Task from '../model/Task';
 
 /**
 * Jobs service.
@@ -129,6 +130,52 @@ export default class JobsApi {
      */
     fetchJobTasks(jobId) {
       return this.fetchJobTasksWithHttpInfo(jobId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Fetch a single task.
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/Task} and HTTP response
+     */
+    fetchTaskWithHttpInfo(taskId) {
+      let postBody = null;
+      // verify the required parameter 'taskId' is set
+      if (taskId === undefined || taskId === null) {
+        throw new Error("Missing the required parameter 'taskId' when calling fetchTask");
+      }
+
+      let pathParams = {
+        'task_id': taskId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = Task;
+      return this.apiClient.callApi(
+        '/api/tasks/{task_id}', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch a single task.
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/Task}
+     */
+    fetchTask(taskId) {
+      return this.fetchTaskWithHttpInfo(taskId)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
