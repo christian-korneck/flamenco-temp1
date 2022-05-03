@@ -1,7 +1,7 @@
 <template>
-  <section class="action-bar tasks">
-    <button class="action cancel" :disabled="!tasks.canCancel" v-on:click="onButtonCancel">Cancel</button>
-    <button class="action requeue" :disabled="!tasks.canRequeue" v-on:click="onButtonRequeue">Requeue</button>
+  <section class="btn-bar tasks">
+    <button class="btn cancel" :disabled="!tasks.canCancel" v-on:click="onButtonCancel">Cancel Task</button>
+    <button class="btn requeue" :disabled="!tasks.canRequeue" v-on:click="onButtonRequeue">Requeue</button>
   </section>
 </template>
 

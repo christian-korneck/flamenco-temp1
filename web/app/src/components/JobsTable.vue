@@ -1,6 +1,8 @@
 <template>
-  <job-actions-bar />
   <div class="job-list-container">
+  <div>
+    <h2 class="column-title">Jobs</h2>
+    <job-actions-bar />
     <div class="job-list" id="flamenco_job_list"></div>
   </div>
 </template>
