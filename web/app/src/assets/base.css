@@ -1,74 +1,197 @@
-/* color palette from <https://github.com/vuejs/theme> */
 :root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
+  --spacer: 1rem;
+  --spacer-sm: .66rem;
+  --spacer-xs: .33rem;
 
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
+  --color-background: #111;
+  --color-background-column: #161616;
+  --color-accent: hsl(237deg 58% 68%);
+  --color-accent-text: hsl(237deg 100% 84%);
+  --color-accent-background: hsl(237deg 18% 28%);
+  --color-text: #ddd;
+  --color-text-muted: #999;
 
-  --vt-c-indigo: #2c3e50;
+  --color-border: #222;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
+  --border-width: 2px;
+  --border-radius: 4px;
 
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+  --font-family-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro","Fira Mono", "Droid Sans Mono", "Courier New", monospace;
+  --font-size-base: 14px;
+  --font-size-sm: 12px;
+
+  --table-color-background-row: #333;
+  --table-color-background-row-hover: #3a3a3a;
+  --table-color-background-row-odd: #292929;
+  --table-color-background-row-odd-hover: #3a3a3a;
+
+  --table-color-background-row-selected: var(--color-accent);
+  --table-color-background-row-selected: var(--color-accent);
+  --table-color-border: var(--color-border);
+
+  --header-height: 25px;
+  --footer-height: 25px;
+  --grid-gap: 4px;
 }
 
-/* semantic color variables for this project */
-:root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
-
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
-
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
-
-  --section-gap: 160px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: var(--vt-c-black);
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
-
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
-
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
-  }
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  position: relative;
-  font-weight: normal;
-}
-
+html,
 body {
-  min-height: 100vh;
+  background-color: #111;
   color: var(--color-text);
-  background: var(--color-background);
-  transition: color 0.5s, background-color 0.5s;
-  line-height: 1.6;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-    Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
+  font-size: var(--font-size-base);
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+}
+
+#app {
+  font-family: 'Noto Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  display: grid;
+  grid-gap: var(--grid-gap);
+  grid-template-areas:
+    "header header header"
+    "col-1 col-2 col-3"
+    "footer footer footer";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: var(--header-height) 1fr var(--footer-height);
+  height: 100%;
+  width: 100%;
+}
+
+.col-header {
+  background-color: #222;
+}
+
+.col {
+  background-color: var(--color-background-column);
+  padding: var(--spacer-sm);
+  border-radius: var(--border-radius);
+}
+
+.col-1 {
+  grid-area: col-1;
+}
+
+.col-2 {
+  grid-area: col-2;
+}
+
+.col-3 {
+  grid-area: col-3;
+}
+
+a {
+  color: currentColor;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+header {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  grid-area: header;
+  padding: 0 var(--spacer-sm);
+}
+
+header nav {
+  margin-right: auto;
+}
+
+nav > ul {
+  align-items: center;
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav > ul > li > a {
+  display: block;
+  padding: var(--spacer-xs) var(--spacer);
+}
+
+h2.column-title {
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacer-sm);
+  margin-top: 0;
+  padding-bottom: var(--spacer-xs);
+}
+
+h3.sub-title {
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-base);
+  margin: var(--spacer) 0 var(--spacer-sm);
+  padding: 0 0 var(--spacer-sm);
+}
+
+footer {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  font-size: var(--font-size-sm);
+  grid-area: footer;
+  padding: var(--spacer-sm);
+}
+
+.btn-bar {
+  align-items: center;
+  display: flex;
+  padding: var(--spacer-sm) 0;
+}
+
+.btn {
+  align-items: center;
+  background-color: var(--color-accent);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-accent);
+  display: inline-flex;
+  font-size: var(--font-size-sm);
+  justify-content: center;
+  padding: 0.1rem 0.75rem;
+  touch-action: manipulation;
+  transition-duration: 300ms;
+  transition-property: color, background-color, border-color, box-shadow;
+  cursor: pointer;
+}
+
+.btn-bar .btn+.btn {
+  margin-left: var(--spacer-sm);
+}
+
+.btn-bar .btn[disabled] {
+  background-color: transparent;
+  border-color: var(--color-text-muted);
+  color: var(--color-text-muted);
+  opacity: .5;
+  pointer-events: none;
+}
+
+.btn-bar .btn:hover:not([disabled]) {
+  transition: all 100ms;
+  color: white;
+}
+
+.btn-bar .btn:focus {
+  /* Make sure the outline is clearly visible inside the button. */
+  outline-offset: -0.5em;
+}
+
+.btn-bar .btn.dangerous {
+  background-color: #7c4d41;
+  color: #e4c5c0;
+  margin-left: 1rem;
+}
+
+.btn-bar .btn.dangerous[disabled] {
+  background-color: #53413e;
 }
