@@ -1,5 +1,10 @@
 PKG := git.blender.org/flamenco
 VERSION := $(shell git describe --tags --dirty --always)
+# Version used in the OpenAPI-generated code shouldn't contain the '-dirty'
+# suffix. In the common development workflow, those files will always be dirty
+# (because they're only committed after locally working, which means the
+# implementation has already been written).
+OAPI_VERSION := $(shell git describe --tags --always)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 
 LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
@@ -60,10 +65,10 @@ generate-py:
 		-g python \
 		-o addon/ \
 		--package-name "${PY_API_PKG_NAME}" \
-		--http-user-agent "Flamenco/${VERSION} (Blender add-on)" \
+		--http-user-agent "Flamenco/${OAPI_VERSION} (Blender add-on)" \
 		-p generateSourceCodeOnly=true \
 		-p projectName=Flamenco \
-		-p packageVersion="${VERSION}"
+		-p packageVersion="${OAPI_VERSION}"
 
 # The generator outputs files so that we can write our own tests. We don't,
 # though, so it's better to just remove those placeholders.
@@ -86,7 +91,7 @@ generate-js:
 		-i pkg/api/flamenco-manager.yaml \
 		-g javascript \
 		-o web/_tmp-manager-api-javascript \
-		--http-user-agent "Flamenco/${VERSION} / webbrowser" \
+		--http-user-agent "Flamenco/${OAPI_VERSION} / webbrowser" \
 		-p projectName=flamenco-manager \
 		-p projectVersion="0.0.0" \
 		-p apiPackage="${JS_API_PKG_NAME}" \
@@ -101,9 +106,10 @@ generate-js:
 	rm -rf web/_tmp-manager-api-javascript
 
 version:
-	@echo "OS     : ${OS}"
-	@echo "Package: ${PKG}"
-	@echo "Version: ${VERSION}"
+	@echo "OS          : ${OS}"
+	@echo "Package     : ${PKG}"
+	@echo "Version     : ${VERSION}"
+	@echo "OAPI Version: ${OAPI_VERSION}"
 	@echo
 	@env | grep GO
 
