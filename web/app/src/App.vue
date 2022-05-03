@@ -13,15 +13,15 @@
       version: {{ flamencoVersion }}
     </span>
   </header>
-  <div class="col-1">
+  <div class="col col-1">
     <jobs-table ref="jobsTable" @selectedJobChange="onSelectedJobChanged" />
   </div>
-  <div class="col-2">
+  <div class="col col-2">
     <job-details :jobData="jobs.activeJob" />
     <tasks-table v-if="jobs.activeJobID" ref="tasksTable" :jobID="jobs.activeJobID"
       @selectedTaskChange="onSelectedTaskChanged" />
   </div>
-  <div class="col-3">
+  <div class="col col-3">
     <task-details :taskData="tasks.activeTask" />
   </div>
   <footer>
