@@ -1,5 +1,4 @@
 <template>
-  <div class="job-list-container">
   <div>
     <h2 class="column-title">Jobs</h2>
     <job-actions-bar />
@@ -122,11 +121,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.job-list-container {
-  font-family: 'Noto Mono', monospace;
-  font-size: smaller;
-  height: calc(100% - var(--action-bar-height));
-}
-</style>
