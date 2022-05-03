@@ -246,3 +246,42 @@ func jobDBtoAPI(dbJob *persistence.Job) api.Job {
 
 	return apiJob
 }
+
+func taskDBtoAPI(dbTask *persistence.Task) api.Task {
+	apiTask := api.Task{
+		Id:       dbTask.UUID,
+		Name:     dbTask.Name,
+		Priority: dbTask.Priority,
+		TaskType: dbTask.Type,
+		Created:  dbTask.CreatedAt,
+		Updated:  dbTask.UpdatedAt,
+		Status:   dbTask.Status,
+		Activity: dbTask.Activity,
+		Commands: make([]api.Command, len(dbTask.Commands)),
+	}
+
+	if dbTask.Job != nil {
+		apiTask.JobId = dbTask.Job.UUID
+	}
+
+	if dbTask.Worker != nil {
+		apiTask.Worker = &api.TaskWorker{
+			Id:      dbTask.Worker.UUID,
+			Name:    dbTask.Worker.Name,
+			Address: dbTask.Worker.Address,
+		}
+	}
+
+	for i := range dbTask.Commands {
+		apiTask.Commands[i] = commandDBtoAPI(dbTask.Commands[i])
+	}
+
+	return apiTask
+}
+
+func commandDBtoAPI(dbCommand persistence.Command) api.Command {
+	return api.Command{
+		Name:       dbCommand.Name,
+		Parameters: dbCommand.Parameters,
+	}
+}
