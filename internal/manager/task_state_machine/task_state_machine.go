@@ -34,14 +34,8 @@ type PersistenceService interface {
 	JobHasTasksInStatus(ctx context.Context, job *persistence.Job, taskStatus api.TaskStatus) (bool, error)
 	CountTasksOfJobInStatus(ctx context.Context, job *persistence.Job, taskStatus api.TaskStatus) (numInStatus, numTotal int, err error)
 
-	// UpdateJobsTaskStatuses updates the status & activity of the tasks of `job`.
-	UpdateJobsTaskStatuses(ctx context.Context, job *persistence.Job,
-		taskStatus api.TaskStatus, activity string) error
-
-	// UpdateJobsTaskStatusesConditional updates the status & activity of the tasks of `job`,
-	// limited to those tasks with status in `statusesToUpdate`.
-	UpdateJobsTaskStatusesConditional(ctx context.Context, job *persistence.Job,
-		statusesToUpdate []api.TaskStatus, taskStatus api.TaskStatus, activity string) error
+	FetchTasksOfJob(ctx context.Context, job *persistence.Job) ([]*persistence.Task, error)
+	FetchTasksOfJobInStatus(ctx context.Context, job *persistence.Job, taskStatuses ...api.TaskStatus) ([]*persistence.Task, error)
 }
 
 // PersistenceService should be a subset of persistence.DB
@@ -72,6 +66,25 @@ func (sm *StateMachine) TaskStatusChange(
 	task *persistence.Task,
 	newTaskStatus api.TaskStatus,
 ) error {
+	oldTaskStatus := task.Status
+
+	if err := sm.taskStatusChangeOnly(ctx, task, newTaskStatus); err != nil {
+		return err
+	}
+
+	if err := sm.updateJobAfterTaskStatusChange(ctx, task, oldTaskStatus); err != nil {
+		return fmt.Errorf("updating job after task status change: %w", err)
+	}
+	return nil
+}
+
+// taskStatusChangeOnly updates the task's status to the new one, but does not "ripple" the change to the job.
+// `task` is expected to still have its original status, and have a filled `Job` pointer.
+func (sm *StateMachine) taskStatusChangeOnly(
+	ctx context.Context,
+	task *persistence.Task,
+	newTaskStatus api.TaskStatus,
+) error {
 	job := task.Job
 	if job == nil {
 		log.Panic().Str("task", task.UUID).Msg("task without job, cannot handle this")
@@ -98,9 +111,6 @@ func (sm *StateMachine) TaskStatusChange(
 	taskUpdate.PreviousStatus = &oldTaskStatus
 	sm.broadcaster.BroadcastTaskUpdate(taskUpdate)
 
-	if err := sm.updateJobAfterTaskStatusChange(ctx, task, oldTaskStatus); err != nil {
-		return fmt.Errorf("updating job after task status change: %w", err)
-	}
 	return nil
 }
 
@@ -333,15 +343,16 @@ func (sm *StateMachine) cancelTasks(
 	logger.Info().Msg("cancelling tasks of job")
 
 	// Any task that is running or might run in the future should get cancelled.
-	taskStatusesToCancel := []api.TaskStatus{
+	tasks, err := sm.persist.FetchTasksOfJobInStatus(ctx, job,
 		api.TaskStatusActive,
 		api.TaskStatusQueued,
 		api.TaskStatusSoftFailed,
-	}
-	err := sm.persist.UpdateJobsTaskStatusesConditional(
-		ctx, job, taskStatusesToCancel, api.TaskStatusCanceled,
-		fmt.Sprintf("Manager cancelled this task because the job got status %q.", job.Status),
 	)
+	if err != nil {
+		return "", err
+	}
+	activity := fmt.Sprintf("Manager cancelled this task because the job got status %q.", job.Status)
+	err = sm.massUpdateTaskStatus(ctx, tasks, api.TaskStatusCanceled, activity)
 	if err != nil {
 		return "", fmt.Errorf("cancelling tasks of job %s: %w", job.UUID, err)
 	}
@@ -366,11 +377,12 @@ func (sm *StateMachine) cancelTasks(
 func (sm *StateMachine) requeueTasks(
 	ctx context.Context, logger zerolog.Logger, job *persistence.Job, oldJobStatus api.JobStatus,
 ) (api.JobStatus, error) {
-	var err error
-
 	if job.Status != api.JobStatusRequeued {
 		logger.Warn().Msg("unexpected job status in StateMachine::requeueTasks()")
 	}
+
+	var err error
+	var tasks []*persistence.Task
 
 	switch oldJobStatus {
 	case api.JobStatusUnderConstruction:
@@ -380,30 +392,53 @@ func (sm *StateMachine) requeueTasks(
 		return "", nil
 	case api.JobStatusCompleted:
 		// Re-queue all tasks.
-		err = sm.persist.UpdateJobsTaskStatuses(ctx, job, api.TaskStatusQueued,
-			fmt.Sprintf("Queued because job transitioned status from %q to %q", oldJobStatus, job.Status))
+		tasks, err = sm.persist.FetchTasksOfJob(ctx, job)
 	default:
 		// Re-queue only the non-completed tasks.
-		statusesToUpdate := []api.TaskStatus{
+		tasks, err = sm.persist.FetchTasksOfJobInStatus(ctx, job,
 			api.TaskStatusCancelRequested,
 			api.TaskStatusCanceled,
 			api.TaskStatusFailed,
 			api.TaskStatusPaused,
 			api.TaskStatusSoftFailed,
-		}
-		err = sm.persist.UpdateJobsTaskStatusesConditional(ctx, job,
-			statusesToUpdate, api.TaskStatusQueued,
-			fmt.Sprintf("Queued because job transitioned status from %q to %q", oldJobStatus, job.Status))
+		)
+	}
+	if err != nil {
+		return "", err
 	}
 
+	activity := fmt.Sprintf("Queued because job transitioned status from %q to %q", oldJobStatus, job.Status)
+	err = sm.massUpdateTaskStatus(ctx, tasks, api.TaskStatusQueued, activity)
 	if err != nil {
-		return "", fmt.Errorf("queueing tasks of job %s: %w", job.UUID, err)
+		return "", err
 	}
 
 	// TODO: also reset the 'failed by workers' blacklist.
 
 	// The appropriate tasks have been requeued, so now the job can go from "requeued" to "queued".
 	return api.JobStatusQueued, nil
+}
+
+// massUpdateTaskStatus updates the status of all the given tasks.
+// NOTE: these task statuses do NOT affect the job status.
+// Tasks that are passed in the `tasks` parameter but already have the given status will be skipped.
+func (sm *StateMachine) massUpdateTaskStatus(
+	ctx context.Context,
+	tasks []*persistence.Task,
+	status api.TaskStatus,
+	activity string,
+) error {
+	for _, task := range tasks {
+		if task.Status == status {
+			continue
+		}
+		task.Activity = activity
+		err := sm.taskStatusChangeOnly(ctx, task, status)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // checkTaskCompletion returns "completed" as next job status when all tasks of

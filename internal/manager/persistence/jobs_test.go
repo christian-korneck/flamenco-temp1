@@ -97,78 +97,41 @@ func TestCountTasksOfJobInStatus(t *testing.T) {
 	assert.Equal(t, 3, numTotal)
 }
 
-func TestUpdateJobsTaskStatuses(t *testing.T) {
+func TestFetchTasksOfJobInStatus(t *testing.T) {
 	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
 	defer close()
 
-	err := db.UpdateJobsTaskStatuses(ctx, job, api.TaskStatusSoftFailed, "testing æctivity")
-	assert.NoError(t, err)
+	allTasks, err := db.FetchTasksOfJob(ctx, job)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, job, allTasks[0].Job, "FetchTasksOfJob should set job pointer")
 
-	numSoftFailed, numTotal, err := db.CountTasksOfJobInStatus(ctx, job, api.TaskStatusSoftFailed)
+	tasks, err := db.FetchTasksOfJobInStatus(ctx, job, api.TaskStatusQueued)
 	assert.NoError(t, err)
-	assert.Equal(t, 3, numSoftFailed, "all tasks should have had their status changed")
-	assert.Equal(t, 3, numTotal)
+	assert.Equal(t, allTasks, tasks)
+	assert.Equal(t, job, tasks[0].Job, "FetchTasksOfJobInStatus should set job pointer")
 
+	// Make one task failed.
 	task, err := db.FetchTask(ctx, authoredJob.Tasks[0].UUID)
 	assert.NoError(t, err)
-	assert.Equal(t, "testing æctivity", task.Activity)
+	task.Status = api.TaskStatusFailed
+	assert.NoError(t, db.SaveTask(ctx, task))
 
-	// Empty status should be rejected.
-	err = db.UpdateJobsTaskStatuses(ctx, job, "", "testing empty status")
-	assert.Error(t, err)
-
-	numEmpty, _, err := db.CountTasksOfJobInStatus(ctx, job, "")
+	tasks, err = db.FetchTasksOfJobInStatus(ctx, job, api.TaskStatusQueued)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, numEmpty, "tasks should not have their status changed")
+	assert.Equal(t, []*Task{allTasks[1], allTasks[2]}, tasks)
 
-	numSoftFailed, _, err = db.CountTasksOfJobInStatus(ctx, job, api.TaskStatusSoftFailed)
+	// Check the failed task. This cannot directly compare to `allTasks[0]`
+	// because saving the task above changed some of its fields.
+	tasks, err = db.FetchTasksOfJobInStatus(ctx, job, api.TaskStatusFailed)
 	assert.NoError(t, err)
-	assert.Equal(t, 3, numSoftFailed, "all tasks should still be soft-failed")
-}
+	assert.Len(t, tasks, 1)
+	assert.Equal(t, allTasks[0].ID, tasks[0].ID)
 
-func TestUpdateJobsTaskStatusesConditional(t *testing.T) {
-	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
-	defer close()
-
-	getTask := func(taskIndex int) *Task {
-		task, err := db.FetchTask(ctx, authoredJob.Tasks[taskIndex].UUID)
-		if err != nil {
-			t.Fatalf("Fetching task %d: %v", taskIndex, err)
-		}
-		return task
-	}
-
-	setTaskStatus := func(taskIndex int, taskStatus api.TaskStatus) {
-		task := getTask(taskIndex)
-		task.Status = taskStatus
-		if err := db.SaveTask(ctx, task); err != nil {
-			t.Fatalf("Setting task %d to status %s: %v", taskIndex, taskStatus, err)
-		}
-	}
-
-	setTaskStatus(0, api.TaskStatusFailed)
-	setTaskStatus(1, api.TaskStatusCompleted)
-	setTaskStatus(2, api.TaskStatusActive)
-
-	err := db.UpdateJobsTaskStatusesConditional(ctx, job,
-		[]api.TaskStatus{api.TaskStatusFailed, api.TaskStatusActive},
-		api.TaskStatusCancelRequested, "some activity")
+	tasks, err = db.FetchTasksOfJobInStatus(ctx, job, api.TaskStatusActive)
 	assert.NoError(t, err)
-
-	// Task statuses should have updated for tasks 0 and 2.
-	assert.Equal(t, api.TaskStatusCancelRequested, getTask(0).Status)
-	assert.Equal(t, api.TaskStatusCompleted, getTask(1).Status)
-	assert.Equal(t, api.TaskStatusCancelRequested, getTask(2).Status)
-
-	err = db.UpdateJobsTaskStatusesConditional(ctx, job,
-		[]api.TaskStatus{api.TaskStatusFailed, api.TaskStatusActive},
-		"", "empty task status should be disallowed")
-	assert.Error(t, err)
-
-	// Task statuses should remain unchanged.
-	assert.Equal(t, api.TaskStatusCancelRequested, getTask(0).Status)
-	assert.Equal(t, api.TaskStatusCompleted, getTask(1).Status)
-	assert.Equal(t, api.TaskStatusCancelRequested, getTask(2).Status)
+	assert.Empty(t, tasks)
 }
 
 func TestTaskAssignToWorker(t *testing.T) {

@@ -52,6 +52,41 @@ func (mr *MockPersistenceServiceMockRecorder) CountTasksOfJobInStatus(arg0, arg1
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountTasksOfJobInStatus", reflect.TypeOf((*MockPersistenceService)(nil).CountTasksOfJobInStatus), arg0, arg1, arg2)
 }
 
+// FetchTasksOfJob mocks base method.
+func (m *MockPersistenceService) FetchTasksOfJob(arg0 context.Context, arg1 *persistence.Job) ([]*persistence.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchTasksOfJob", arg0, arg1)
+	ret0, _ := ret[0].([]*persistence.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchTasksOfJob indicates an expected call of FetchTasksOfJob.
+func (mr *MockPersistenceServiceMockRecorder) FetchTasksOfJob(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTasksOfJob", reflect.TypeOf((*MockPersistenceService)(nil).FetchTasksOfJob), arg0, arg1)
+}
+
+// FetchTasksOfJobInStatus mocks base method.
+func (m *MockPersistenceService) FetchTasksOfJobInStatus(arg0 context.Context, arg1 *persistence.Job, arg2 ...api.TaskStatus) ([]*persistence.Task, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FetchTasksOfJobInStatus", varargs...)
+	ret0, _ := ret[0].([]*persistence.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchTasksOfJobInStatus indicates an expected call of FetchTasksOfJobInStatus.
+func (mr *MockPersistenceServiceMockRecorder) FetchTasksOfJobInStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTasksOfJobInStatus", reflect.TypeOf((*MockPersistenceService)(nil).FetchTasksOfJobInStatus), varargs...)
+}
+
 // JobHasTasksInStatus mocks base method.
 func (m *MockPersistenceService) JobHasTasksInStatus(arg0 context.Context, arg1 *persistence.Job, arg2 api.TaskStatus) (bool, error) {
 	m.ctrl.T.Helper()
@@ -93,34 +128,6 @@ func (m *MockPersistenceService) SaveTask(arg0 context.Context, arg1 *persistenc
 func (mr *MockPersistenceServiceMockRecorder) SaveTask(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTask", reflect.TypeOf((*MockPersistenceService)(nil).SaveTask), arg0, arg1)
-}
-
-// UpdateJobsTaskStatuses mocks base method.
-func (m *MockPersistenceService) UpdateJobsTaskStatuses(arg0 context.Context, arg1 *persistence.Job, arg2 api.TaskStatus, arg3 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateJobsTaskStatuses", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateJobsTaskStatuses indicates an expected call of UpdateJobsTaskStatuses.
-func (mr *MockPersistenceServiceMockRecorder) UpdateJobsTaskStatuses(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateJobsTaskStatuses", reflect.TypeOf((*MockPersistenceService)(nil).UpdateJobsTaskStatuses), arg0, arg1, arg2, arg3)
-}
-
-// UpdateJobsTaskStatusesConditional mocks base method.
-func (m *MockPersistenceService) UpdateJobsTaskStatusesConditional(arg0 context.Context, arg1 *persistence.Job, arg2 []api.TaskStatus, arg3 api.TaskStatus, arg4 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateJobsTaskStatusesConditional", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateJobsTaskStatusesConditional indicates an expected call of UpdateJobsTaskStatusesConditional.
-func (mr *MockPersistenceServiceMockRecorder) UpdateJobsTaskStatusesConditional(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateJobsTaskStatusesConditional", reflect.TypeOf((*MockPersistenceService)(nil).UpdateJobsTaskStatusesConditional), arg0, arg1, arg2, arg3, arg4)
 }
 
 // MockChangeBroadcaster is a mock of ChangeBroadcaster interface.
