@@ -1,8 +1,17 @@
 <template>
-  <header>{{ flamencoName }}</header>
-  <header class="right">
-    <api-spinner />
-    version: {{ flamencoVersion }}
+  <header>
+    <a href="/" class="navbar-brand">{{ flamencoName }}</a>
+    <nav>
+      <ul>
+        <li><a href="/">Jobs</a></li>
+        <li><a href="/">Workers</a></li>
+        <li><a href="/">Settings</a></li>
+      </ul>
+    </nav>
+    <span>
+      <api-spinner />
+      version: {{ flamencoVersion }}
+    </span>
   </header>
   <div class="col-1">
     <jobs-table ref="jobsTable" @selectedJobChange="onSelectedJobChanged" />
