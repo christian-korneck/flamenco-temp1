@@ -25,9 +25,16 @@ export default {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
         { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        {
+          title: 'Status', field: 'status', sorter: 'string',
+          formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
+            const cellValue = cell.getData();
+            console.log(cellValue);
+            return '<span title="' + cellValue.status + '" class="indicator status-' + cellValue.status + '"></span>';
+          }
+        },
         { title: 'ID', field: 'id', sorter: 'string', width: "13ch" },
         { title: 'Name', field: 'name', sorter: 'string' },
-        { title: 'Status', field: 'status', sorter: 'string' },
         { title: 'Type', field: 'type', sorter: 'string' },
         { title: 'Prio', field: 'priority', sorter: 'number' },
         {
