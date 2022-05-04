@@ -1,65 +1,50 @@
 <template>
   <h2 class="column-title">Job Details</h2>
-  <div v-if="hasJobData" class="job-details">
-    <table class="details">
-      <tr class="field-id">
-        <th>ID</th>
-        <td>{{ jobData.id }}</td>
-      </tr>
 
-      <tr class="field-name">
-        <th>Name</th>
-        <td>{{ jobData.name }}</td>
-      </tr>
+  <template v-if="hasJobData">
+    <dl>
+      <dt class="field-id">ID</dt>
+      <dd :title="jobData.id">{{ jobData.id }}</dd>
 
-      <tr class="field-status">
-        <th>Status</th>
-        <td>{{ jobData.status }}</td>
-      </tr>
+      <dt class="field-name">Name</dt>
+      <dd>{{ jobData.name }}</dd>
 
-      <tr class="field-type">
-        <th>Type</th>
-        <td>{{ jobType ? jobType.label : jobData.type }}</td>
-      </tr>
+      <dt class="field-status">Status</dt>
+      <dd>{{ jobData.status }}</dd>
 
-      <tr class="field-priority">
-        <th>Prio</th>
-        <td>{{ jobData.priority }}</td>
-      </tr>
+      <dt class="field-type">Type</dt>
+      <dd>{{ jobType ? jobType.label : jobData.type }}</dd>
 
-      <tr class="field-created">
-        <th>Created</th>
-        <td>{{ datetime.relativeTime(jobData.created) }}</td>
-      </tr>
+      <dt class="field-priority">Priority</dt>
+      <dd>{{ jobData.priority }}</dd>
 
-      <tr class="field-updated">
-        <th>Updated</th>
-        <td>{{ datetime.relativeTime(jobData.updated) }}</td>
-      </tr>
+      <dt class="field-created">Created</dt>
+      <dd>{{ datetime.relativeTime(jobData.created) }}</dd>
 
-      <tr class="field-activity">
-        <th>Activity</th>
-        <td>{{ jobData.activity }}</td>
-      </tr>
-    </table>
+      <dt class="field-updated">Updated</dt>
+      <dd>{{ datetime.relativeTime(jobData.updated) }}</dd>
+
+      <dt class="field-activity">Activity</dt>
+      <dd>{{ jobData.activity }}</dd>
+    </dl>
 
     <h3 class="sub-title" v-if="hasMetadata">Meta-data</h3>
-    <table class="metadata">
-      <tr v-for="value, key in jobData.metadata" :class="`field-${key}`">
-        <th>{{ key }}</th>
-        <td>{{ value }}</td>
-      </tr>
-    </table>
+    <dl>
+      <template v-for="value, key in jobData.metadata">
+        <dt :class="`field-${key}`">{{ key }}</dt>
+        <dd>{{ value }}</dd>
+      </template>
+    </dl>
 
     <h3 class="sub-title" v-if="hasSettings">Settings</h3>
-    <table class="settings">
-      <tr v-for="value, key in settingsToDisplay" :class="`field-${key}`">
-        <th>{{ key }}</th>
-        <td>{{ value }}</td>
-      </tr>
-    </table>
+    <dl>
+      <template v-for="value, key in settingsToDisplay">
+        <dt :class="`field-${key}`">{{ key }}</dt>
+        <dd>{{ value }}</dd>
+      </template>
+    </dl>
+  </template>
 
-  </div>
   <div v-else class="no-job-selected">
     <p>No job selected, pick one from the list on the left.</p>
   </div>
@@ -189,24 +174,10 @@ export default {
 </script>
 
 <style scoped>
-.job-details {
-  font-size: smaller;
-  font-family: 'Noto Mono', monospace;
-}
-
-tr:hover {
-  background-color: #333333;
-}
-
-tr.field-id td {
+/* Prevent fields with long IDs from overflowing. */
+.field-id + dd {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-th {
-  font-weight: bold;
-  text-align: right;
-  vertical-align: top;
+  white-space: nowrap;
 }
 </style>

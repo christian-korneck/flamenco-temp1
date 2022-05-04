@@ -132,6 +132,29 @@ h3.sub-title {
   padding: 0 0 var(--spacer-sm);
 }
 
+dl {
+  display: grid;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  grid-template-columns: max-content auto;
+}
+
+dl dt {
+  font-weight: bold;
+  text-align: right;
+}
+
+dl dd {
+  border-bottom: var(--border-width) solid var(--color-border);
+  margin-bottom: .133rem;
+  margin-left: var(--spacer-sm);
+  padding-bottom: .133rem;
+}
+
+dl dd:empty {
+  border-color: transparent;
+}
+
 footer {
   align-items: center;
   color: var(--color-text-muted);

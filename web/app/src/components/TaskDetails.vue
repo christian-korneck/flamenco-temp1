@@ -1,51 +1,39 @@
 <template>
   <h2 class="column-title">Task Details</h2>
-  <div v-if="hasTaskData" class="task-details">
-    <table class="details">
-      <tr class="field-id">
-        <th>ID</th>
-        <td>{{ taskData.id }}</td>
-      </tr>
 
-      <tr class="field-name">
-        <th>Name</th>
-        <td>{{ taskData.name }}</td>
-      </tr>
+  <template v-if="hasTaskData">
+    <dl>
+      <dt class="field-id">ID</dt>
+      <dd>{{ taskData.id }}</dd>
 
-      <tr class="field-status">
-        <th>Status</th>
-        <td>{{ taskData.status }}</td>
-      </tr>
+      <dt class="field-name">Name</dt>
+      <dd>{{ taskData.name }}</dd>
 
-      <tr class="field-type">
-        <th>Type</th>
-        <td>{{ taskData.type }}</td>
-      </tr>
+      <dt class="field-status">Status</dt>
+      <dd>{{ taskData.status }}</dd>
 
-      <tr class="field-priority">
-        <th>Prio</th>
-        <td>{{ taskData.priority }}</td>
-      </tr>
+      <dt class="field-type">Type</dt>
+      <dd>{{ taskData.type }}</dd>
 
-      <tr class="field-created">
-        <th>Created</th>
-        <td>{{ datetime.relativeTime(taskData.created) }}</td>
-      </tr>
-      <tr class="field-updated">
-        <th>Updated</th>
-        <td>{{ datetime.relativeTime(taskData.updated) }}</td>
-      </tr>
-    </table>
+      <dt class="field-priority">Priority</dt>
+      <dd>{{ taskData.priority }}</dd>
+
+      <dt class="field-created">Created</dt>
+      <dd>{{ datetime.relativeTime(taskData.created) }}</dd>
+
+      <dt class="field-updated">Updated</dt>
+      <dd>{{ datetime.relativeTime(taskData.updated) }}</dd>
+    </dl>
 
     <h3 class="sub-title">Commands</h3>
-    <table class="commands">
-      <tr v-for="cmd in taskData.commands" :class="`field-${cmd.name}`">
-        <th>{{ cmd.name }}</th>
-        <td>{{ cmd.parameters }}</td>
-      </tr>
-    </table>
+    <dl>
+      <template v-for="cmd in taskData.commands">
+        <dt :class="`field-${cmd.name}`">{{ cmd.name }}</dt>
+        <dd>{{ cmd.parameters }}</dd>
+      </template>
+    </dl>
+  </template>
 
-  </div>
   <div v-else class="no-task-selected">
     <p>No task selected, pick one from the list on the left.</p>
   </div>
@@ -84,24 +72,10 @@ export default {
 </script>
 
 <style scoped>
-.task-details {
-  font-size: smaller;
-  font-family: 'Noto Mono', monospace;
-}
-
-tr:hover {
-  background-color: #333333;
-}
-
-tr.field-id td {
+/* Prevent fields with long IDs from overflowing. */
+.field-id + dd {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-th {
-  font-weight: bold;
-  text-align: right;
-  vertical-align: top;
+  white-space: nowrap;
 }
 </style>
