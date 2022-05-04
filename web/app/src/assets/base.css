@@ -172,10 +172,14 @@ dl dt {
 }
 
 dl dd {
-  border-bottom: var(--border-width) solid var(--color-border);
   margin-bottom: .133rem;
   margin-left: var(--spacer-sm);
   padding-bottom: .133rem;
+  transition: color var(--transition-speed-fast) ease-out;
+}
+
+dl dd:hover {
+  color: var(--color-text-highlight);
 }
 
 dl dd:empty {
