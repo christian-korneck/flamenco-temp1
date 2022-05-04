@@ -32,7 +32,7 @@
 
   --header-height: 25px;
   --footer-height: 25px;
-  --grid-gap: 4px;
+  --grid-gap: 6px;
 
   --transition-speed: 240ms;
   --transition-speed-fast: 60ms;
@@ -58,8 +58,9 @@ body {
     "footer footer footer";
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: var(--header-height) 1fr var(--footer-height);
-  height: 100%;
-  width: 100%;
+  padding: var(--grid-gap);
+  height: calc(100% - calc(var(--grid-gap) * 2));
+  width: calc(100% - calc(var(--grid-gap) * 2));
 }
 
 @media (max-width: 1280px) {
