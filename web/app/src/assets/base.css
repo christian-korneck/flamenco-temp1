@@ -5,9 +5,9 @@
 
   --color-background: #111;
   --color-background-column: #202020;
-  --color-accent: hsl(237deg 58% 68%);
-  --color-accent-text: hsl(237deg 100% 84%);
-  --color-accent-background: hsl(237deg 18% 28%);
+  --color-accent: hsl(226, 100%, 73%);
+  --color-accent-text: hsl(226 100% 84%);
+  --color-accent-background: hsl(226 18% 28%);
   --color-text: #ddd;
   --color-text-highlight: #fff;
   --color-text-muted: #999;
