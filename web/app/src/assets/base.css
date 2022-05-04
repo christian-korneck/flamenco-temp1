@@ -91,6 +91,11 @@ body {
   grid-area: col-3;
 }
 
+.app-version {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+}
+
 a {
   color: currentColor;
   text-decoration: none;

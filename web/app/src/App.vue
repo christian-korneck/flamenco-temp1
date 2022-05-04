@@ -8,7 +8,7 @@
         <li><a href="/">Settings</a></li>
       </ul>
     </nav>
-    <span>
+    <span class="app-version">
       <api-spinner />
       version: {{ flamencoVersion }}
     </span>
