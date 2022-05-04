@@ -4,7 +4,7 @@
   --spacer-xs: .33rem;
 
   --color-background: #111;
-  --color-background-column: #181818;
+  --color-background-column: #202020;
   --color-accent: hsl(237deg 58% 68%);
   --color-accent-text: hsl(237deg 100% 84%);
   --color-accent-background: hsl(237deg 18% 28%);
@@ -134,6 +134,7 @@ nav > ul > li > a {
 
 h2.column-title {
   border-bottom: var(--border-width) solid var(--color-border);
+  color: var(--color-text-hint);
   font-size: var(--font-size-base);
   margin-bottom: var(--spacer-sm);
   margin-top: 0;
@@ -142,6 +143,7 @@ h2.column-title {
 
 h3.sub-title {
   border-bottom: var(--border-width) solid var(--color-border);
+  color: var(--color-text-hint);
   font-size: var(--font-size-base);
   margin: var(--spacer) 0 var(--spacer-sm);
   padding: 0 0 var(--spacer-sm);
