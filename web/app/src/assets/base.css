@@ -60,8 +60,16 @@ body {
   width: 100%;
 }
 
-.col-header {
-  background-color: #222;
+@media (max-width: 1280px) {
+  #app {
+    grid-template-areas:
+    "header header"
+    "col-1 col-2"
+    "col-3 col-3"
+    "footer footer";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: var(--header-height) 1fr 1fr var(--footer-height);
+  }
 }
 
 .col {
