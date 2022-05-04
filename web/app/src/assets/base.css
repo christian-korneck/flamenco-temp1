@@ -121,6 +121,10 @@ header nav {
   margin-right: auto;
 }
 
+.navbar-brand {
+  margin-right: var(--spacer);
+}
+
 nav > ul {
   align-items: center;
   display: flex;
