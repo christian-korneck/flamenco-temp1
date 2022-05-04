@@ -151,6 +151,10 @@ dl {
 dl dt {
   font-weight: bold;
   text-align: right;
+  width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 dl dd {

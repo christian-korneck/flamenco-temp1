@@ -31,7 +31,7 @@
     <h3 class="sub-title" v-if="hasMetadata">Meta-data</h3>
     <dl>
       <template v-for="value, key in jobData.metadata">
-        <dt :class="`field-${key}`">{{ key }}</dt>
+        <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
         <dd>{{ value }}</dd>
       </template>
     </dl>
@@ -39,7 +39,7 @@
     <h3 class="sub-title" v-if="hasSettings">Settings</h3>
     <dl>
       <template v-for="value, key in settingsToDisplay">
-        <dt :class="`field-${key}`">{{ key }}</dt>
+        <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
         <dd>{{ value }}</dd>
       </template>
     </dl>

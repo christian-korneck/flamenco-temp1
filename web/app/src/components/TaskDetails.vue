@@ -28,7 +28,7 @@
     <h3 class="sub-title">Commands</h3>
     <dl>
       <template v-for="cmd in taskData.commands">
-        <dt :class="`field-${cmd.name}`">{{ cmd.name }}</dt>
+        <dt :class="`field-${cmd.name}`" :title="cmd.name">{{ cmd.name }}</dt>
         <dd>{{ cmd.parameters }}</dd>
       </template>
     </dl>
