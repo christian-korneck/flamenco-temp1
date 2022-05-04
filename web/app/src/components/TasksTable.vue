@@ -27,7 +27,6 @@ export default {
       // See pkg/api/flamenco-manager.yaml, schemas Task and TaskUpdate.
       columns: [
         { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
-        { title: 'ID', field: 'id', sorter: 'string', width: "13ch" },
         { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Status', field: 'status', sorter: 'string' },
         {

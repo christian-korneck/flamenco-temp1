@@ -33,7 +33,6 @@ export default {
             return '<span title="' + cellValue.status + '" class="indicator status-' + cellValue.status + '"></span>';
           }
         },
-        { title: 'ID', field: 'id', sorter: 'string', width: "13ch" },
         { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Type', field: 'type', sorter: 'string' },
         { title: 'Prio', field: 'priority', sorter: 'number' },
