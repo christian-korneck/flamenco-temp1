@@ -1,6 +1,7 @@
 <template>
   <div>
     <h2 class="column-title">Jobs</h2>
+
     <job-actions-bar />
     <div class="job-list" id="flamenco_job_list"></div>
   </div>
@@ -24,7 +25,7 @@ export default {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
         { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
-        { title: 'ID', field: 'id', sorter: 'string', width: "12%" },
+        { title: 'ID', field: 'id', sorter: 'string', width: "13ch" },
         { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Status', field: 'status', sorter: 'string' },
         { title: 'Type', field: 'type', sorter: 'string' },
@@ -44,7 +45,6 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
-      height: "99%",
       data: [], // Will be filled via a Flamenco API request.
       selectable: 1, // Only allow a single row to be selected at a time.
     };

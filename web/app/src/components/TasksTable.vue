@@ -27,7 +27,7 @@ export default {
       // See pkg/api/flamenco-manager.yaml, schemas Task and TaskUpdate.
       columns: [
         { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
-        { title: 'ID', field: 'id', sorter: 'string', width: "12%" },
+        { title: 'ID', field: 'id', sorter: 'string', width: "13ch" },
         { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Status', field: 'status', sorter: 'string' },
         {
@@ -45,7 +45,6 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
-      height: "300px",
       data: [], // Will be filled via a Flamenco API request.
       selectable: 1, // Only allow a single row to be selected at a time.
     };
