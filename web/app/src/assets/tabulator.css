@@ -58,12 +58,13 @@
 }
 
 .tabulator .tabulator-header .tabulator-col {
+  align-items: center;
   box-sizing: border-box;
-  display: inline-block;
+  display: inline-flex;
   overflow: hidden;
   position: relative;
   text-align: left;
-  vertical-align: bottom;
+  vertical-align: middle;
 }
 
 .tabulator .tabulator-header .tabulator-col.tabulator-moving {
@@ -77,6 +78,11 @@
   box-sizing: border-box;
   position: relative;
   padding: var(--spacer-xs);
+}
+
+/* First column, usually containing a checkbox for selecting rows. */
+.tabulator .tabulator-header .tabulator-col:first-child .tabulator-col-content {
+  padding: 0 .75rem;
 }
 
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-header-menu-button {
@@ -170,7 +176,7 @@
 
 .tabulator .tabulator-header .tabulator-col.tabulator-sortable:hover {
   cursor: pointer;
-  background-color: #1a1a1a;
+  color: var(--color-text-highlight);
 }
 
 .tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="none"] .tabulator-col-content .tabulator-col-sorter {
@@ -483,14 +489,13 @@
 
 .tabulator-row {
   background-color: var(--table-color-background-row-odd);
-  border-radius: var(--border-radius);
   box-sizing: border-box;
   min-height: 22px;
   position: relative;
-  transition: background-color var(--transition-speed-fast) ease-out;
+  transition: color var(--transition-speed-fast) ease-out;
 }
 
-.tabulator-row.tabulator-row:hover {
+.tabulator-row:hover {
   color: var(--color-text-highlight);
 }
 
@@ -498,22 +503,17 @@
   background-color: var(--table-color-background-row);
 }
 
-.tabulator-row.tabulator-row-even:hover {
-  background-color: var(--table-color-background-row-hover);
-}
-
 .tabulator-row.tabulator-selectable:hover {
-  background-color: var(--table-color-background-row-odd-hover);
   cursor: pointer;
 }
 
 .tabulator-row.tabulator-selected {
   background-color: var(--color-accent-background);
+  border-radius: var(--border-radius);
   color: var(--color-accent-text);
 }
 
 .tabulator-row.tabulator-selected:hover {
-  background-color: var(--color-accent);
   color: white;
   cursor: pointer;
 }

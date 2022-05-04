@@ -13,7 +13,7 @@
   --color-text-muted: #999;
   --color-text-hint: #555;
 
-  --color-border: #222;
+  --color-border: #282828;
 
   --border-width: 2px;
   --border-radius: 4px;
@@ -23,10 +23,8 @@
   --font-size-base: 14px;
   --font-size-sm: 12px;
 
-  --table-color-background-row: #333;
-  --table-color-background-row-hover: #3a3a3a;
-  --table-color-background-row-odd: #292929;
-  --table-color-background-row-odd-hover: #3a3a3a;
+  --table-color-background-row: #303030;
+  --table-color-background-row-odd: #2b2b2b;
 
   --table-color-background-row-selected: var(--color-accent);
   --table-color-background-row-selected: var(--color-accent);
