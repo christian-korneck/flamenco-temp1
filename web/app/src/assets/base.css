@@ -10,6 +10,7 @@
   --color-accent-background: hsl(237deg 18% 28%);
   --color-text: #ddd;
   --color-text-muted: #999;
+  --color-text-hint: #555;
 
   --color-border: #222;
 
@@ -223,4 +224,14 @@ footer {
 
 .btn-bar .btn.dangerous[disabled] {
   background-color: #53413e;
+}
+
+.details-no-item-selected {
+  align-items: center;
+  color: var(--color-text-hint);
+  display: flex;
+  user-select: none;
+  height: 100%;
+  justify-content: center;
+  margin: auto;
 }

@@ -34,8 +34,8 @@
     </dl>
   </template>
 
-  <div v-else class="no-task-selected">
-    <p>No task selected, pick one from the list on the left.</p>
+  <div v-else class="details-no-item-selected">
+    <p>Select a task to see its details.</p>
   </div>
 </template>
 

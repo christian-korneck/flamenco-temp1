@@ -45,8 +45,8 @@
     </dl>
   </template>
 
-  <div v-else class="no-job-selected">
-    <p>No job selected, pick one from the list on the left.</p>
+  <div v-else class="details-no-item-selected">
+    <p>Select a job to see its details.</p>
   </div>
 </template>
 
