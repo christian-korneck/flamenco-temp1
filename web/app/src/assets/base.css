@@ -196,14 +196,14 @@ footer {
   background-color: var(--color-accent);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--color-accent);
+  cursor: pointer;
   display: inline-flex;
   font-size: var(--font-size-sm);
   justify-content: center;
-  padding: 0.1rem 0.75rem;
+  padding: var(--spacer-xs) var(--spacer-sm);
   touch-action: manipulation;
-  transition-duration: 300ms;
-  transition-property: color, background-color, border-color, box-shadow;
-  cursor: pointer;
+  transition-duration: var(--transition-speed);
+  transition-property: color, background-color, border-color;
 }
 
 .btn-bar .btn+.btn {
