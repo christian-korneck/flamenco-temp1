@@ -42,6 +42,7 @@ html,
 body {
   background-color: #111;
   color: var(--color-text);
+  color-scheme: dark;
   font-size: var(--font-size-base);
   height: 100vh;
   margin: 0;
