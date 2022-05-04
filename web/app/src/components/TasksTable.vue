@@ -27,8 +27,15 @@ export default {
       // See pkg/api/flamenco-manager.yaml, schemas Task and TaskUpdate.
       columns: [
         { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        {
+          title: 'Status', field: 'status', sorter: 'string',
+          formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
+            const cellValue = cell.getData();
+            console.log(cellValue);
+            return '<span title="' + cellValue.status + '" class="indicator status-' + cellValue.status + '"></span>';
+          }
+        },
         { title: 'Name', field: 'name', sorter: 'string' },
-        { title: 'Status', field: 'status', sorter: 'string' },
         {
           title: 'Updated', field: 'updated',
           sorter: 'alphanum', sorterParams: { alignEmptyValues: "top" },
