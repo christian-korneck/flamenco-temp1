@@ -59,6 +59,7 @@ body {
   background-color: #111;
   color: var(--color-text);
   color-scheme: dark;
+  font-family: var(--font-family-body);
   font-size: var(--font-size-base);
   height: 100vh;
   margin: 0;
@@ -67,7 +68,6 @@ body {
 
 #app {
   display: grid;
-  font-family: var(--font-family-body);
   grid-gap: var(--grid-gap);
   grid-template-areas:
     "header header header"
@@ -222,6 +222,7 @@ footer {
   background-color: var(--color-accent);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--color-accent);
+  color: var(--color-background);
   cursor: pointer;
   display: inline-flex;
   font-size: var(--font-size-sm);

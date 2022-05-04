@@ -509,7 +509,6 @@
 
 .tabulator-row.tabulator-selected {
   background-color: var(--color-accent-background);
-  border-radius: var(--border-radius);
   color: var(--color-accent-text);
 }
 
