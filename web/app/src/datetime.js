@@ -23,5 +23,5 @@ export function relativeTime(timestamp, options) {
   const ageInDays = now.diff(parsedTimestamp).as('days');
   if (ageInDays > options.format)
     return parsedTimestamp.toLocaleString(options.format);
-  return parsedTimestamp.toRelative();
+  return parsedTimestamp.toRelative({style: "narrow"});
 }
