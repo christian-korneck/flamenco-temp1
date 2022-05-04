@@ -9,6 +9,7 @@
   --color-accent-text: hsl(237deg 100% 84%);
   --color-accent-background: hsl(237deg 18% 28%);
   --color-text: #ddd;
+  --color-text-highlight: #fff;
   --color-text-muted: #999;
   --color-text-hint: #555;
 
@@ -34,6 +35,9 @@
   --header-height: 25px;
   --footer-height: 25px;
   --grid-gap: 4px;
+
+  --transition-speed: 240ms;
+  --transition-speed-fast: 60ms;
 }
 
 html,
