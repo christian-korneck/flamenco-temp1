@@ -4,7 +4,7 @@
   --spacer-xs: .33rem;
 
   --color-background: #111;
-  --color-background-column: #161616;
+  --color-background-column: #181818;
   --color-accent: hsl(237deg 58% 68%);
   --color-accent-text: hsl(237deg 100% 84%);
   --color-accent-background: hsl(237deg 18% 28%);
@@ -16,6 +16,7 @@
   --border-width: 2px;
   --border-radius: 4px;
 
+  --font-family-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro","Fira Mono", "Droid Sans Mono", "Courier New", monospace;
   --font-size-base: 14px;
   --font-size-sm: 12px;
@@ -46,11 +47,8 @@ body {
 }
 
 #app {
-  font-family: 'Noto Sans', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
   display: grid;
+  font-family: var(--font-family-body);
   grid-gap: var(--grid-gap);
   grid-template-areas:
     "header header header"
@@ -68,8 +66,8 @@ body {
 
 .col {
   background-color: var(--color-background-column);
-  padding: var(--spacer-sm);
   border-radius: var(--border-radius);
+  padding: var(--spacer-sm);
 }
 
 .col-1 {
@@ -116,7 +114,7 @@ nav > ul {
 
 nav > ul > li > a {
   display: block;
-  padding: var(--spacer-xs) var(--spacer);
+  padding: var(--spacer-xs) var(--spacer-sm);
 }
 
 h2.column-title {
