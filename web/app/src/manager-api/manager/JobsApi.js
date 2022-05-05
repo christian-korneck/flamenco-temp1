@@ -23,6 +23,7 @@ import JobsQuery from '../model/JobsQuery';
 import JobsQueryResult from '../model/JobsQueryResult';
 import SubmittedJob from '../model/SubmittedJob';
 import Task from '../model/Task';
+import TaskStatusChange from '../model/TaskStatusChange';
 
 /**
 * Jobs service.
@@ -356,6 +357,56 @@ export default class JobsApi {
      */
     setJobStatus(jobId, jobStatusChange) {
       return this.setJobStatusWithHttpInfo(jobId, jobStatusChange)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * @param {String} taskId 
+     * @param {module:model/TaskStatusChange} taskStatusChange The status change to request.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
+     */
+    setTaskStatusWithHttpInfo(taskId, taskStatusChange) {
+      let postBody = taskStatusChange;
+      // verify the required parameter 'taskId' is set
+      if (taskId === undefined || taskId === null) {
+        throw new Error("Missing the required parameter 'taskId' when calling setTaskStatus");
+      }
+      // verify the required parameter 'taskStatusChange' is set
+      if (taskStatusChange === undefined || taskStatusChange === null) {
+        throw new Error("Missing the required parameter 'taskStatusChange' when calling setTaskStatus");
+      }
+
+      let pathParams = {
+        'task_id': taskId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = null;
+      return this.apiClient.callApi(
+        '/api/tasks/{task_id}/setstatus', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * @param {String} taskId 
+     * @param {module:model/TaskStatusChange} taskStatusChange The status change to request.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}
+     */
+    setTaskStatus(taskId, taskStatusChange) {
+      return this.setTaskStatusWithHttpInfo(taskId, taskStatusChange)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

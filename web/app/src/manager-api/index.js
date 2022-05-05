@@ -48,6 +48,7 @@ import SocketIOTaskUpdate from './model/SocketIOTaskUpdate';
 import SubmittedJob from './model/SubmittedJob';
 import Task from './model/Task';
 import TaskStatus from './model/TaskStatus';
+import TaskStatusChange from './model/TaskStatusChange';
 import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
 import TaskWorker from './model/TaskWorker';
@@ -309,6 +310,12 @@ export {
      * @property {module:model/TaskStatus}
      */
     TaskStatus,
+
+    /**
+     * The TaskStatusChange model constructor.
+     * @property {module:model/TaskStatusChange}
+     */
+    TaskStatusChange,
 
     /**
      * The TaskSummary model constructor.

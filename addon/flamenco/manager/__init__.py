@@ -10,7 +10,7 @@
 """
 
 
-__version__ = "adba7217"
+__version__ = "9985860c"
 
 # import ApiClient
 from flamenco.manager.api_client import ApiClient

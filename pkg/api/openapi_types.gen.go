@@ -447,6 +447,13 @@ type Task struct {
 // TaskStatus defines model for TaskStatus.
 type TaskStatus string
 
+// TaskStatusChange defines model for TaskStatusChange.
+type TaskStatusChange struct {
+	// The reason for this status change.
+	Reason string     `json:"reason"`
+	Status TaskStatus `json:"status"`
+}
+
 // Just enough information about the task to show in the job's task list.
 type TaskSummary struct {
 	Id       string     `json:"id"`
@@ -511,6 +518,9 @@ type QueryJobsJSONBody JobsQuery
 // SetJobStatusJSONBody defines parameters for SetJobStatus.
 type SetJobStatusJSONBody JobStatusChange
 
+// SetTaskStatusJSONBody defines parameters for SetTaskStatus.
+type SetTaskStatusJSONBody TaskStatusChange
+
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
 
@@ -546,6 +556,9 @@ type QueryJobsJSONRequestBody QueryJobsJSONBody
 
 // SetJobStatusJSONRequestBody defines body for SetJobStatus for application/json ContentType.
 type SetJobStatusJSONRequestBody SetJobStatusJSONBody
+
+// SetTaskStatusJSONRequestBody defines body for SetTaskStatus for application/json ContentType.
+type SetTaskStatusJSONRequestBody SetTaskStatusJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody

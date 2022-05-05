@@ -123,6 +123,11 @@ type ClientInterface interface {
 	// FetchTask request
 	FetchTask(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SetTaskStatus request with any body
+	SetTaskStatusWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SetTaskStatus(ctx context.Context, taskId string, body SetTaskStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetVersion request
 	GetVersion(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -306,6 +311,30 @@ func (c *Client) FetchJobTasks(ctx context.Context, jobId string, reqEditors ...
 
 func (c *Client) FetchTask(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchTaskRequest(c.Server, taskId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SetTaskStatusWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetTaskStatusRequestWithBody(c.Server, taskId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SetTaskStatus(ctx context.Context, taskId string, body SetTaskStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetTaskStatusRequest(c.Server, taskId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -849,6 +878,53 @@ func NewFetchTaskRequest(server string, taskId string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewSetTaskStatusRequest calls the generic SetTaskStatus builder with application/json body
+func NewSetTaskStatusRequest(server string, taskId string, body SetTaskStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetTaskStatusRequestWithBody(server, taskId, "application/json", bodyReader)
+}
+
+// NewSetTaskStatusRequestWithBody generates requests for SetTaskStatus with any type of body
+func NewSetTaskStatusRequestWithBody(server string, taskId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/tasks/%s/setstatus", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetVersionRequest generates requests for GetVersion
 func NewGetVersionRequest(server string) (*http.Request, error) {
 	var err error
@@ -1386,6 +1462,11 @@ type ClientWithResponsesInterface interface {
 	// FetchTask request
 	FetchTaskWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskResponse, error)
 
+	// SetTaskStatus request with any body
+	SetTaskStatusWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetTaskStatusResponse, error)
+
+	SetTaskStatusWithResponse(ctx context.Context, taskId string, body SetTaskStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*SetTaskStatusResponse, error)
+
 	// GetVersion request
 	GetVersionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetVersionResponse, error)
 
@@ -1631,6 +1712,28 @@ func (r FetchTaskResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SetTaskStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r SetTaskStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetTaskStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2014,6 +2117,23 @@ func (c *ClientWithResponses) FetchTaskWithResponse(ctx context.Context, taskId 
 		return nil, err
 	}
 	return ParseFetchTaskResponse(rsp)
+}
+
+// SetTaskStatusWithBodyWithResponse request with arbitrary body returning *SetTaskStatusResponse
+func (c *ClientWithResponses) SetTaskStatusWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetTaskStatusResponse, error) {
+	rsp, err := c.SetTaskStatusWithBody(ctx, taskId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetTaskStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) SetTaskStatusWithResponse(ctx context.Context, taskId string, body SetTaskStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*SetTaskStatusResponse, error) {
+	rsp, err := c.SetTaskStatus(ctx, taskId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetTaskStatusResponse(rsp)
 }
 
 // GetVersionWithResponse request returning *GetVersionResponse
@@ -2422,6 +2542,32 @@ func ParseFetchTaskResponse(rsp *http.Response) (*FetchTaskResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetTaskStatusResponse parses an HTTP response from a SetTaskStatusWithResponse call
+func ParseSetTaskStatusResponse(rsp *http.Response) (*SetTaskStatusResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetTaskStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
