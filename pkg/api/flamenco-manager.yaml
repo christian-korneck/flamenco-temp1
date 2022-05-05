@@ -419,7 +419,8 @@ paths:
           description: Subset of the posted requirements, indicating the unknown files.
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ShamanRequirementsResponse" }
+              schema:
+                $ref: "#/components/schemas/ShamanRequirementsResponse"
         default:
           description: unexpected error
           content:
@@ -617,7 +618,16 @@ components:
         supported_task_types:
           type: array
           items: { type: string }
-      required: [uuid, nickname, address, status, platform, current_task, last_activity, software, supported_task_types]
+      required:
+        - uuid
+        - nickname
+        - address
+        - status
+        - platform
+        - current_task
+        - last_activity
+        - software
+        - supported_task_types
 
     WorkerStatus:
       type: string
@@ -660,43 +670,60 @@ components:
         commands:
           type: array
           items: { $ref: "#/components/schemas/Command" }
-      required: [uuid, job, name, status, priority, job_priority, job_type, task_type, commands]
+      required:
+        - uuid
+        - job
+        - name
+        - status
+        - priority
+        - job_priority
+        - job_type
+        - task_type
+        - commands
 
     TaskUpdate:
       type: object
       description: TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
       properties:
-        taskStatus: { $ref: "#/components/schemas/TaskStatus", description: The new task status. }
-        activity:
-          {
-            type: string,
-            description: One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.,
-          }
-        log: { type: string, description: "Log lines for this task, will be appended to logs sent earlier." }
+        "taskStatus":
+          $ref: "#/components/schemas/TaskStatus"
+          description: The new task status.
+        "activity":
+          type: string
+          description: One-liner to indicate what's currently happening with the task. Overwrites previously sent activity strings.
+        "log":
+          type: string
+          description: Log lines for this task, will be appended to logs sent earlier.
 
     JobStatus:
       type: string
       enum:
-        [
-          active,
-          canceled,
-          completed,
-          construction-failed,
-          failed,
-          paused,
-          queued,
-          archived,
-          archiving,
-          cancel-requested,
-          fail-requested,
-          requeued,
-          under-construction,
-          waiting-for-files,
-        ]
+        - active
+        - canceled
+        - completed
+        - construction-failed
+        - failed
+        - paused
+        - queued
+        - archived
+        - archiving
+        - cancel-requested
+        - fail-requested
+        - requeued
+        - under-construction
+        - waiting-for-files
 
     TaskStatus:
       type: string
-      enum: [active, canceled, completed, failed, queued, soft-failed, cancel-requested, paused]
+      enum:
+        - active
+        - canceled
+        - completed
+        - failed
+        - queued
+        - soft-failed
+        - cancel-requested
+        - paused
 
     Command:
       type: object
@@ -832,7 +859,9 @@ components:
               format: date-time
               description: Timestamp of last update.
             status: { $ref: "#/components/schemas/JobStatus" }
-            activity: { type: string, description: "Description of the last activity on this job." }
+            activity:
+              type: string
+              description: Description of the last activity on this job.
           required: [id, created, updated, status, activity]
 
     JobSettings:
@@ -956,7 +985,9 @@ components:
       type: object
       properties:
         status: { $ref: "#/components/schemas/JobStatus" }
-        reason: { type: string, description: The reason for this status change. }
+        reason:
+          type: string
+          description: The reason for this status change.
       required: [status, reason]
 
     Error:
@@ -1022,7 +1053,9 @@ components:
       properties:
         "sha": { type: string, description: "SHA256 checksum of the file" }
         "size": { type: integer, description: "File size in bytes" }
-        "path": { type: string, description: "Location of the file in the checkout" }
+        "path":
+          type: string
+          description: "Location of the file in the checkout"
       required: [sha, size, path]
 
     ShamanFileSpecWithStatus:
@@ -1046,7 +1079,9 @@ components:
       properties:
         "sha": { type: string, description: "SHA256 checksum of the file" }
         "size": { type: integer, description: "File size in bytes" }
-        "path": { type: string, description: "Location of the file in the checkout" }
+        "path":
+          type: string
+          description: "Location of the file in the checkout"
         "status": { $ref: "#/components/schemas/ShamanFileStatus" }
       required: [sha, size, path, status]
 
