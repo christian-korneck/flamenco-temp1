@@ -399,6 +399,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/tasks/{task_id}/setstatus:
+    summary: >
+      Request a status change for the given task. This may have effect on the
+      job status as well. This endpoint is meant for humans managing tasks via
+      the web interface. Workers post to `/api/worker/task/{task_id}` instead.
+    post:
+      operationId: setTaskStatus
+      tags: [jobs]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        description: The status change to request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskStatusChange"
+      responses:
+        "204":
+          description: Status change was accepted.
+        "422":
+          description: The requested status change is not valid for the current status of the task.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   ## Shaman
 
   /shaman/checkout/requirements:
@@ -985,6 +1017,15 @@ components:
       type: object
       properties:
         status: { $ref: "#/components/schemas/JobStatus" }
+        reason:
+          type: string
+          description: The reason for this status change.
+      required: [status, reason]
+
+    TaskStatusChange:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/TaskStatus" }
         reason:
           type: string
           description: The reason for this status change.
