@@ -754,7 +754,6 @@ components:
         - failed
         - queued
         - soft-failed
-        - cancel-requested
         - paused
 
     Command:
