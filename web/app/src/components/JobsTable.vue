@@ -66,7 +66,7 @@ export default {
     this.tabulator = new Tabulator('#flamenco_job_list', this.options);
     this.tabulator.on("rowSelected", this.onRowSelected);
     this.tabulator.on("rowDeselected", this.onRowDeselected);
-    this.fetchAllJobs();
+    this.tabulator.on("tableBuilt", this.fetchAllJobs);
   },
   methods: {
     onReconnected() {

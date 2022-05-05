@@ -67,7 +67,7 @@ export default {
     this.tabulator = new Tabulator('#flamenco_task_list', this.options);
     this.tabulator.on("rowSelected", this.onRowSelected);
     this.tabulator.on("rowDeselected", this.onRowDeselected);
-    this.fetchTasks();
+    this.tabulator.on("tableBuilt", this.fetchTasks);
   },
   watch: {
     jobID() {
