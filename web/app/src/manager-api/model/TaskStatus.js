@@ -62,13 +62,6 @@ export default class TaskStatus {
 
     
         /**
-         * value: "cancel-requested"
-         * @const
-         */
-        "cancel-requested" = "cancel-requested";
-
-    
-        /**
          * value: "paused"
          * @const
          */

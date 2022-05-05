@@ -91,8 +91,6 @@ const (
 const (
 	TaskStatusActive TaskStatus = "active"
 
-	TaskStatusCancelRequested TaskStatus = "cancel-requested"
-
 	TaskStatusCanceled TaskStatus = "canceled"
 
 	TaskStatusCompleted TaskStatus = "completed"

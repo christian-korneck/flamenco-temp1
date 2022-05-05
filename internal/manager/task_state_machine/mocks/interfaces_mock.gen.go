@@ -37,9 +37,13 @@ func (m *MockPersistenceService) EXPECT() *MockPersistenceServiceMockRecorder {
 }
 
 // CountTasksOfJobInStatus mocks base method.
-func (m *MockPersistenceService) CountTasksOfJobInStatus(arg0 context.Context, arg1 *persistence.Job, arg2 api.TaskStatus) (int, int, error) {
+func (m *MockPersistenceService) CountTasksOfJobInStatus(arg0 context.Context, arg1 *persistence.Job, arg2 ...api.TaskStatus) (int, int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountTasksOfJobInStatus", arg0, arg1, arg2)
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CountTasksOfJobInStatus", varargs...)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
@@ -47,9 +51,10 @@ func (m *MockPersistenceService) CountTasksOfJobInStatus(arg0 context.Context, a
 }
 
 // CountTasksOfJobInStatus indicates an expected call of CountTasksOfJobInStatus.
-func (mr *MockPersistenceServiceMockRecorder) CountTasksOfJobInStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockPersistenceServiceMockRecorder) CountTasksOfJobInStatus(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountTasksOfJobInStatus", reflect.TypeOf((*MockPersistenceService)(nil).CountTasksOfJobInStatus), arg0, arg1, arg2)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountTasksOfJobInStatus", reflect.TypeOf((*MockPersistenceService)(nil).CountTasksOfJobInStatus), varargs...)
 }
 
 // FetchTasksOfJob mocks base method.
