@@ -184,6 +184,7 @@ func (f *Flamenco) workerRequeueActiveTasks(ctx context.Context, logger zerolog.
 				Msg("error queueing task on worker sign-off")
 			lastErr = err
 		}
+		// TODO: write to task activity that it got requeued because of worker sign-off.
 	}
 
 	return lastErr

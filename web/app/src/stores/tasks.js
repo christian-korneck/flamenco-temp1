@@ -64,8 +64,8 @@ export const useTasks = defineStore('tasks', {
      * TODO: actually have these work on all selected tasks. For simplicity, the
      * code now assumes that only the active task needs to be operated on.
      */
-    cancelTasks() { return this._setTaskStatus("cancel-requested"); },
-    requeueTasks() { return this._setTaskStatus("requeued"); },
+    cancelTasks() { return this._setTaskStatus("canceled"); },
+    requeueTasks() { return this._setTaskStatus("queued"); },
 
     // Internal methods.
 

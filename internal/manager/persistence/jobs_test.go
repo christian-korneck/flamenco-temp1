@@ -172,8 +172,8 @@ func TestFetchTasksOfWorkerInStatus(t *testing.T) {
 	assert.Equal(t, task.ID, tasks[0].ID)
 	assert.Equal(t, task.UUID, tasks[0].UUID)
 
-	assert.NotEqual(t, api.TaskStatusCancelRequested, task.Status)
-	tasks, err = db.FetchTasksOfWorkerInStatus(ctx, w, api.TaskStatusCancelRequested)
+	assert.NotEqual(t, api.TaskStatusCanceled, task.Status)
+	tasks, err = db.FetchTasksOfWorkerInStatus(ctx, w, api.TaskStatusCanceled)
 	assert.NoError(t, err)
 	assert.Empty(t, tasks, "worker should have no task in status %q", w)
 }

@@ -257,7 +257,11 @@ func (db *DB) JobHasTasksInStatus(ctx context.Context, job *Job, taskStatus api.
 	return numTasksInStatus > 0, nil
 }
 
-func (db *DB) CountTasksOfJobInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (numInStatus, numTotal int, err error) {
+func (db *DB) CountTasksOfJobInStatus(
+	ctx context.Context,
+	job *Job,
+	taskStatuses ...api.TaskStatus,
+) (numInStatus, numTotal int, err error) {
 	type Result struct {
 		Status   api.TaskStatus
 		NumTasks int
@@ -272,11 +276,18 @@ func (db *DB) CountTasksOfJobInStatus(ctx context.Context, job *Job, taskStatus 
 		Scan(&results)
 
 	if tx.Error != nil {
-		return 0, 0, jobError(tx.Error, "count tasks of job %s in status %q", job.UUID, taskStatus)
+		return 0, 0, jobError(tx.Error, "count tasks of job %s in status %q", job.UUID, taskStatuses)
 	}
 
+	// Create lookup table for which statuses to count.
+	countStatus := map[api.TaskStatus]bool{}
+	for _, status := range taskStatuses {
+		countStatus[status] = true
+	}
+
+	// Count the number of tasks per status.
 	for _, result := range results {
-		if result.Status == taskStatus {
+		if countStatus[result.Status] {
 			numInStatus += result.NumTasks
 		}
 		numTotal += result.NumTasks

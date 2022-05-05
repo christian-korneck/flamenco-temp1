@@ -32,7 +32,7 @@ type PersistenceService interface {
 	SaveJobStatus(ctx context.Context, j *persistence.Job) error
 
 	JobHasTasksInStatus(ctx context.Context, job *persistence.Job, taskStatus api.TaskStatus) (bool, error)
-	CountTasksOfJobInStatus(ctx context.Context, job *persistence.Job, taskStatus api.TaskStatus) (numInStatus, numTotal int, err error)
+	CountTasksOfJobInStatus(ctx context.Context, job *persistence.Job, taskStatuses ...api.TaskStatus) (numInStatus, numTotal int, err error)
 
 	FetchTasksOfJob(ctx context.Context, job *persistence.Job) ([]*persistence.Task, error)
 	FetchTasksOfJobInStatus(ctx context.Context, job *persistence.Job, taskStatuses ...api.TaskStatus) ([]*persistence.Task, error)
@@ -134,10 +134,6 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 		// Re-queueing a task on a completed job should re-queue the job too.
 		return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusCompleted, api.JobStatusRequeued, "task was queued")
 
-	case api.TaskStatusCancelRequested:
-		// Requesting cancellation of a single task has no influence on the job itself.
-		return nil
-
 	case api.TaskStatusPaused:
 		// Pausing a task has no impact on the job.
 		return nil
@@ -188,21 +184,18 @@ func (sm *StateMachine) jobStatusIfAThenB(
 
 // onTaskStatusCanceled conditionally escalates the cancellation of a task to cancel the job.
 func (sm *StateMachine) onTaskStatusCanceled(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
-	// Only trigger cancellation/failure of the job if that was actually requested.
-	// A user can also cancel a single task from the web UI or API, in which
-	// case the job should just keep running.
-	if job.Status != api.JobStatusCancelRequested {
-		return nil
-	}
-	// This could be the last 'cancel-requested' task to go to 'canceled'.
-	hasCancelReq, err := sm.persist.JobHasTasksInStatus(ctx, job, api.TaskStatusCancelRequested)
+	// If no more tasks can run, cancel the job.
+	numRunnable, _, err := sm.persist.CountTasksOfJobInStatus(ctx, job,
+		api.TaskStatusActive, api.TaskStatusQueued, api.TaskStatusSoftFailed)
 	if err != nil {
 		return err
 	}
-	if !hasCancelReq {
-		logger.Info().Msg("last task of job went from cancel-requested to canceled")
-		return sm.JobStatusChange(ctx, job, api.JobStatusCanceled, "tasks were canceled")
+	if numRunnable == 0 {
+		// NOTE: this does NOT cancel any non-runnable (paused/failed) tasks. If that's desired, just cancel the job as a whole.
+		logger.Info().Msg("canceled task was last runnable task of job, canceling job")
+		return sm.JobStatusChange(ctx, job, api.JobStatusCanceled, "canceled task was last runnable task of job, canceling job")
 	}
+
 	return nil
 }
 
@@ -396,7 +389,6 @@ func (sm *StateMachine) requeueTasks(
 	default:
 		// Re-queue only the non-completed tasks.
 		tasks, err = sm.persist.FetchTasksOfJobInStatus(ctx, job,
-			api.TaskStatusCancelRequested,
 			api.TaskStatusCanceled,
 			api.TaskStatusFailed,
 			api.TaskStatusPaused,

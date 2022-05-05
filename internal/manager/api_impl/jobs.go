@@ -133,6 +133,51 @@ func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 	return e.NoContent(http.StatusNoContent)
 }
 
+func (f *Flamenco) SetTaskStatus(e echo.Context, taskID string) error {
+	logger := requestLogger(e)
+	ctx := e.Request().Context()
+
+	logger = logger.With().Str("task", taskID).Logger()
+
+	var statusChange api.SetTaskStatusJSONRequestBody
+	if err := e.Bind(&statusChange); err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	dbTask, err := f.persist.FetchTask(ctx, taskID)
+	if err != nil {
+		if errors.Is(err, persistence.ErrTaskNotFound) {
+			return sendAPIError(e, http.StatusNotFound, "no such task")
+		}
+		logger.Error().Err(err).Msg("error fetching task")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task")
+	}
+
+	logger = logger.With().
+		Str("currentstatus", string(dbTask.Status)).
+		Str("requestedStatus", string(statusChange.Status)).
+		Str("reason", statusChange.Reason).
+		Logger()
+	logger.Info().Msg("task status change requested")
+
+	// Store the reason for the status change in the task's Activity.
+	dbTask.Activity = statusChange.Reason
+	err = f.persist.SaveTaskActivity(ctx, dbTask)
+	if err != nil {
+		logger.Error().Err(err).Msg("error saving reason of task status change to its activity field")
+		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing task status")
+	}
+
+	// Perform the actual status change.
+	err = f.stateMachine.TaskStatusChange(ctx, dbTask, statusChange.Status)
+	if err != nil {
+		logger.Error().Err(err).Msg("error changing task status")
+		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing task status")
+	}
+	return e.NoContent(http.StatusNoContent)
+}
+
 func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)

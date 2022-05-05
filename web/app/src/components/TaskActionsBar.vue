@@ -20,7 +20,7 @@ export default {
   methods: {
     onButtonCancel() {
       return this._handleTaskActionPromise(
-        this.tasks.cancelTasks(), "marked for cancellation");
+        this.tasks.cancelTasks(), "cancelled");
     },
     onButtonRequeue() {
       return this._handleTaskActionPromise(

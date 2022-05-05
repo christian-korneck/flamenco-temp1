@@ -177,24 +177,51 @@ func TestTaskStatusChangeCancelSingleTask(t *testing.T) {
 	mockCtrl, ctx, sm, mocks := taskStateMachineTestFixtures(t)
 	defer mockCtrl.Finish()
 
-	task := taskWithStatus(api.JobStatusCancelRequested, api.TaskStatusCancelRequested)
-	task2 := taskOfSameJob(task, api.TaskStatusCancelRequested)
+	task := taskWithStatus(api.JobStatusCancelRequested, api.TaskStatusActive)
+	task2 := taskOfSameJob(task, api.TaskStatusQueued)
 	job := task.Job
 
-	// T1: cancel-requested > cancelled --> J: cancel-requested > cancel-requested
+	// T1: active > cancelled --> J: cancel-requested > cancel-requested
 	mocks.expectSaveTaskWithStatus(t, task, api.TaskStatusCanceled)
-	mocks.expectBroadcastTaskChange(task, api.TaskStatusCancelRequested, api.TaskStatusCanceled)
-	mocks.persist.EXPECT().JobHasTasksInStatus(ctx, job, api.TaskStatusCancelRequested).Return(true, nil)
+	mocks.expectBroadcastTaskChange(task, api.TaskStatusActive, api.TaskStatusCanceled)
+	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job,
+		api.TaskStatusActive, api.TaskStatusQueued, api.TaskStatusSoftFailed).
+		Return(1, 2, nil)
 	assert.NoError(t, sm.TaskStatusChange(ctx, task, api.TaskStatusCanceled))
 
-	// T2: cancel-requested > cancelled --> J: cancel-requested > canceled
+	// T2: queued > cancelled --> J: cancel-requested > canceled
 	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusCanceled)
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusCancelRequested, api.TaskStatusCanceled)
-	mocks.persist.EXPECT().JobHasTasksInStatus(ctx, job, api.TaskStatusCancelRequested).Return(false, nil)
+	mocks.expectBroadcastTaskChange(task2, api.TaskStatusQueued, api.TaskStatusCanceled)
+	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job,
+		api.TaskStatusActive, api.TaskStatusQueued, api.TaskStatusSoftFailed).
+		Return(0, 2, nil)
 	mocks.expectSaveJobWithStatus(t, job, api.JobStatusCanceled)
 	mocks.expectBroadcastJobChange(task.Job, api.JobStatusCancelRequested, api.JobStatusCanceled)
 
 	assert.NoError(t, sm.TaskStatusChange(ctx, task2, api.TaskStatusCanceled))
+}
+
+func TestTaskStatusChangeCancelSingleTaskWithOtherFailed(t *testing.T) {
+	mockCtrl, ctx, sm, mocks := taskStateMachineTestFixtures(t)
+	defer mockCtrl.Finish()
+
+	task1 := taskWithStatus(api.JobStatusCancelRequested, api.TaskStatusActive)
+	task2 := taskOfSameJob(task1, api.TaskStatusFailed)
+	taskOfSameJob(task2, api.TaskStatusPaused)
+	job := task1.Job
+
+	// T1: active > cancelled --> J: cancel-requested > canceled because T2 already failed and cannot run anyway.
+	mocks.expectSaveTaskWithStatus(t, task1, api.TaskStatusCanceled)
+	mocks.expectBroadcastTaskChange(task1, api.TaskStatusActive, api.TaskStatusCanceled)
+	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job,
+		api.TaskStatusActive, api.TaskStatusQueued, api.TaskStatusSoftFailed).
+		Return(0, 3, nil)
+	mocks.expectSaveJobWithStatus(t, job, api.JobStatusCanceled)
+	mocks.expectBroadcastJobChange(task1.Job, api.JobStatusCancelRequested, api.JobStatusCanceled)
+
+	// The paused task just stays paused, so don't expectBroadcastTaskChange(task3).
+
+	assert.NoError(t, sm.TaskStatusChange(ctx, task1, api.TaskStatusCanceled))
 }
 
 func TestTaskStatusChangeUnknownStatus(t *testing.T) {
@@ -224,7 +251,6 @@ func TestJobRequeueWithSomeCompletedTasks(t *testing.T) {
 	// Expect queueing of the job to trigger queueing of all its not-yet-completed tasks.
 	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted).Return(1, 3, nil)
 	mocks.persist.EXPECT().FetchTasksOfJobInStatus(ctx, job,
-		api.TaskStatusCancelRequested,
 		api.TaskStatusCanceled,
 		api.TaskStatusFailed,
 		api.TaskStatusPaused,
