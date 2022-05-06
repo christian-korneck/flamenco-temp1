@@ -90,13 +90,6 @@ export default class JobStatus {
 
     
         /**
-         * value: "fail-requested"
-         * @const
-         */
-        "fail-requested" = "fail-requested";
-
-    
-        /**
          * value: "requeued"
          * @const
          */
@@ -108,13 +101,6 @@ export default class JobStatus {
          * @const
          */
         "under-construction" = "under-construction";
-
-    
-        /**
-         * value: "waiting-for-files"
-         * @const
-         */
-        "waiting-for-files" = "waiting-for-files";
 
     
 

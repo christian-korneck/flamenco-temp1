@@ -51,8 +51,6 @@ const (
 
 	JobStatusConstructionFailed JobStatus = "construction-failed"
 
-	JobStatusFailRequested JobStatus = "fail-requested"
-
 	JobStatusFailed JobStatus = "failed"
 
 	JobStatusPaused JobStatus = "paused"
@@ -62,8 +60,6 @@ const (
 	JobStatusRequeued JobStatus = "requeued"
 
 	JobStatusUnderConstruction JobStatus = "under-construction"
-
-	JobStatusWaitingForFiles JobStatus = "waiting-for-files"
 )
 
 // Defines values for ShamanFileStatus.
