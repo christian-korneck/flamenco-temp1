@@ -109,7 +109,7 @@ func (sm *StateMachine) taskStatusChangeOnly(
 	// Broadcast this change to the SocketIO clients.
 	taskUpdate := webupdates.NewTaskUpdate(task)
 	taskUpdate.PreviousStatus = &oldTaskStatus
-	go sm.broadcaster.BroadcastTaskUpdate(taskUpdate)
+	sm.broadcaster.BroadcastTaskUpdate(taskUpdate)
 
 	return nil
 }
@@ -281,7 +281,7 @@ func (sm *StateMachine) JobStatusChange(
 		// Broadcast this change to the SocketIO clients.
 		jobUpdate := webupdates.NewJobUpdate(job)
 		jobUpdate.PreviousStatus = &oldJobStatus
-		go sm.broadcaster.BroadcastJobUpdate(jobUpdate)
+		sm.broadcaster.BroadcastJobUpdate(jobUpdate)
 	}
 
 	return nil
