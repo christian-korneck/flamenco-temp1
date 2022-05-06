@@ -165,6 +165,16 @@ func buildWebService(
 	e := echo.New()
 	e.HideBanner = true
 
+	// The request should come in fairly quickly, given that Flamenco is intended
+	// to run on a local network.
+	e.Server.ReadHeaderTimeout = 1 * time.Second
+	// e.Server.ReadTimeout is not set, as this is quite specific per request.
+	// Shaman file uploads and websocket connections should be allowed to run
+	// quite long, whereas other queries should be relatively short.
+	//
+	// See https://github.com/golang/go/issues/16100 for more info about current
+	// limitations in Go that get in our way here.
+
 	// Hook Zerolog onto Echo:
 	e.Use(lecho.Middleware(lecho.Config{
 		Logger: lecho.From(log.Logger),
