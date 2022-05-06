@@ -1,6 +1,7 @@
 
 let url = new URL(window.location.href);
 url.port = "8080";
+url.pathname = "/";
 const flamencoAPIURL = url.href;
 
 url.protocol = "ws:";
