@@ -33,6 +33,9 @@ func OpenDB(ctx context.Context, dsn string) (*DB, error) {
 		return nil, err
 	}
 
+	// Perfom some maintenance at startup.
+	db.vacuum()
+
 	if err := db.migrate(); err != nil {
 		return nil, err
 	}
@@ -62,6 +65,7 @@ func openDBWithConfig(uri string, config *gorm.Config) (*DB, error) {
 	db := DB{
 		gormDB: gormDB,
 	}
+
 	return &db, nil
 }
 
@@ -82,9 +86,14 @@ func (db *DB) PeriodicMaintenanceLoop(ctx context.Context) {
 		}
 
 		log.Debug().Msg("vacuuming database")
-		tx := db.gormDB.Exec("vacuum")
-		if tx.Error != nil {
-			log.Error().Err(tx.Error).Msg("error vacuuming database")
-		}
+		db.vacuum()
+	}
+}
+
+// vacuum executes the SQL "VACUUM" command, and logs any errors.
+func (db *DB) vacuum() {
+	tx := db.gormDB.Exec("vacuum")
+	if tx.Error != nil {
+		log.Error().Err(tx.Error).Msg("error vacuuming database")
 	}
 }
