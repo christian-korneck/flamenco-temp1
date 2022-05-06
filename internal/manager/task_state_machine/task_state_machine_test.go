@@ -339,6 +339,41 @@ func TestJobCancelWithSomeCompletedTasks(t *testing.T) {
 	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusCancelRequested, "someone wrote a unittest"))
 }
 
+func TestCheckStuck(t *testing.T) {
+	mockCtrl, ctx, sm, mocks := taskStateMachineTestFixtures(t)
+	defer mockCtrl.Finish()
+
+	task1 := taskWithStatus(api.JobStatusActive, api.TaskStatusCompleted)
+	task2 := taskOfSameJob(task1, api.TaskStatusFailed)
+	task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
+	job := task1.Job
+	job.Status = api.JobStatusRequeued
+
+	mocks.persist.EXPECT().FetchJobsInStatus(ctx, api.JobStatusCancelRequested, api.JobStatusRequeued).
+		Return([]*persistence.Job{job}, nil)
+	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted).Return(2, 3, nil)
+	mocks.persist.EXPECT().FetchTasksOfJobInStatus(ctx, job,
+		api.TaskStatusCanceled,
+		api.TaskStatusFailed,
+		api.TaskStatusPaused,
+		api.TaskStatusSoftFailed,
+	).
+		Return([]*persistence.Task{task2, task3}, nil)
+
+	// Expect Job -> Queued and non-completed tasks -> Queued.
+	mocks.expectSaveJobWithStatus(t, job, api.JobStatusRequeued) // should be called once for the current status
+	mocks.expectSaveJobWithStatus(t, job, api.JobStatusQueued)   // and then with the new status
+	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusQueued)
+	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusQueued)
+
+	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusRequeued)
+	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusQueued)
+	mocks.expectBroadcastTaskChange(task2, api.TaskStatusFailed, api.TaskStatusQueued)
+	mocks.expectBroadcastTaskChange(task3, api.TaskStatusSoftFailed, api.TaskStatusQueued)
+
+	sm.CheckStuck(ctx)
+}
+
 func mockedTaskStateMachine(mockCtrl *gomock.Controller) (*StateMachine, *StateMachineMocks) {
 	mocks := StateMachineMocks{
 		persist:     mocks.NewMockPersistenceService(mockCtrl),

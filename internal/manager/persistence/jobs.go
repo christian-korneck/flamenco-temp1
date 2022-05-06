@@ -180,6 +180,20 @@ func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	return &dbJob, nil
 }
 
+func (db *DB) FetchJobsInStatus(ctx context.Context, jobStatuses ...api.JobStatus) ([]*Job, error) {
+	var jobs []*Job
+
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Job{}).
+		Where("status in ?", jobStatuses).
+		Scan(&jobs)
+
+	if tx.Error != nil {
+		return nil, jobError(tx.Error, "fetching jobs in status %q", jobStatuses)
+	}
+	return jobs, nil
+}
+
 // SaveJobStatus saves the job's Status and Activity fields.
 func (db *DB) SaveJobStatus(ctx context.Context, j *Job) error {
 	tx := db.gormDB.WithContext(ctx).

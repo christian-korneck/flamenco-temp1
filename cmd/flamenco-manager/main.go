@@ -105,10 +105,14 @@ func main() {
 	// go persist.PeriodicMaintenanceLoop(mainCtx)
 
 	webUpdater := webupdates.New()
-	flamenco := buildFlamencoAPI(configService, persist, webUpdater)
+	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater)
+	flamenco := buildFlamencoAPI(configService, persist, taskStateMachine, webUpdater)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
 
 	installSignalHandler(mainCtxCancel)
+
+	// Before doing anything new, clean up in case we made a mess in an earlier run.
+	taskStateMachine.CheckStuck(mainCtx)
 
 	// All main goroutines should sync with this waitgroup. Once the waitgroup is
 	// done, the main() function will return and the process will stop.
@@ -142,14 +146,18 @@ func main() {
 	log.Info().Msg("shutdown complete")
 }
 
-func buildFlamencoAPI(configService *config.Service, persist *persistence.DB, webUpdater *webupdates.BiDirComms) api.ServerInterface {
+func buildFlamencoAPI(
+	configService *config.Service,
+	persist *persistence.DB,
+	taskStateMachine *task_state_machine.StateMachine,
+	webUpdater *webupdates.BiDirComms,
+) api.ServerInterface {
 	timeService := clock.New()
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath)
-	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater)
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(compiler, persist, webUpdater, logStorage, configService, taskStateMachine, shamanServer)
 	return flamenco

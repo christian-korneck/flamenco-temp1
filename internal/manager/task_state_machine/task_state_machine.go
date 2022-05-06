@@ -36,6 +36,8 @@ type PersistenceService interface {
 
 	FetchTasksOfJob(ctx context.Context, job *persistence.Job) ([]*persistence.Task, error)
 	FetchTasksOfJobInStatus(ctx context.Context, job *persistence.Job, taskStatuses ...api.TaskStatus) ([]*persistence.Task, error)
+
+	FetchJobsInStatus(ctx context.Context, jobStatuses ...api.JobStatus) ([]*persistence.Job, error)
 }
 
 // PersistenceService should be a subset of persistence.DB
@@ -51,6 +53,16 @@ type ChangeBroadcaster interface {
 
 // ChangeBroadcaster should be a subset of webupdates.BiDirComms
 var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
+
+var (
+	// Task statuses that always get requeued when the job is requeued.
+	nonCompletedStatuses = []api.TaskStatus{
+		api.TaskStatusCanceled,
+		api.TaskStatusFailed,
+		api.TaskStatusPaused,
+		api.TaskStatusSoftFailed,
+	}
+)
 
 func NewStateMachine(persist PersistenceService, broadcaster ChangeBroadcaster) *StateMachine {
 	return &StateMachine{
@@ -254,7 +266,6 @@ func (sm *StateMachine) JobStatusChange(
 	var err error
 	for newJobStatus != "" && newJobStatus != job.Status {
 		oldJobStatus := job.Status
-		job.Status = newJobStatus
 		job.Activity = fmt.Sprintf("Changed to status %q: %s", newJobStatus, reason)
 
 		logger := log.With().
@@ -265,26 +276,97 @@ func (sm *StateMachine) JobStatusChange(
 			Logger()
 		logger.Info().Msg("job status changed")
 
-		// Persist the new job status.
-		err = sm.persist.SaveJobStatus(ctx, job)
+		newJobStatus, err = sm.jobStatusSet(ctx, job, newJobStatus, reason, logger)
 		if err != nil {
-			return fmt.Errorf("saving job status change %q to %q to database: %w",
-				oldJobStatus, newJobStatus, err)
+			return err
 		}
-
-		// Handle the status change.
-		newJobStatus, err = sm.updateTasksAfterJobStatusChange(ctx, logger, job, oldJobStatus)
-		if err != nil {
-			return fmt.Errorf("updating job's tasks after job status change: %w", err)
-		}
-
-		// Broadcast this change to the SocketIO clients.
-		jobUpdate := webupdates.NewJobUpdate(job)
-		jobUpdate.PreviousStatus = &oldJobStatus
-		sm.broadcaster.BroadcastJobUpdate(jobUpdate)
 	}
 
 	return nil
+}
+
+// jobStatusReenforce acts as if the job just transitioned to its current
+// status, and performs another round of task status updates. This is normally
+// not necessary, but can be used when normal job/task status updates got
+// interrupted somehow.
+func (sm *StateMachine) jobStatusReenforce(
+	ctx context.Context,
+	job *persistence.Job,
+	reason string,
+) error {
+	// Job status changes can trigger task status changes, which can trigger the
+	// next job status change. Keep looping over these job status changes until
+	// there is no more change left to do.
+	var err error
+	newJobStatus := job.Status
+
+	for {
+		oldJobStatus := job.Status
+		job.Activity = fmt.Sprintf("Reenforcing status %q: %s", newJobStatus, reason)
+
+		logger := log.With().
+			Str("job", job.UUID).
+			Str("reason", reason).
+			Logger()
+		if newJobStatus == job.Status {
+			logger := logger.With().
+				Str("jobStatus", string(job.Status)).
+				Logger()
+			logger.Info().Msg("job status reenforced")
+		} else {
+			logger := logger.With().
+				Str("jobStatusOld", string(oldJobStatus)).
+				Str("jobStatusNew", string(newJobStatus)).
+				Logger()
+			logger.Info().Msg("job status changed")
+		}
+
+		newJobStatus, err = sm.jobStatusSet(ctx, job, newJobStatus, reason, logger)
+		if err != nil {
+			return err
+		}
+
+		if newJobStatus == "" || newJobStatus == oldJobStatus {
+			// Do this check at the end of the loop, and not the start, so that at
+			// least one iteration is run.
+			break
+		}
+	}
+
+	return nil
+}
+
+// jobStatusSet saves the job with the new status and handles updates to tasks
+// as well. If the task status change should trigger another job status change,
+// the new job status is returned.
+func (sm *StateMachine) jobStatusSet(ctx context.Context,
+	job *persistence.Job,
+	newJobStatus api.JobStatus,
+	reason string,
+	logger zerolog.Logger,
+) (api.JobStatus, error) {
+	oldJobStatus := job.Status
+	job.Status = newJobStatus
+
+	// Persist the new job status.
+	err := sm.persist.SaveJobStatus(ctx, job)
+	if err != nil {
+		return "", fmt.Errorf("saving job status change %q to %q to database: %w",
+			oldJobStatus, newJobStatus, err)
+	}
+
+	// Handle the status change.
+	newJobStatus, err = sm.updateTasksAfterJobStatusChange(ctx, logger, job, oldJobStatus)
+	if err != nil {
+		return "", fmt.Errorf("updating job's tasks after job status change: %w", err)
+	}
+
+	// Broadcast this change to the SocketIO clients.
+	jobUpdate := webupdates.NewJobUpdate(job)
+	jobUpdate.PreviousStatus = &oldJobStatus
+	sm.broadcaster.BroadcastJobUpdate(jobUpdate)
+
+	return newJobStatus, nil
 }
 
 // updateTasksAfterJobStatusChange updates the status of its tasks based on the
@@ -388,12 +470,7 @@ func (sm *StateMachine) requeueTasks(
 		tasks, err = sm.persist.FetchTasksOfJob(ctx, job)
 	default:
 		// Re-queue only the non-completed tasks.
-		tasks, err = sm.persist.FetchTasksOfJobInStatus(ctx, job,
-			api.TaskStatusCanceled,
-			api.TaskStatusFailed,
-			api.TaskStatusPaused,
-			api.TaskStatusSoftFailed,
-		)
+		tasks, err = sm.persist.FetchTasksOfJobInStatus(ctx, job, nonCompletedStatuses...)
 	}
 	if err != nil {
 		return "", err
@@ -457,4 +534,22 @@ func (sm *StateMachine) checkTaskCompletion(
 
 	logger.Info().Msg("job has all tasks completed, transition job to 'completed'")
 	return api.JobStatusCompleted, nil
+}
+
+// CheckStuck finds jobs that are 'stuck' in their current status. This is meant
+// to run at startup of Flamenco Manager, and checks to see if there are any
+// jobs in a status that a human will not be able to fix otherwise.
+func (sm *StateMachine) CheckStuck(ctx context.Context) {
+	stuckJobs, err := sm.persist.FetchJobsInStatus(ctx, api.JobStatusCancelRequested, api.JobStatusRequeued)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to fetch stuck jobs")
+		return
+	}
+
+	for _, job := range stuckJobs {
+		err := sm.jobStatusReenforce(ctx, job, "checking stuck jobs")
+		if err != nil {
+			log.Error().Str("job", job.UUID).Err(err).Msg("error getting job un-stuck")
+		}
+	}
 }

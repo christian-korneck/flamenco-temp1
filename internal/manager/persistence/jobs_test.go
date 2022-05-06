@@ -97,6 +97,41 @@ func TestCountTasksOfJobInStatus(t *testing.T) {
 	assert.Equal(t, 3, numTotal)
 }
 
+func TestFetchJobsInStatus(t *testing.T) {
+	ctx, close, db, job1, _ := jobTasksTestFixtures(t)
+	defer close()
+
+	ajob2 := createTestAuthoredJob("1f08e20b-ce24-41c2-b237-36120bd69fc6")
+	ajob3 := createTestAuthoredJob("3ac2dbb4-0c34-410e-ad3b-652e6d7e65a5")
+	job2 := persistAuthoredJob(t, ctx, db, ajob2)
+	job3 := persistAuthoredJob(t, ctx, db, ajob3)
+
+	// Sanity check
+	if !assert.Equal(t, api.JobStatusUnderConstruction, job1.Status) {
+		return
+	}
+
+	// Query single status
+	jobs, err := db.FetchJobsInStatus(ctx, api.JobStatusUnderConstruction)
+	assert.NoError(t, err)
+	assert.Equal(t, []*Job{job1, job2, job3}, jobs)
+
+	// Query two statuses, where only one matches all jobs.
+	jobs, err = db.FetchJobsInStatus(ctx, api.JobStatusCanceled, api.JobStatusUnderConstruction)
+	assert.NoError(t, err)
+	assert.Equal(t, []*Job{job1, job2, job3}, jobs)
+
+	// Update a job status, query for two of the three used statuses.
+	job1.Status = api.JobStatusQueued
+	assert.NoError(t, db.SaveJobStatus(ctx, job1))
+	job2.Status = api.JobStatusRequeued
+	assert.NoError(t, db.SaveJobStatus(ctx, job2))
+
+	jobs, err = db.FetchJobsInStatus(ctx, api.JobStatusQueued, api.JobStatusUnderConstruction)
+	assert.NoError(t, err)
+	assert.Equal(t, []*Job{job1, job3}, jobs)
+}
+
 func TestFetchTasksOfJobInStatus(t *testing.T) {
 	ctx, close, db, job, authoredJob := jobTasksTestFixtures(t)
 	defer close()
@@ -219,8 +254,12 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 		Dependencies: []*job_compilers.AuthoredTask{&task1, &task2},
 	}
 
+	return createTestAuthoredJob("263fd47e-b9f8-4637-b726-fd7e47ecfdae", task1, task2, task3)
+}
+
+func createTestAuthoredJob(jobID string, tasks ...job_compilers.AuthoredTask) job_compilers.AuthoredJob {
 	job := job_compilers.AuthoredJob{
-		JobID:    "263fd47e-b9f8-4637-b726-fd7e47ecfdae",
+		JobID:    jobID,
 		Name:     "Test job",
 		Status:   api.JobStatusUnderConstruction,
 		Priority: 50,
@@ -232,7 +271,7 @@ func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 			"author":  "Sybren",
 			"project": "Sprite Fright",
 		},
-		Tasks: []job_compilers.AuthoredTask{task1, task2, task3},
+		Tasks: tasks,
 	}
 
 	return job
