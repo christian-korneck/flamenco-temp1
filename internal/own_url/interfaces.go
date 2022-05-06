@@ -38,7 +38,7 @@ var (
 // networkInterfaces returns a list of interface addresses.
 // Only those addresses that can be reached by a unicast TCP/IP connection are returned.
 func networkInterfaces() ([]net.IP, error) {
-	log.Debug().Msg("iterating over all network interfaces")
+	log.Trace().Msg("iterating over all network interfaces")
 
 	interfaces, err := net.Interfaces()
 	if err != nil {
@@ -48,7 +48,7 @@ func networkInterfaces() ([]net.IP, error) {
 	usableAddresses := make([]net.IP, 0)
 	for _, iface := range interfaces {
 		if iface.Flags&net.FlagUp == 0 {
-			log.Debug().Str("interface", iface.Name).Msg("skipping down interface")
+			log.Trace().Str("interface", iface.Name).Msg("skipping down interface")
 			continue
 		}
 
@@ -79,11 +79,11 @@ func networkInterfaces() ([]net.IP, error) {
 				Logger()
 			switch {
 			case ip.IsMulticast():
-				logger.Debug().Msg("    - skipping multicast")
+				logger.Trace().Msg("    - skipping multicast")
 			case ip.IsUnspecified():
-				logger.Debug().Msg("    - skipping unspecified")
+				logger.Trace().Msg("    - skipping unspecified")
 			default:
-				logger.Debug().Msg("    - usable")
+				logger.Trace().Msg("    - usable")
 				ifaceAddresses = append(ifaceAddresses, ip)
 			}
 		}

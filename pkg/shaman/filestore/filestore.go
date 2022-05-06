@@ -58,11 +58,10 @@ func (s *Store) createDirectoryStructure() {
 		path := filepath.Join(s.baseDir, subdir)
 
 		logger := log.With().Str("path", path).Logger()
-		logger.Debug().Msg("shaman: creating directory")
+		logger.Trace().Msg("shaman: ensuring directory exists")
 
 		if err := os.MkdirAll(path, 0777); err != nil {
 			if os.IsExist(err) {
-				logger.Trace().Msg("shaman: directory exists")
 				return
 			}
 			logger.Error().Err(err).Msg("shaman: unable to create directory")

@@ -58,7 +58,7 @@ func (s *Server) AddAdvertisement(serviceLocation string) {
 		MaxAge:      3600, // Number of seconds this advertisement is valid for.
 	}
 	s.ssdp.AdvertiseServer(serverDef)
-	s.log.Info().Str("location", serviceLocation).Msg("UPnP/SSDP location registered")
+	s.log.Debug().Str("location", serviceLocation).Msg("UPnP/SSDP location registered")
 }
 
 // AddAdvertisementURLs constructs a service location from the given URLs, and
