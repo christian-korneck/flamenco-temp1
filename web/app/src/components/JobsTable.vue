@@ -11,6 +11,7 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
+import { toTitleCase } from '@/strings';
 import { apiClient } from '@/stores/api-query-count';
 
 import JobActionsBar from '@/components/JobActionsBar.vue'
@@ -29,7 +30,8 @@ export default {
           title: 'Status', field: 'status', sorter: 'string',
           formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
             const cellValue = cell.getData();
-            return '<span title="' + cellValue.status + '" class="indicator status-' + cellValue.status + '"></span>';
+            const label = toTitleCase(cellValue.status);
+            return `<span title="${label}" class="indicator status-${cellValue.status}"></span>`;
           }
         },
         { title: 'Name', field: 'name', sorter: 'string' },
