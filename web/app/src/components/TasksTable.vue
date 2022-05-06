@@ -87,11 +87,7 @@ export default {
     fetchTasks() {
       console.log("Fetching tasks for job", this.jobID);
       if (!this.jobID) {
-        // Prevent a warning when fetchTasks() is called before the tabulator is
-        // properly initialised. After initialisation the data is empty anyway.
-        if (this.tabulator.initialized) {
-          this.tabulator.setData([]);
-        }
+        this.tabulator.setData([]);
         return;
       }
 
