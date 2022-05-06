@@ -29,7 +29,6 @@ export default {
           title: 'Status', field: 'status', sorter: 'string',
           formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
             const cellValue = cell.getData();
-            console.log(cellValue);
             return '<span title="' + cellValue.status + '" class="indicator status-' + cellValue.status + '"></span>';
           }
         },
