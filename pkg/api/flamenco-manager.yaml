@@ -740,10 +740,8 @@ components:
         - archived
         - archiving
         - cancel-requested
-        - fail-requested
         - requeued
         - under-construction
-        - waiting-for-files
 
     TaskStatus:
       type: string
