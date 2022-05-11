@@ -28,7 +28,8 @@ export default {
     },
 
     _handleTaskActionPromise(promise, description) {
-      const numTasks = this.tasks.numSelected;
+      // const numTasks = this.tasks.numSelected;
+      const numTasks = 1;
       return promise
         .then(() => {
           let message;

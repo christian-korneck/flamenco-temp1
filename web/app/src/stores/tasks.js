@@ -10,8 +10,6 @@ const jobsAPI = new API.JobsApi(apiClient);
 // See https://pinia.vuejs.org/core-concepts/
 export const useTasks = defineStore('tasks', {
   state: () => ({
-    /** @type {API.Task[]} */
-    selectedTasks: [],
     /** @type {API.Task} */
     activeTask: null,
     /**
@@ -21,9 +19,6 @@ export const useTasks = defineStore('tasks', {
      activeTaskID: "",
   }),
   getters: {
-    numSelected() {
-      return this.selectedTasks.length;
-    },
     canCancel() {
       return this._anyTaskWithStatus(["queued", "active", "soft-failed"])
     },
@@ -32,25 +27,20 @@ export const useTasks = defineStore('tasks', {
     },
   },
   actions: {
-    // Selection of tasks.
-    setSelectedTask(task) {
+    setActiveTaskID(taskID) {
       this.$patch({
-        selectedTasks: [task],
+        activeTask: {id: taskID},
+        activeTaskID: taskID,
+      });
+    },
+    setActiveTask(task) {
+      this.$patch({
         activeTask: task,
         activeTaskID: task.id,
       });
     },
-    setSelectedTasks(tasks) {
-      const activeTask =tasks[tasks.length-1]; // Last-selected is the active one.
-      this.$patch({
-        selectedTasks: tasks,
-        activeTask: activeTask,
-        activeTaskID: activeTask.id,
-      });
-    },
     deselectAllTasks() {
       this.$patch({
-        selectedTasks: [],
         activeTask: null,
         activeTaskID: "",
       });
@@ -75,7 +65,8 @@ export const useTasks = defineStore('tasks', {
      * @returns bool indicating whether there is a selected task with any of the given statuses.
      */
     _anyTaskWithStatus(statuses) {
-      return this.selectedTasks.reduce((foundTask, task) => (foundTask || statuses.includes(task.status)), false);
+      return !!this.activeTask && !!this.activeTask.status && statuses.includes(this.activeTask.status);
+      // return this.selectedTasks.reduce((foundTask, task) => (foundTask || statuses.includes(task.status)), false);
     },
 
     /**
@@ -84,8 +75,12 @@ export const useTasks = defineStore('tasks', {
      * @returns a Promise for the API request.
      */
     _setTaskStatus(newStatus) {
+      if (!this.activeTaskID) {
+        console.warn(`_setTaskStatus(${newStatus}) impossible, no active task ID`);
+        return;
+      }
       const statuschange = new API.TaskStatusChange(newStatus, "requested from web interface");
-      return jobsAPI.setTaskStatus(this.activeTask.id, statuschange);
+      return jobsAPI.setTaskStatus(this.activeTaskID, statuschange);
     },
   },
 })

@@ -4,7 +4,7 @@
   </div>
   <div class="col col-2">
     <job-details :jobData="jobs.activeJob" />
-    <tasks-table v-if="jobID" ref="tasksTable" :jobID="jobID" @selectedTaskChange="onSelectedTaskChanged" />
+    <tasks-table v-if="jobID" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
   <div class="col col-3">
     <task-details :taskData="tasks.activeTask" />
@@ -33,7 +33,7 @@ import UpdateListener from '@/components/UpdateListener.vue'
 
 export default {
   name: 'JobsView',
-  props: ["jobID"], // provided by Vue Router.
+  props: ["jobID", "taskID"], // provided by Vue Router.
   components: {
     JobsTable, JobDetails, TaskDetails, TasksTable, NotificationBar, UpdateListener,
   },
@@ -47,19 +47,26 @@ export default {
   mounted() {
     window.jobsView = this;
     this._fetchJob(this.jobID);
+    this._fetchTask(this.taskID);
   },
   watch: {
     jobID(newJobID, oldJobID) {
       this._fetchJob(newJobID);
+    },
+    taskID(newTaskID, oldTaskID) {
+      this._fetchTask(newTaskID);
     },
   },
   methods: {
     onTableJobClicked(rowData) {
       this._routeToJob(rowData.id);
     },
+    onTableTaskClicked(rowData) {
+      this._routeToTask(rowData.id);
+    },
 
     onSelectedTaskChanged(taskSummary) {
-      if (!taskSummary) { // There is no selected task.
+      if (!taskSummary) { // There is no active task.
         this.tasks.deselectAllTasks();
         return;
       }
@@ -67,7 +74,7 @@ export default {
       const jobsAPI = new API.JobsApi(apiClient);
       jobsAPI.fetchTask(taskSummary.id)
         .then((task) => {
-          this.tasks.setSelectedTask(task);
+          this.tasks.setActiveTask(task);
           // Forward the full task to Tabulator, so that that gets updated too.
           if (this.$refs.tasksTable)
             this.$refs.tasksTable.processTaskUpdate(task);
@@ -86,13 +93,33 @@ export default {
         this._fetchJob(this.jobID);
     },
 
+    /**
+     * Event handler for SocketIO task updates.
+     * @param {API.SocketIOTaskUpdate} taskUpdate
+     */
+    onSioTaskUpdate(taskUpdate) {
+      if (this.$refs.tasksTable)
+        this.$refs.tasksTable.processTaskUpdate(taskUpdate);
+      if (this.taskID == taskUpdate.id)
+        this._fetchTask(this.taskID);
     },
 
     /**
      * @param {string} jobID job ID to navigate to, can be empty string for "no active job".
      */
     _routeToJob(jobID) {
-      this.$router.push({ name: 'jobs', params: { jobID: jobID } });
+      const route = { name: 'jobs', params: { jobID: jobID } };
+      console.log("routing to job", route.params);
+      this.$router.push(route);
+    },
+    /**
+     * @param {string} taskID task ID to navigate to within this job, can be
+     * empty string for "no active task".
+     */
+    _routeToTask(taskID) {
+      const route = { name: 'jobs', params: { jobID: this.jobID, taskID: taskID } };
+      console.log("routing to task", route.params);
+      this.$router.push(route);
     },
 
     /**
@@ -115,14 +142,22 @@ export default {
     },
 
     /**
-     * Event handler for SocketIO task updates.
-     * @param {API.SocketIOTaskUpdate} taskUpdate
+     * Fetch task info and set the active task once it's received.
+     * @param {string} taskID task ID, can be empty string for "no task".
      */
-    onSioTaskUpdate(taskUpdate) {
-      if (this.$refs.tasksTable)
-        this.$refs.tasksTable.processTaskUpdate(taskUpdate);
-      if (this.tasks.activeTaskID == taskUpdate.id)
-        this.onSelectedTaskChanged(taskUpdate);
+    _fetchTask(taskID) {
+      if (!taskID) {
+        this.tasks.deselectAllTasks();
+        return;
+      }
+
+      const jobsAPI = new API.JobsApi(apiClient);
+      return jobsAPI.fetchTask(taskID)
+        .then((task) => {
+          this.tasks.setActiveTask(task);
+          // Forward the full task to Tabulator, so that that gets updated too.
+          this.$refs.tasksTable.processTaskUpdate(task);
+        });
     },
 
     onChatMessage(message) {

@@ -16,9 +16,10 @@ import { useTasks } from '@/stores/tasks';
 import TaskActionsBar from '@/components/TaskActionsBar.vue'
 
 export default {
-  emits: ["selectedTaskChange"],
+  emits: ["tableRowClicked"],
   props: [
     "jobID", // ID of the job of which the tasks are shown here.
+    "taskID", // The active task.
   ],
   components: {
     TaskActionsBar,
@@ -27,7 +28,11 @@ export default {
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Task and TaskUpdate.
       columns: [
-        { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        // { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        {
+          title: "ID", field: "id", headerSort: false,
+          formatter: (cell) => cell.getData().id.substr(0, 8),
+        },
         {
           title: 'Status', field: 'status', sorter: 'string',
           formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
@@ -53,7 +58,7 @@ export default {
         { column: "updated", dir: "desc" },
       ],
       data: [], // Will be filled via a Flamenco API request.
-      selectable: 1, // Only allow a single row to be selected at a time.
+      selectable: false, // The active task is tracked by click events.
     };
     return {
       options: options,
@@ -65,15 +70,27 @@ export default {
     // tasksTableVue.processTaskUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO(), previous_status: "uuuuh", name: "Updated manually"});
     // tasksTableVue.processTaskUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
     window.tasksTableVue = this;
+
+    // Set the `rowFormatter` here (instead of with the rest of the options
+    // above) as it needs to refer to `this`, which isn't available in the
+    // `data` function.
+    this.options.rowFormatter = (row) => {
+      const data = row.getData();
+      const isActive = (data.id === this.taskID);
+      row.getElement().classList.toggle("active-row", isActive);
+    };
+
     this.tabulator = new Tabulator('#flamenco_task_list', this.options);
-    this.tabulator.on("rowSelected", this.onRowSelected);
-    this.tabulator.on("rowDeselected", this.onRowDeselected);
+    this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this.fetchTasks);
   },
   watch: {
     jobID() {
-      this.onRowDeselected([]);
       this.fetchTasks();
+    },
+    taskID(oldID, newID) {
+      this._reformatRow(oldID);
+      this._reformatRow(newID);
     },
   },
   methods: {
@@ -103,7 +120,6 @@ export default {
       // "Down-cast" to TaskUpdate to only get those fields, just for debugging things:
       // let tasks = data.tasks.map((j) => API.TaskUpdate.constructFromObject(j));
       this.tabulator.setData(data.tasks);
-      this._restoreRowSelection();
     },
     processTaskUpdate(taskUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -112,27 +128,22 @@ export default {
         .then(this.sortData);
     },
 
-    // Selection handling.
-    onRowSelected(selectedRow) {
-      const selectedData = selectedRow.getData();
-      this._storeRowSelection([selectedData]);
-      this.$emit("selectedTaskChange", selectedData);
+    onRowClick(event, row) {
+      // Take a copy of the data, so that it's decoupled from the tabulator data
+      // store. There were some issues where navigating to another job would
+      // overwrite the old job's ID, and this prevents that.
+      const rowData = plain(row.getData());
+      this.$emit("tableRowClicked", rowData);
     },
-    onRowDeselected(deselectedRow) {
-      this._storeRowSelection([]);
-      this.$emit("selectedTaskChange", null);
-    },
-    _storeRowSelection(selectedData) {
-      const selectedTaskIDs = selectedData.map((row) => row.id);
-      localStorage.setItem("selectedTaskIDs", selectedTaskIDs);
-    },
-    _restoreRowSelection() {
-      // const selectedTaskIDs = localStorage.getItem('selectedTaskIDs');
-      // if (!selectedTaskIDs) {
-      //   return;
-      // }
-      // this.tabulator.selectRow(selectedTaskIDs);
-    },
+
+    _reformatRow(jobID) {
+      // Use tab.rowManager.findRow() instead of `tab.getRow()` as the latter
+      // logs a warning when the row cannot be found.
+      const row = this.tabulator.rowManager.findRow(jobID);
+      if (!row) return
+      if (row.reformat) row.reformat();
+      else if (row.reinitialize) row.reinitialize(true);
+    }
   }
 };
 </script>

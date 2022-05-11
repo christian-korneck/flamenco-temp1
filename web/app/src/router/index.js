@@ -9,7 +9,7 @@ const router = createRouter({
       component: () => import('../views/IndexView.vue'),
     },
     {
-      path: '/jobs/:jobID?',
+      path: '/jobs/:jobID?/:taskID?',
       name: 'jobs',
       component: () => import('../views/JobsView.vue'),
       props: true,
