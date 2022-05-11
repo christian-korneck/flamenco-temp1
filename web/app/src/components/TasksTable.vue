@@ -29,10 +29,7 @@ export default {
       // See pkg/api/flamenco-manager.yaml, schemas Task and TaskUpdate.
       columns: [
         // { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
-        {
-          title: "ID", field: "id", headerSort: false,
-          formatter: (cell) => cell.getData().id.substr(0, 8),
-        },
+        // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
           formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
