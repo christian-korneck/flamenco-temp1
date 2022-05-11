@@ -74,6 +74,7 @@ Note that list is **not** in any specific order.
   - [ ] Add check per task-type
   - [ ] Allow workers to request blocklisting for certain job, with "reason" string.
 - [ ] POSIX signal handling (sleep/wake up)
+- [ ] Remove `doneChan` field from `Worker` struct, and the handling of it. Its intended use overlaps with the global context.
 
 ## Both
 
