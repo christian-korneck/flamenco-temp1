@@ -12,6 +12,9 @@
       <dt class="field-status">Status</dt>
       <dd>{{ taskData.status }}</dd>
 
+      <dt class="field-activity">Activity</dt>
+      <dd>{{ taskData.activity }}</dd>
+
       <dt class="field-type">Type</dt>
       <dd>{{ taskData.type }}</dd>
 
