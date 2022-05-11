@@ -60,9 +60,10 @@ export default {
       // console.
       window.ws = ws;
 
-      this.socket.on('open', (error) => {
-        console.log("socketIO connection open");
+      this.socket.on('connect', (error) => {
+        console.log("socketIO connection established");
         this.sockStatus.connected();
+        this._resubscribe();
       });
       this.socket.on('connect_error', (error) => {
         // Don't log the error here, it's too long and noisy for regular logs.
@@ -97,9 +98,7 @@ export default {
       this.socket.on("reconnect", (attemptNumber) => {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
         this.sockStatus.connected();
-
-        // Resubscribe to whatever we want to be subscribed to:
-        if (this.subscribedJob) this._updateJobSubscription("subscribe", this.subscribedJob);
+        this._resubscribe();
 
         this.$emit("sioReconnected", attemptNumber);
       });
@@ -143,8 +142,13 @@ export default {
 
     _updateJobSubscription(operation, jobID) {
       const payload = new API.SocketIOSubscription(operation, "job", jobID);
-      console.log("sending job subscription:", payload);
+      console.log(`sending job ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
+    },
+
+    // Resubscribe to whatever we want to be subscribed to:
+    _resubscribe() {
+      if (this.subscribedJob) this._updateJobSubscription("subscribe", this.subscribedJob);
     },
   },
 };
