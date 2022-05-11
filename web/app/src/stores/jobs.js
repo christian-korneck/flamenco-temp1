@@ -68,7 +68,7 @@ export const useJobs = defineStore('jobs', {
      * @returns bool indicating whether there is a selected job with any of the given statuses.
      */
     _anyJobWithStatus(statuses) {
-      return !!this.activeJob && statuses.includes(this.activeJob.status);
+      return !!this.activeJob && !!this.activeJob.status && statuses.includes(this.activeJob.status);
       // return this.selectedJobs.reduce((foundJob, job) => (foundJob || statuses.includes(job.status)), false);
     },
 
