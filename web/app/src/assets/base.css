@@ -54,6 +54,9 @@
 
   --color-status-cancel-requested: hsl(194 30% 50%);
   --color-status-under-construction: hsl(194 30% 50%);
+
+  --color-connection-lost-text: hsl(17, 65%, 65%);
+  --color-connection-lost-bg: hsl(17, 65%, 20%);
 }
 
 html,

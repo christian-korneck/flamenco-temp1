@@ -5,6 +5,8 @@
 <script>
 import io from "socket.io-client";
 import * as API from "@/manager-api"
+import { useSocketStatus } from '@/stores/socket-status';
+
 
 export default {
   emits: [
@@ -17,6 +19,7 @@ export default {
   data() {
     return {
       socket: null,
+      sockStatus: useSocketStatus(),
     }
   },
   mounted: function () {
@@ -57,20 +60,29 @@ export default {
       // console.
       window.ws = ws;
 
+      this.socket.on('open', (error) => {
+        console.log("socketIO connection open");
+        this.sockStatus.connected();
+      });
       this.socket.on('connect_error', (error) => {
         // Don't log the error here, it's too long and noisy for regular logs.
         console.log("socketIO connection error");
+        this.sockStatus.disconnected(error);
       });
       this.socket.on('error', (error) => {
         console.log("socketIO error:", error);
+        this.sockStatus.disconnected(error);
       });
       this.socket.on('connect_timeout', (timeout) => {
         console.log("socketIO connection timeout:", timeout);
+        this.sockStatus.disconnected("Connection timeout");
       });
 
       this.socket.on("disconnect", (reason) => {
         console.log("socketIO disconnected:", reason);
         this.$emit("sioDisconnected", reason);
+        this.sockStatus.disconnected(reason);
+
         if (reason === 'io server disconnect') {
           // The disconnection was initiated by the server, need to reconnect
           // manually. If the disconnect was for other reasons, the socket
@@ -84,6 +96,7 @@ export default {
       });
       this.socket.on("reconnect", (attemptNumber) => {
         console.log("socketIO reconnected after", attemptNumber, "attempts");
+        this.sockStatus.connected();
 
         // Resubscribe to whatever we want to be subscribed to:
         if (this.subscribedJob) this._updateJobSubscription("subscribe", this.subscribedJob);
