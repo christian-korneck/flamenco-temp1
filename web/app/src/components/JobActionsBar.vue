@@ -33,7 +33,8 @@ export default {
     },
 
     _handleJobActionPromise(promise, description) {
-      const numJobs = this.jobs.numSelected;
+      // const numJobs = this.jobs.numSelected;
+      const numJobs = 1;
       return promise
         .then(() => {
           let message;

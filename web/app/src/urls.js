@@ -12,8 +12,8 @@ const URLs = {
   ws: websocketURL,
 };
 
-console.log("Flamenco API:", URLs.api);
-console.log("Websocket   :", URLs.ws);
+// console.log("Flamenco API:", URLs.api);
+// console.log("Websocket   :", URLs.ws);
 
 export function ws() {
   return URLs.ws;

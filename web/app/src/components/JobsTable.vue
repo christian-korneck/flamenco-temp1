@@ -1,7 +1,6 @@
 <template>
   <div>
     <h2 class="column-title">Jobs</h2>
-
     <job-actions-bar />
     <div class="job-list" id="flamenco_job_list"></div>
   </div>
@@ -17,7 +16,9 @@ import { apiClient } from '@/stores/api-query-count';
 import JobActionsBar from '@/components/JobActionsBar.vue'
 
 export default {
-  emits: ["selectedJobChange"],
+  name: 'JobsTable',
+  props: ["activeJobID"],
+  emits: ["tableRowClicked"],
   components: {
     JobActionsBar,
   },
@@ -25,7 +26,11 @@ export default {
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
-        { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        // { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
+        {
+          title: "ID", field: "id", headerSort: false,
+          formatter: (cell) => cell.getData().id.substr(0, 8),
+        },
         {
           title: 'Status', field: 'status', sorter: 'string',
           formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
@@ -53,7 +58,7 @@ export default {
         { column: "updated", dir: "desc" },
       ],
       data: [], // Will be filled via a Flamenco API request.
-      selectable: 1, // Only allow a single row to be selected at a time.
+      selectable: false, // The active job is tracked by click events, not row selection.
     };
     return {
       options: options,
@@ -64,10 +69,29 @@ export default {
     // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO(), previous_status: "uuuuh", name: "Updated manually"});
     // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
     window.jobsTableVue = this;
+
+    // Set the `rowFormatter` here (instead of with the rest of the options
+    // above) as it needs to refer to `this`, which isn't available in the
+    // `data` function.
+    this.options.rowFormatter = (row) => {
+      const data = row.getData();
+      const isActive = (data.id === this.activeJobID);
+      row.getElement().classList.toggle("active-row", isActive);
+    };
     this.tabulator = new Tabulator('#flamenco_job_list', this.options);
-    this.tabulator.on("rowSelected", this.onRowSelected);
-    this.tabulator.on("rowDeselected", this.onRowDeselected);
+    this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this.fetchAllJobs);
+  },
+  watch: {
+    activeJobID(newJobID, oldJobID) {
+      this._reformatRow(oldJobID);
+      this._reformatRow(newJobID);
+    },
+  },
+  computed: {
+    selectedIDs() {
+      return this.tabulator.getSelectedData().map((job) => job.id);
+    }
   },
   methods: {
     onReconnected() {
@@ -91,7 +115,6 @@ export default {
       // "Down-cast" to JobUpdate to only get those fields, just for debugging things:
       // data.jobs = data.jobs.map((j) => API.JobUpdate.constructFromObject(j));
       this.tabulator.setData(data.jobs);
-      this._restoreRowSelection();
     },
     processJobUpdate(jobUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -104,27 +127,22 @@ export default {
         .then(this.sortData);
     },
 
-    // Selection handling.
-    onRowSelected(selectedRow) {
-      const selectedData = selectedRow.getData();
-      this._storeRowSelection([selectedData]);
-      this.$emit("selectedJobChange", selectedData);
+    onRowClick(event, row) {
+      // Take a copy of the data, so that it's decoupled from the tabulator data
+      // store. There were some issues where navigating to another job would
+      // overwrite the old job's ID, and this prevents that.
+      const rowData = plain(row.getData());
+      this.$emit("tableRowClicked", rowData);
     },
-    onRowDeselected(deselectedRow) {
-      this._storeRowSelection([]);
-      this.$emit("selectedJobChange", null);
-    },
-    _storeRowSelection(selectedData) {
-      const selectedJobIDs = selectedData.map((row) => row.id);
-      localStorage.setItem("selectedJobIDs", selectedJobIDs);
-    },
-    _restoreRowSelection() {
-      const selectedJobIDs = localStorage.getItem('selectedJobIDs');
-      if (!selectedJobIDs) {
-        return;
-      }
-      this.tabulator.selectRow(selectedJobIDs);
-    },
+
+    _reformatRow(jobID) {
+      // Use tab.rowManager.findRow() instead of `tab.getRow()` as the latter
+      // logs a warning when the row cannot be found.
+      const row = this.tabulator.rowManager.findRow(jobID);
+      if (!row) return
+      if (row.reformat) row.reformat();
+      else if (row.reinitialize) row.reinitialize(true);
+    }
   }
 };
 </script>

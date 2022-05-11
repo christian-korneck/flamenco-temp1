@@ -335,3 +335,15 @@ footer {
 .status-cancel-requested {
   background-color: transparent;
 }
+
+.tabulator-row {
+  cursor: pointer;
+}
+
+.tabulator-row.active-row {
+  font-weight: bold;
+  background-color: #9900ff44;
+}
+.tabulator-row.active-row.tabulator-row-even {
+  background-color: #a92cfd44;
+}

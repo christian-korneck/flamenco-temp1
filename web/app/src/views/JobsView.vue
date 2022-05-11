@@ -1,18 +1,17 @@
 <template>
   <div class="col col-1">
-    <jobs-table ref="jobsTable" @selectedJobChange="onSelectedJobChanged" />
+    <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
   <div class="col col-2">
     <job-details :jobData="jobs.activeJob" />
-    <tasks-table v-if="jobs.activeJobID" ref="tasksTable" :jobID="jobs.activeJobID"
-      @selectedTaskChange="onSelectedTaskChanged" />
+    <tasks-table v-if="jobID" ref="tasksTable" :jobID="jobID" @selectedTaskChange="onSelectedTaskChanged" />
   </div>
   <div class="col col-3">
     <task-details :taskData="tasks.activeTask" />
   </div>
   <footer>
     <notification-bar />
-    <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobs.activeJobID"
+    <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobID"
       @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @message="onChatMessage"
       @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
   </footer>
@@ -34,6 +33,7 @@ import UpdateListener from '@/components/UpdateListener.vue'
 
 export default {
   name: 'JobsView',
+  props: ["jobID"], // provided by Vue Router.
   components: {
     JobsTable, JobDetails, TaskDetails, TasksTable, NotificationBar, UpdateListener,
   },
@@ -46,25 +46,18 @@ export default {
   }),
   mounted() {
     window.jobsView = this;
+    this._fetchJob(this.jobID);
+  },
+  watch: {
+    jobID(newJobID, oldJobID) {
+      this._fetchJob(newJobID);
+    },
   },
   methods: {
-    // onSelectedJobChanged is called whenever the selected job changes; this is
-    // both when another job is selected and when the selected job itself gets
-    // updated.
-    onSelectedJobChanged(jobSummary) {
-      if (!jobSummary) { // There is no selected job.
-        this.jobs.deselectAllJobs();
-        return;
-      }
-
-      const jobsAPI = new API.JobsApi(apiClient);
-      jobsAPI.fetchJob(jobSummary.id)
-        .then((job) => {
-          this.jobs.setSelectedJob(job);
-          // Forward the full job to Tabulator, so that that gets updated too.
-          this.$refs.jobsTable.processJobUpdate(job);
-        });
+    onTableJobClicked(rowData) {
+      this._routeToJob(rowData.id);
     },
+
     onSelectedTaskChanged(taskSummary) {
       if (!taskSummary) { // There is no selected task.
         this.tasks.deselectAllTasks();
@@ -95,8 +88,8 @@ export default {
         console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
       }
 
-      if (this.jobs.activeJobID == jobUpdate.id) {
-        this.onSelectedJobChanged(jobUpdate);
+      if (this.jobID == jobUpdate.id) {
+        this._fetchJob(jobUpdate.id);
       }
     },
     onJobNew(jobUpdate) {
@@ -107,6 +100,32 @@ export default {
 
       // this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
       this.$refs.jobsTable.processNewJob(jobUpdate);
+    },
+
+    /**
+     * @param {string} jobID job ID to navigate to, can be empty string for "no active job".
+     */
+    _routeToJob(jobID) {
+      this.$router.push({ name: 'jobs', params: { jobID: jobID } });
+    },
+
+    /**
+     * Fetch job info and set the active job once it's received.
+     * @param {string} jobID job ID, can be empty string for "no job".
+     */
+    _fetchJob(jobID) {
+      if (!jobID) {
+        this.jobs.deselectAllJobs();
+        return;
+      }
+
+      const jobsAPI = new API.JobsApi(apiClient);
+      return jobsAPI.fetchJob(jobID)
+        .then((job) => {
+          this.jobs.setActiveJob(job);
+          // Forward the full job to Tabulator, so that that gets updated too.
+          this.$refs.jobsTable.processJobUpdate(job);
+        });
     },
 
     /**
@@ -132,8 +151,13 @@ export default {
         this.$refs.tasksTable.onReconnected();
     },
     onSIODisconnected(reason) {
-      this.jobs.deselectAllJobs();
     },
   },
 }
 </script>
+
+<style scoped>
+.isFetching {
+  opacity: 50%;
+}
+</style>

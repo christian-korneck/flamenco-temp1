@@ -1,16 +1,16 @@
 <template>
   <header>
-    <a href="/" class="navbar-brand">{{ flamencoName }}</a>
+    <router-link :to="{ name: 'index' }" class="navbar-brand">{{ flamencoName }}</router-link>
     <nav>
       <ul>
         <li>
-          <router-link to="/">Jobs</router-link>
+          <router-link :to="{ name: 'jobs' }">Jobs</router-link>
         </li>
         <li>
-          <router-link to="/workers">Workers</router-link>
+          <router-link :to="{ name: 'workers' }">Workers</router-link>
         </li>
         <li>
-          <router-link to="/settings">Settings</router-link>
+          <router-link :to="{ name: 'settings' }">Settings</router-link>
         </li>
       </ul>
     </nav>

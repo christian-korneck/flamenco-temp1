@@ -5,11 +5,14 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'index',
+      component: () => import('../views/IndexView.vue'),
+    },
+    {
+      path: '/jobs/:jobID?',
       name: 'jobs',
-      // route level code-splitting
-      // this generates a separate chunk (ViewName.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/JobsView.vue')
+      component: () => import('../views/JobsView.vue'),
+      props: true,
     },
     {
       path: '/workers',
@@ -20,8 +23,8 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue')
-    }
-  ]
+    },
+  ],
 })
 
 export default router

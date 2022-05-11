@@ -10,8 +10,6 @@ const jobsAPI = new API.JobsApi(apiClient);
 // See https://pinia.vuejs.org/core-concepts/
 export const useJobs = defineStore('jobs', {
   state: () => ({
-    /** @type {API.Job[]} */
-    selectedJobs: [],
     /** @type {API.Job} */
     activeJob: null,
     /**
@@ -21,9 +19,6 @@ export const useJobs = defineStore('jobs', {
     activeJobID: "",
   }),
   getters: {
-    numSelected() {
-      return this.selectedJobs.length;
-    },
     canDelete() {
       return this._anyJobWithStatus(["queued", "paused", "failed", "completed", "canceled"])
     },
@@ -35,25 +30,20 @@ export const useJobs = defineStore('jobs', {
     },
   },
   actions: {
-    // Selection of jobs.
-    setSelectedJob(job) {
+    setActiveJobID(jobID) {
       this.$patch({
-        selectedJobs: [job],
+        activeJob: {id: jobID},
+        activeJobID: jobID,
+      });
+    },
+    setActiveJob(job) {
+      this.$patch({
         activeJob: job,
         activeJobID: job.id,
       });
     },
-    setSelectedJobs(jobs) {
-      const activeJob =jobs[jobs.length-1]; // Last-selected is the active one.
-      this.$patch({
-        selectedJobs: jobs,
-        activeJob: activeJob,
-        activeJobID: activeJob.id,
-      });
-    },
     deselectAllJobs() {
       this.$patch({
-        selectedJobs: [],
         activeJob: null,
         activeJobID: "",
       });
@@ -67,12 +57,6 @@ export const useJobs = defineStore('jobs', {
      * TODO: actually have these work on all selected jobs. For simplicity, the
      * code now assumes that only the active job needs to be operated on.
      */
-    deleteJobs() {
-      const deletionPromise = new Promise( (resolutionFunc, rejectionFunc) => {
-        rejectionFunc({code: 327, message: "deleting jobs is not implemented in JS yet"});
-      });
-      return deletionPromise;
-    },
     cancelJobs() { return this._setJobStatus("cancel-requested"); },
     requeueJobs() { return this._setJobStatus("requeued"); },
 
@@ -84,7 +68,8 @@ export const useJobs = defineStore('jobs', {
      * @returns bool indicating whether there is a selected job with any of the given statuses.
      */
     _anyJobWithStatus(statuses) {
-      return this.selectedJobs.reduce((foundJob, job) => (foundJob || statuses.includes(job.status)), false);
+      return !!this.activeJob && statuses.includes(this.activeJob.status);
+      // return this.selectedJobs.reduce((foundJob, job) => (foundJob || statuses.includes(job.status)), false);
     },
 
     /**
@@ -93,8 +78,12 @@ export const useJobs = defineStore('jobs', {
      * @returns a Promise for the API request.
      */
     _setJobStatus(newStatus) {
+      if (!this.activeJobID) {
+        console.warn(`_setJobStatus(${newStatus}) impossible, no active job ID`);
+        return;
+      }
       const statuschange = new API.JobStatusChange(newStatus, "requested from web interface");
-      return jobsAPI.setJobStatus(this.activeJob.id, statuschange);
+      return jobsAPI.setJobStatus(this.activeJobID, statuschange);
     },
   },
 })
