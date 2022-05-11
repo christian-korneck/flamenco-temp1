@@ -76,30 +76,16 @@ export default {
 
     // SocketIO data event handlers:
     onSioJobUpdate(jobUpdate) {
-      if (!jobUpdate.previous_status)
-        return this.onJobNew(jobUpdate);
-      return this.onJobUpdate(jobUpdate);
-    },
-    onJobUpdate(jobUpdate) {
-      // this.messages.push(`Job update: ${jobUpdate.id} (${jobUpdate.previous_status} → ${jobUpdate.status})`);
       if (this.$refs.jobsTable) {
-        this.$refs.jobsTable.processJobUpdate(jobUpdate);
-      } else {
-        console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
+        if (jobUpdate.previous_status)
+          this.$refs.jobsTable.processJobUpdate(jobUpdate);
+        else
+          this.$refs.jobsTable.processNewJob(jobUpdate);
       }
-
-      if (this.jobID == jobUpdate.id) {
-        this._fetchJob(jobUpdate.id);
-      }
+      if (this.jobID == jobUpdate.id)
+        this._fetchJob(this.jobID);
     },
-    onJobNew(jobUpdate) {
-      if (!this.$refs.jobsTable) {
-        console.warn("App: this.$refs.jobsTable is", this.$refs.jobsTable);
-        return;
-      }
 
-      // this.messages.push(`New job: ${jobUpdate.id} (${jobUpdate.status})`);
-      this.$refs.jobsTable.processNewJob(jobUpdate);
     },
 
     /**
