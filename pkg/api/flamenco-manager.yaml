@@ -221,6 +221,34 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/worker/task/{task_id}/may-i-run:
+    summary: Workers check whether they're allowed to keep running this task.
+    get:
+      operationId: mayWorkerRun
+      summary: >
+        The response indicates whether the worker is allowed to run / keep
+        running the task. Optionally contains a queued worker status change.
+      security: [{ worker_auth: [] }]
+      tags: [worker]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: normal response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MayKeepRunning"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   ## Jobs
 
   /api/jobs/types:
@@ -726,6 +754,20 @@ components:
         "log":
           type: string
           description: Log lines for this task, will be appended to logs sent earlier.
+
+    MayKeepRunning:
+      type: object
+      description: Indicates whether the worker may keep running the task.
+      properties:
+        "mayKeepRunning": { type: boolean }
+        "reason": { type: string }
+        "statusChangeRequested":
+          type: boolean
+          description: >
+            Indicates that a status change requested for the worker. It should
+            use the `workerState` operation to determine which state to go to
+            next. If this is `true`, `mayKeepRunning` MUST be `false`.
+      required: ["mayKeepRunning", "reason", "statusChangeRequested"]
 
     JobStatus:
       type: string
