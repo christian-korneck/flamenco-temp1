@@ -185,6 +185,78 @@ func TestSomeButNotAllDependenciesCompleted(t *testing.T) {
 	}
 }
 
+func TestAlreadyAssigned(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
+
+	w := linuxWorker(t, db)
+
+	att1 := authorTestTask("1 low-prio task", "blender")
+	att2 := authorTestTask("2 high-prio task", "ffmpeg")
+	att2.Priority = 100
+	att3 := authorTestTask("3 low-prio task", "blender")
+	atj := authorTestJob(
+		"1295757b-e668-4c49-8b89-f73db8270e42",
+		"simple-blender-render",
+		att1, att2, att3)
+
+	constructTestJob(ctx, t, db, atj)
+
+	// Assign the task to the worker, and mark it as Active.
+	// This should make it get returned by the scheduler, even when there is
+	// another, higher-prio task to be done.
+	dbTask3, err := db.FetchTask(ctx, att3.UUID)
+	assert.NoError(t, err)
+	dbTask3.WorkerID = &w.ID
+	dbTask3.Status = api.TaskStatusActive
+	err = db.SaveTask(ctx, dbTask3)
+	assert.NoError(t, err)
+
+	task, err := db.ScheduleTask(ctx, &w)
+	assert.NoError(t, err)
+	if task == nil {
+		t.Fatal("task is nil")
+	}
+
+	assert.Equal(t, att3.Name, task.Name, "the already-assigned task should have been chosen")
+}
+
+func TestAssignedToOtherWorker(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
+
+	w := linuxWorker(t, db)
+	w2 := windowsWorker(t, db)
+
+	att1 := authorTestTask("1 low-prio task", "blender")
+	att2 := authorTestTask("2 high-prio task", "ffmpeg")
+	att2.Priority = 100
+	atj := authorTestJob(
+		"1295757b-e668-4c49-8b89-f73db8270e42",
+		"simple-blender-render",
+		att1, att2)
+
+	constructTestJob(ctx, t, db, atj)
+
+	// Assign the high-prio task to the other worker. Because the task is queued,
+	// it shouldn't matter which worker it's assigned to.
+	dbTask2, err := db.FetchTask(ctx, att2.UUID)
+	assert.NoError(t, err)
+	dbTask2.WorkerID = &w2.ID
+	dbTask2.Status = api.TaskStatusQueued
+	err = db.SaveTask(ctx, dbTask2)
+	assert.NoError(t, err)
+
+	task, err := db.ScheduleTask(ctx, &w)
+	assert.NoError(t, err)
+	if task == nil {
+		t.Fatal("task is nil")
+	}
+
+	assert.Equal(t, att2.Name, task.Name, "the high-prio task should have been chosen")
+	assert.Equal(t, *task.WorkerID, w.ID, "the task should now be assigned to the worker it was scheduled for")
+}
+
 // To test: blacklists
 
 // To test: variable replacement
@@ -264,6 +336,24 @@ func linuxWorker(t *testing.T, db *DB) Worker {
 	err := db.gormDB.Save(&w).Error
 	if err != nil {
 		t.Logf("cannot save Linux worker: %v", err)
+		t.FailNow()
+	}
+
+	return w
+}
+
+func windowsWorker(t *testing.T, db *DB) Worker {
+	w := Worker{
+		UUID:               "4f6ee45e-c8fc-4c31-bf5c-922f2415deb1",
+		Name:               "Windows",
+		Platform:           "windows",
+		Status:             api.WorkerStatusAwake,
+		SupportedTaskTypes: "blender,ffmpeg,file-management,misc",
+	}
+
+	err := db.gormDB.Save(&w).Error
+	if err != nil {
+		t.Logf("cannot save Windows worker: %v", err)
 		t.FailNow()
 	}
 

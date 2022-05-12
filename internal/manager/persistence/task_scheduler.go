@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	schedulableTaskStatuses = []api.TaskStatus{api.TaskStatusQueued, api.TaskStatusSoftFailed, api.TaskStatusActive}
-	schedulableJobStatuses  = []api.JobStatus{api.JobStatusActive, api.JobStatusQueued, api.JobStatusRequeued}
+	// Note that active tasks are not schedulable, because they're already dunning on some worker.
+	schedulableTaskStatuses = []api.TaskStatus{api.TaskStatusQueued, api.TaskStatusSoftFailed}
+	schedulableJobStatuses  = []api.JobStatus{api.JobStatusActive, api.JobStatusQueued}
 	// completedTaskStatuses   = []api.TaskStatus{api.TaskStatusCompleted}
 )
 
@@ -81,6 +82,25 @@ func (db *DB) ScheduleTask(ctx context.Context, w *Worker) (*Task, error) {
 func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 	task := Task{}
 
+	// If a task is alreay active & assigned to this worker, return just that.
+	// Note that this task type could be blacklisted or no longer supported by the
+	// Worker, but since it's active that is unlikely.
+	assignedTaskResult := tx.
+		Model(&task).
+		Joins("left join jobs on tasks.job_id = jobs.id").
+		Where("tasks.status = ?", api.TaskStatusActive).
+		Where("jobs.status in ?", schedulableJobStatuses).
+		Where("tasks.worker_id = ?", w.ID). // assigned to this worker
+		Limit(1).
+		Preload("Job").
+		Find(&task)
+	if assignedTaskResult.Error != nil {
+		return nil, assignedTaskResult.Error
+	}
+	if assignedTaskResult.RowsAffected > 0 {
+		return &task, nil
+	}
+
 	// Produce the 'current task ID' by selecting all its incomplete dependencies.
 	// This can then be used in a subquery to filter out such tasks.
 	// `tasks.id` is the task ID from the outer query.
@@ -91,14 +111,17 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 		Where("tasks2.id = tasks.id").
 		Where("dep.status is not NULL and dep.status != ?", api.TaskStatusCompleted)
 
+	// Note that this query doesn't check for the assigned worker. Tasks that have
+	// a 'schedulable' status might have been assigned to a worker, representing
+	// the last worker to touch it -- it's not meant to indicate "ownership" of
+	// the task.
 	findTaskResult := tx.
 		Model(&task).
 		Joins("left join jobs on tasks.job_id = jobs.id").
-		Where("tasks.status in ?", schedulableTaskStatuses).           // Schedulable task statuses
-		Where("jobs.status in ?", schedulableJobStatuses).             // Schedulable job statuses
-		Where("tasks.type in ?", w.TaskTypes()).                       // Supported task types
-		Where("tasks.worker_id = ? or tasks.worker_id is NULL", w.ID). // assigned to this worker or not assigned at all
-		Where("tasks.id not in (?)", incompleteDepsQuery).             // Dependencies completed
+		Where("tasks.status in ?", schedulableTaskStatuses). // Schedulable task statuses
+		Where("jobs.status in ?", schedulableJobStatuses).   // Schedulable job statuses
+		Where("tasks.type in ?", w.TaskTypes()).             // Supported task types
+		Where("tasks.id not in (?)", incompleteDepsQuery).   // Dependencies completed
 		// TODO: Non-blacklisted
 		Order("jobs.priority desc").  // Highest job priority
 		Order("tasks.priority desc"). // Highest task priority
