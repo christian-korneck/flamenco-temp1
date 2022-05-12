@@ -145,11 +145,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.task-list-container {
-  font-family: 'Noto Mono', monospace;
-  font-size: smaller;
-  max-height: 300px;
-}
-</style>
