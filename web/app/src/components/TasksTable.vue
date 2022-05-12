@@ -54,6 +54,7 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
+      height: "300px",
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active task is tracked by click events.
     };
