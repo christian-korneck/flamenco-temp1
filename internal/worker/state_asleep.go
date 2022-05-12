@@ -35,10 +35,7 @@ func (w *Worker) runStateAsleep(ctx context.Context) {
 			logger.Debug().Msg("asleep state interrupted by shutdown")
 			return
 		case <-time.After(durationSleepCheck):
-			newStatus := w.queryManagerForStateChange(ctx)
-			if newStatus != nil {
-				logger.Debug().Str("newStatus", string(*newStatus)).Msg("asleep state interrupted by state change")
-				w.changeState(ctx, *newStatus)
+			if w.changeStateIfRequested(ctx) {
 				return
 			}
 		}

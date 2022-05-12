@@ -36,6 +36,24 @@ func (w *Worker) changeState(ctx context.Context, newState api.WorkerStatus) {
 	starter(ctx)
 }
 
+// changeStateIfRequested asks the Manager whether a status change is required
+// or not, and if so, goes to that state.
+// Returns `true` when the status was changed, so that the caller knows to stop
+// whatever it's doing.
+func (w *Worker) changeStateIfRequested(ctx context.Context) bool {
+	newStatus := w.queryManagerForStateChange(ctx)
+	if newStatus == nil {
+		return false
+	}
+
+	log.Info().
+		Str("currentStatus", string(w.state)).
+		Str("newStatus", string(*newStatus)).
+		Msg("Manager requested state change")
+	w.changeState(ctx, *newStatus)
+	return true
+}
+
 // Confirm that we're now in a certain state.
 //
 // This ACK can be given without a request from the server, for example to support

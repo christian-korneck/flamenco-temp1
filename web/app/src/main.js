@@ -18,3 +18,7 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 app.mount('#app')
+
+// For debugging.
+import { useJobs } from '@/stores/jobs';
+window.jobs = useJobs();

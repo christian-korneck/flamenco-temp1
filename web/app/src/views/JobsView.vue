@@ -46,6 +46,18 @@ export default {
   }),
   mounted() {
     window.jobsView = this;
+
+    this.jobs.$subscribe((mutation, state) => {
+      console.log("Pinia mutation:", mutation)
+      console.log("Pinia state   :", state)
+      // // import { MutationType } from 'pinia'
+      // mutation.type // 'direct' | 'patch object' | 'patch function'
+      // // same as cartStore.$id
+      // mutation.storeId // 'cart'
+      // // only available with mutation.type === 'patch object'
+      // mutation.payload // patch object passed to cartStore.$patch()
+    })
+
     this._fetchJob(this.jobID);
     this._fetchTask(this.taskID);
   },

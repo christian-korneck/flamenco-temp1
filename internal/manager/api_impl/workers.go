@@ -4,6 +4,7 @@ package api_impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/task_state_machine"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -249,6 +251,9 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	worker := requestWorkerOrPanic(e)
 	logger.Debug().Msg("worker requesting task")
 
+	f.taskSchedulerMutex.Lock()
+	defer f.taskSchedulerMutex.Unlock()
+
 	// Check that this worker is actually allowed to do work.
 	requiredStatusToGetTask := api.WorkerStatusAwake
 	if worker.Status != api.WorkerStatusAwake {
@@ -306,4 +311,59 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	// Perform variable replacement before sending to the Worker.
 	customisedTask := replaceTaskVariables(f.config, apiTask, *worker)
 	return e.JSON(http.StatusOK, customisedTask)
+}
+
+func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
+	logger := requestLogger(e)
+	worker := requestWorkerOrPanic(e)
+
+	if _, err := uuid.Parse(taskID); err != nil {
+		logger.Debug().Msg("invalid task ID received")
+		return sendAPIError(e, http.StatusBadRequest, "task ID not valid")
+	}
+	logger = logger.With().Str("task", taskID).Logger()
+
+	// Lock the task scheduler so that tasks don't get reassigned while we perform our checks.
+	f.taskSchedulerMutex.Lock()
+	defer f.taskSchedulerMutex.Unlock()
+
+	// Fetch the task, to see if this worker is allowed to run it.
+	ctx := e.Request().Context()
+	dbTask, err := f.persist.FetchTask(ctx, taskID)
+	if err != nil {
+		if errors.Is(err, persistence.ErrTaskNotFound) {
+			mkr := api.MayKeepRunning{Reason: "Task not found"}
+			return e.JSON(http.StatusOK, mkr)
+		}
+		logger.Error().Err(err).Msg("MayWorkerRun: cannot fetch task")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task")
+	}
+	if dbTask == nil {
+		panic("task could not be fetched, but database gave no error either")
+	}
+
+	mkr := mayWorkerRun(worker, dbTask)
+
+	if mkr.MayKeepRunning {
+		// TODO: record that this worker "touched" this task, for timeout calculations.
+	}
+
+	return e.JSON(http.StatusOK, mkr)
+}
+
+// mayWorkerRun checks the worker and the task, to see if this worker may keep running this task.
+func mayWorkerRun(worker *persistence.Worker, dbTask *persistence.Task) api.MayKeepRunning {
+	if worker.StatusRequested != "" {
+		return api.MayKeepRunning{
+			Reason:                "worker status change requested",
+			StatusChangeRequested: true,
+		}
+	}
+	if dbTask.WorkerID == nil || *dbTask.WorkerID != worker.ID {
+		return api.MayKeepRunning{Reason: "task not assigned to this worker"}
+	}
+	if !task_state_machine.IsRunnableTaskStatus(dbTask.Status) {
+		return api.MayKeepRunning{Reason: fmt.Sprintf("task is in non-runnable status %q", dbTask.Status)}
+	}
+	return api.MayKeepRunning{MayKeepRunning: true}
 }

@@ -37,3 +37,38 @@ func (w *Worker) queryManagerForStateChange(ctx context.Context) *api.WorkerStat
 
 	return nil
 }
+
+// mayIKeepRunning asks the Manager whether we can keep running a certain task.
+// Any error communicating with the Manager is logged but otherwise ignored.
+func (w *Worker) mayIKeepRunning(ctx context.Context, taskID string) api.MayKeepRunning {
+	resp, err := w.client.MayWorkerRunWithResponse(ctx, taskID)
+	if err != nil {
+		log.Warn().
+			Err(err).
+			Str("task", taskID).
+			Msg("error asking Manager may-I-keep-running task")
+		return api.MayKeepRunning{MayKeepRunning: true}
+	}
+
+	switch {
+	case resp.JSON200 != nil:
+		mkr := *resp.JSON200
+		logCtx := log.With().
+			Str("task", taskID).
+			Bool("mayKeepRunning", mkr.MayKeepRunning).
+			Bool("statusChangeRequested", mkr.StatusChangeRequested)
+		if mkr.Reason != "" {
+			logCtx = logCtx.Str("reason", mkr.Reason)
+		}
+		logger := logCtx.Logger()
+		logger.Debug().Msg("may-i-keep-running response")
+		return mkr
+	default:
+		log.Warn().
+			Str("task", taskID).
+			Int("code", resp.StatusCode()).
+			Str("error", string(resp.Body)).
+			Msg("unable to check may-i-keep-running for unknown reason")
+		return api.MayKeepRunning{MayKeepRunning: true}
+	}
+}

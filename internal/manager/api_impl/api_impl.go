@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
@@ -29,6 +30,11 @@ type Flamenco struct {
 	config       ConfigService
 	stateMachine TaskStateMachine
 	shaman       Shaman
+
+	// The task scheduler can be locked to prevent multiple Workers from getting
+	// the same task. It is also used for certain other queries, like
+	// `MayWorkerRun` to prevent similar race conditions.
+	taskSchedulerMutex sync.Mutex
 }
 
 var _ api.ServerInterface = (*Flamenco)(nil)

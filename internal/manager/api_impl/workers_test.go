@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -138,4 +139,81 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 
 	resp := getRecordedResponse(echo)
 	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+}
+
+func TestMayWorkerRun(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	prepareRequest := func() echo.Context {
+		echo := mf.prepareMockedRequest(nil)
+		requestWorkerStore(echo, &worker)
+		return echo
+	}
+
+	job := persistence.Job{
+		UUID: "583a7d59-887a-4c6c-b3e4-a753018f71b0",
+	}
+
+	task := persistence.Task{
+		UUID:   "4107c7aa-e86d-4244-858b-6c4fce2af503",
+		Job:    &job,
+		Status: api.TaskStatusActive,
+	}
+
+	mf.persistence.EXPECT().FetchTask(gomock.Any(), task.UUID).Return(&task, nil).AnyTimes()
+
+	// Test: unhappy, task unassigned
+	{
+		echo := prepareRequest()
+		err := mf.flamenco.MayWorkerRun(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseJSON(t, echo, http.StatusOK, api.MayKeepRunning{
+			MayKeepRunning: false,
+			Reason:         "task not assigned to this worker",
+		})
+	}
+
+	// Test: happy, task assigned to this worker.
+	{
+		echo := prepareRequest()
+		task.WorkerID = &worker.ID
+		err := mf.flamenco.MayWorkerRun(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseJSON(t, echo, http.StatusOK, api.MayKeepRunning{
+			MayKeepRunning: true,
+		})
+	}
+
+	// Test: unhappy, assigned but cancelled.
+	{
+		echo := prepareRequest()
+		task.WorkerID = &worker.ID
+		task.Status = api.TaskStatusCanceled
+		err := mf.flamenco.MayWorkerRun(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseJSON(t, echo, http.StatusOK, api.MayKeepRunning{
+			MayKeepRunning: false,
+			Reason:         "task is in non-runnable status \"canceled\"",
+		})
+	}
+
+	// Test: unhappy, assigned and runnable but worker should go to bed.
+	{
+		worker.StatusRequested = api.WorkerStatusAsleep
+		echo := prepareRequest()
+		task.WorkerID = &worker.ID
+		task.Status = api.TaskStatusActive
+		err := mf.flamenco.MayWorkerRun(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseJSON(t, echo, http.StatusOK, api.MayKeepRunning{
+			MayKeepRunning:        false,
+			Reason:                "worker status change requested",
+			StatusChangeRequested: true,
+		})
+	}
+
 }

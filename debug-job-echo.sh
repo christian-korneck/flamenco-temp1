@@ -7,13 +7,14 @@ curl -X 'POST' \
   -d '{
   "metadata": {
     "project": "Debugging Flamenco",
-    "user.name": "コードモンキー"
+    "user.name": "dr. Sybren",
+    "duration": "long"
   },
-  "name": "Talk & Sleep",
-  "priority": 50,
+  "name": "Talk & Sleep longer",
+  "priority": 3,
   "settings": {
-    "sleep_duration_seconds": 2,
-    "message": "{blender}"
+    "sleep_duration_seconds": 20,
+    "message": "Blender is {blender}"
   },
   "type": "echo-sleep-test"
 }'

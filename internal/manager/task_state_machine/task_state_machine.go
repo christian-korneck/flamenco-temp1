@@ -54,16 +54,6 @@ type ChangeBroadcaster interface {
 // ChangeBroadcaster should be a subset of webupdates.BiDirComms
 var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
 
-var (
-	// Task statuses that always get requeued when the job is requeued.
-	nonCompletedStatuses = []api.TaskStatus{
-		api.TaskStatusCanceled,
-		api.TaskStatusFailed,
-		api.TaskStatusPaused,
-		api.TaskStatusSoftFailed,
-	}
-)
-
 func NewStateMachine(persist PersistenceService, broadcaster ChangeBroadcaster) *StateMachine {
 	return &StateMachine{
 		persist:     persist,
