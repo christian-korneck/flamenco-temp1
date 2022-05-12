@@ -55,7 +55,7 @@ class ApiClient {
          * @default {}
          */
         this.defaultHeaders = {
-            'User-Agent': 'Flamenco/c8479294 / webbrowser'
+            'User-Agent': 'Flamenco/9dd9d816 / webbrowser'
         };
 
         /**

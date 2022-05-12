@@ -160,6 +160,9 @@ type ClientInterface interface {
 
 	TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MayWorkerRun request
+	MayWorkerRun(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ShamanCheckout request with any body
 	ShamanCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -479,6 +482,18 @@ func (c *Client) TaskUpdateWithBody(ctx context.Context, taskId string, contentT
 
 func (c *Client) TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTaskUpdateRequest(c.Server, taskId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MayWorkerRun(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMayWorkerRunRequest(c.Server, taskId)
 	if err != nil {
 		return nil, err
 	}
@@ -1200,6 +1215,40 @@ func NewTaskUpdateRequestWithBody(server string, taskId string, contentType stri
 	return req, nil
 }
 
+// NewMayWorkerRunRequest generates requests for MayWorkerRun
+func NewMayWorkerRunRequest(server string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker/task/%s/may-i-run", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewShamanCheckoutRequest calls the generic ShamanCheckout builder with application/json body
 func NewShamanCheckoutRequest(server string, body ShamanCheckoutJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1498,6 +1547,9 @@ type ClientWithResponsesInterface interface {
 	TaskUpdateWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
 
 	TaskUpdateWithResponse(ctx context.Context, taskId string, body TaskUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*TaskUpdateResponse, error)
+
+	// MayWorkerRun request
+	MayWorkerRunWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*MayWorkerRunResponse, error)
 
 	// ShamanCheckout request with any body
 	ShamanCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
@@ -1921,6 +1973,29 @@ func (r TaskUpdateResponse) StatusCode() int {
 	return 0
 }
 
+type MayWorkerRunResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MayKeepRunning
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r MayWorkerRunResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MayWorkerRunResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ShamanCheckoutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2238,6 +2313,15 @@ func (c *ClientWithResponses) TaskUpdateWithResponse(ctx context.Context, taskId
 		return nil, err
 	}
 	return ParseTaskUpdateResponse(rsp)
+}
+
+// MayWorkerRunWithResponse request returning *MayWorkerRunResponse
+func (c *ClientWithResponses) MayWorkerRunWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*MayWorkerRunResponse, error) {
+	rsp, err := c.MayWorkerRun(ctx, taskId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMayWorkerRunResponse(rsp)
 }
 
 // ShamanCheckoutWithBodyWithResponse request with arbitrary body returning *ShamanCheckoutResponse
@@ -2811,6 +2895,39 @@ func ParseTaskUpdateResponse(rsp *http.Response) (*TaskUpdateResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMayWorkerRunResponse parses an HTTP response from a MayWorkerRunWithResponse call
+func ParseMayWorkerRunResponse(rsp *http.Response) (*MayWorkerRunResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MayWorkerRunResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MayKeepRunning
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

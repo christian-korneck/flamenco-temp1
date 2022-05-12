@@ -176,6 +176,26 @@ func (mr *MockFlamencoClientMockRecorder) GetVersionWithResponse(arg0 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersionWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).GetVersionWithResponse), varargs...)
 }
 
+// MayWorkerRunWithResponse mocks base method.
+func (m *MockFlamencoClient) MayWorkerRunWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.MayWorkerRunResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "MayWorkerRunWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.MayWorkerRunResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MayWorkerRunWithResponse indicates an expected call of MayWorkerRunWithResponse.
+func (mr *MockFlamencoClientMockRecorder) MayWorkerRunWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MayWorkerRunWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).MayWorkerRunWithResponse), varargs...)
+}
+
 // QueryJobsWithBodyWithResponse mocks base method.
 func (m *MockFlamencoClient) QueryJobsWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.QueryJobsResponse, error) {
 	m.ctrl.T.Helper()

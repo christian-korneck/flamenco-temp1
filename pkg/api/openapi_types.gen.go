@@ -304,6 +304,15 @@ type ManagerConfiguration struct {
 	StorageLocation string `json:"storageLocation"`
 }
 
+// Indicates whether the worker may keep running the task.
+type MayKeepRunning struct {
+	MayKeepRunning bool   `json:"mayKeepRunning"`
+	Reason         string `json:"reason"`
+
+	// Indicates that a status change requested for the worker. It should use the `workerState` operation to determine which state to go to next. If this is `true`, `mayKeepRunning` MUST be `false`.
+	StatusChangeRequested bool `json:"statusChangeRequested"`
+}
+
 // RegisteredWorker defines model for RegisteredWorker.
 type RegisteredWorker struct {
 	Address            string       `json:"address"`

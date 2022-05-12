@@ -31,6 +31,7 @@ import JobUpdate from './model/JobUpdate';
 import JobsQuery from './model/JobsQuery';
 import JobsQueryResult from './model/JobsQueryResult';
 import ManagerConfiguration from './model/ManagerConfiguration';
+import MayKeepRunning from './model/MayKeepRunning';
 import RegisteredWorker from './model/RegisteredWorker';
 import SecurityError from './model/SecurityError';
 import ShamanCheckout from './model/ShamanCheckout';
@@ -208,6 +209,12 @@ export {
      * @property {module:model/ManagerConfiguration}
      */
     ManagerConfiguration,
+
+    /**
+     * The MayKeepRunning model constructor.
+     * @property {module:model/MayKeepRunning}
+     */
+    MayKeepRunning,
 
     /**
      * The RegisteredWorker model constructor.

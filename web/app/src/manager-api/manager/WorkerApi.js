@@ -15,6 +15,7 @@
 import ApiClient from "../ApiClient";
 import AssignedTask from '../model/AssignedTask';
 import Error from '../model/Error';
+import MayKeepRunning from '../model/MayKeepRunning';
 import RegisteredWorker from '../model/RegisteredWorker';
 import SecurityError from '../model/SecurityError';
 import TaskUpdate from '../model/TaskUpdate';
@@ -41,6 +42,52 @@ export default class WorkerApi {
         this.apiClient = apiClient || ApiClient.instance;
     }
 
+
+
+    /**
+     * The response indicates whether the worker is allowed to run / keep running the task. Optionally contains a queued worker status change. 
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/MayKeepRunning} and HTTP response
+     */
+    mayWorkerRunWithHttpInfo(taskId) {
+      let postBody = null;
+      // verify the required parameter 'taskId' is set
+      if (taskId === undefined || taskId === null) {
+        throw new Error("Missing the required parameter 'taskId' when calling mayWorkerRun");
+      }
+
+      let pathParams = {
+        'task_id': taskId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = ['worker_auth'];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = MayKeepRunning;
+      return this.apiClient.callApi(
+        '/api/worker/task/{task_id}/may-i-run', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * The response indicates whether the worker is allowed to run / keep running the task. Optionally contains a queued worker status change. 
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/MayKeepRunning}
+     */
+    mayWorkerRun(taskId) {
+      return this.mayWorkerRunWithHttpInfo(taskId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
 
 
     /**

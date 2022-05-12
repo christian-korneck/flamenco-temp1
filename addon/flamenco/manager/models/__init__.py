@@ -29,6 +29,7 @@ from flamenco.manager.model.job_update import JobUpdate
 from flamenco.manager.model.jobs_query import JobsQuery
 from flamenco.manager.model.jobs_query_result import JobsQueryResult
 from flamenco.manager.model.manager_configuration import ManagerConfiguration
+from flamenco.manager.model.may_keep_running import MayKeepRunning
 from flamenco.manager.model.registered_worker import RegisteredWorker
 from flamenco.manager.model.security_error import SecurityError
 from flamenco.manager.model.shaman_checkout import ShamanCheckout

@@ -67,6 +67,9 @@ type ServerInterface interface {
 	// Update the task, typically to indicate progress, completion, or failure.
 	// (POST /api/worker/task/{task_id})
 	TaskUpdate(ctx echo.Context, taskId string) error
+	// The response indicates whether the worker is allowed to run / keep running the task. Optionally contains a queued worker status change.
+	// (GET /api/worker/task/{task_id}/may-i-run)
+	MayWorkerRun(ctx echo.Context, taskId string) error
 	// Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
 	// (POST /shaman/checkout/create)
 	ShamanCheckout(ctx echo.Context) error
@@ -310,6 +313,24 @@ func (w *ServerInterfaceWrapper) TaskUpdate(ctx echo.Context) error {
 	return err
 }
 
+// MayWorkerRun converts echo context to params.
+func (w *ServerInterfaceWrapper) MayWorkerRun(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "task_id" -------------
+	var taskId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "task_id", runtime.ParamLocationPath, ctx.Param("task_id"), &taskId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter task_id: %s", err))
+	}
+
+	ctx.Set(Worker_authScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.MayWorkerRun(ctx, taskId)
+	return err
+}
+
 // ShamanCheckout converts echo context to params.
 func (w *ServerInterfaceWrapper) ShamanCheckout(ctx echo.Context) error {
 	var err error
@@ -457,6 +478,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/worker/state-changed", wrapper.WorkerStateChanged)
 	router.POST(baseURL+"/api/worker/task", wrapper.ScheduleTask)
 	router.POST(baseURL+"/api/worker/task/:task_id", wrapper.TaskUpdate)
+	router.GET(baseURL+"/api/worker/task/:task_id/may-i-run", wrapper.MayWorkerRun)
 	router.POST(baseURL+"/shaman/checkout/create", wrapper.ShamanCheckout)
 	router.POST(baseURL+"/shaman/checkout/requirements", wrapper.ShamanCheckoutRequirements)
 	router.GET(baseURL+"/shaman/files/:checksum/:filesize", wrapper.ShamanFileStoreCheck)
