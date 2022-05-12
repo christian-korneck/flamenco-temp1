@@ -62,6 +62,16 @@ func openDBWithConfig(dsn string, config *gorm.Config) (*DB, error) {
 		return nil, err
 	}
 
+	// Use the generic sql.DB interface to set some connection pool options.
+	sqlDB, err := gormDB.DB()
+	if err != nil {
+		return nil, err
+	}
+	// Only allow a single database connection, to avoid SQLITE_BUSY errors.
+	// It's not certain that this'll improve the situation, but it's worth a try.
+	sqlDB.SetMaxIdleConns(1) // Max num of connections in the idle connection pool.
+	sqlDB.SetMaxOpenConns(1) // Max num of open connections to the database.
+
 	db := DB{
 		gormDB: gormDB,
 	}
