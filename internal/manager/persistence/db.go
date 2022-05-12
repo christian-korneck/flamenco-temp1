@@ -44,7 +44,7 @@ func OpenDB(ctx context.Context, dsn string) (*DB, error) {
 	return db, nil
 }
 
-func openDB(ctx context.Context, uri string) (*DB, error) {
+func openDB(ctx context.Context, dsn string) (*DB, error) {
 	globalLogLevel := log.Logger.GetLevel()
 	dblogger := NewDBLogger(log.Level(globalLogLevel))
 
@@ -52,11 +52,11 @@ func openDB(ctx context.Context, uri string) (*DB, error) {
 		Logger: dblogger,
 	}
 
-	return openDBWithConfig(uri, &config)
+	return openDBWithConfig(dsn, &config)
 }
 
-func openDBWithConfig(uri string, config *gorm.Config) (*DB, error) {
-	dialector := sqlite.Open(uri)
+func openDBWithConfig(dsn string, config *gorm.Config) (*DB, error) {
+	dialector := sqlite.Open(dsn)
 	gormDB, err := gorm.Open(dialector, config)
 	if err != nil {
 		return nil, err
