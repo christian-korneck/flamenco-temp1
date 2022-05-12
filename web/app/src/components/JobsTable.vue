@@ -54,6 +54,7 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
+      height: "720px", // Must be set in order for the virtual DOM to function correctly.
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active job is tracked by click events, not row selection.
     };
