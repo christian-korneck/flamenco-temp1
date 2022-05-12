@@ -4,7 +4,7 @@
   -ms-transform: translatez(0);
   -o-transform: translatez(0);
   -webkit-transform: translatez(0);
-  background-color: var(--color-background);
+  background-color: var(--table-color-background-row-odd);
   border-radius: var(--border-radius);
   color: var(--color-text-muted);
   font-family: var(--font-family-mono);
@@ -1134,10 +1134,6 @@ body.tabulator-print-fullscreen-hide > *:not(.tabulator-print-fullscreen) {
   height: 1px;
   width: 7px;
   background: #fff;
-}
-
-.tabulator {
-  background-color: #222;
 }
 
 .tabulator .tabulator-header .tabulator-col {
