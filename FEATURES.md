@@ -42,6 +42,8 @@ Note that list is **not** in any specific order.
 - [ ] Worker timeout monitoring
 - [ ] Worker sleep schedule
 - [ ] Last rendered image display
+- [ ] Loading of job compiler scripts from disk
+- [ ] CLI option to write built-in job compiler scripts to disk
 - [ ] Per-job last rendered image
 - [ ] Support pausing jobs.
 - [ ] Job "required specs", to match with certain workers.
