@@ -32,14 +32,20 @@ export const useJobs = defineStore('jobs', {
   actions: {
     setActiveJobID(jobID) {
       this.$patch({
-        activeJob: {id: jobID},
+        activeJob: {id: jobID, settings: {}, metadata: {}},
         activeJobID: jobID,
       });
     },
     setActiveJob(job) {
-      this.$patch({
-        activeJob: job,
-        activeJobID: job.id,
+      // The "function" form of $patch is necessary here, as otherwise it'll
+      // merge `job` into `state.activeJob`. As a result, it won't touch missing
+      // keys, which means that metadata fields that existed on the previous job
+      // but not on the new one will still linger around. By passing a function
+      // to `$patch` this is resolved.
+      this.$patch((state) => {
+        state.activeJob = job;
+        state.activeJobID = job.id;
+        state.hasChanged = true;
       });
     },
     deselectAllJobs() {
