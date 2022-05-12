@@ -21,21 +21,21 @@ Note that list is **not** in any specific order.
 - [ ] Web frontend for Job & Task management
   - [x] Jobs list
   - [x] Job details
-  - [.] Job action buttons
-  - [.] Notification/status bar system
-  - [ ] Tasks list
-  - [ ] Task details
-  - [ ] Task action buttons
+  - [x] Job action buttons
+  - [x] Notification/status bar system
+  - [x] Tasks list
+  - [x] Task details
+  - [x] Task action buttons
   - [ ] Task log viewer
-  - [ ] Subscription system for job "detail+task" updates.
-  - [ ] Subscription system for task log updates.
+  - [x] Subscription system for "job detail+task" updates.
+  - [ ] Subscription system for "task log" updates.
   - [ ] Filtering jobs, at least by status
   - [ ] Filtering tasks, at least by status
 - [ ] Web frontend for Worker management
-  - [ ] "Tabs" system + Vue Router support.
+  - [x] "Tabs" system + Vue Router support.
 - [ ] Port the old 'fail-requested' task status handling code to the new Manager
 - [ ] Ensure "task state machine" can run in a single database transaction.
-- [ ] At startup (and potentially periodically as well) check & fix "stuck" jobs.
+- [x] At startup check & fix "stuck" jobs.
       Example: jobs in statuses `cancel-requested`, `requeued`, etc.
 - [ ] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
@@ -72,7 +72,7 @@ Note that list is **not** in any specific order.
 - [x] Refactor CLI-running code by analyzing the current Blender and FFmpeg commands.
 - [x] Re-queueing of task at shutdown of the main context (i.e. when pressing Ctrl+C). Since the context is closed, everything shuts down, but then it's too late to cleanly communicate to the Manager that the current task should be requeued.
 - [ ] CLI option to override configured manager URL.
-- [ ] Readability/writability tests
+- [ ] Filesystem readability/writability tests
   - [ ] Add check per task-type
   - [ ] Allow workers to request blocklisting for certain job, with "reason" string.
 - [ ] POSIX signal handling (sleep/wake up)
