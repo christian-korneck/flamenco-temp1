@@ -55,8 +55,8 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 	select {
 	case <-ctx.Done():
 		err := ctx.Err()
-		log.Warn().Err(err).Msg("sleep aborted because context closed")
-		return fmt.Errorf("sleep aborted because context closed: %w", err)
+		log.Warn().Msg("sleep command aborted due to context shutdown")
+		return fmt.Errorf("sleep command aborted due to context shutdown: %w", err)
 	case <-ce.timeService.After(duration):
 		log.Debug().Msg("sleeping done")
 	}
