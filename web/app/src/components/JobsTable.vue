@@ -23,6 +23,17 @@ export default {
     JobActionsBar,
   },
   data: () => {
+    return {
+      filteredStatuses: new Set(),
+    };
+  },
+  mounted() {
+    // Allow testing from the JS console:
+    // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO(), previous_status: "uuuuh", name: "Updated manually"});
+    // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
+    window.jobsTableVue = this;
+
+    const vueComponent = this;
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
@@ -51,6 +62,11 @@ export default {
           }
         },
       ],
+      rowFormatter(row) {
+        const data = row.getData();
+        const isActive = (data.id === vueComponent.activeJobID);
+        row.getElement().classList.toggle("active-row", isActive);
+      },
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
@@ -58,26 +74,7 @@ export default {
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active job is tracked by click events, not row selection.
     };
-    return {
-      options: options,
-      filteredStatuses: new Set(),
-    };
-  },
-  mounted() {
-    // Allow testing from the JS console:
-    // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO(), previous_status: "uuuuh", name: "Updated manually"});
-    // jobsTableVue.processJobUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
-    window.jobsTableVue = this;
-
-    // Set the `rowFormatter` here (instead of with the rest of the options
-    // above) as it needs to refer to `this`, which isn't available in the
-    // `data` function.
-    this.options.rowFormatter = (row) => {
-      const data = row.getData();
-      const isActive = (data.id === this.activeJobID);
-      row.getElement().classList.toggle("active-row", isActive);
-    };
-    this.tabulator = new Tabulator('#flamenco_job_list', this.options);
+    this.tabulator = new Tabulator('#flamenco_job_list', options);
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this._onTableBuilt);
   },
