@@ -351,3 +351,11 @@ footer {
 .tabulator-row.active-row.tabulator-row-even {
   background-color: var(--table-color-background-row-active-even);
 }
+
+ul.status-filter-bar {
+  align-items: center;
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}

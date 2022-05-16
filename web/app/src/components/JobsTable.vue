@@ -41,11 +41,7 @@ export default {
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
-          formatter(cell) {
-            const cellValue = cell.getData();
-            const label = toTitleCase(cellValue.status);
-            return `<span title="${label}" class="indicator status-${cellValue.status}"></span>`;
-          },
+          formatter: (cell) => indicator(cell.getData().status),
         },
         { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Type', field: 'type', sorter: 'string' },

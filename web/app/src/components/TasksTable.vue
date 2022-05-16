@@ -9,7 +9,7 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
-import { toTitleCase } from '@/strings';
+import { indicator } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
 import { useTasks } from '@/stores/tasks';
 
@@ -32,11 +32,7 @@ export default {
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
-          formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
-            const cellValue = cell.getData();
-            const label = toTitleCase(cellValue.status);
-            return `<span title="${label}" class="indicator status-${cellValue.status}"></span>`;
-          }
+          formatter: (cell) => indicator(cell.getData().status),
         },
         { title: 'Name', field: 'name', sorter: 'string' },
         {
