@@ -2,6 +2,11 @@
   <div>
     <h2 class="column-title">Jobs</h2>
     <job-actions-bar />
+    <status-filter-bar
+      :availableStatuses="availableStatuses"
+      :activeStatuses="shownStatuses"
+      @click="toggleStatusFilter"
+    />
     <div class="job-list" id="flamenco_job_list"></div>
   </div>
 </template>
@@ -10,21 +15,24 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
-import { toTitleCase } from '@/strings';
+import { indicator } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
 
 import JobActionsBar from '@/components/JobActionsBar.vue'
+import StatusFilterBar from '@/components/StatusFilterBar.vue'
 
 export default {
   name: 'JobsTable',
   props: ["activeJobID"],
   emits: ["tableRowClicked"],
   components: {
-    JobActionsBar,
+    JobActionsBar, StatusFilterBar,
   },
   data: () => {
     return {
-      filteredStatuses: new Set(),
+      shownStatuses: [],
+      availableStatuses: [], // Will be filled after data is loaded from the backend.
+      indicator: indicator, // So that the template can use this function too.
     };
   },
   mounted() {
@@ -111,16 +119,19 @@ export default {
       // "Down-cast" to JobUpdate to only get those fields, just for debugging things:
       // data.jobs = data.jobs.map((j) => API.JobUpdate.constructFromObject(j));
       this.tabulator.setData(data.jobs);
+      this._refreshAvailableStatuses();
     },
     processJobUpdate(jobUpdate) {
       // updateData() will only overwrite properties that are actually set on
       // jobUpdate, and leave the rest as-is.
       this.tabulator.updateData([jobUpdate])
         .then(this.sortData);
+      this._refreshAvailableStatuses();
     },
     processNewJob(jobUpdate) {
       this.tabulator.addData([jobUpdate])
         .then(this.sortData);
+      this._refreshAvailableStatuses();
     },
 
     onRowClick(event, row) {
@@ -132,23 +143,31 @@ export default {
       // Depending on which cell was clicked, take a different action.
       const columnName = event.target.getAttribute("tabulator-field");
       if (columnName == "status") {
-        this._toggleStatusFilter(rowData.status);
+        this.toggleStatusFilter(rowData.status);
         return;
       }
       this.$emit("tableRowClicked", rowData);
     },
-
-    _toggleStatusFilter(status) {
-      if (!this.filteredStatuses.delete(status)) {
-        this.filteredStatuses.add(status);
+    toggleStatusFilter(status) {
+      const asSet = new Set(this.shownStatuses);
+      if (!asSet.delete(status)) {
+        asSet.add(status);
       }
+      this.shownStatuses = Array.from(asSet).sort();
       this.tabulator.refreshFilter();
     },
     _filterByStatus(job) {
-      if (this.filteredStatuses.size) {
-        return this.filteredStatuses.has(job.status);
+      if (this.shownStatuses.length == 0) {
+        return true;
       }
-      return true;
+      return this.shownStatuses.indexOf(job.status) >= 0;
+    },
+    _refreshAvailableStatuses() {
+      const statuses = new Set();
+      for (let row of this.tabulator.getData()) {
+        statuses.add(row.status);
+      }
+      this.availableStatuses = Array.from(statuses).sort();
     },
 
     _reformatRow(jobID) {

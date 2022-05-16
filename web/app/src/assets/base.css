@@ -283,13 +283,33 @@ footer {
 
 .indicator {
   --indicator-color: var(--color-background);
+  --indicator-size: 6px;
 
   background-color: var(--indicator-color);
-  border: 3px solid var(--indicator-color);
+  border: calc(var(--indicator-size)/2) solid var(--indicator-color);
   border-radius: 50%;
   display: block;
-  height: 6px;
-  width: 6px;
+  height: var(--indicator-size);
+  width: var(--indicator-size);
+}
+
+ul.status-filter-bar {
+  align-items: center;
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+  margin: 0.3rem 0;
+}
+ul.status-filter-bar .status-filter-indicator {
+  margin: 2px;
+  opacity: 33%;
+  cursor: pointer;
+}
+ul.status-filter-bar .status-filter-indicator.active {
+  opacity: 100%;
+}
+ul.status-filter-bar .status-filter-indicator .indicator {
+  --indicator-size: 15px;
 }
 
 .status-active {
@@ -350,12 +370,4 @@ footer {
 }
 .tabulator-row.active-row.tabulator-row-even {
   background-color: var(--table-color-background-row-active-even);
-}
-
-ul.status-filter-bar {
-  align-items: center;
-  display: flex;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
 }
