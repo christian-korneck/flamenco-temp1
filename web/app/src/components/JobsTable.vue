@@ -60,6 +60,7 @@ export default {
     };
     return {
       options: options,
+      filteredStatuses: new Set(),
     };
   },
   mounted() {
@@ -78,7 +79,7 @@ export default {
     };
     this.tabulator = new Tabulator('#flamenco_job_list', this.options);
     this.tabulator.on("rowClick", this.onRowClick);
-    this.tabulator.on("tableBuilt", this.fetchAllJobs);
+    this.tabulator.on("tableBuilt", this._onTableBuilt);
   },
   watch: {
     activeJobID(newJobID, oldJobID) {
@@ -100,6 +101,10 @@ export default {
     sortData() {
       const tab = this.tabulator;
       tab.setSort(tab.getSorters()); // This triggers re-sorting.
+    },
+    _onTableBuilt() {
+      this.tabulator.setFilter(this._filterByStatus);
+      this.fetchAllJobs();
     },
     fetchAllJobs() {
       const jobsApi = new API.JobsApi(apiClient);
@@ -130,7 +135,27 @@ export default {
       // store. There were some issues where navigating to another job would
       // overwrite the old job's ID, and this prevents that.
       const rowData = plain(row.getData());
+
+      // Depending on which cell was clicked, take a different action.
+      const columnName = event.target.getAttribute("tabulator-field");
+      if (columnName == "status") {
+        this._toggleStatusFilter(rowData.status);
+        return;
+      }
       this.$emit("tableRowClicked", rowData);
+    },
+
+    _toggleStatusFilter(status) {
+      if (!this.filteredStatuses.delete(status)) {
+        this.filteredStatuses.add(status);
+      }
+      this.tabulator.refreshFilter();
+    },
+    _filterByStatus(job) {
+      if (this.filteredStatuses.size) {
+        return this.filteredStatuses.has(job.status);
+      }
+      return true;
     },
 
     _reformatRow(jobID) {
@@ -140,7 +165,7 @@ export default {
       if (!row) return
       if (row.reformat) row.reformat();
       else if (row.reinitialize) row.reinitialize(true);
-    }
+    },
   }
 };
 </script>
