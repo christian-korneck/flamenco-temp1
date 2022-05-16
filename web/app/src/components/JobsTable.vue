@@ -41,11 +41,11 @@ export default {
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
-          formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
+          formatter(cell) {
             const cellValue = cell.getData();
             const label = toTitleCase(cellValue.status);
             return `<span title="${label}" class="indicator status-${cellValue.status}"></span>`;
-          }
+          },
         },
         { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Type', field: 'type', sorter: 'string' },
@@ -53,13 +53,13 @@ export default {
         {
           title: 'Updated', field: 'updated',
           sorter: 'alphanum', sorterParams: { alignEmptyValues: "top" },
-          formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
+          formatter(cell) {
             const cellValue = cell.getData().updated;
             // TODO: if any "{amount} {units} ago" shown, the table should be
             // refreshed every few {units}, so that it doesn't show any stale "4
             // seconds ago" for days.
             return datetime.relativeTime(cellValue);
-          }
+          },
         },
       ],
       rowFormatter(row) {
@@ -163,6 +163,6 @@ export default {
       if (row.reformat) row.reformat();
       else if (row.reinitialize) row.reinitialize(true);
     },
-  }
+  },
 };
 </script>
