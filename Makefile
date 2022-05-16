@@ -129,7 +129,7 @@ test:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe
+	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race
 	rm -f pkg/api/*.gen.go internal/*/mocks/*.gen.go internal/*/*/mocks/*.gen.go
 	@$(MAKE) generate
 
