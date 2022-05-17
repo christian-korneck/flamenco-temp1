@@ -1236,7 +1236,13 @@ components:
         "previous_status": { $ref: "#/components/schemas/JobStatus" }
         "type": { type: string }
         "priority": { type: integer, default: 50 }
-      required: [id, updated, status, type, priority]
+        "refresh_tasks":
+          type: boolean
+          description: >
+            Indicates that the client should refresh all the job's tasks. This
+            is sent for mass updates, where updating each individual task would
+            generate too many updates to be practical.
+      required: [id, updated, status, type, priority, refresh_tasks]
 
     SocketIOTaskUpdate:
       type: object
