@@ -29,8 +29,9 @@ Note that list is **not** in any specific order.
   - [ ] Task log viewer
   - [x] Subscription system for "job detail+task" updates.
   - [ ] Subscription system for "task log" updates.
-  - [ ] Filtering jobs, at least by status
-  - [ ] Filtering tasks, at least by status
+  - [x] Filtering jobs by status
+  - [x] Filtering tasks by status
+  - [ ] Make tables respect the window height
 - [ ] Web frontend for Worker management
   - [x] "Tabs" system + Vue Router support.
 - [ ] Port the old 'fail-requested' task status handling code to the new Manager
@@ -58,7 +59,7 @@ Note that list is **not** in any specific order.
   will just parse the JS from disk again. It'll be better to only do this when
   the file on disk changed.
 - [ ] Split up OpenAPI-generated server code into an interface per tag. This'll help splitting up the rather large `Flamenco` struct into smaller pieces.
-
+- [ ] Remove the current index and replace it with a redirect to `/jobs`
 
 ## Worker
 
@@ -88,6 +89,7 @@ Note that list is **not** in any specific order.
 - [ ] Worker status change management, including lazy status changes
 - [ ] Worker test mode
 - [ ] Worker registration secret (to protect the Manager from arbitrary Workers registering)
+- [x] Support the may-i-keep-running protocol thingy
 
 ## Blender Add-on
 
