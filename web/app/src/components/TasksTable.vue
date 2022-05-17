@@ -25,6 +25,17 @@ export default {
     TaskActionsBar,
   },
   data: () => {
+    return {
+      tasks: useTasks(),
+    };
+  },
+  mounted() {
+    // Allow testing from the JS console:
+    // tasksTableVue.processTaskUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO(), previous_status: "uuuuh", name: "Updated manually"});
+    // tasksTableVue.processTaskUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
+    window.tasksTableVue = this;
+
+    const vueComponent = this;
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Task and TaskUpdate.
       columns: [
@@ -47,6 +58,11 @@ export default {
           }
         },
       ],
+      rowFormatter(row) {
+        const data = row.getData();
+        const isActive = (data.id === vueComponent.taskID);
+        row.getElement().classList.toggle("active-row", isActive);
+      },
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
@@ -54,27 +70,8 @@ export default {
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active task is tracked by click events.
     };
-    return {
-      options: options,
-      tasks: useTasks(),
-    };
-  },
-  mounted() {
-    // Allow testing from the JS console:
-    // tasksTableVue.processTaskUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO(), previous_status: "uuuuh", name: "Updated manually"});
-    // tasksTableVue.processTaskUpdate({id: "ad0a5a00-5cb8-4e31-860a-8a405e75910e", status: "heyy", updated: DateTime.local().toISO()});
-    window.tasksTableVue = this;
 
-    // Set the `rowFormatter` here (instead of with the rest of the options
-    // above) as it needs to refer to `this`, which isn't available in the
-    // `data` function.
-    this.options.rowFormatter = (row) => {
-      const data = row.getData();
-      const isActive = (data.id === this.taskID);
-      row.getElement().classList.toggle("active-row", isActive);
-    };
-
-    this.tabulator = new Tabulator('#flamenco_task_list', this.options);
+    this.tabulator = new Tabulator('#flamenco_task_list', options);
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this.fetchTasks);
   },
