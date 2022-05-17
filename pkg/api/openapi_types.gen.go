@@ -257,8 +257,11 @@ type JobUpdate struct {
 	Name           *string    `json:"name,omitempty"`
 	PreviousStatus *JobStatus `json:"previous_status,omitempty"`
 	Priority       int        `json:"priority"`
-	Status         JobStatus  `json:"status"`
-	Type           string     `json:"type"`
+
+	// Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical.
+	RefreshTasks bool      `json:"refresh_tasks"`
+	Status       JobStatus `json:"status"`
+	Type         string    `json:"type"`
 
 	// Timestamp of last update
 	Updated time.Time `json:"updated"`

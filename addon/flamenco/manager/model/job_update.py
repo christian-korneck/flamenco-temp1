@@ -92,6 +92,7 @@ class JobUpdate(ModelNormal):
             'status': (JobStatus,),  # noqa: E501
             'type': (str,),  # noqa: E501
             'priority': (int,),  # noqa: E501
+            'refresh_tasks': (bool,),  # noqa: E501
             'name': (str,),  # noqa: E501
             'previous_status': (JobStatus,),  # noqa: E501
         }
@@ -107,6 +108,7 @@ class JobUpdate(ModelNormal):
         'status': 'status',  # noqa: E501
         'type': 'type',  # noqa: E501
         'priority': 'priority',  # noqa: E501
+        'refresh_tasks': 'refresh_tasks',  # noqa: E501
         'name': 'name',  # noqa: E501
         'previous_status': 'previous_status',  # noqa: E501
     }
@@ -118,7 +120,7 @@ class JobUpdate(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, id, updated, status, type, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, id, updated, status, type, refresh_tasks, *args, **kwargs):  # noqa: E501
         """JobUpdate - a model defined in OpenAPI
 
         Args:
@@ -126,6 +128,7 @@ class JobUpdate(ModelNormal):
             updated (datetime): Timestamp of last update
             status (JobStatus):
             type (str):
+            refresh_tasks (bool): Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical. 
 
         Keyword Args:
             priority (int): defaults to 50  # noqa: E501
@@ -194,6 +197,7 @@ class JobUpdate(ModelNormal):
         self.status = status
         self.type = type
         self.priority = priority
+        self.refresh_tasks = refresh_tasks
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -214,7 +218,7 @@ class JobUpdate(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, id, updated, status, type, *args, **kwargs):  # noqa: E501
+    def __init__(self, id, updated, status, type, refresh_tasks, *args, **kwargs):  # noqa: E501
         """JobUpdate - a model defined in OpenAPI
 
         Args:
@@ -222,6 +226,7 @@ class JobUpdate(ModelNormal):
             updated (datetime): Timestamp of last update
             status (JobStatus):
             type (str):
+            refresh_tasks (bool): Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical. 
 
         Keyword Args:
             priority (int): defaults to 50  # noqa: E501
@@ -288,6 +293,7 @@ class JobUpdate(ModelNormal):
         self.status = status
         self.type = type
         self.priority = priority
+        self.refresh_tasks = refresh_tasks
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

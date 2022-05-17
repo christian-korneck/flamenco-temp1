@@ -29,10 +29,11 @@ class JobUpdate {
      * @param status {module:model/JobStatus} 
      * @param type {String} 
      * @param priority {Number} 
+     * @param refreshTasks {Boolean} Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical. 
      */
-    constructor(id, updated, status, type, priority) { 
+    constructor(id, updated, status, type, priority, refreshTasks) { 
         
-        JobUpdate.initialize(this, id, updated, status, type, priority);
+        JobUpdate.initialize(this, id, updated, status, type, priority, refreshTasks);
     }
 
     /**
@@ -40,12 +41,13 @@ class JobUpdate {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, updated, status, type, priority) { 
+    static initialize(obj, id, updated, status, type, priority, refreshTasks) { 
         obj['id'] = id;
         obj['updated'] = updated;
         obj['status'] = status;
         obj['type'] = type;
         obj['priority'] = priority || 50;
+        obj['refresh_tasks'] = refreshTasks;
     }
 
     /**
@@ -79,6 +81,9 @@ class JobUpdate {
             }
             if (data.hasOwnProperty('priority')) {
                 obj['priority'] = ApiClient.convertToType(data['priority'], 'Number');
+            }
+            if (data.hasOwnProperty('refresh_tasks')) {
+                obj['refresh_tasks'] = ApiClient.convertToType(data['refresh_tasks'], 'Boolean');
             }
         }
         return obj;
@@ -125,6 +130,12 @@ JobUpdate.prototype['type'] = undefined;
  * @default 50
  */
 JobUpdate.prototype['priority'] = 50;
+
+/**
+ * Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical. 
+ * @member {Boolean} refresh_tasks
+ */
+JobUpdate.prototype['refresh_tasks'] = undefined;
 
 
 
