@@ -45,6 +45,7 @@ export default {
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
+        // Useful for debugging when there are many similar jobs:
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
