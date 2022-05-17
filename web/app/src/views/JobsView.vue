@@ -47,16 +47,11 @@ export default {
   mounted() {
     window.jobsView = this;
 
-    this.jobs.$subscribe((mutation, state) => {
-      console.log("Pinia mutation:", mutation)
-      console.log("Pinia state   :", state)
-      // // import { MutationType } from 'pinia'
-      // mutation.type // 'direct' | 'patch object' | 'patch function'
-      // // same as cartStore.$id
-      // mutation.storeId // 'cart'
-      // // only available with mutation.type === 'patch object'
-      // mutation.payload // patch object passed to cartStore.$patch()
-    })
+    // Useful for debugging:
+    // this.jobs.$subscribe((mutation, state) => {
+    //   console.log("Pinia mutation:", mutation)
+    //   console.log("Pinia state   :", state)
+    // })
 
     this._fetchJob(this.jobID);
     this._fetchTask(this.taskID);
@@ -82,7 +77,7 @@ export default {
         this.tasks.deselectAllTasks();
         return;
       }
-      console.log("selected task changed:", taskSummary);
+
       const jobsAPI = new API.JobsApi(apiClient);
       jobsAPI.fetchTask(taskSummary.id)
         .then((task) => {
@@ -95,7 +90,7 @@ export default {
 
     // SocketIO data event handlers:
     onSioJobUpdate(jobUpdate) {
-      console.log("job update", jobUpdate);
+
       if (this.$refs.jobsTable) {
         if (jobUpdate.previous_status)
           this.$refs.jobsTable.processJobUpdate(jobUpdate);

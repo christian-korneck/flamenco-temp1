@@ -24,7 +24,7 @@ export default {
   },
   mounted: function () {
     if (!this.websocketURL) {
-      console.log("UpdateListener: no websocketURL given, cannot do anything");
+      console.warn("UpdateListener: no websocketURL given, cannot do anything");
       return;
     }
     this.connectToWebsocket();
