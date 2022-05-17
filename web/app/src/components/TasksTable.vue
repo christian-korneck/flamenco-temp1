@@ -1,5 +1,10 @@
 <template>
   <task-actions-bar />
+  <status-filter-bar
+    :availableStatuses="availableStatuses"
+    :activeStatuses="shownStatuses"
+    @click="toggleStatusFilter"
+  />
   <div class="task-list-container">
     <div class="task-list" id="flamenco_task_list"></div>
   </div>
@@ -14,6 +19,7 @@ import { apiClient } from '@/stores/api-query-count';
 import { useTasks } from '@/stores/tasks';
 
 import TaskActionsBar from '@/components/TaskActionsBar.vue'
+import StatusFilterBar from '@/components/StatusFilterBar.vue'
 
 export default {
   emits: ["tableRowClicked"],
@@ -22,11 +28,13 @@ export default {
     "taskID", // The active task.
   ],
   components: {
-    TaskActionsBar,
+    TaskActionsBar, StatusFilterBar,
   },
   data: () => {
     return {
       tasks: useTasks(),
+      shownStatuses: [],
+      availableStatuses: [], // Will be filled after data is loaded from the backend.
     };
   },
   mounted() {
@@ -73,7 +81,7 @@ export default {
 
     this.tabulator = new Tabulator('#flamenco_task_list', options);
     this.tabulator.on("rowClick", this.onRowClick);
-    this.tabulator.on("tableBuilt", this.fetchTasks);
+    this.tabulator.on("tableBuilt", this._onTableBuilt);
   },
   watch: {
     jobID() {
@@ -94,6 +102,10 @@ export default {
       const tab = this.tabulator;
       tab.setSort(tab.getSorters()); // This triggers re-sorting.
     },
+    _onTableBuilt() {
+      this.tabulator.setFilter(this._filterByStatus);
+      this.fetchTasks();
+    },
     fetchTasks() {
       console.log("Fetching tasks for job", this.jobID);
       if (!this.jobID) {
@@ -111,12 +123,14 @@ export default {
       // "Down-cast" to TaskUpdate to only get those fields, just for debugging things:
       // let tasks = data.tasks.map((j) => API.TaskUpdate.constructFromObject(j));
       this.tabulator.setData(data.tasks);
+      this._refreshAvailableStatuses();
     },
     processTaskUpdate(taskUpdate) {
       // updateData() will only overwrite properties that are actually set on
       // taskUpdate, and leave the rest as-is.
       this.tabulator.updateData([taskUpdate])
         .then(this.sortData);
+      this._refreshAvailableStatuses();
     },
 
     onRowClick(event, row) {
@@ -124,7 +138,35 @@ export default {
       // store. There were some issues where navigating to another job would
       // overwrite the old job's ID, and this prevents that.
       const rowData = plain(row.getData());
+
+      // Depending on which cell was clicked, take a different action.
+      const columnName = event.target.getAttribute("tabulator-field");
+      if (columnName == "status") {
+        this.toggleStatusFilter(rowData.status);
+        return;
+      }
       this.$emit("tableRowClicked", rowData);
+    },
+    toggleStatusFilter(status) {
+      const asSet = new Set(this.shownStatuses);
+      if (!asSet.delete(status)) {
+        asSet.add(status);
+      }
+      this.shownStatuses = Array.from(asSet).sort();
+      this.tabulator.refreshFilter();
+    },
+    _filterByStatus(tableItem) {
+      if (this.shownStatuses.length == 0) {
+        return true;
+      }
+      return this.shownStatuses.indexOf(tableItem.status) >= 0;
+    },
+    _refreshAvailableStatuses() {
+      const statuses = new Set();
+      for (let row of this.tabulator.getData()) {
+        statuses.add(row.status);
+      }
+      this.availableStatuses = Array.from(statuses).sort();
     },
 
     _reformatRow(jobID) {
