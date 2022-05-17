@@ -49,7 +49,7 @@ export default {
         {
           title: 'Updated', field: 'updated',
           sorter: 'alphanum', sorterParams: { alignEmptyValues: "top" },
-          formatter(cell, formatterParams) { // eslint-disable-line no-unused-vars
+          formatter(cell) {
             const cellValue = cell.getData().updated;
             // TODO: if any "{amount} {units} ago" shown, the table should be
             // refreshed every few {units}, so that it doesn't show any stale "4
