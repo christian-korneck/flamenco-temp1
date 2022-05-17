@@ -45,7 +45,6 @@ export default {
     const options = {
       // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
       columns: [
-        // { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerHozAlign: "center", headerSort: false },
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
