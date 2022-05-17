@@ -346,3 +346,42 @@ func (db *DB) FetchTasksOfJobInStatus(ctx context.Context, job *Job, taskStatuse
 
 	return tasks, nil
 }
+
+// UpdateJobsTaskStatuses updates the status & activity of all tasks of `job`.
+func (db *DB) UpdateJobsTaskStatuses(ctx context.Context, job *Job,
+	taskStatus api.TaskStatus, activity string) error {
+
+	if taskStatus == "" {
+		return taskError(nil, "empty status not allowed")
+	}
+
+	tx := db.gormDB.WithContext(ctx).
+		Model(Task{}).
+		Where("job_Id = ?", job.ID).
+		Updates(Task{Status: taskStatus, Activity: activity})
+
+	if tx.Error != nil {
+		return taskError(tx.Error, "updating status of all tasks of job %s", job.UUID)
+	}
+	return nil
+}
+
+// UpdateJobsTaskStatusesConditional updates the status & activity of the tasks of `job`,
+// limited to those tasks with status in `statusesToUpdate`.
+func (db *DB) UpdateJobsTaskStatusesConditional(ctx context.Context, job *Job,
+	statusesToUpdate []api.TaskStatus, taskStatus api.TaskStatus, activity string) error {
+
+	if taskStatus == "" {
+		return taskError(nil, "empty status not allowed")
+	}
+
+	tx := db.gormDB.WithContext(ctx).
+		Model(Task{}).
+		Where("job_Id = ?", job.ID).
+		Where("status in ?", statusesToUpdate).
+		Updates(Task{Status: taskStatus, Activity: activity})
+	if tx.Error != nil {
+		return taskError(tx.Error, "updating status of all tasks in status %v of job %s", statusesToUpdate, job.UUID)
+	}
+	return nil
+}

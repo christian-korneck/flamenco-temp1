@@ -95,14 +95,22 @@ export default {
 
     // SocketIO data event handlers:
     onSioJobUpdate(jobUpdate) {
+      console.log("job update", jobUpdate);
       if (this.$refs.jobsTable) {
         if (jobUpdate.previous_status)
           this.$refs.jobsTable.processJobUpdate(jobUpdate);
         else
           this.$refs.jobsTable.processNewJob(jobUpdate);
       }
-      if (this.jobID == jobUpdate.id)
-        this._fetchJob(this.jobID);
+      if (this.jobID != jobUpdate.id)
+        return;
+
+      this._fetchJob(this.jobID);
+      if (jobUpdate.refresh_tasks) {
+        if (this.$refs.tasksTable)
+          this.$refs.tasksTable.fetchTasks();
+        this._fetchTask(this.taskID);
+      }
     },
 
     /**

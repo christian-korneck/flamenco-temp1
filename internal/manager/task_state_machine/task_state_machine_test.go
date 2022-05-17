@@ -116,28 +116,25 @@ func TestTaskStatusChangeActiveToFailedFailJob(t *testing.T) {
 
 	// T: active > failed (10% task1 failure) --> J: active > failed + cancellation of any runnable tasks.
 	task1 := taskWithStatus(api.JobStatusActive, api.TaskStatusActive)
-	task2 := taskOfSameJob(task1, api.TaskStatusFailed)
-	task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
-	remainingTasks := []*persistence.Task{task2, task3}
-
 	mocks.expectSaveTaskWithStatus(t, task1, api.TaskStatusFailed)
+	// The change to the failed task should be broadcast.
 	mocks.expectBroadcastTaskChange(task1, api.TaskStatusActive, api.TaskStatusFailed)
 	mocks.expectSaveJobWithStatus(t, task1.Job, api.JobStatusFailed)
-	mocks.expectBroadcastJobChange(task1.Job, api.JobStatusActive, api.JobStatusFailed)
+	// The resulting cancellation of the other tasks should be communicated as mass-task-update in the job update broadcast.
+	mocks.expectBroadcastJobChangeWithTaskRefresh(task1.Job, api.JobStatusActive, api.JobStatusFailed)
 
 	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, task1.Job, api.TaskStatusFailed).Return(10, 100, nil) // 10 out of 100 failed.
 
 	// Expect failure of the job to trigger cancellation of remaining tasks.
-	mocks.persist.EXPECT().FetchTasksOfJobInStatus(ctx, task1.Job,
+	taskStatusesToCancel := []api.TaskStatus{
 		api.TaskStatusActive,
 		api.TaskStatusQueued,
 		api.TaskStatusSoftFailed,
-	).Return(remainingTasks, nil)
-	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusCanceled)
-	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusCanceled)
+	}
 
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusFailed, api.TaskStatusCanceled)
-	mocks.expectBroadcastTaskChange(task3, api.TaskStatusSoftFailed, api.TaskStatusCanceled)
+	mocks.persist.EXPECT().UpdateJobsTaskStatusesConditional(ctx, task1.Job, taskStatusesToCancel, api.TaskStatusCanceled,
+		"Manager cancelled this task because the job got status \"failed\".",
+	)
 
 	assert.NoError(t, sm.TaskStatusChange(ctx, task1, api.TaskStatusFailed))
 }
@@ -147,30 +144,22 @@ func TestTaskStatusChangeRequeueOnCompletedJob(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	// T: completed > queued --> J: completed > requeued > queued
-	task1 := taskWithStatus(api.JobStatusCompleted, api.TaskStatusCompleted)
-	task2 := taskOfSameJob(task1, api.TaskStatusCompleted)
-	task3 := taskOfSameJob(task2, api.TaskStatusCompleted)
-	allTaskIDs := []*persistence.Task{task1, task2, task3}
-
-	mocks.expectSaveTaskWithStatus(t, task1, api.TaskStatusQueued)
-	mocks.expectBroadcastTaskChange(task1, api.TaskStatusCompleted, api.TaskStatusQueued)
-	mocks.expectSaveJobWithStatus(t, task1.Job, api.JobStatusRequeued)
-	mocks.expectBroadcastJobChange(task1.Job, api.JobStatusCompleted, api.JobStatusRequeued)
-	mocks.expectBroadcastJobChange(task1.Job, api.JobStatusRequeued, api.JobStatusQueued)
+	task := taskWithStatus(api.JobStatusCompleted, api.TaskStatusCompleted)
+	mocks.expectSaveTaskWithStatus(t, task, api.TaskStatusQueued)
+	mocks.expectBroadcastTaskChange(task, api.TaskStatusCompleted, api.TaskStatusQueued)
+	mocks.expectSaveJobWithStatus(t, task.Job, api.JobStatusRequeued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(task.Job, api.JobStatusCompleted, api.JobStatusRequeued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(task.Job, api.JobStatusRequeued, api.JobStatusQueued)
 
 	// Expect queueing of the job to trigger queueing of all its tasks, if those tasks were all completed before.
 	// 2 out of 3 completed, because one was just queued.
-	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, task1.Job, api.TaskStatusCompleted).Return(2, 3, nil)
-	fetchCall := mocks.persist.EXPECT().FetchTasksOfJob(ctx, task1.Job).Return(allTaskIDs, nil)
-	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusQueued).After(fetchCall)
-	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusQueued).After(fetchCall)
+	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, task.Job, api.TaskStatusCompleted).Return(2, 3, nil)
+	mocks.persist.EXPECT().UpdateJobsTaskStatuses(ctx, task.Job, api.TaskStatusQueued,
+		"Queued because job transitioned status from \"completed\" to \"requeued\"",
+	)
+	mocks.expectSaveJobWithStatus(t, task.Job, api.JobStatusQueued)
 
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusCompleted, api.TaskStatusQueued)
-	mocks.expectBroadcastTaskChange(task3, api.TaskStatusCompleted, api.TaskStatusQueued)
-
-	mocks.expectSaveJobWithStatus(t, task1.Job, api.JobStatusQueued)
-
-	assert.NoError(t, sm.TaskStatusChange(ctx, task1, api.TaskStatusQueued))
+	assert.NoError(t, sm.TaskStatusChange(ctx, task, api.TaskStatusQueued))
 }
 
 func TestTaskStatusChangeCancelSingleTask(t *testing.T) {
@@ -241,31 +230,31 @@ func TestJobRequeueWithSomeCompletedTasks(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	task1 := taskWithStatus(api.JobStatusActive, api.TaskStatusCompleted)
-	task2 := taskOfSameJob(task1, api.TaskStatusFailed)
-	task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
-	notCompleteTasks := []*persistence.Task{task2, task3}
+	// These are not necessary to create for this test, but just imagine these tasks are there too.
+	// This is mimicked by returning (1, 3, nil) when counting the tasks (1 of 3 completed).
+	// task2 := taskOfSameJob(task1, api.TaskStatusFailed)
+	// task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
 	job := task1.Job
 
 	mocks.expectSaveJobWithStatus(t, job, api.JobStatusRequeued)
 
 	// Expect queueing of the job to trigger queueing of all its not-yet-completed tasks.
 	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted).Return(1, 3, nil)
-	mocks.persist.EXPECT().FetchTasksOfJobInStatus(ctx, job,
-		api.TaskStatusCanceled,
-		api.TaskStatusFailed,
-		api.TaskStatusPaused,
-		api.TaskStatusSoftFailed,
-	).Return(notCompleteTasks, nil)
+	mocks.persist.EXPECT().UpdateJobsTaskStatusesConditional(ctx, job,
+		[]api.TaskStatus{
+			api.TaskStatusCanceled,
+			api.TaskStatusFailed,
+			api.TaskStatusPaused,
+			api.TaskStatusSoftFailed,
+		},
+		api.TaskStatusQueued,
+		"Queued because job transitioned status from \"active\" to \"requeued\"",
+	)
 
-	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusQueued)
-	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusQueued)
 	mocks.expectSaveJobWithStatus(t, job, api.JobStatusQueued)
 
-	mocks.expectBroadcastJobChange(job, api.JobStatusActive, api.JobStatusRequeued)
-	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusQueued)
-
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusFailed, api.TaskStatusQueued)
-	mocks.expectBroadcastTaskChange(task3, api.TaskStatusSoftFailed, api.TaskStatusQueued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusActive, api.JobStatusRequeued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusRequeued, api.JobStatusQueued)
 
 	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusRequeued, "someone wrote a unittest"))
 }
@@ -275,35 +264,29 @@ func TestJobRequeueWithAllCompletedTasks(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	task1 := taskWithStatus(api.JobStatusCompleted, api.TaskStatusCompleted)
-	task2 := taskOfSameJob(task1, api.TaskStatusCompleted)
-	task3 := taskOfSameJob(task2, api.TaskStatusCompleted)
-	allTasks := []*persistence.Task{task1, task2, task3}
+	// These are not necessary to create for this test, but just imagine these tasks are there too.
+	// This is mimicked by returning (3, 3, nil) when counting the tasks (3 of 3 completed).
+	// task2 := taskOfSameJob(task1, api.TaskStatusCompleted)
+	// task3 := taskOfSameJob(task2, api.TaskStatusCompleted)
 	job := task1.Job
 
 	call1 := mocks.expectSaveJobWithStatus(t, job, api.JobStatusRequeued)
 
 	// Expect queueing of the job to trigger queueing of all its not-yet-completed tasks.
-	fetchCall := mocks.persist.EXPECT().FetchTasksOfJob(ctx, job).
-		Return(allTasks, nil).
+	updateCall := mocks.persist.EXPECT().
+		UpdateJobsTaskStatuses(ctx, job, api.TaskStatusQueued,
+			"Queued because job transitioned status from \"completed\" to \"requeued\"").
 		After(call1)
 
-	mocks.expectSaveTaskWithStatus(t, task1, api.TaskStatusQueued).After(fetchCall)
-	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusQueued).After(fetchCall)
-	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusQueued).After(fetchCall)
-
-	saveJobCall := mocks.expectSaveJobWithStatus(t, job, api.JobStatusQueued).After(fetchCall)
+	saveJobCall := mocks.expectSaveJobWithStatus(t, job, api.JobStatusQueued).After(updateCall)
 
 	mocks.persist.EXPECT().
 		CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted).
 		Return(0, 3, nil). // By now all tasks are queued.
 		After(saveJobCall)
 
-	mocks.expectBroadcastJobChange(job, api.JobStatusCompleted, api.JobStatusRequeued)
-	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusQueued)
-
-	mocks.expectBroadcastTaskChange(task1, api.TaskStatusCompleted, api.TaskStatusQueued)
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusCompleted, api.TaskStatusQueued)
-	mocks.expectBroadcastTaskChange(task3, api.TaskStatusCompleted, api.TaskStatusQueued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusCompleted, api.JobStatusRequeued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusRequeued, api.JobStatusQueued)
 
 	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusRequeued, "someone wrote a unit test"))
 }
@@ -313,28 +296,28 @@ func TestJobCancelWithSomeCompletedTasks(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	task1 := taskWithStatus(api.JobStatusActive, api.TaskStatusCompleted)
-	task2 := taskOfSameJob(task1, api.TaskStatusFailed)
-	task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
+	// task2 := taskOfSameJob(task1, api.TaskStatusFailed)
+	// task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
 	job := task1.Job
-	potentialRunTasks := []*persistence.Task{task2, task3}
 
 	mocks.expectSaveJobWithStatus(t, job, api.JobStatusCancelRequested)
 
 	// Expect cancelling of the job to trigger cancelling of all its could-potentially-still-run tasks.
-	fetchCall := mocks.persist.EXPECT().FetchTasksOfJobInStatus(ctx, job,
-		api.TaskStatusActive,
-		api.TaskStatusQueued,
-		api.TaskStatusSoftFailed,
-	).Return(potentialRunTasks, nil)
-	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusCanceled).After(fetchCall)
-	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusCanceled).After(fetchCall)
-	mocks.expectSaveJobWithStatus(t, job, api.JobStatusCanceled).After(fetchCall)
+	mocks.persist.EXPECT().UpdateJobsTaskStatusesConditional(ctx, job,
+		[]api.TaskStatus{
+			api.TaskStatusActive,
+			api.TaskStatusQueued,
+			// TODO: add api.TaskStatusPaused as well, as those should get cancelled too,
+			api.TaskStatusSoftFailed,
+		},
+		api.TaskStatusCanceled,
+		"Manager cancelled this task because the job got status \"cancel-requested\".",
+	)
 
-	mocks.expectBroadcastJobChange(job, api.JobStatusActive, api.JobStatusCancelRequested)
+	mocks.expectSaveJobWithStatus(t, job, api.JobStatusCanceled)
+
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusActive, api.JobStatusCancelRequested)
 	mocks.expectBroadcastJobChange(job, api.JobStatusCancelRequested, api.JobStatusCanceled)
-
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusFailed, api.TaskStatusCanceled)
-	mocks.expectBroadcastTaskChange(task3, api.TaskStatusSoftFailed, api.TaskStatusCanceled)
 
 	assert.NoError(t, sm.JobStatusChange(ctx, job, api.JobStatusCancelRequested, "someone wrote a unittest"))
 }
@@ -344,32 +327,32 @@ func TestCheckStuck(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	task1 := taskWithStatus(api.JobStatusActive, api.TaskStatusCompleted)
-	task2 := taskOfSameJob(task1, api.TaskStatusFailed)
-	task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
+	// task2 := taskOfSameJob(task1, api.TaskStatusFailed)
+	// task3 := taskOfSameJob(task2, api.TaskStatusSoftFailed)
 	job := task1.Job
 	job.Status = api.JobStatusRequeued
 
 	mocks.persist.EXPECT().FetchJobsInStatus(ctx, api.JobStatusCancelRequested, api.JobStatusRequeued).
 		Return([]*persistence.Job{job}, nil)
-	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted).Return(2, 3, nil)
-	mocks.persist.EXPECT().FetchTasksOfJobInStatus(ctx, job,
-		api.TaskStatusCanceled,
-		api.TaskStatusFailed,
-		api.TaskStatusPaused,
-		api.TaskStatusSoftFailed,
-	).
-		Return([]*persistence.Task{task2, task3}, nil)
+	mocks.persist.EXPECT().CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted).Return(1, 3, nil)
+
+	mocks.persist.EXPECT().UpdateJobsTaskStatusesConditional(ctx, job,
+		[]api.TaskStatus{
+			api.TaskStatusCanceled,
+			api.TaskStatusFailed,
+			api.TaskStatusPaused,
+			api.TaskStatusSoftFailed,
+		},
+		api.TaskStatusQueued,
+		fmt.Sprintf("Queued because job transitioned status from %q to %q", job.Status, job.Status),
+	)
 
 	// Expect Job -> Queued and non-completed tasks -> Queued.
 	mocks.expectSaveJobWithStatus(t, job, api.JobStatusRequeued) // should be called once for the current status
 	mocks.expectSaveJobWithStatus(t, job, api.JobStatusQueued)   // and then with the new status
-	mocks.expectSaveTaskWithStatus(t, task2, api.TaskStatusQueued)
-	mocks.expectSaveTaskWithStatus(t, task3, api.TaskStatusQueued)
 
-	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusRequeued)
-	mocks.expectBroadcastJobChange(job, api.JobStatusRequeued, api.JobStatusQueued)
-	mocks.expectBroadcastTaskChange(task2, api.TaskStatusFailed, api.TaskStatusQueued)
-	mocks.expectBroadcastTaskChange(task3, api.TaskStatusSoftFailed, api.TaskStatusQueued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusRequeued, api.JobStatusRequeued)
+	mocks.expectBroadcastJobChangeWithTaskRefresh(job, api.JobStatusRequeued, api.JobStatusQueued)
 
 	sm.CheckStuck(ctx)
 }
@@ -416,9 +399,25 @@ func (m *StateMachineMocks) expectBroadcastJobChange(
 	expectUpdate := api.JobUpdate{
 		Id:             job.UUID,
 		Name:           &job.Name,
-		Updated:        job.UpdatedAt,
 		PreviousStatus: &fromStatus,
+		RefreshTasks:   false,
 		Status:         toStatus,
+		Updated:        job.UpdatedAt,
+	}
+	return m.broadcaster.EXPECT().BroadcastJobUpdate(expectUpdate)
+}
+
+func (m *StateMachineMocks) expectBroadcastJobChangeWithTaskRefresh(
+	job *persistence.Job,
+	fromStatus, toStatus api.JobStatus,
+) *gomock.Call {
+	expectUpdate := api.JobUpdate{
+		Id:             job.UUID,
+		Name:           &job.Name,
+		PreviousStatus: &fromStatus,
+		RefreshTasks:   true,
+		Status:         toStatus,
+		Updated:        job.UpdatedAt,
 	}
 	return m.broadcaster.EXPECT().BroadcastJobUpdate(expectUpdate)
 }
