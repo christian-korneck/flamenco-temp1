@@ -32,7 +32,6 @@ export default {
     return {
       shownStatuses: [],
       availableStatuses: [], // Will be filled after data is loaded from the backend.
-      indicator: indicator, // So that the template can use this function too.
     };
   },
   mounted() {
