@@ -49,7 +49,7 @@
   --color-status-soft-failed: hsl(356 70% 40%);
 
   --color-status-queued: hsl(276, 100%, 50%);
-  --color-status-requeued: hsl(276, 100%, 50%);
+  --color-status-requeueing: hsl(276, 100%, 50%);
   --color-status-canceled: hsl(194 100% 46%);
   --color-status-paused: hsl(194 20% 46%);
 
@@ -347,8 +347,8 @@ ul.status-filter-bar .status-filter-indicator .indicator {
 .status-cancel-requested {
   --indicator-color: var(--color-status-cancel-requested);
 }
-.status-requeued {
-  --indicator-color: var(--color-status-requeued);
+.status-requeueing {
+  --indicator-color: var(--color-status-requeueing);
 }
 .status-under-construction {
   --indicator-color: var(--color-status-under-construction);

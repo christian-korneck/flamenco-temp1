@@ -140,7 +140,7 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 	switch task.Status {
 	case api.TaskStatusQueued:
 		// Re-queueing a task on a completed job should re-queue the job too.
-		return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusCompleted, api.JobStatusRequeued, "task was queued")
+		return sm.jobStatusIfAThenB(ctx, logger, job, api.JobStatusCompleted, api.JobStatusRequeueing, "task was queued")
 
 	case api.TaskStatusPaused:
 		// Pausing a task has no impact on the job.
@@ -409,7 +409,7 @@ func (sm *StateMachine) updateTasksAfterJobStatusChange(
 			massTaskUpdate:     true,
 		}, err
 
-	case api.JobStatusRequeued:
+	case api.JobStatusRequeueing:
 		jobStatus, err := sm.requeueTasks(ctx, logger, job, oldJobStatus)
 		return tasksUpdateResult{
 			followingJobStatus: jobStatus,
@@ -464,14 +464,14 @@ func (sm *StateMachine) cancelTasks(
 
 // requeueTasks re-queues all tasks of the job.
 //
-// This function assumes that the current job status is "requeued".
+// This function assumes that the current job status is "requeueing".
 //
 // Returns the new job status, if this status transition should be followed by
 // another one.
 func (sm *StateMachine) requeueTasks(
 	ctx context.Context, logger zerolog.Logger, job *persistence.Job, oldJobStatus api.JobStatus,
 ) (api.JobStatus, error) {
-	if job.Status != api.JobStatusRequeued {
+	if job.Status != api.JobStatusRequeueing {
 		logger.Warn().Msg("unexpected job status in StateMachine::requeueTasks()")
 	}
 
@@ -505,7 +505,7 @@ func (sm *StateMachine) requeueTasks(
 
 	// TODO: also reset the 'failed by workers' blacklist.
 
-	// The appropriate tasks have been requeued, so now the job can go from "requeued" to "queued".
+	// The appropriate tasks have been requeued, so now the job can go from "requeueing" to "queued".
 	return api.JobStatusQueued, nil
 }
 
@@ -539,7 +539,7 @@ func (sm *StateMachine) checkTaskCompletion(
 // to run at startup of Flamenco Manager, and checks to see if there are any
 // jobs in a status that a human will not be able to fix otherwise.
 func (sm *StateMachine) CheckStuck(ctx context.Context) {
-	stuckJobs, err := sm.persist.FetchJobsInStatus(ctx, api.JobStatusCancelRequested, api.JobStatusRequeued)
+	stuckJobs, err := sm.persist.FetchJobsInStatus(ctx, api.JobStatusCancelRequested, api.JobStatusRequeueing)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to fetch stuck jobs")
 		return

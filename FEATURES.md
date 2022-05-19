@@ -37,7 +37,7 @@ Note that list is **not** in any specific order.
 - [ ] Port the old 'fail-requested' task status handling code to the new Manager
 - [ ] Ensure "task state machine" can run in a single database transaction.
 - [x] At startup check & fix "stuck" jobs.
-      Example: jobs in statuses `cancel-requested`, `requeued`, etc.
+      Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
 - [ ] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
 - [ ] Worker timeout monitoring

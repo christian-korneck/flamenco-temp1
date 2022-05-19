@@ -3,7 +3,7 @@ package task_state_machine
 import "git.blender.org/flamenco/pkg/api"
 
 var (
-	// Task statuses that always get requeued when the job is requeued.
+	// Task statuses that always get requeued when the job is requeueing.
 	nonCompletedStatuses = []api.TaskStatus{
 		api.TaskStatusCanceled,
 		api.TaskStatusFailed,

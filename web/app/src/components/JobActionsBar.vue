@@ -29,7 +29,7 @@ export default {
     },
     onButtonRequeue() {
       return this._handleJobActionPromise(
-        this.jobs.requeueJobs(), "requeued");
+        this.jobs.requeueJobs(), "requeueing");
     },
 
     _handleJobActionPromise(promise, description) {

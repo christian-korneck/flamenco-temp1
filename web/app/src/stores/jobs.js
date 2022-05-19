@@ -64,7 +64,7 @@ export const useJobs = defineStore('jobs', {
      * code now assumes that only the active job needs to be operated on.
      */
     cancelJobs() { return this._setJobStatus("cancel-requested"); },
-    requeueJobs() { return this._setJobStatus("requeued"); },
+    requeueJobs() { return this._setJobStatus("requeueing"); },
 
     // Internal methods.
 

@@ -24,7 +24,7 @@ export default {
     },
     onButtonRequeue() {
       return this._handleTaskActionPromise(
-        this.tasks.requeueTasks(), "requeued");
+        this.tasks.requeueTasks(), "requeueing");
     },
 
     _handleTaskActionPromise(promise, description) {

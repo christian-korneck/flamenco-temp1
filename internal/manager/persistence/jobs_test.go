@@ -124,7 +124,7 @@ func TestFetchJobsInStatus(t *testing.T) {
 	// Update a job status, query for two of the three used statuses.
 	job1.Status = api.JobStatusQueued
 	assert.NoError(t, db.SaveJobStatus(ctx, job1))
-	job2.Status = api.JobStatusRequeued
+	job2.Status = api.JobStatusRequeueing
 	assert.NoError(t, db.SaveJobStatus(ctx, job2))
 
 	jobs, err = db.FetchJobsInStatus(ctx, api.JobStatusQueued, api.JobStatusUnderConstruction)
