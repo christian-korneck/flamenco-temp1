@@ -104,6 +104,7 @@ export default {
 
     // SocketIO data event handlers:
     onSioJobUpdate(jobUpdate) {
+      this.notifs.addJobUpdate(jobUpdate);
 
       if (this.$refs.jobsTable) {
         if (jobUpdate.previous_status)

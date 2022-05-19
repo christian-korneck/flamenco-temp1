@@ -40,7 +40,19 @@ export const useNotifs = defineStore('notifications', {
     },
 
     /**
-     * @param {API.SioTaskUpdate} taskUpdate Task update received via SocketIO.
+     * @param {API.SocketIOJobUpdate} jobUpdate Job update received via SocketIO.
+     */
+    addJobUpdate(jobUpdate) {
+      console.log('Received job update:', jobUpdate);
+      let msg = `Job ${jobUpdate.name}`;
+      if (jobUpdate.previous_status && jobUpdate.previous_status != jobUpdate.status) {
+        msg += ` changed status ${jobUpdate.previous_status} ➜ ${jobUpdate.status}`;
+      }
+      this.add(msg)
+    },
+
+    /**
+     * @param {API.SocketIOTaskUpdate} taskUpdate Task update received via SocketIO.
      */
     addTaskUpdate(taskUpdate) {
       console.log('Received task update:', taskUpdate);

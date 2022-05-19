@@ -33,17 +33,14 @@ export default {
     },
 
     _handleJobActionPromise(promise, description) {
-      // const numJobs = this.jobs.numSelected;
-      const numJobs = 1;
       return promise
         .then(() => {
-          let message;
-          if (numJobs == 1) {
-            message = `Job ${description}`;
-          } else {
-            message = `${numJobs} jobs ${description}`;
-          }
-          this.notifs.add(message);
+          // There used to be a call to `this.notifs.add(message)` here, but now
+          // that job status changes are logged in the notifications anyway,
+          // it's no longer necessary.
+          // This function is still kept, in case we want to bring back the
+          // notifications when multiple jobs can be selected. Then a summary
+          // ("N jobs requeued") could be logged here.
         })
         .catch((error) => {
           const errorMsg = JSON.stringify(error); // TODO: handle API errors better.
