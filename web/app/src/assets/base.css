@@ -413,3 +413,10 @@ section.footer-popup .tabulator-tableholder {
    * horizontal scrollbar as well. */
   overflow-y: scroll;
 }
+
+section.footer-popup .tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
+  font-size: var(--font-size);
+  font-weight: normal;
+  color: var(--color-text-hint);
+  user-select: none;
+}
