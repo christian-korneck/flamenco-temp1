@@ -406,3 +406,10 @@ section.footer-popup header h3 {
 section.footer-popup button {
   float: right;
 }
+section.footer-popup .tabulator-tableholder {
+  /* Force a visible scroll bar, so that the notification history table always
+   * has the same available width. Without this, Tabulator won't properly act on
+   * the reduction in width when the scrollbar appears, and will show a
+   * horizontal scrollbar as well. */
+  overflow-y: scroll;
+}
