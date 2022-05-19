@@ -373,7 +373,14 @@ func (f *Flamenco) doTaskUpdate(
 		logger.Panic().Msg("dbTask.Job is nil, unable to continue")
 	}
 
-	var dbErr error
+	var dbErrActivity, dbErrStatus error
+
+	if update.Activity != nil {
+		dbTask.Activity = *update.Activity
+		// The state machine will also save the task, including its activity, but
+		// relying on that here would create strong cohesion.
+		dbErrActivity = f.persist.SaveTaskActivity(ctx, dbTask)
+	}
 
 	if update.TaskStatus != nil {
 		oldTaskStatus := dbTask.Status
@@ -383,14 +390,9 @@ func (f *Flamenco) doTaskUpdate(
 				Str("newTaskStatus", string(*update.TaskStatus)).
 				Str("oldTaskStatus", string(oldTaskStatus)).
 				Msg("error changing task status")
-			dbErr = fmt.Errorf("changing status of task %s to %q: %w",
+			dbErrStatus = fmt.Errorf("changing status of task %s to %q: %w",
 				dbTask.UUID, *update.TaskStatus, err)
 		}
-	}
-
-	if update.Activity != nil {
-		dbTask.Activity = *update.Activity
-		dbErr = f.persist.SaveTaskActivity(ctx, dbTask)
 	}
 
 	if update.Log != nil {
@@ -403,7 +405,12 @@ func (f *Flamenco) doTaskUpdate(
 		}
 	}
 
-	return dbErr
+	// Any error updating the status is more important than an error updating the
+	// activity.
+	if dbErrStatus != nil {
+		return dbErrStatus
+	}
+	return dbErrActivity
 }
 
 func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {

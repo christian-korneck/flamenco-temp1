@@ -32,14 +32,14 @@ func NewJobUpdate(job *persistence.Job) api.JobUpdate {
 // Assumes task.Job is not nil.
 func NewTaskUpdate(task *persistence.Task) api.SocketIOTaskUpdate {
 	taskUpdate := api.SocketIOTaskUpdate{
-		Id:      task.UUID,
-		JobId:   task.Job.UUID,
-		Name:    task.Name,
-		Updated: task.UpdatedAt,
-		Status:  task.Status,
+		Id:       task.UUID,
+		JobId:    task.Job.UUID,
+		Name:     task.Name,
+		Updated:  task.UpdatedAt,
+		Status:   task.Status,
+		Activity: task.Activity,
 	}
 	return taskUpdate
-
 }
 
 // BroadcastJobUpdate sends the job update to clients.

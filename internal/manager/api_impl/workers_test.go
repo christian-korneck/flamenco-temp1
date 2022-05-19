@@ -198,8 +198,8 @@ func TestTaskUpdate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, mockTask.UUID, statusChangedtask.UUID)
 	assert.Equal(t, mockTask.UUID, actUpdatedTask.UUID)
-	assert.Equal(t, "pre-update activity", statusChangedtask.Activity) // the 'save' should come from the change in status.
-	assert.Equal(t, "testing", actUpdatedTask.Activity)                // the activity should be saved separately.
+	assert.Equal(t, "testing", statusChangedtask.Activity)
+	assert.Equal(t, "testing", actUpdatedTask.Activity)
 }
 
 func TestMayWorkerRun(t *testing.T) {
