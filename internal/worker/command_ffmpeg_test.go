@@ -70,8 +70,9 @@ func TestCmdFramesToVideoSimpleWindows(t *testing.T) {
 		Parameters: map[string]interface{}{
 			"exe":        "/path/to/ffmpeg -v quiet",
 			"argsBefore": []string{"-report"},
-			"inputGlob":  "path/to/renders/*.png",
-			"fps":        10.0,
+			// NOTE: these files MUST exist, otherwise the glob index file creation will fail.
+			"inputGlob": "command_ffmpeg_test_files/*.png",
+			"fps":       10.0,
 			"args": []string{
 				"-c:v", "hevc",
 				"-crf", "31",
@@ -83,8 +84,8 @@ func TestCmdFramesToVideoSimpleWindows(t *testing.T) {
 
 	cliArgs := []string{
 		"-v", "quiet", // exe
-		"-report",                                  // argsBefore
-		"-f", "concat", "-i", "this-is-random.txt", // input glob
+		"-report",                                                                              // argsBefore
+		"-f", "concat", "-safe", "0", "-i", "command_ffmpeg_test_files\\ffmpeg-file-index.txt", // input glob
 		"-c:v", "hevc", "-crf", "31", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", // args
 		"-r", "10", // fps
 		"path/to/renders/preview.mkv", // outputFile
@@ -92,12 +93,13 @@ func TestCmdFramesToVideoSimpleWindows(t *testing.T) {
 	mocks.cli.EXPECT().
 		CommandContext(gomock.Any(), "/path/to/ffmpeg", gomock.Any()).
 		DoAndReturn(func(ctx context.Context, name string, arg ...string) error {
-			// Test all but the random filename.
-			assert.EqualValues(t, cliArgs[:6], arg[:6])
-			assert.EqualValues(t, cliArgs[7:], arg[7:])
-			return nil
+			assert.EqualValues(t, cliArgs, arg)
+			return nil // this is the nil *exec.Cmd referenced below
 		})
 
 	err := ce.cmdFramesToVideo(context.Background(), zerolog.Nop(), taskID, cmd)
 	assert.Equal(t, ErrNoExecCmd, err, "nil *exec.Cmd should result in ErrNoExecCmd")
+
+	assert.NoFileExists(t, "command_ffmpeg_test_files/ffmpeg-file-index.txt",
+		"the glob index file should have been removed")
 }

@@ -116,7 +116,17 @@ func (ce *CommandExecutor) cmdFramesToVideoExeCommand(
 	}
 
 	inputGlobArgs, cleanup, err := parameters.getInputGlob()
+
+	// runCleanup should be used if the cleanup function is *not* going to be
+	// returned (i.e. in case of error).
+	runCleanup := func() {
+		if cleanup != nil {
+			cleanup()
+		}
+	}
+
 	if err != nil {
+		runCleanup()
 		return nil, nil, fmt.Errorf("creating input for FFmpeg: %w", err)
 	}
 
@@ -128,6 +138,7 @@ func (ce *CommandExecutor) cmdFramesToVideoExeCommand(
 
 	execCmd := ce.cli.CommandContext(ctx, parameters.exe, cliArgs...)
 	if execCmd == nil {
+		runCleanup()
 		logger.Error().Msg("unable to create command executor")
 		return nil, nil, ErrNoExecCmd
 	}
@@ -136,6 +147,7 @@ func (ce *CommandExecutor) cmdFramesToVideoExeCommand(
 		Msg("going to execute FFmpeg")
 
 	if err := ce.listener.LogProduced(ctx, taskID, fmt.Sprintf("going to run: %s %q", parameters.exe, cliArgs)); err != nil {
+		runCleanup()
 		return nil, nil, err
 	}
 
