@@ -4,6 +4,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
@@ -43,10 +44,16 @@ func (w *Worker) queryManagerForStateChange(ctx context.Context) *api.WorkerStat
 func (w *Worker) mayIKeepRunning(ctx context.Context, taskID string) api.MayKeepRunning {
 	resp, err := w.client.MayWorkerRunWithResponse(ctx, taskID)
 	if err != nil {
-		log.Warn().
-			Err(err).
-			Str("task", taskID).
-			Msg("error asking Manager may-I-keep-running task")
+		if errors.Is(err, context.Canceled) {
+			log.Debug().
+				Str("task", taskID).
+				Msg("may-I-keep-running query interrupted by shutdown")
+		} else {
+			log.Warn().
+				Err(err).
+				Str("task", taskID).
+				Msg("error asking Manager may-I-keep-running task")
+		}
 		return api.MayKeepRunning{MayKeepRunning: true}
 	}
 
