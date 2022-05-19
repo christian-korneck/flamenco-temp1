@@ -67,7 +67,7 @@ body {
   color-scheme: dark;
   font-family: var(--font-family-body);
   font-size: var(--font-size-base);
-  height: 100vh;
+  height: calc(100vh);
   margin: 0;
   padding: 0;
 }
@@ -215,6 +215,8 @@ footer {
   font-size: var(--font-size-sm);
   grid-area: footer;
   padding: var(--spacer-sm);
+
+  background-color: var(--color-background-column);
 }
 
 .btn-bar {
@@ -360,7 +362,7 @@ ul.status-filter-bar .status-filter-indicator .indicator {
   background-color: transparent;
 }
 
-.tabulator-row {
+.job-list .tabulator-row, .tasks-list .tabulator-row {
   cursor: pointer;
 }
 
@@ -370,4 +372,37 @@ ul.status-filter-bar .status-filter-indicator .indicator {
 }
 .tabulator-row.active-row.tabulator-row-even {
   background-color: var(--table-color-background-row-active-even);
+}
+
+footer.window-footer {
+  cursor: pointer;
+}
+
+section.footer-popup {
+  position: absolute;
+  bottom: var(--grid-gap);
+  left: var(--grid-gap);
+  right: var(--grid-gap);
+  height: 20vh;
+
+  z-index: 42;
+  padding: 0.2rem 0.5rem;
+
+  background-color: var(--color-background-column);
+  border-radius: 0.3rem;
+  border: thin solid var(--color-border);
+
+  box-shadow: 0 0 2rem black;
+}
+
+section.footer-popup header {
+  display: flex;
+}
+
+section.footer-popup header h3 {
+  margin: 0 auto 0 0;
+}
+
+section.footer-popup button {
+  float: right;
 }

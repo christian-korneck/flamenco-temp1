@@ -9,12 +9,13 @@
   <div class="col col-3">
     <task-details :taskData="tasks.activeTask" />
   </div>
-  <footer>
-    <notification-bar />
-    <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobID"
-      @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @message="onChatMessage"
-      @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
-  </footer>
+
+  <footer class="window-footer" v-if="!showFooterPopup" @click="showFooterPopup = true"><notification-bar /></footer>
+  <footer-popup v-if="showFooterPopup" ref="footerPopup" @clickClose="showFooterPopup = false" />
+
+  <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobID"
+    @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @message="onChatMessage"
+    @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
 </template>
 
 <script>
@@ -24,6 +25,7 @@ import { useJobs } from '@/stores/jobs';
 import { useTasks } from '@/stores/tasks';
 import { apiClient } from '@/stores/api-query-count';
 
+import FooterPopup from '@/components/FooterPopup.vue'
 import JobDetails from '@/components/JobDetails.vue'
 import JobsTable from '@/components/JobsTable.vue'
 import NotificationBar from '@/components/NotificationBar.vue'
@@ -35,6 +37,7 @@ export default {
   name: 'JobsView',
   props: ["jobID", "taskID"], // provided by Vue Router.
   components: {
+    FooterPopup,
     JobDetails,
     JobsTable,
     NotificationBar,
@@ -48,9 +51,11 @@ export default {
 
     jobs: useJobs(),
     tasks: useTasks(),
+    showFooterPopup: false,
   }),
   mounted() {
     window.jobsView = this;
+    window.footerPopup = this.$refs.footerPopup;
 
     // Useful for debugging:
     // this.jobs.$subscribe((mutation, state) => {

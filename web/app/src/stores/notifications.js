@@ -8,12 +8,19 @@ const MESSAGE_HIDE_DELAY_MS = 5000;
  */
 export const useNotifs = defineStore('notifications', {
   state: () => ({
-    /** @type {{ msg: string, time: Date }[]} */
+    /**
+     * History of notifications.
+     *
+     * The 'id' is just for Tabulator to uniquely identify rows, in order to be
+     * able to scroll to them.
+     *
+     * @type {{ id: Number, msg: string, time: Date }[]} */
     history: [],
-    /** @type { msg: string, time: Date } */
+    /** @type { id: Number, msg: string, time: Date } */
     last: "",
 
     hideTimerID: 0,
+    lastID: 0,
   }),
   actions: {
     /**
@@ -21,9 +28,10 @@ export const useNotifs = defineStore('notifications', {
      * @param {string} message
      */
     add(message) {
-      const notif = {msg: message, time: new Date()};
+      const notif = {id: this._generateID(), msg: message, time: new Date()};
       this.history.push(notif);
       this.last = notif;
+      console.log("New notification:", plain(notif));
       this._prune();
       this._restartHideTimer();
     },
@@ -44,5 +52,8 @@ export const useNotifs = defineStore('notifications', {
         last: "",
       });
     },
+    _generateID() {
+      return ++this.lastID;
+    }
   },
 })
