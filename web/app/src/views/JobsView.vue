@@ -24,18 +24,23 @@ import { useJobs } from '@/stores/jobs';
 import { useTasks } from '@/stores/tasks';
 import { apiClient } from '@/stores/api-query-count';
 
-import JobsTable from '@/components/JobsTable.vue'
 import JobDetails from '@/components/JobDetails.vue'
+import JobsTable from '@/components/JobsTable.vue'
+import NotificationBar from '@/components/NotificationBar.vue'
 import TaskDetails from '@/components/TaskDetails.vue'
 import TasksTable from '@/components/TasksTable.vue'
-import NotificationBar from '@/components/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
 
 export default {
   name: 'JobsView',
   props: ["jobID", "taskID"], // provided by Vue Router.
   components: {
-    JobsTable, JobDetails, TaskDetails, TasksTable, NotificationBar, UpdateListener,
+    JobDetails,
+    JobsTable,
+    NotificationBar,
+    TaskDetails,
+    TasksTable,
+    UpdateListener,
   },
   data: () => ({
     websocketURL: urls.ws(),
