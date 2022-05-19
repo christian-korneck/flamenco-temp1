@@ -61,12 +61,32 @@ Some code is generated from the OpenAPI specs in
 `pkg/api/flamenco-openapi.yaml`. The generated code is committed to Git, so that
 after a checkout you shouldn't need to re-run the generator to build Flamenco.
 
-After changing `pkg/api/flamenco-openapi.yaml`, run `make generate` to generate
-the code, then commit to Git.
-
 The JavaScript and Python generator is made in Java, so it requires a JRE/JDK to
 be installed. On Ubuntu Linux, `sudo apt install default-jre-headless` should be
 enough.
+
+## OpenAPI Commit Guidelines
+
+Typically a change to the OpenAPI definition consists of three steps, namely
+making the change to the OpenAPI file, regenerating code, and then alter
+whatever manually-written code needs altering.
+
+Each of these steps should be **committed independently**, by following these
+steps:
+
+1. Commit the changes to `pkg/api/flamenco-openapi.yaml`, prefixing the commit
+   message with `OAPI:`.
+2. Regenerate code with `make generate`, then commit with message
+   `OAPI: Regenerate code`.
+3. Commit any other code changes to complete the change.
+
+The downside to this approach is that the second commit will likely break the
+project, which is unfortunate. However, this approach does have some advantages:
+
+- The regenerated code has the commit hash of the actual change to the OpenAPI
+  definition.
+- Changes to manually-written and generated code are tracked in separate
+  commits. This makes them easier to comprehend by humans.
 
 
 ## Swagger UI
