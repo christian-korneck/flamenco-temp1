@@ -848,12 +848,7 @@ components:
           type: string
           description: Python expression to be evaluated in order to determine the default value for this setting.
         "visible":
-          type: boolean
-          description: >
-            Whether to show this setting in the UI of a job submitter (like a
-            Blender add-on). Set to `false` when it is an internal setting that
-            shouldn't be shown to end users.
-          default: true
+          $ref: "#/components/schemas/AvailableJobSettingVisibility"
         "required":
           type: boolean
           description: >
@@ -882,6 +877,17 @@ components:
         Sub-type of the job setting. Currently only available for string types.
         `HASHED_FILE_PATH` is a directory path + `"/######"` appended.
       enum: ["file_path", "dir_path", "file_name", "hashed_file_path"]
+
+    AvailableJobSettingVisibility:
+      type: string
+      description: >
+        When to show this setting.
+        `visible`: always show.
+        `submission`: only show in the UI of a job submitter (like a Blender add-on).
+        `web`: only show in the web interface for management, but not when submitting the job.
+        `hidden`: never show; only available to the job compiler script as internal setting.
+      enum: [visible, hidden, submission, web]
+      default: visible
 
     SubmittedJob:
       type: object
