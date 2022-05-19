@@ -9,30 +9,30 @@ const JOB_TYPE = {
         { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
 
         // render_output_root + add_path_components determine the value of render_output_path.
-        { key: "render_output_root", type: "string", subtype: "dir_path", required: true,
+        { key: "render_output_root", type: "string", subtype: "dir_path", required: true, visible: "submission",
           description: "Base directory of where render output is stored. Will have some job-specific parts appended to it"},
-        { key: "add_path_components", type: "int32", required: true, default: 0, propargs: {min: 0, max: 32},
+        { key: "add_path_components", type: "int32", required: true, default: 0, propargs: {min: 0, max: 32}, visible: "submission",
           description: "Number of path components of the current blend file to use in the render output path"},
         { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
           eval: "str(Path(settings.render_output_root) / last_n_dir_parts(settings.add_path_components) / jobname / '{timestamp}' / '######')",
           description: "Final file path of where render output will be saved"},
 
         // Automatically evaluated settings:
-        { key: "blender_cmd", type: "string", default: "{blender}", visible: false },
-        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: false },
-        { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base", visible: false },
+        { key: "blender_cmd", type: "string", default: "{blender}", visible: "hidden" },
+        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: "hidden" },
+        { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base", visible: "hidden" },
         {
             key: "images_or_video",
             type: "string",
             required: true,
             choices: ["images", "video"],
-            visible: false,
+            visible: "hidden",
             eval: "'video' if C.scene.render.image_settings.file_format in {'FFMPEG', 'AVI_RAW', 'AVI_JPEG'} else 'images'"
         },
-        { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format", visible: false },
-        { key: "image_file_extension", type: "string", required: true, eval: "C.scene.render.file_extension", visible: false,
+        { key: "format", type: "string", required: true, eval: "C.scene.render.image_settings.file_format", visible: "web" },
+        { key: "image_file_extension", type: "string", required: true, eval: "C.scene.render.file_extension", visible: "hidden",
           description: "File extension used when rendering images; ignored when images_or_video='video'" },
-        { key: "video_container_format", type: "string", required: true, eval: "C.scene.render.ffmpeg.format", visible: false,
+        { key: "video_container_format", type: "string", required: true, eval: "C.scene.render.ffmpeg.format", visible: "hidden",
           description: "Container format used when rendering video; ignored when images_or_video='images'" },
     ]
 };

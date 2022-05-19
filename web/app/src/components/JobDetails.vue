@@ -147,6 +147,11 @@ export default {
         return;
       }
 
+      // Construct a set of `setting.visible` values that should make the
+      // setting visible here in the web interface.
+      const v = new API.AvailableJobSettingVisibility();
+      const visible = new Set([undefined, v.visible, v.web]);
+
       const filtered = {};
       for (let key in newJobSettings) {
         const setting = this.jobTypeSettings[key];
@@ -156,7 +161,7 @@ export default {
           // or when the submission system simply added custom settings.
           continue;
         }
-        if (setting.visible !== false) {
+        if (visible.has(setting.visible)) {
           filtered[key] = newJobSettings[key];
         }
       }

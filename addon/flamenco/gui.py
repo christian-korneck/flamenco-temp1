@@ -85,7 +85,7 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         propgroup: JobTypePropertyGroup,
         setting: _AvailableJobSetting,
     ) -> None:
-        if not setting.get("visible", True):
+        if not self.setting_is_visible(setting):
             return
 
         row = layout.row(align=True)
@@ -101,6 +101,15 @@ class FLAMENCO_PT_job_submission(bpy.types.Panel):
         }:
             op = row.operator("flamenco3.explore_file_path", text="", icon="WINDOW")
             op.path = getattr(propgroup, setting.key)
+
+    @staticmethod
+    def setting_is_visible(setting: _AvailableJobSetting) -> bool:
+        try:
+            visibility = setting.visible
+        except AttributeError:
+            # The default is 'visible'.
+            return True
+        return str(visibility) in {"visible", "submission"}
 
     def draw_setting_editable(
         self,
