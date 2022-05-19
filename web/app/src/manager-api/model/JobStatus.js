@@ -90,10 +90,10 @@ export default class JobStatus {
 
     
         /**
-         * value: "requeued"
+         * value: "requeueing"
          * @const
          */
-        "requeued" = "requeued";
+        "requeueing" = "requeueing";
 
     
         /**

@@ -68,7 +68,7 @@ const (
 
 	JobStatusQueued JobStatus = "queued"
 
-	JobStatusRequeued JobStatus = "requeued"
+	JobStatusRequeueing JobStatus = "requeueing"
 
 	JobStatusUnderConstruction JobStatus = "under-construction"
 )

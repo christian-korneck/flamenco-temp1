@@ -62,7 +62,7 @@ class JobStatus(ModelSimple):
             'ARCHIVED': "archived",
             'ARCHIVING': "archiving",
             'CANCEL-REQUESTED': "cancel-requested",
-            'REQUEUED': "requeued",
+            'REQUEUEING': "requeueing",
             'UNDER-CONSTRUCTION': "under-construction",
         },
     }
@@ -115,10 +115,10 @@ class JobStatus(ModelSimple):
         Note that value can be passed either in args or in kwargs, but not in both.
 
         Args:
-            args[0] (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeued", "under-construction", ]  # noqa: E501
+            args[0] (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeueing", "under-construction", ]  # noqa: E501
 
         Keyword Args:
-            value (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeued", "under-construction", ]  # noqa: E501
+            value (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeueing", "under-construction", ]  # noqa: E501
             _check_type (bool): if True, values for parameters in openapi_types
                                 will be type checked and a TypeError will be
                                 raised if the wrong type is input.
@@ -205,10 +205,10 @@ class JobStatus(ModelSimple):
         Note that value can be passed either in args or in kwargs, but not in both.
 
         Args:
-            args[0] (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeued", "under-construction", ]  # noqa: E501
+            args[0] (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeueing", "under-construction", ]  # noqa: E501
 
         Keyword Args:
-            value (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeued", "under-construction", ]  # noqa: E501
+            value (str):, must be one of ["active", "canceled", "completed", "construction-failed", "failed", "paused", "queued", "archived", "archiving", "cancel-requested", "requeueing", "under-construction", ]  # noqa: E501
             _check_type (bool): if True, values for parameters in openapi_types
                                 will be type checked and a TypeError will be
                                 raised if the wrong type is input.
