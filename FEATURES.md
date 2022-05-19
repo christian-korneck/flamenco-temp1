@@ -26,6 +26,7 @@ Note that list is **not** in any specific order.
   - [x] Tasks list
   - [x] Task details
   - [x] Task action buttons
+  - [x] Notification history pop-over
   - [ ] Task log viewer
   - [x] Subscription system for "job detail+task" updates.
   - [ ] Subscription system for "task log" updates.
@@ -59,7 +60,7 @@ Note that list is **not** in any specific order.
   will just parse the JS from disk again. It'll be better to only do this when
   the file on disk changed.
 - [ ] Split up OpenAPI-generated server code into an interface per tag. This'll help splitting up the rather large `Flamenco` struct into smaller pieces.
-- [ ] Remove the current index and replace it with a redirect to `/jobs`
+- [x] Remove the current index and replace it with a redirect to `/jobs`
 
 ## Worker
 
