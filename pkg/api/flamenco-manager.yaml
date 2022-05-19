@@ -1217,7 +1217,7 @@ components:
     # the 'paths' section of this document, so some code generators may choose
     # to skip these.
 
-    JobUpdate:
+    SocketIOJobUpdate:
       type: object
       description: >
         Subset of a Job, sent over SocketIO when a job changes.
