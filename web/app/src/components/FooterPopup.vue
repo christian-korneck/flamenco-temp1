@@ -30,6 +30,7 @@ const tabOptions = {
   initialSort: [
     { column: "time", dir: "asc" },
   ],
+  headerVisible: false,
   layout: "fitDataStretch",
   resizableColumnFit: true,
   height: "calc(20vh - 3rem)", // Must be set in order for the virtual DOM to function correctly.
