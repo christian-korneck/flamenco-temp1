@@ -11,6 +11,8 @@ window.DateTime = DateTime;
 
 // plain removes any Vue reactivity.
 window.plain = (x) => JSON.parse(JSON.stringify(x));
+// objectEmpty returns whether the object is empty or not.
+window.objectEmpty = (o) => !o || Object.entries(o).length == 0;
 
 const app = createApp(App)
 const pinia = createPinia()

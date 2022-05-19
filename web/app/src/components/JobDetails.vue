@@ -55,12 +55,6 @@ import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 
-function objectEmpty(o) {
-  if (!o) return true;
-  return Object.entries(o).length == 0;
-}
-window.objectEmpty = objectEmpty;
-
 export default {
   props: [
     "jobData", // Job data to show.
