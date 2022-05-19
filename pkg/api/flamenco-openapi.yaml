@@ -782,7 +782,7 @@ components:
         - archived
         - archiving
         - cancel-requested
-        - requeued
+        - requeueing
         - under-construction
 
     TaskStatus:

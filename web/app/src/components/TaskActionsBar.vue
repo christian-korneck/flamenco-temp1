@@ -32,13 +32,12 @@ export default {
       const numTasks = 1;
       return promise
         .then(() => {
-          let message;
-          if (numTasks == 1) {
-            message = `Task ${description}`;
-          } else {
-            message = `${numTasks} tasks ${description}`;
-          }
-          this.notifs.add(message);
+          // There used to be a call to `this.notifs.add(message)` here, but now
+          // that task status changes are logged in the notifications anyway,
+          // it's no longer necessary.
+          // This function is still kept, in case we want to bring back the
+          // notifications when multiple tasks can be selected. Then a summary
+          // ("N tasks requeued") could be logged here.
         })
         .catch((error) => {
           const errorMsg = JSON.stringify(error); // TODO: handle API errors better.
