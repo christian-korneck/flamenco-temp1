@@ -92,6 +92,7 @@ class SocketIOTaskUpdate(ModelNormal):
             'name': (str,),  # noqa: E501
             'updated': (datetime,),  # noqa: E501
             'status': (TaskStatus,),  # noqa: E501
+            'activity': (str,),  # noqa: E501
             'previous_status': (TaskStatus,),  # noqa: E501
         }
 
@@ -106,6 +107,7 @@ class SocketIOTaskUpdate(ModelNormal):
         'name': 'name',  # noqa: E501
         'updated': 'updated',  # noqa: E501
         'status': 'status',  # noqa: E501
+        'activity': 'activity',  # noqa: E501
         'previous_status': 'previous_status',  # noqa: E501
     }
 
@@ -116,7 +118,7 @@ class SocketIOTaskUpdate(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, id, job_id, name, updated, status, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, id, job_id, name, updated, status, activity, *args, **kwargs):  # noqa: E501
         """SocketIOTaskUpdate - a model defined in OpenAPI
 
         Args:
@@ -125,6 +127,7 @@ class SocketIOTaskUpdate(ModelNormal):
             name (str): Name of the task
             updated (datetime): Timestamp of last update
             status (TaskStatus):
+            activity (str):
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -190,6 +193,7 @@ class SocketIOTaskUpdate(ModelNormal):
         self.name = name
         self.updated = updated
         self.status = status
+        self.activity = activity
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -210,7 +214,7 @@ class SocketIOTaskUpdate(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, id, job_id, name, updated, status, *args, **kwargs):  # noqa: E501
+    def __init__(self, id, job_id, name, updated, status, activity, *args, **kwargs):  # noqa: E501
         """SocketIOTaskUpdate - a model defined in OpenAPI
 
         Args:
@@ -219,6 +223,7 @@ class SocketIOTaskUpdate(ModelNormal):
             name (str): Name of the task
             updated (datetime): Timestamp of last update
             status (TaskStatus):
+            activity (str):
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -282,6 +287,7 @@ class SocketIOTaskUpdate(ModelNormal):
         self.name = name
         self.updated = updated
         self.status = status
+        self.activity = activity
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

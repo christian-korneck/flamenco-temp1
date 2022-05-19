@@ -408,6 +408,8 @@ type SocketIOSubscriptionType string
 
 // Subset of a Task, sent over SocketIO when a task changes. For new tasks, `previous_status` will be excluded.
 type SocketIOTaskUpdate struct {
+	Activity string `json:"activity"`
+
 	// UUID of the Task
 	Id    string `json:"id"`
 	JobId string `json:"job_id"`

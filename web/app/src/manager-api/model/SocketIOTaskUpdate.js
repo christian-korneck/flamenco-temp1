@@ -29,10 +29,11 @@ class SocketIOTaskUpdate {
      * @param name {String} Name of the task
      * @param updated {Date} Timestamp of last update
      * @param status {module:model/TaskStatus} 
+     * @param activity {String} 
      */
-    constructor(id, jobId, name, updated, status) { 
+    constructor(id, jobId, name, updated, status, activity) { 
         
-        SocketIOTaskUpdate.initialize(this, id, jobId, name, updated, status);
+        SocketIOTaskUpdate.initialize(this, id, jobId, name, updated, status, activity);
     }
 
     /**
@@ -40,12 +41,13 @@ class SocketIOTaskUpdate {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, jobId, name, updated, status) { 
+    static initialize(obj, id, jobId, name, updated, status, activity) { 
         obj['id'] = id;
         obj['job_id'] = jobId;
         obj['name'] = name;
         obj['updated'] = updated;
         obj['status'] = status;
+        obj['activity'] = activity;
     }
 
     /**
@@ -76,6 +78,9 @@ class SocketIOTaskUpdate {
             }
             if (data.hasOwnProperty('previous_status')) {
                 obj['previous_status'] = TaskStatus.constructFromObject(data['previous_status']);
+            }
+            if (data.hasOwnProperty('activity')) {
+                obj['activity'] = ApiClient.convertToType(data['activity'], 'String');
             }
         }
         return obj;
@@ -116,6 +121,11 @@ SocketIOTaskUpdate.prototype['status'] = undefined;
  * @member {module:model/TaskStatus} previous_status
  */
 SocketIOTaskUpdate.prototype['previous_status'] = undefined;
+
+/**
+ * @member {String} activity
+ */
+SocketIOTaskUpdate.prototype['activity'] = undefined;
 
 
 
