@@ -94,6 +94,7 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 	return e.JSON(http.StatusOK, apiJob)
 }
 
+// SetJobStatus is used by the web interface to change a job's status.
 func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 	logger := requestLogger(e)
 	ctx := e.Request().Context()
@@ -130,6 +131,7 @@ func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 	return e.NoContent(http.StatusNoContent)
 }
 
+// SetTaskStatus is used by the web interface to change a task's status.
 func (f *Flamenco) SetTaskStatus(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	ctx := e.Request().Context()
