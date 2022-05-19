@@ -78,6 +78,8 @@ export default {
   },
   methods: {
     onTableJobClicked(rowData) {
+      // Don't route to the current job, as that'll deactivate the current task.
+      if (rowData.id == this.jobID) return;
       this._routeToJob(rowData.id);
     },
     onTableTaskClicked(rowData) {
