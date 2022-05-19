@@ -106,7 +106,7 @@ export default {
       this.socket.on("/jobs", (jobUpdate) => {
         // Convert to API object, in order to have the same parsing of data as
         // when we'd do an API call.
-        const apiJobUpdate = API.JobUpdate.constructFromObject(jobUpdate)
+        const apiJobUpdate = API.SocketIOJobUpdate.constructFromObject(jobUpdate)
         this.$emit("jobUpdate", apiJobUpdate);
       });
 

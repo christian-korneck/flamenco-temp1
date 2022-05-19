@@ -81,7 +81,7 @@ var _ TaskStateMachine = (*task_state_machine.StateMachine)(nil)
 
 type ChangeBroadcaster interface {
 	// BroadcastNewJob sends a 'new job' notification to all SocketIO clients.
-	BroadcastNewJob(jobUpdate api.JobUpdate)
+	BroadcastNewJob(jobUpdate api.SocketIOJobUpdate)
 
 	// Note that there is no BroadcastNewTask. The 'new job' broadcast is sent
 	// after the job's tasks have been created, and thus there is no need for a

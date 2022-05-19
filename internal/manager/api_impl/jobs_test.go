@@ -61,7 +61,7 @@ func TestSubmitJob(t *testing.T) {
 	mf.persistence.EXPECT().FetchJob(gomock.Any(), queuedJob.JobID).Return(&dbJob, nil)
 
 	// Expect the new job to be broadcast.
-	jobUpdate := api.JobUpdate{
+	jobUpdate := api.SocketIOJobUpdate{
 		Id:       dbJob.UUID,
 		Name:     &dbJob.Name,
 		Priority: dbJob.Priority,

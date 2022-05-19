@@ -23,7 +23,7 @@ const (
 	// Predefined SocketIO event types.
 	SIOEventChatMessageRcv  SocketIOEventType = "/chat"         // clients send chat messages here
 	SIOEventChatMessageSend SocketIOEventType = "/message"      // chat messages are broadcasted here
-	SIOEventJobUpdate       SocketIOEventType = "/jobs"         // sends api.JobUpdate
+	SIOEventJobUpdate       SocketIOEventType = "/jobs"         // sends api.SocketIOJobUpdate
 	SIOEventTaskUpdate      SocketIOEventType = "/task"         // sends api.SocketIOTaskUpdate
 	SIOEventSubscription    SocketIOEventType = "/subscription" // clients send api.SocketIOSubscription
 )

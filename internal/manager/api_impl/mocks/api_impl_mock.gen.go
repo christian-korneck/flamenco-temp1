@@ -253,7 +253,7 @@ func (m *MockChangeBroadcaster) EXPECT() *MockChangeBroadcasterMockRecorder {
 }
 
 // BroadcastNewJob mocks base method.
-func (m *MockChangeBroadcaster) BroadcastNewJob(arg0 api.JobUpdate) {
+func (m *MockChangeBroadcaster) BroadcastNewJob(arg0 api.SocketIOJobUpdate) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "BroadcastNewJob", arg0)
 }

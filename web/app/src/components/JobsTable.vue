@@ -42,7 +42,7 @@ export default {
 
     const vueComponent = this;
     const options = {
-      // See pkg/api/flamenco-manager.yaml, schemas Job and JobUpdate.
+      // See pkg/api/flamenco-manager.yaml, schemas Job and SocketIOJobUpdate.
       columns: [
         // Useful for debugging when there are many similar jobs:
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
