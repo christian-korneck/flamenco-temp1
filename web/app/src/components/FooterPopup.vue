@@ -46,6 +46,7 @@ onMounted(() => {
 });
 
 function _scrollToBottom() {
+  if (notifs.empty) return;
   tabulator.scrollToRow(notifs.lastID, "bottom", false);
 }
 function _subscribeToPinia() {

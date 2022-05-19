@@ -22,6 +22,9 @@ export const useNotifs = defineStore('notifications', {
     hideTimerID: 0,
     lastID: 0,
   }),
+  getters: {
+    empty: (state) => state.history.length == 0,
+  },
   actions: {
     /**
      * Add a simple notification.
