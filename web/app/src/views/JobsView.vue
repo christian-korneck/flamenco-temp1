@@ -4,7 +4,7 @@
   </div>
   <div class="col col-2">
     <job-details :jobData="jobs.activeJob" />
-    <tasks-table v-if="jobID" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
+    <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
   <div class="col col-3">
     <task-details :taskData="tasks.activeTask" />
@@ -55,6 +55,11 @@ export default {
     notifs: useNotifs(),
     showFooterPopup: false,
   }),
+  computed: {
+    hasJobData() {
+      return !objectEmpty(this.jobs.activeJob);
+    },
+  },
   mounted() {
     window.jobsView = this;
     window.footerPopup = this.$refs.footerPopup;
