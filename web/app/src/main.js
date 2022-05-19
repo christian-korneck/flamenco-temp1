@@ -21,4 +21,6 @@ app.mount('#app')
 
 // For debugging.
 import { useJobs } from '@/stores/jobs';
+import { useNotifs } from '@/stores/notifications';
 window.jobs = useJobs();
+window.notifs = useNotifs();
