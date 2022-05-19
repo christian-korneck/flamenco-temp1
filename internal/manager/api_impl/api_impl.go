@@ -1,4 +1,4 @@
-// Package api_impl implements the OpenAPI API from pkg/api/flamenco-manager.yaml.
+// Package api_impl implements the OpenAPI API from pkg/api/flamenco-openapi.yaml.
 package api_impl
 
 // SPDX-License-Identifier: GPL-3.0-or-later

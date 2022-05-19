@@ -58,10 +58,10 @@ more.
 ## Generating the OpenAPI/Swagger API
 
 Some code is generated from the OpenAPI specs in
-`pkg/api/flamenco-manager.yaml`. The generated code is committed to Git, so that
+`pkg/api/flamenco-openapi.yaml`. The generated code is committed to Git, so that
 after a checkout you shouldn't need to re-run the generator to build Flamenco.
 
-After changing `pkg/api/flamenco-manager.yaml`, run `make generate` to generate
+After changing `pkg/api/flamenco-openapi.yaml`, run `make generate` to generate
 the code, then commit to Git.
 
 The JavaScript and Python generator is made in Java, so it requires a JRE/JDK to

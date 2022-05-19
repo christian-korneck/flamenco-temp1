@@ -61,7 +61,7 @@ generate-py:
 # See https://openapi-generator.tech/docs/generators/python for the options.
 	java -jar addon/openapi-generator-cli.jar \
 		generate \
-		-i pkg/api/flamenco-manager.yaml \
+		-i pkg/api/flamenco-openapi.yaml \
 		-g python \
 		-o addon/ \
 		--package-name "${PY_API_PKG_NAME}" \
@@ -88,7 +88,7 @@ generate-js:
 # things don't work properly.
 	java -jar addon/openapi-generator-cli.jar \
 		generate \
-		-i pkg/api/flamenco-manager.yaml \
+		-i pkg/api/flamenco-openapi.yaml \
 		-g javascript \
 		-o web/_tmp-manager-api-javascript \
 		--http-user-agent "Flamenco/${OAPI_VERSION} / webbrowser" \
