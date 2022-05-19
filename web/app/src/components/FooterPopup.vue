@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useNotifs } from '@/stores/notifications'
 import * as datetime from "@/datetime";
+import ConnectionStatus from '@/components/ConnectionStatus.vue'
 
 const notifs = useNotifs();
 const emit = defineEmits(['clickClose'])
@@ -62,6 +63,7 @@ function _subscribeToPinia() {
   <section class="footer-popup">
     <header>
       <h3 class="sub-title">Notifications</h3>
+      <connection-status />
       <button class='close' @click="emit('clickClose')">X</button>
     </header>
     <div id="notification_list"></div>
