@@ -13,6 +13,7 @@ from flamenco.manager.model.assigned_task import AssignedTask
 from flamenco.manager.model.available_job_setting import AvailableJobSetting
 from flamenco.manager.model.available_job_setting_subtype import AvailableJobSettingSubtype
 from flamenco.manager.model.available_job_setting_type import AvailableJobSettingType
+from flamenco.manager.model.available_job_setting_visibility import AvailableJobSettingVisibility
 from flamenco.manager.model.available_job_type import AvailableJobType
 from flamenco.manager.model.available_job_types import AvailableJobTypes
 from flamenco.manager.model.command import Command

@@ -14,6 +14,7 @@
 import ApiClient from '../ApiClient';
 import AvailableJobSettingSubtype from './AvailableJobSettingSubtype';
 import AvailableJobSettingType from './AvailableJobSettingType';
+import AvailableJobSettingVisibility from './AvailableJobSettingVisibility';
 
 /**
  * The AvailableJobSetting model module.
@@ -79,7 +80,7 @@ class AvailableJobSetting {
                 obj['eval'] = ApiClient.convertToType(data['eval'], 'String');
             }
             if (data.hasOwnProperty('visible')) {
-                obj['visible'] = ApiClient.convertToType(data['visible'], 'Boolean');
+                obj['visible'] = AvailableJobSettingVisibility.constructFromObject(data['visible']);
             }
             if (data.hasOwnProperty('required')) {
                 obj['required'] = ApiClient.convertToType(data['required'], 'Boolean');
@@ -141,11 +142,9 @@ AvailableJobSetting.prototype['default'] = undefined;
 AvailableJobSetting.prototype['eval'] = undefined;
 
 /**
- * Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users. 
- * @member {Boolean} visible
- * @default true
+ * @member {module:model/AvailableJobSettingVisibility} visible
  */
-AvailableJobSetting.prototype['visible'] = true;
+AvailableJobSetting.prototype['visible'] = undefined;
 
 /**
  * Whether to immediately reject a job definition, of this type, without this particular setting. 

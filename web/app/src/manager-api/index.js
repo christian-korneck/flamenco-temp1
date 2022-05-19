@@ -17,6 +17,7 @@ import AssignedTask from './model/AssignedTask';
 import AvailableJobSetting from './model/AvailableJobSetting';
 import AvailableJobSettingSubtype from './model/AvailableJobSettingSubtype';
 import AvailableJobSettingType from './model/AvailableJobSettingType';
+import AvailableJobSettingVisibility from './model/AvailableJobSettingVisibility';
 import AvailableJobType from './model/AvailableJobType';
 import AvailableJobTypes from './model/AvailableJobTypes';
 import Command from './model/Command';
@@ -125,6 +126,12 @@ export {
      * @property {module:model/AvailableJobSettingType}
      */
     AvailableJobSettingType,
+
+    /**
+     * The AvailableJobSettingVisibility model constructor.
+     * @property {module:model/AvailableJobSettingVisibility}
+     */
+    AvailableJobSettingVisibility,
 
     /**
      * The AvailableJobType model constructor.

@@ -35,6 +35,17 @@ const (
 	AvailableJobSettingTypeString AvailableJobSettingType = "string"
 )
 
+// Defines values for AvailableJobSettingVisibility.
+const (
+	AvailableJobSettingVisibilityHidden AvailableJobSettingVisibility = "hidden"
+
+	AvailableJobSettingVisibilitySubmission AvailableJobSettingVisibility = "submission"
+
+	AvailableJobSettingVisibilityVisible AvailableJobSettingVisibility = "visible"
+
+	AvailableJobSettingVisibilityWeb AvailableJobSettingVisibility = "web"
+)
+
 // Defines values for JobStatus.
 const (
 	JobStatusActive JobStatus = "active"
@@ -162,8 +173,8 @@ type AvailableJobSetting struct {
 	// Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
 	Type AvailableJobSettingType `json:"type"`
 
-	// Whether to show this setting in the UI of a job submitter (like a Blender add-on). Set to `false` when it is an internal setting that shouldn't be shown to end users.
-	Visible *bool `json:"visible,omitempty"`
+	// When to show this setting. `visible`: always show. `submission`: only show in the UI of a job submitter (like a Blender add-on). `web`: only show in the web interface for management, but not when submitting the job. `hidden`: never show; only available to the job compiler script as internal setting.
+	Visible *AvailableJobSettingVisibility `json:"visible,omitempty"`
 }
 
 // Sub-type of the job setting. Currently only available for string types. `HASHED_FILE_PATH` is a directory path + `"/######"` appended.
@@ -171,6 +182,9 @@ type AvailableJobSettingSubtype string
 
 // Type of job setting, must be usable as IDProperty type in Blender. No nested structures (arrays, dictionaries) are supported.
 type AvailableJobSettingType string
+
+// When to show this setting. `visible`: always show. `submission`: only show in the UI of a job submitter (like a Blender add-on). `web`: only show in the web interface for management, but not when submitting the job. `hidden`: never show; only available to the job compiler script as internal setting.
+type AvailableJobSettingVisibility string
 
 // Job type supported by this Manager, and its parameters.
 type AvailableJobType struct {
