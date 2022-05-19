@@ -23,6 +23,7 @@ import * as urls from '@/urls'
 import * as API from '@/manager-api';
 import { useJobs } from '@/stores/jobs';
 import { useTasks } from '@/stores/tasks';
+import { useNotifs } from '@/stores/notifications'
 import { apiClient } from '@/stores/api-query-count';
 
 import FooterPopup from '@/components/FooterPopup.vue'
@@ -51,6 +52,7 @@ export default {
 
     jobs: useJobs(),
     tasks: useTasks(),
+    notifs: useNotifs(),
     showFooterPopup: false,
   }),
   mounted() {
@@ -127,6 +129,7 @@ export default {
         this.$refs.tasksTable.processTaskUpdate(taskUpdate);
       if (this.taskID == taskUpdate.id)
         this._fetchTask(this.taskID);
+      this.notifs.addTaskUpdate(taskUpdate);
     },
 
     /**

@@ -39,6 +39,21 @@ export const useNotifs = defineStore('notifications', {
       this._restartHideTimer();
     },
 
+    /**
+     * @param {API.SioTaskUpdate} taskUpdate Task update received via SocketIO.
+     */
+    addTaskUpdate(taskUpdate) {
+      console.log('Received task update:', taskUpdate);
+      let msg = `Task ${taskUpdate.name}`;
+      if (taskUpdate.previous_status && taskUpdate.previous_status != taskUpdate.status) {
+        msg += ` changed status ${taskUpdate.previous_status} ➜ ${taskUpdate.status}`;
+      }
+      if (taskUpdate.activity) {
+        msg += `: ${taskUpdate.activity}`;
+      }
+      this.add(msg)
+    },
+
     /* Ensure there is only 1000 items in the history. */
     _prune() {
       if (this.history.length <= 1000) return;
