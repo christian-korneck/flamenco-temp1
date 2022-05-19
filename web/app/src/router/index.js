@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'index',
-      component: () => import('../views/IndexView.vue'),
+      redirect: { name: 'jobs' },
     },
     {
       path: '/jobs/:jobID?/:taskID?',
