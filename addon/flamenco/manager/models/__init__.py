@@ -25,7 +25,6 @@ from flamenco.manager.model.job_settings import JobSettings
 from flamenco.manager.model.job_status import JobStatus
 from flamenco.manager.model.job_status_change import JobStatusChange
 from flamenco.manager.model.job_tasks_summary import JobTasksSummary
-from flamenco.manager.model.job_update import JobUpdate
 from flamenco.manager.model.jobs_query import JobsQuery
 from flamenco.manager.model.jobs_query_result import JobsQueryResult
 from flamenco.manager.model.manager_configuration import ManagerConfiguration
@@ -40,6 +39,7 @@ from flamenco.manager.model.shaman_file_status import ShamanFileStatus
 from flamenco.manager.model.shaman_requirements_request import ShamanRequirementsRequest
 from flamenco.manager.model.shaman_requirements_response import ShamanRequirementsResponse
 from flamenco.manager.model.shaman_single_file_status import ShamanSingleFileStatus
+from flamenco.manager.model.socket_io_job_update import SocketIOJobUpdate
 from flamenco.manager.model.socket_io_subscription import SocketIOSubscription
 from flamenco.manager.model.socket_io_subscription_operation import SocketIOSubscriptionOperation
 from flamenco.manager.model.socket_io_subscription_type import SocketIOSubscriptionType

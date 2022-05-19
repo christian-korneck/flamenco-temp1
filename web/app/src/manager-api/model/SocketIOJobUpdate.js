@@ -15,15 +15,15 @@ import ApiClient from '../ApiClient';
 import JobStatus from './JobStatus';
 
 /**
- * The JobUpdate model module.
- * @module model/JobUpdate
+ * The SocketIOJobUpdate model module.
+ * @module model/SocketIOJobUpdate
  * @version 0.0.0
  */
-class JobUpdate {
+class SocketIOJobUpdate {
     /**
-     * Constructs a new <code>JobUpdate</code>.
+     * Constructs a new <code>SocketIOJobUpdate</code>.
      * Subset of a Job, sent over SocketIO when a job changes. For new jobs, &#x60;previous_status&#x60; will be excluded. 
-     * @alias module:model/JobUpdate
+     * @alias module:model/SocketIOJobUpdate
      * @param id {String} UUID of the Job
      * @param updated {Date} Timestamp of last update
      * @param status {module:model/JobStatus} 
@@ -33,7 +33,7 @@ class JobUpdate {
      */
     constructor(id, updated, status, type, priority, refreshTasks) { 
         
-        JobUpdate.initialize(this, id, updated, status, type, priority, refreshTasks);
+        SocketIOJobUpdate.initialize(this, id, updated, status, type, priority, refreshTasks);
     }
 
     /**
@@ -51,15 +51,15 @@ class JobUpdate {
     }
 
     /**
-     * Constructs a <code>JobUpdate</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>SocketIOJobUpdate</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/JobUpdate} obj Optional instance to populate.
-     * @return {module:model/JobUpdate} The populated <code>JobUpdate</code> instance.
+     * @param {module:model/SocketIOJobUpdate} obj Optional instance to populate.
+     * @return {module:model/SocketIOJobUpdate} The populated <code>SocketIOJobUpdate</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new JobUpdate();
+            obj = obj || new SocketIOJobUpdate();
 
             if (data.hasOwnProperty('id')) {
                 obj['id'] = ApiClient.convertToType(data['id'], 'String');
@@ -96,51 +96,51 @@ class JobUpdate {
  * UUID of the Job
  * @member {String} id
  */
-JobUpdate.prototype['id'] = undefined;
+SocketIOJobUpdate.prototype['id'] = undefined;
 
 /**
  * Name of the job
  * @member {String} name
  */
-JobUpdate.prototype['name'] = undefined;
+SocketIOJobUpdate.prototype['name'] = undefined;
 
 /**
  * Timestamp of last update
  * @member {Date} updated
  */
-JobUpdate.prototype['updated'] = undefined;
+SocketIOJobUpdate.prototype['updated'] = undefined;
 
 /**
  * @member {module:model/JobStatus} status
  */
-JobUpdate.prototype['status'] = undefined;
+SocketIOJobUpdate.prototype['status'] = undefined;
 
 /**
  * @member {module:model/JobStatus} previous_status
  */
-JobUpdate.prototype['previous_status'] = undefined;
+SocketIOJobUpdate.prototype['previous_status'] = undefined;
 
 /**
  * @member {String} type
  */
-JobUpdate.prototype['type'] = undefined;
+SocketIOJobUpdate.prototype['type'] = undefined;
 
 /**
  * @member {Number} priority
  * @default 50
  */
-JobUpdate.prototype['priority'] = 50;
+SocketIOJobUpdate.prototype['priority'] = 50;
 
 /**
  * Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical. 
  * @member {Boolean} refresh_tasks
  */
-JobUpdate.prototype['refresh_tasks'] = undefined;
+SocketIOJobUpdate.prototype['refresh_tasks'] = undefined;
 
 
 
 
 
 
-export default JobUpdate;
+export default SocketIOJobUpdate;
 

@@ -248,25 +248,6 @@ type JobTasksSummary struct {
 	Tasks *[]TaskSummary `json:"tasks,omitempty"`
 }
 
-// Subset of a Job, sent over SocketIO when a job changes. For new jobs, `previous_status` will be excluded.
-type JobUpdate struct {
-	// UUID of the Job
-	Id string `json:"id"`
-
-	// Name of the job
-	Name           *string    `json:"name,omitempty"`
-	PreviousStatus *JobStatus `json:"previous_status,omitempty"`
-	Priority       int        `json:"priority"`
-
-	// Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical.
-	RefreshTasks bool      `json:"refresh_tasks"`
-	Status       JobStatus `json:"status"`
-	Type         string    `json:"type"`
-
-	// Timestamp of last update
-	Updated time.Time `json:"updated"`
-}
-
 // JobsQuery defines model for JobsQuery.
 type JobsQuery struct {
 	Limit *int `json:"limit,omitempty"`
@@ -387,6 +368,25 @@ type ShamanRequirementsResponse struct {
 // Status of a file in the Shaman storage.
 type ShamanSingleFileStatus struct {
 	Status ShamanFileStatus `json:"status"`
+}
+
+// Subset of a Job, sent over SocketIO when a job changes. For new jobs, `previous_status` will be excluded.
+type SocketIOJobUpdate struct {
+	// UUID of the Job
+	Id string `json:"id"`
+
+	// Name of the job
+	Name           *string    `json:"name,omitempty"`
+	PreviousStatus *JobStatus `json:"previous_status,omitempty"`
+	Priority       int        `json:"priority"`
+
+	// Indicates that the client should refresh all the job's tasks. This is sent for mass updates, where updating each individual task would generate too many updates to be practical.
+	RefreshTasks bool      `json:"refresh_tasks"`
+	Status       JobStatus `json:"status"`
+	Type         string    `json:"type"`
+
+	// Timestamp of last update
+	Updated time.Time `json:"updated"`
 }
 
 // Send by SocketIO clients as `/subscription` event type, to manage their subscription to job updates. Clients always get job updates, but for task updates or task logs they need to explicitly subscribe. For simplicity, clients can only subscribe to one job (to get task updates for that job) and one task's log at a time.

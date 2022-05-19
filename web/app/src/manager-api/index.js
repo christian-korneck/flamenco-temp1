@@ -27,7 +27,6 @@ import JobAllOf from './model/JobAllOf';
 import JobStatus from './model/JobStatus';
 import JobStatusChange from './model/JobStatusChange';
 import JobTasksSummary from './model/JobTasksSummary';
-import JobUpdate from './model/JobUpdate';
 import JobsQuery from './model/JobsQuery';
 import JobsQueryResult from './model/JobsQueryResult';
 import ManagerConfiguration from './model/ManagerConfiguration';
@@ -42,6 +41,7 @@ import ShamanFileStatus from './model/ShamanFileStatus';
 import ShamanRequirementsRequest from './model/ShamanRequirementsRequest';
 import ShamanRequirementsResponse from './model/ShamanRequirementsResponse';
 import ShamanSingleFileStatus from './model/ShamanSingleFileStatus';
+import SocketIOJobUpdate from './model/SocketIOJobUpdate';
 import SocketIOSubscription from './model/SocketIOSubscription';
 import SocketIOSubscriptionOperation from './model/SocketIOSubscriptionOperation';
 import SocketIOSubscriptionType from './model/SocketIOSubscriptionType';
@@ -187,12 +187,6 @@ export {
     JobTasksSummary,
 
     /**
-     * The JobUpdate model constructor.
-     * @property {module:model/JobUpdate}
-     */
-    JobUpdate,
-
-    /**
      * The JobsQuery model constructor.
      * @property {module:model/JobsQuery}
      */
@@ -275,6 +269,12 @@ export {
      * @property {module:model/ShamanSingleFileStatus}
      */
     ShamanSingleFileStatus,
+
+    /**
+     * The SocketIOJobUpdate model constructor.
+     * @property {module:model/SocketIOJobUpdate}
+     */
+    SocketIOJobUpdate,
 
     /**
      * The SocketIOSubscription model constructor.

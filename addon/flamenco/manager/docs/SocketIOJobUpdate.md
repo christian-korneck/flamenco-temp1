@@ -1,4 +1,4 @@
-# JobUpdate
+# SocketIOJobUpdate
 
 Subset of a Job, sent over SocketIO when a job changes. For new jobs, `previous_status` will be excluded. 
 
