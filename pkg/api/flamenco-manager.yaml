@@ -1262,7 +1262,8 @@ components:
           description: Timestamp of last update
         "status": { $ref: "#/components/schemas/TaskStatus" }
         "previous_status": { $ref: "#/components/schemas/TaskStatus" }
-      required: [id, job_id, name, updated, status]
+        "activity": { type: string }
+      required: [id, job_id, name, updated, status, activity]
 
     SocketIOSubscription:
       type: object
