@@ -186,8 +186,12 @@ func TestTaskUpdate(t *testing.T) {
 			return nil
 		})
 
-	// Expect the log to be written.
+	// Expect the log to be written and broadcast over SocketIO.
 	mf.logStorage.EXPECT().Write(gomock.Any(), jobID, taskID, "line1\nline2\n")
+	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{
+		TaskId: taskID,
+		Log:    "line1\nline2\n",
+	})
 
 	// Do the call.
 	echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
