@@ -15,7 +15,7 @@ export default {
     // SocketIO events:
     "sioReconnected", "sioDisconnected"
   ],
-  props: ["websocketURL", "subscribedJob"],
+  props: ["websocketURL", "subscribedJobID", "subscribedTaskID"],
   data() {
     return {
       socket: null,
@@ -36,12 +36,12 @@ export default {
     this.disconnectWebsocket();
   },
   watch: {
-    subscribedJob(newJob, oldJob) {
-      if (oldJob) {
-        this._updateJobSubscription("unsubscribe", oldJob);
+    subscribedJobID(newJobID, oldJobID) {
+      if (oldJobID) {
+        this._updateJobSubscription("unsubscribe", oldJobID);
       }
-      if (newJob) {
-        this._updateJobSubscription("subscribe", newJob);
+      if (newJobID) {
+        this._updateJobSubscription("subscribe", newJobID);
       }
     },
   },
@@ -148,7 +148,7 @@ export default {
 
     // Resubscribe to whatever we want to be subscribed to:
     _resubscribe() {
-      if (this.subscribedJob) this._updateJobSubscription("subscribe", this.subscribedJob);
+      if (this.subscribedJobID) this._updateJobSubscription("subscribe", this.subscribedJobID);
     },
   },
 };

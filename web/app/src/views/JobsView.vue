@@ -13,7 +13,7 @@
   <footer class="window-footer" v-if="!showFooterPopup" @click="showFooterPopup = true"><notification-bar /></footer>
   <footer-popup v-if="showFooterPopup" ref="footerPopup" @clickClose="showFooterPopup = false" />
 
-  <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJob="jobID"
+  <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJobID="jobID"
     @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @message="onChatMessage"
     @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
 </template>
