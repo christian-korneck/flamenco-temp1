@@ -1275,6 +1275,21 @@ components:
         "activity": { type: string }
       required: [id, job_id, name, updated, status, activity]
 
+    SocketIOTaskLogUpdate:
+      type: object
+      description: >
+        Task log chunk, sent to a SocketIO room dedicated to a single task, to
+        avoid sending too many updates.
+      properties:
+        "task_id":
+          type: string
+          format: uuid
+          description: UUID of the Task
+        "log":
+          type: string
+          description: Chunk of the task log. May contain multiple lines of text.
+      required: [task_id, log]
+
     SocketIOSubscription:
       type: object
       description: >
@@ -1298,7 +1313,7 @@ components:
 
     SocketIOSubscriptionType:
       type: string
-      enum: [job]
+      enum: [job, tasklog]
       description: What kind of thing to subscribe to / unsubscribe from.
 
   securitySchemes:
