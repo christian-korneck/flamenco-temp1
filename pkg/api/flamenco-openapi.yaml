@@ -743,7 +743,11 @@ components:
 
     TaskUpdate:
       type: object
-      description: TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
+      description: >
+        TaskUpdate is sent by a Worker to update the status & logs of a task
+        it's executing. All properties are optional; omitted properties are
+        ignored (i.e. omitting `activity` will not erase the activity property
+        of the task).
       properties:
         "taskStatus":
           $ref: "#/components/schemas/TaskStatus"
