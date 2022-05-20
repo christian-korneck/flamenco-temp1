@@ -61,8 +61,8 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 	case api.SocketIOSubscriptionTypeJob:
 		sioRoom = roomForJob(uuid.String())
 	default:
-		logger.Warn().Msg("socketIO: invalid subscription type, ignoring")
-		return "invalid subscription type, ignoring request"
+		logger.Warn().Msg("socketIO: unknown subscription type, ignoring")
+		return "unknown subscription type, ignoring request"
 	}
 
 	switch subs.Op {
