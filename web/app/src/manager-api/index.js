@@ -46,6 +46,7 @@ import SocketIOJobUpdate from './model/SocketIOJobUpdate';
 import SocketIOSubscription from './model/SocketIOSubscription';
 import SocketIOSubscriptionOperation from './model/SocketIOSubscriptionOperation';
 import SocketIOSubscriptionType from './model/SocketIOSubscriptionType';
+import SocketIOTaskLogUpdate from './model/SocketIOTaskLogUpdate';
 import SocketIOTaskUpdate from './model/SocketIOTaskUpdate';
 import SubmittedJob from './model/SubmittedJob';
 import Task from './model/Task';
@@ -300,6 +301,12 @@ export {
      * @property {module:model/SocketIOSubscriptionType}
      */
     SocketIOSubscriptionType,
+
+    /**
+     * The SocketIOTaskLogUpdate model constructor.
+     * @property {module:model/SocketIOTaskLogUpdate}
+     */
+    SocketIOTaskLogUpdate,
 
     /**
      * The SocketIOTaskUpdate model constructor.

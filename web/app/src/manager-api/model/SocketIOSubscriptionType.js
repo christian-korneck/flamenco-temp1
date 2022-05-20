@@ -26,6 +26,13 @@ export default class SocketIOSubscriptionType {
         "job" = "job";
 
     
+        /**
+         * value: "tasklog"
+         * @const
+         */
+        "tasklog" = "tasklog";
+
+    
 
     /**
     * Returns a <code>SocketIOSubscriptionType</code> enum value from a Javascript object name.

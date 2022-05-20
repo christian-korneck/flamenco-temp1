@@ -92,6 +92,8 @@ const (
 // Defines values for SocketIOSubscriptionType.
 const (
 	SocketIOSubscriptionTypeJob SocketIOSubscriptionType = "job"
+
+	SocketIOSubscriptionTypeTasklog SocketIOSubscriptionType = "tasklog"
 )
 
 // Defines values for TaskStatus.
@@ -419,6 +421,15 @@ type SocketIOSubscriptionOperation string
 
 // What kind of thing to subscribe to / unsubscribe from.
 type SocketIOSubscriptionType string
+
+// Task log chunk, sent to a SocketIO room dedicated to a single task, to avoid sending too many updates.
+type SocketIOTaskLogUpdate struct {
+	// Chunk of the task log. May contain multiple lines of text.
+	Log string `json:"log"`
+
+	// UUID of the Task
+	TaskId string `json:"task_id"`
+}
 
 // Subset of a Task, sent over SocketIO when a task changes. For new tasks, `previous_status` will be excluded.
 type SocketIOTaskUpdate struct {

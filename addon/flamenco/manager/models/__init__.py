@@ -44,6 +44,7 @@ from flamenco.manager.model.socket_io_job_update import SocketIOJobUpdate
 from flamenco.manager.model.socket_io_subscription import SocketIOSubscription
 from flamenco.manager.model.socket_io_subscription_operation import SocketIOSubscriptionOperation
 from flamenco.manager.model.socket_io_subscription_type import SocketIOSubscriptionType
+from flamenco.manager.model.socket_io_task_log_update import SocketIOTaskLogUpdate
 from flamenco.manager.model.socket_io_task_update import SocketIOTaskUpdate
 from flamenco.manager.model.submitted_job import SubmittedJob
 from flamenco.manager.model.task import Task
