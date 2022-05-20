@@ -17,8 +17,6 @@
 
 <script>
 import * as urls from '@/urls'
-import * as API from '@/manager-api';
-import { apiClient } from '@/stores/api-query-count';
 
 import NotificationBar from '@/components/footer/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
