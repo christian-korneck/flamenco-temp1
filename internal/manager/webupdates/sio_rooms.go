@@ -4,10 +4,10 @@ package webupdates
 import (
 	"fmt"
 
-	"git.blender.org/flamenco/pkg/api"
 	gosocketio "github.com/graarh/golang-socketio"
 
 	"git.blender.org/flamenco/internal/uuid"
+	"git.blender.org/flamenco/pkg/api"
 )
 
 // Separate type aliases for room names and event types; it's otherwise too easy

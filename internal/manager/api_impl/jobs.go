@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/labstack/echo/v4"
+
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
-	"github.com/labstack/echo/v4"
 )
 
 func (f *Flamenco) GetJobTypes(e echo.Context) error {
