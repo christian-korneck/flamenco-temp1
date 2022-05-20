@@ -29,10 +29,10 @@ import { useNotifs } from '@/stores/notifications'
 import { useTaskLog } from '@/stores/tasklog'
 import { apiClient } from '@/stores/api-query-count';
 
-import FooterPopup from '@/components/FooterPopup.vue'
+import FooterPopup from '@/components/footer/FooterPopup.vue'
 import JobDetails from '@/components/JobDetails.vue'
 import JobsTable from '@/components/JobsTable.vue'
-import NotificationBar from '@/components/NotificationBar.vue'
+import NotificationBar from '@/components/footer/NotificationBar.vue'
 import TaskDetails from '@/components/TaskDetails.vue'
 import TasksTable from '@/components/TasksTable.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
