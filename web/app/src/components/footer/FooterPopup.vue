@@ -1,13 +1,18 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import NotificationList from './NotificationList.vue'
 import TaskLog from './TaskLog.vue'
 import ConnectionStatus from '@/components/ConnectionStatus.vue'
 
 const emit = defineEmits(['clickClose'])
 
-const currentTab = ref('NotificationList')
+const initialTab = localStorage.getItem("footer-popover-active-tab") || 'NotificationList';
+const currentTab = ref(initialTab)
 const tabs = { NotificationList, TaskLog }
+
+watch(currentTab, async (newTab) => {
+  localStorage.setItem("footer-popover-active-tab", newTab);
+});
 </script>
 
 <template>

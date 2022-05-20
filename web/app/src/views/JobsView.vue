@@ -57,7 +57,7 @@ export default {
     tasks: useTasks(),
     notifs: useNotifs(),
     taskLog: useTaskLog(),
-    showFooterPopup: false,
+    showFooterPopup: !!localStorage.getItem("footer-popover-visible"),
   }),
   computed: {
     hasJobData() {
@@ -84,6 +84,10 @@ export default {
     taskID(newTaskID, oldTaskID) {
       this.taskLog.clear();
       this._fetchTask(newTaskID);
+    },
+    showFooterPopup(shown) {
+      if (shown) localStorage.setItem("footer-popover-visible", "true");
+      else localStorage.removeItem("footer-popover-visible");
     },
   },
   methods: {
