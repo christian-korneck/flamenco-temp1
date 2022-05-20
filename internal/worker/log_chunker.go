@@ -9,7 +9,7 @@ import (
 )
 
 // When the buffer grows beyond this many bytes, flush.
-const defaultLogChunkerBufferFlushSize = 1024
+const defaultLogChunkerBufferFlushSize = 10240
 
 // When the last flush was this long ago, flush.
 const defaultLogChunkerFlushMaxInterval = 30 * time.Second
