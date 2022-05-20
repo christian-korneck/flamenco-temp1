@@ -216,7 +216,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **fetch_task_log_tail**
-> [str] fetch_task_log_tail(task_id)
+> str fetch_task_log_tail(task_id)
 
 Fetch the last few lines of the task's log.
 
@@ -260,7 +260,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**[str]**
+**str**
 
 ### Authorization
 

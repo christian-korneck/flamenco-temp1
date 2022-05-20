@@ -194,7 +194,7 @@ class JobsApi(object):
         )
         self.fetch_task_log_tail_endpoint = _Endpoint(
             settings={
-                'response_type': ([str],),
+                'response_type': (str,),
                 'auth': [],
                 'endpoint_path': '/api/tasks/{task_id}/logtail',
                 'operation_id': 'fetch_task_log_tail',
@@ -822,7 +822,7 @@ class JobsApi(object):
             async_req (bool): execute request asynchronously
 
         Returns:
-            [str]
+            str
                 If the method is called asynchronously, returns the request
                 thread.
         """

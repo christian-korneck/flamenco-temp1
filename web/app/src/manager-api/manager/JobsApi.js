@@ -186,7 +186,7 @@ export default class JobsApi {
     /**
      * Fetch the last few lines of the task's log.
      * @param {String} taskId 
-     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link Array.<String>} and HTTP response
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link String} and HTTP response
      */
     fetchTaskLogTailWithHttpInfo(taskId) {
       let postBody = null;
@@ -208,7 +208,7 @@ export default class JobsApi {
       let authNames = [];
       let contentTypes = [];
       let accepts = ['text/plain', 'application/json'];
-      let returnType = ['String'];
+      let returnType = 'String';
       return this.apiClient.callApi(
         '/api/tasks/{task_id}/logtail', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
@@ -219,7 +219,7 @@ export default class JobsApi {
     /**
      * Fetch the last few lines of the task's log.
      * @param {String} taskId 
-     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link Array.<String>}
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link String}
      */
     fetchTaskLogTail(taskId) {
       return this.fetchTaskLogTailWithHttpInfo(taskId)
