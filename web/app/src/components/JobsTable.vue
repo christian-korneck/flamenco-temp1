@@ -144,13 +144,6 @@ export default {
       // store. There were some issues where navigating to another job would
       // overwrite the old job's ID, and this prevents that.
       const rowData = plain(row.getData());
-
-      // Depending on which cell was clicked, take a different action.
-      const columnName = event.target.getAttribute("tabulator-field");
-      if (columnName == "status") {
-        this.toggleStatusFilter(rowData.status);
-        return;
-      }
       this.$emit("tableRowClicked", rowData);
     },
     toggleStatusFilter(status) {
