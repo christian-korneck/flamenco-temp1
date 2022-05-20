@@ -444,8 +444,7 @@ paths:
           content:
             text/plain:
               schema:
-                type: array
-                items: { type: string }
+                type: string
         default:
           description: Unexpected error.
           content:
