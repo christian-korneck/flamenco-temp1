@@ -427,6 +427,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/tasks/{task_id}/logtail:
+    summary: Fetch the task's last few log lines.
+    get:
+      operationId: fetchTaskLogTail
+      summary: Fetch the last few lines of the task's log.
+      tags: [jobs]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The task log.
+          content:
+            text/plain:
+              schema:
+                type: array
+                items: { type: string }
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/tasks/{task_id}/setstatus:
     summary: >
       Request a status change for the given task. This may have effect on the
