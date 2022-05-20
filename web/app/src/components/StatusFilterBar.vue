@@ -1,14 +1,25 @@
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { indicator } from '@/statusindicator';
 
-defineProps(['availableStatuses', 'activeStatuses']);
+const props = defineProps(['availableStatuses', 'activeStatuses']);
 const emit = defineEmits(['click'])
+
+/**
+ * visibleStatuses is a union between `availableStatuses` and `activeStatuses`,
+ * and ensures that when a filter is active, it's also shown (even when it's no
+ * longer available) so that it can be deactivated again.
+ */
+const visibleStatuses = computed(() => {
+  const available = props.availableStatuses;
+  const unavailable = props.activeStatuses.filter((status) => available.indexOf(status) == -1);
+  return available.concat(unavailable);
+})
 </script>
 
 <template>
   <ul class="status-filter-bar">
-    <li v-for="status in availableStatuses" class="status-filter-indicator"
+    <li v-for="status in visibleStatuses" class="status-filter-indicator"
       :data-status="status"
       :class="{active: activeStatuses.indexOf(status) >= 0}"
       @click="emit('click', status)"
