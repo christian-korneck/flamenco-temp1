@@ -403,9 +403,15 @@ section.footer-popup header h3 {
   margin: 0 auto 0 0;
 }
 
-section.footer-popup button {
-  float: right;
+section.footer-popup button.footer-tab {
+  border: none;
+  margin-right: 2rem;
 }
+section.footer-popup button.footer-tab.active-tab {
+  color: var(--color-accent-text);
+  background-color: var(--color-accent-background);
+}
+
 section.footer-popup .tabulator-tableholder {
   /* Force a visible scroll bar, so that the notification history table always
    * has the same available width. Without this, Tabulator won't properly act on
