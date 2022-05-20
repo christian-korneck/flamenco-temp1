@@ -20,7 +20,7 @@ const (
 	durationFetchFailed  = 10 * time.Second // ... if fetching failed somehow.
 	durationTaskComplete = 2 * time.Second  // ... when a task was completed.
 
-	mayKeepRunningPeriod = 1 * time.Second
+	mayKeepRunningPeriod = 10 * time.Second
 )
 
 // Implement error interface for `api.MayKeepRunning` to indicate a task run was
