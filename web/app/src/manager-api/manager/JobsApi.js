@@ -184,6 +184,52 @@ export default class JobsApi {
 
 
     /**
+     * Fetch the last few lines of the task's log.
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link Array.<String>} and HTTP response
+     */
+    fetchTaskLogTailWithHttpInfo(taskId) {
+      let postBody = null;
+      // verify the required parameter 'taskId' is set
+      if (taskId === undefined || taskId === null) {
+        throw new Error("Missing the required parameter 'taskId' when calling fetchTaskLogTail");
+      }
+
+      let pathParams = {
+        'task_id': taskId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['text/plain', 'application/json'];
+      let returnType = ['String'];
+      return this.apiClient.callApi(
+        '/api/tasks/{task_id}/logtail', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch the last few lines of the task's log.
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link Array.<String>}
+     */
+    fetchTaskLogTail(taskId) {
+      return this.fetchTaskLogTailWithHttpInfo(taskId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
      * Get single job type and its parameters.
      * @param {String} typeName 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/AvailableJobType} and HTTP response
