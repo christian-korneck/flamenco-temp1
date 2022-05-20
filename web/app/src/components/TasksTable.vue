@@ -128,8 +128,10 @@ export default {
     processTaskUpdate(taskUpdate) {
       // updateData() will only overwrite properties that are actually set on
       // taskUpdate, and leave the rest as-is.
-      this.tabulator.updateData([taskUpdate])
-        .then(this.sortData);
+      if (this.tabulator.initialized) {
+        this.tabulator.updateData([taskUpdate])
+          .then(this.sortData);
+      }
       this._refreshAvailableStatuses();
     },
 

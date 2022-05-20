@@ -123,11 +123,17 @@ export default {
     processJobUpdate(jobUpdate) {
       // updateData() will only overwrite properties that are actually set on
       // jobUpdate, and leave the rest as-is.
-      this.tabulator.updateData([jobUpdate])
-        .then(this.sortData);
+      if (this.tabulator.initialized) {
+        this.tabulator.updateData([jobUpdate])
+          .then(this.sortData);
+      }
       this._refreshAvailableStatuses();
     },
     processNewJob(jobUpdate) {
+      if (this.tabulator.initialized) {
+        this.tabulator.updateData([jobUpdate])
+          .then(this.sortData);
+      }
       this.tabulator.addData([jobUpdate])
         .then(this.sortData);
       this._refreshAvailableStatuses();
