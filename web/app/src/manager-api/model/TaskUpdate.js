@@ -22,7 +22,7 @@ import TaskStatus from './TaskStatus';
 class TaskUpdate {
     /**
      * Constructs a new <code>TaskUpdate</code>.
-     * TaskUpdate is sent by a Worker to update the status &amp; logs of a task it&#39;s executing.
+     * TaskUpdate is sent by a Worker to update the status &amp; logs of a task it&#39;s executing. All properties are optional; omitted properties are ignored (i.e. omitting &#x60;activity&#x60; will not erase the activity property of the task). 
      * @alias module:model/TaskUpdate
      */
     constructor() { 

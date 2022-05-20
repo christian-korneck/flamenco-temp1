@@ -1,6 +1,6 @@
 # TaskUpdate
 
-TaskUpdate is sent by a Worker to update the status & logs of a task it's executing.
+TaskUpdate is sent by a Worker to update the status & logs of a task it's executing. All properties are optional; omitted properties are ignored (i.e. omitting `activity` will not erase the activity property of the task). 
 
 ## Properties
 Name | Type | Description | Notes
