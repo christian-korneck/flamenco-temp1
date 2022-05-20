@@ -24,7 +24,9 @@ app.mount('#app')
 // For debugging.
 import { useJobs } from '@/stores/jobs';
 import { useNotifs } from '@/stores/notifications';
+import { useTaskLog } from '@/stores/tasklog';
 import * as API from '@/manager-api';
 window.jobs = useJobs();
 window.notifs = useNotifs();
+window.taskLog = useTaskLog();
 window.API = API;

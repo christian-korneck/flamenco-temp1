@@ -42,6 +42,14 @@ func NewTaskUpdate(task *persistence.Task) api.SocketIOTaskUpdate {
 	return taskUpdate
 }
 
+// NewTaskLogUpdate returns a SocketIOTaskLogUpdate for the given task.
+func NewTaskLogUpdate(taskUUID string, logchunk string) api.SocketIOTaskLogUpdate {
+	return api.SocketIOTaskLogUpdate{
+		TaskId: taskUUID,
+		Log:    logchunk,
+	}
+}
+
 // BroadcastJobUpdate sends the job update to clients.
 func (b *BiDirComms) BroadcastJobUpdate(jobUpdate api.SocketIOJobUpdate) {
 	log.Debug().Interface("jobUpdate", jobUpdate).Msg("socketIO: broadcasting job update")
@@ -66,4 +74,15 @@ func (b *BiDirComms) BroadcastTaskUpdate(taskUpdate api.SocketIOTaskUpdate) {
 	log.Debug().Interface("taskUpdate", taskUpdate).Msg("socketIO: broadcasting task update")
 	room := roomForJob(taskUpdate.JobId)
 	b.BroadcastTo(room, SIOEventTaskUpdate, taskUpdate)
+}
+
+// BroadcastTaskLogUpdate sends the task log chunk to clients.
+func (b *BiDirComms) BroadcastTaskLogUpdate(taskLogUpdate api.SocketIOTaskLogUpdate) {
+	// Don't log the contents here; logs can get big.
+	room := roomForTaskLog(taskLogUpdate.TaskId)
+	log.Debug().
+		Str("task", taskLogUpdate.TaskId).
+		Str("room", string(room)).
+		Msg("socketIO: broadcasting task log")
+	b.BroadcastTo(room, SIOEventTaskLogUpdate, taskLogUpdate)
 }

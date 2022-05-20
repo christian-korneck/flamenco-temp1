@@ -11,7 +11,7 @@ import { useSocketStatus } from '@/stores/socket-status';
 export default {
   emits: [
     // Data from Flamenco Manager:
-    "jobUpdate", "taskUpdate", "message",
+    "jobUpdate", "taskUpdate", "taskLogUpdate", "message",
     // SocketIO events:
     "sioReconnected", "sioDisconnected"
   ],
@@ -42,6 +42,14 @@ export default {
       }
       if (newJobID) {
         this._updateJobSubscription("subscribe", newJobID);
+      }
+    },
+    subscribedTaskID(newTaskID, oldTaskID) {
+      if (oldTaskID) {
+        this._updateTaskLogSubscription("unsubscribe", oldTaskID);
+      }
+      if (newTaskID) {
+        this._updateTaskLogSubscription("subscribe", newTaskID);
       }
     },
   },
@@ -117,6 +125,13 @@ export default {
         this.$emit("taskUpdate", apiTaskUpdate);
       });
 
+      this.socket.on("/tasklog", (taskLogUpdate) => {
+        // Convert to API object, in order to have the same parsing of data as
+        // when we'd do an API call.
+        const apiTaskLogUpdate = API.SocketIOTaskLogUpdate.constructFromObject(taskLogUpdate)
+        this.$emit("taskLogUpdate", apiTaskLogUpdate);
+      });
+
       // Chat system, useful for debugging.
       this.socket.on("/message", (message) => {
         this.$emit("message", message);
@@ -140,15 +155,32 @@ export default {
       this.socket.emit("/chat", payload);
     },
 
+    /**
+     * Send job (un)subscription request.
+     * @param {string} operation either "subscribe" or "unsubscribe"
+     * @param {string} jobID
+     */
     _updateJobSubscription(operation, jobID) {
       const payload = new API.SocketIOSubscription(operation, "job", jobID);
       console.log(`sending job ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
     },
 
+    /**
+     * Send task log (un)subscription request.
+     * @param {string} operation either "subscribe" or "unsubscribe"
+     * @param {string} jobID
+     */
+    _updateTaskLogSubscription(operation, taskID) {
+      const payload = new API.SocketIOSubscription(operation, "tasklog", taskID);
+      console.log(`sending tasklog ${operation}:`, payload);
+      this.socket.emit("/subscription", payload);
+    },
+
     // Resubscribe to whatever we want to be subscribed to:
     _resubscribe() {
       if (this.subscribedJobID) this._updateJobSubscription("subscribe", this.subscribedJobID);
+      if (this.subscribedTaskID) this._updateTaskLogSubscription("subscribe", this.subscribedTaskID);
     },
   },
 };

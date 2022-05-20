@@ -13,8 +13,10 @@
   <footer class="window-footer" v-if="!showFooterPopup" @click="showFooterPopup = true"><notification-bar /></footer>
   <footer-popup v-if="showFooterPopup" ref="footerPopup" @clickClose="showFooterPopup = false" />
 
-  <update-listener ref="updateListener" :websocketURL="websocketURL" :subscribedJobID="jobID"
-    @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @message="onChatMessage"
+  <update-listener ref="updateListener" :websocketURL="websocketURL"
+    :subscribedJobID="jobID" :subscribedTaskID="taskID"
+    @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @taskLogUpdate="onSioTaskLogUpdate"
+    @message="onChatMessage"
     @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
 </template>
 
@@ -24,6 +26,7 @@ import * as API from '@/manager-api';
 import { useJobs } from '@/stores/jobs';
 import { useTasks } from '@/stores/tasks';
 import { useNotifs } from '@/stores/notifications'
+import { useTaskLog } from '@/stores/tasklog'
 import { apiClient } from '@/stores/api-query-count';
 
 import FooterPopup from '@/components/FooterPopup.vue'
@@ -53,6 +56,7 @@ export default {
     jobs: useJobs(),
     tasks: useTasks(),
     notifs: useNotifs(),
+    taskLog: useTaskLog(),
     showFooterPopup: false,
   }),
   computed: {
@@ -78,6 +82,7 @@ export default {
       this._fetchJob(newJobID);
     },
     taskID(newTaskID, oldTaskID) {
+      this.taskLog.clear();
       this._fetchTask(newTaskID);
     },
   },
@@ -141,6 +146,14 @@ export default {
     },
 
     /**
+     * Event handler for SocketIO task log updates.
+     * @param {API.SocketIOTaskLogUpdate} taskLogUpdate
+     */
+    onSioTaskLogUpdate(taskLogUpdate) {
+      this.taskLog.addTaskLogUpdate(taskLogUpdate);
+    },
+
+    /**
      * @param {string} jobID job ID to navigate to, can be empty string for "no active job".
      */
     _routeToJob(jobID) {
@@ -191,8 +204,9 @@ export default {
       return jobsAPI.fetchTask(taskID)
         .then((task) => {
           this.tasks.setActiveTask(task);
-          // Forward the full task to Tabulator, so that that gets updated too.
-          this.$refs.tasksTable.processTaskUpdate(task);
+          // Forward the full task to Tabulator, so that that gets updated too.\
+          if (this.$refs.tasksTable)
+            this.$refs.tasksTable.processTaskUpdate(task);
         });
     },
 

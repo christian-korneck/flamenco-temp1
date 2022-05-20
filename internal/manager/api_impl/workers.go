@@ -17,6 +17,7 @@ import (
 
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -403,6 +404,10 @@ func (f *Flamenco) doTaskUpdate(
 		if err != nil {
 			logger.Error().Err(err).Msg("error writing task log")
 		}
+
+		// Broadcast the task log to SocketIO clients.
+		taskUpdate := webupdates.NewTaskLogUpdate(dbTask.UUID, *update.Log)
+		f.broadcaster.BroadcastTaskLogUpdate(taskUpdate)
 	}
 
 	// Any error updating the status is more important than an error updating the

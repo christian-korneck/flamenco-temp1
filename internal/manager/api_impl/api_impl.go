@@ -86,6 +86,8 @@ type ChangeBroadcaster interface {
 	// Note that there is no BroadcastNewTask. The 'new job' broadcast is sent
 	// after the job's tasks have been created, and thus there is no need for a
 	// separate broadcast per task.
+
+	BroadcastTaskLogUpdate(taskLogUpdate api.SocketIOTaskLogUpdate)
 }
 
 // ChangeBroadcaster should be a subset of webupdates.BiDirComms.

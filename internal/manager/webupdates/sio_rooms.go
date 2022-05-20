@@ -30,6 +30,7 @@ const (
 	SIOEventChatMessageSend SocketIOEventType = "/message"      // chat messages are broadcasted here
 	SIOEventJobUpdate       SocketIOEventType = "/jobs"         // sends api.SocketIOJobUpdate
 	SIOEventTaskUpdate      SocketIOEventType = "/task"         // sends api.SocketIOTaskUpdate
+	SIOEventTaskLogUpdate   SocketIOEventType = "/tasklog"      // sends api.SocketIOTaskLogUpdate
 	SIOEventSubscription    SocketIOEventType = "/subscription" // clients send api.SocketIOSubscription
 )
 
@@ -60,6 +61,8 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 	switch subs.Type {
 	case api.SocketIOSubscriptionTypeJob:
 		sioRoom = roomForJob(uuid.String())
+	case api.SocketIOSubscriptionTypeTasklog:
+		sioRoom = roomForTaskLog(uuid.String())
 	default:
 		logger.Warn().Msg("socketIO: unknown subscription type, ignoring")
 		return "unknown subscription type, ignoring request"
@@ -92,4 +95,13 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 // not to this room.
 func roomForJob(jobUUID string) SocketIORoomName {
 	return SocketIORoomName("job-" + jobUUID)
+}
+
+// roomForTaskLog will return the SocketIO room name for receiving task logs of
+// the the given task.
+//
+// Note that general task updates (`api.SIOEventTaskUpdate`) are sent to their
+// job's room, and not to this room.
+func roomForTaskLog(taskUUID string) SocketIORoomName {
+	return SocketIORoomName("tasklog-" + taskUUID)
 }
