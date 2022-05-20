@@ -126,6 +126,15 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	mf.stateMachine.EXPECT().TaskStatusChange(expectCtx, &task1, api.TaskStatusQueued)
 	mf.stateMachine.EXPECT().TaskStatusChange(expectCtx, &task2, api.TaskStatusQueued)
 
+	// Expect this re-queueing to end up in the task's log and activity.
+	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task1) // TODO: test saved activity value
+	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task2) // TODO: test saved activity value
+	logMsg := "Task was requeued by Manager because the worker assigned to it signed off.\n"
+	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task1.UUID, logMsg)
+	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task2.UUID, logMsg)
+	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{TaskId: task1.UUID, Log: logMsg})
+	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{TaskId: task2.UUID, Log: logMsg})
+
 	// Expect worker to be saved as 'offline'.
 	mf.persistence.EXPECT().
 		SaveWorkerStatus(expectCtx, &worker).
