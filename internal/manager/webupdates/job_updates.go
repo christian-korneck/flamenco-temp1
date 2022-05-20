@@ -67,13 +67,3 @@ func (b *BiDirComms) BroadcastTaskUpdate(taskUpdate api.SocketIOTaskUpdate) {
 	room := roomForJob(taskUpdate.JobId)
 	b.BroadcastTo(room, SIOEventTaskUpdate, taskUpdate)
 }
-
-// roomForJob will return the SocketIO room name for the given job. Clients in
-// this room will receive info scoped to this job, so for example updates to all
-// tasks of this job.
-//
-// Note that `api.SocketIOJobUpdate`s themselves are sent to all SocketIO clients, and
-// not to this room.
-func roomForJob(jobUUID string) SocketIORoomName {
-	return SocketIORoomName("job-" + jobUUID)
-}

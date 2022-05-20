@@ -9,15 +9,20 @@ import (
 	gosocketio "github.com/graarh/golang-socketio"
 )
 
-type SocketIORoomName string
+// Separate type aliases for room names and event types; it's otherwise too easy
+// to confuse the two.
+type (
+	SocketIORoomName  string
+	SocketIOEventType string
+)
 
 const (
-	// Predefined SocketIO rooms.
+	// Predefined SocketIO rooms. There will be others, but those will have a
+	// dynamic name like `job-fa48930a-105c-4125-a7f7-0aa1651dcd57` and cannot be
+	// listed here as constants. See `roomXXX()` functions for those.
 	SocketIORoomChat SocketIORoomName = "Chat" // For chat messages.
 	SocketIORoomJobs SocketIORoomName = "Jobs" // For job updates.
 )
-
-type SocketIOEventType string
 
 const (
 	// Predefined SocketIO event types.
@@ -77,4 +82,14 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 
 	logger.Debug().Msg("socketIO: subscription")
 	return "ok"
+}
+
+// roomForJob will return the SocketIO room name for the given job. Clients in
+// this room will receive info scoped to this job, so for example updates to all
+// tasks of this job.
+//
+// Note that `api.SocketIOJobUpdate`s themselves are sent to all SocketIO clients, and
+// not to this room.
+func roomForJob(jobUUID string) SocketIORoomName {
+	return SocketIORoomName("job-" + jobUUID)
 }
