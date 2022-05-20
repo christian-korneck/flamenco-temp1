@@ -3,6 +3,7 @@ package task_logs
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -74,4 +75,61 @@ func TestLogRotation(t *testing.T) {
 
 	_, err = os.Stat(filename)
 	assert.True(t, os.IsNotExist(err))
+}
+
+func TestLogTail(t *testing.T) {
+	s := tempStorage()
+	defer os.RemoveAll(s.BasePath)
+
+	jobID := "25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c"
+	taskID := "20ff9d06-53ec-4019-9e2e-1774f05f170a"
+
+	err := s.Write(zerolog.Nop(), jobID, taskID, "Just a single line")
+	assert.NoError(t, err)
+	contents, err := s.Tail(jobID, taskID)
+	assert.NoError(t, err)
+	assert.Equal(t, "Just a single line\n", string(contents))
+
+	// A short file shouldn't do any line stripping.
+	err = s.Write(zerolog.Nop(), jobID, taskID, "And another line!")
+	assert.NoError(t, err)
+	contents, err = s.Tail(jobID, taskID)
+	assert.NoError(t, err)
+	assert.Equal(t, "Just a single line\nAnd another line!\n", string(contents))
+
+	bigString := ""
+	for lineNum := 1; lineNum < 1000; lineNum++ {
+		bigString += fmt.Sprintf("This is line #%d\n", lineNum)
+	}
+	err = s.Write(zerolog.Nop(), jobID, taskID, bigString)
+	assert.NoError(t, err)
+
+	contents, err = s.Tail(jobID, taskID)
+	assert.NoError(t, err)
+	assert.Equal(t,
+		"This is line #887\nThis is line #888\nThis is line #889\nThis is line #890\nThis is line #891\n"+
+			"This is line #892\nThis is line #893\nThis is line #894\nThis is line #895\nThis is line #896\n"+
+			"This is line #897\nThis is line #898\nThis is line #899\nThis is line #900\nThis is line #901\n"+
+			"This is line #902\nThis is line #903\nThis is line #904\nThis is line #905\nThis is line #906\n"+
+			"This is line #907\nThis is line #908\nThis is line #909\nThis is line #910\nThis is line #911\n"+
+			"This is line #912\nThis is line #913\nThis is line #914\nThis is line #915\nThis is line #916\n"+
+			"This is line #917\nThis is line #918\nThis is line #919\nThis is line #920\nThis is line #921\n"+
+			"This is line #922\nThis is line #923\nThis is line #924\nThis is line #925\nThis is line #926\n"+
+			"This is line #927\nThis is line #928\nThis is line #929\nThis is line #930\nThis is line #931\n"+
+			"This is line #932\nThis is line #933\nThis is line #934\nThis is line #935\nThis is line #936\n"+
+			"This is line #937\nThis is line #938\nThis is line #939\nThis is line #940\nThis is line #941\n"+
+			"This is line #942\nThis is line #943\nThis is line #944\nThis is line #945\nThis is line #946\n"+
+			"This is line #947\nThis is line #948\nThis is line #949\nThis is line #950\nThis is line #951\n"+
+			"This is line #952\nThis is line #953\nThis is line #954\nThis is line #955\nThis is line #956\n"+
+			"This is line #957\nThis is line #958\nThis is line #959\nThis is line #960\nThis is line #961\n"+
+			"This is line #962\nThis is line #963\nThis is line #964\nThis is line #965\nThis is line #966\n"+
+			"This is line #967\nThis is line #968\nThis is line #969\nThis is line #970\nThis is line #971\n"+
+			"This is line #972\nThis is line #973\nThis is line #974\nThis is line #975\nThis is line #976\n"+
+			"This is line #977\nThis is line #978\nThis is line #979\nThis is line #980\nThis is line #981\n"+
+			"This is line #982\nThis is line #983\nThis is line #984\nThis is line #985\nThis is line #986\n"+
+			"This is line #987\nThis is line #988\nThis is line #989\nThis is line #990\nThis is line #991\n"+
+			"This is line #992\nThis is line #993\nThis is line #994\nThis is line #995\nThis is line #996\n"+
+			"This is line #997\nThis is line #998\nThis is line #999\n",
+		string(contents),
+	)
 }

@@ -12,6 +12,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/webupdates"
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -176,6 +177,35 @@ func (f *Flamenco) SetTaskStatus(e echo.Context, taskID string) error {
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing task status")
 	}
 	return e.NoContent(http.StatusNoContent)
+}
+
+func (f *Flamenco) FetchTaskLogTail(e echo.Context, taskID string) error {
+	logger := requestLogger(e)
+	ctx := e.Request().Context()
+
+	logger = logger.With().Str("task", taskID).Logger()
+	if !uuid.IsValid(taskID) {
+		logger.Warn().Msg("fetchTaskLogTail: bad task ID ")
+		return sendAPIError(e, http.StatusBadRequest, "bad task ID")
+	}
+
+	dbTask, err := f.persist.FetchTask(ctx, taskID)
+	if err != nil {
+		if errors.Is(err, persistence.ErrTaskNotFound) {
+			return sendAPIError(e, http.StatusNotFound, "no such task")
+		}
+		logger.Error().Err(err).Msg("error fetching task")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task: %v", err)
+	}
+
+	tail, err := f.logStorage.Tail(dbTask.Job.UUID, taskID)
+	if err != nil {
+		logger.Error().Err(err).Msg("unable to fetch task log tail")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task log tail: %v", err)
+	}
+
+	logger.Debug().Msg("fetched task tail")
+	return e.String(http.StatusOK, tail)
 }
 
 func jobDBtoAPI(dbJob *persistence.Job) api.Job {

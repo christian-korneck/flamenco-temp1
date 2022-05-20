@@ -3,13 +3,20 @@ package task_logs
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+)
+
+const (
+	// tailSize is the maximum number of bytes read by the Tail() function.
+	tailSize int64 = 2048
 )
 
 // Storage can write data to task logs, rotate logs, etc.
@@ -104,4 +111,55 @@ func (s *Storage) filepath(jobID, taskID string) string {
 	}
 	filename := fmt.Sprintf("task-%v.txt", taskID)
 	return path.Join(dirpath, filename)
+}
+
+// Tail reads the final few lines of a task log.
+func (s *Storage) Tail(jobID, taskID string) (string, error) {
+	filepath := s.filepath(jobID, taskID)
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		return "", fmt.Errorf("unable to open log file for reading: %w", err)
+	}
+
+	fileSize, err := file.Seek(0, os.SEEK_END)
+	if err != nil {
+		return "", fmt.Errorf("unable to seek to end of log file: %w", err)
+	}
+
+	// Number of bytes to read.
+	var (
+		buffer   []byte
+		numBytes int
+	)
+	if fileSize <= tailSize {
+		// The file is small, just read all of it.
+		_, err = file.Seek(0, os.SEEK_SET)
+		if err != nil {
+			return "", fmt.Errorf("unable to seek to start of log file: %w", err)
+		}
+		buffer, err = io.ReadAll(file)
+	} else {
+		// Read the last 'tailSize' number of bytes.
+		_, err = file.Seek(-tailSize, os.SEEK_END)
+		if err != nil {
+			return "", fmt.Errorf("unable to seek in log file: %w", err)
+		}
+		buffer = make([]byte, tailSize)
+		numBytes, err = file.Read(buffer)
+
+		// Try to remove contents up to the first newline, as it's very likely we just
+		// seeked into the middle of a line.
+		firstNewline := bytes.IndexByte(buffer, byte('\n'))
+		if 0 <= firstNewline && firstNewline < numBytes-1 {
+			buffer = buffer[firstNewline+1:]
+		} else {
+			// The file consists of a single line of text; don't strip the first line.
+		}
+	}
+	if err != nil {
+		return "", fmt.Errorf("error reading log file: %w", err)
+	}
+
+	return string(buffer), nil
 }
