@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -16,7 +16,7 @@ func (f *Flamenco) FetchJob(e echo.Context, jobID string) error {
 		Str("job", jobID).
 		Logger()
 
-	if _, err := uuid.Parse(jobID); err != nil {
+	if !uuid.IsValid(jobID) {
 		logger.Debug().Msg("invalid job ID received")
 		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
 	}
@@ -66,7 +66,7 @@ func (f *Flamenco) FetchJobTasks(e echo.Context, jobID string) error {
 		Logger()
 	ctx := e.Request().Context()
 
-	if _, err := uuid.Parse(jobID); err != nil {
+	if !uuid.IsValid(jobID) {
 		logger.Debug().Msg("invalid job ID received")
 		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
 	}
@@ -93,7 +93,7 @@ func (f *Flamenco) FetchTask(e echo.Context, taskID string) error {
 		Logger()
 	ctx := e.Request().Context()
 
-	if _, err := uuid.Parse(taskID); err != nil {
+	if !uuid.IsValid(taskID) {
 		logger.Debug().Msg("invalid job ID received")
 		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
 	}

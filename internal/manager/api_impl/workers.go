@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
@@ -18,6 +17,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
 	"git.blender.org/flamenco/internal/manager/webupdates"
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -47,7 +47,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 	}
 
 	dbWorker := persistence.Worker{
-		UUID:               uuid.New().String(),
+		UUID:               uuid.New(),
 		Name:               req.Nickname,
 		Secret:             string(hashedPassword),
 		Platform:           req.Platform,
@@ -328,7 +328,7 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
 
-	if _, err := uuid.Parse(taskID); err != nil {
+	if !uuid.IsValid(taskID) {
 		logger.Debug().Msg("invalid task ID received")
 		return sendAPIError(e, http.StatusBadRequest, "task ID not valid")
 	}
@@ -437,7 +437,7 @@ func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
 
-	if _, err := uuid.Parse(taskID); err != nil {
+	if !uuid.IsValid(taskID) {
 		logger.Debug().Msg("invalid task ID received")
 		return sendAPIError(e, http.StatusBadRequest, "task ID not valid")
 	}

@@ -6,10 +6,10 @@ package persistence
 import (
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -119,7 +119,7 @@ func TestQueryJobTaskSummaries(t *testing.T) {
 	otherAuthoredJob := createTestAuthoredJobWithTasks()
 	otherAuthoredJob.Status = api.JobStatusActive
 	for i := range otherAuthoredJob.Tasks {
-		otherAuthoredJob.Tasks[i].UUID = uuid.NewString()
+		otherAuthoredJob.Tasks[i].UUID = uuid.New()
 		otherAuthoredJob.Tasks[i].Dependencies = []*job_compilers.AuthoredTask{}
 	}
 	otherAuthoredJob.JobID = "138678c8-efd0-452b-ac05-397ff4c02b26"

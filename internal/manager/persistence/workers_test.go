@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -18,7 +18,7 @@ func TestCreateFetchWorker(t *testing.T) {
 	defer cancel()
 
 	w := Worker{
-		UUID:               uuid.New().String(),
+		UUID:               uuid.New(),
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
 		LastActivity:       "",
@@ -52,7 +52,7 @@ func TestSaveWorker(t *testing.T) {
 	defer cancel()
 
 	w := Worker{
-		UUID:               uuid.New().String(),
+		UUID:               uuid.New(),
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
 		LastActivity:       "",

@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -69,7 +69,7 @@ func (a *Author) Task(name string, taskType string) (*AuthoredTask, error) {
 	}
 
 	at := AuthoredTask{
-		uuid.New().String(),
+		uuid.New(),
 		name,
 		taskType,
 		50, // TODO: handle default priority somehow.

@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -301,7 +301,7 @@ func authorTestTask(name, taskType string, dependencies ...*job_compilers.Author
 	task := job_compilers.AuthoredTask{
 		Name:         name,
 		Type:         taskType,
-		UUID:         uuid.NewString(),
+		UUID:         uuid.New(),
 		Priority:     50,
 		Commands:     make([]job_compilers.AuthoredCommand, 0),
 		Dependencies: dependencies,

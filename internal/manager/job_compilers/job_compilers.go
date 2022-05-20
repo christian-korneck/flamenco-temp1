@@ -12,9 +12,9 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -85,7 +85,7 @@ func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJo
 
 	// Create an AuthoredJob from this SubmittedJob.
 	aj := AuthoredJob{
-		JobID:    uuid.New().String(),
+		JobID:    uuid.New(),
 		Created:  s.timeService.Now(),
 		Name:     sj.Name,
 		JobType:  sj.Type,

@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	"git.blender.org/flamenco/pkg/api"
-	"github.com/google/uuid"
 	gosocketio "github.com/graarh/golang-socketio"
+
+	"git.blender.org/flamenco/internal/uuid"
 )
 
 // Separate type aliases for room names and event types; it's otherwise too easy
@@ -50,9 +51,7 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 		Str("uuid", string(subs.Uuid)).
 		Logger()
 
-	// Make sure the UUID is actually a valid one.
-	uuid, err := uuid.Parse(subs.Uuid)
-	if err != nil {
+	if !uuid.IsValid(subs.Uuid) {
 		logger.Warn().Msg("socketIO: invalid UUID, ignoring subscription request")
 		return "invalid UUID, ignoring request"
 	}
@@ -60,14 +59,15 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 	var sioRoom SocketIORoomName
 	switch subs.Type {
 	case api.SocketIOSubscriptionTypeJob:
-		sioRoom = roomForJob(uuid.String())
+		sioRoom = roomForJob(subs.Uuid)
 	case api.SocketIOSubscriptionTypeTasklog:
-		sioRoom = roomForTaskLog(uuid.String())
+		sioRoom = roomForTaskLog(subs.Uuid)
 	default:
 		logger.Warn().Msg("socketIO: unknown subscription type, ignoring")
 		return "unknown subscription type, ignoring request"
 	}
 
+	var err error
 	switch subs.Op {
 	case api.SocketIOSubscriptionOperationSubscribe:
 		err = c.Join(string(sioRoom))
