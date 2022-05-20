@@ -1,10 +1,11 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useTaskLog } from '@/stores/tasklog'
-import * as datetime from "@/datetime";
+import { useTasks } from '@/stores/tasks'
 
 const taskLog = useTaskLog();
+const tasks = useTasks();
 
 const tabOptions = {
   columns: [
@@ -30,7 +31,13 @@ onMounted(() => {
   tabulator = new Tabulator('#task_log_list', tabOptions);
   tabulator.on("tableBuilt", _scrollToBottom);
   tabulator.on("tableBuilt", _subscribeToPinia);
+  console.log("Task log list: mounted on task ID", tasks.activeTaskID);
 });
+
+tasks.$subscribe((_, state) => {
+  console.log("Task log list: new task ID", state.activeTaskID);
+});
+
 
 function _scrollToBottom() {
   if (taskLog.empty) return;

@@ -82,7 +82,6 @@ export default {
       this._fetchJob(newJobID);
     },
     taskID(newTaskID, oldTaskID) {
-      this.taskLog.clear();
       this._fetchTask(newTaskID);
     },
     showFooterPopup(shown) {
@@ -199,6 +198,8 @@ export default {
      * @param {string} taskID task ID, can be empty string for "no task".
      */
     _fetchTask(taskID) {
+      this._fetchTaskLogTail(taskID);
+
       if (!taskID) {
         this.tasks.deselectAllTasks();
         return;
@@ -211,6 +212,27 @@ export default {
           // Forward the full task to Tabulator, so that that gets updated too.\
           if (this.$refs.tasksTable)
             this.$refs.tasksTable.processTaskUpdate(task);
+        });
+    },
+
+    /**
+     * Fetch task log tail.
+     *
+     * TODO: Only do this when the footer pop-over is visible and set to the
+     * "Task Log" tab. Otherwise the logs won't be shown anyway.
+     *
+     * @param {string} taskID task ID.
+     */
+    _fetchTaskLogTail(taskID) {
+      this.taskLog.clear();
+      if (!taskID) {
+        return;
+      }
+
+      const jobsAPI = new API.JobsApi(apiClient);
+      return jobsAPI.fetchTaskLogTail(taskID)
+        .then((logTail) => {
+          this.taskLog.addChunk(logTail);
         });
     },
 
