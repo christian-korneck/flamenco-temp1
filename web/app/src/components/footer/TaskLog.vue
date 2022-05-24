@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted, watch } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useTaskLog } from '@/stores/tasklog'
 import { useTasks } from '@/stores/tasks'
+import { apiClient } from '@/stores/api-query-count';
 
 const taskLog = useTaskLog();
 const tasks = useTasks();
@@ -32,12 +33,20 @@ onMounted(() => {
   tabulator.on("tableBuilt", _scrollToBottom);
   tabulator.on("tableBuilt", _subscribeToPinia);
   console.log("Task log list: mounted on task ID", tasks.activeTaskID);
+
+  if (tasks.activeTaskID)
+    _fetchLogTail(tasks.activeTaskID);
+  else
+    taskLog.clear();
+});
+onUnmounted(() => {
+  taskLog.clear();
 });
 
 tasks.$subscribe((_, state) => {
   console.log("Task log list: new task ID", state.activeTaskID);
+  _fetchLogTail(state.activeTaskID);
 });
-
 
 function _scrollToBottom() {
   if (taskLog.empty) return;
@@ -48,6 +57,16 @@ function _subscribeToPinia() {
     tabulator.setData(taskLog.history)
       .then(_scrollToBottom)
   })
+}
+
+function _fetchLogTail(taskID) {
+  taskLog.clear();
+
+  const jobsAPI = new API.JobsApi(apiClient);
+  return jobsAPI.fetchTaskLogTail(taskID)
+    .then((logTail) => {
+      taskLog.addChunk(logTail);
+    });
 }
 </script>
 
