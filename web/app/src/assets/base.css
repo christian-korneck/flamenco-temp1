@@ -47,10 +47,10 @@
   --color-status-failed: hsl(356 100% 59%);
   --color-status-soft-failed: hsl(356 70% 40%);
 
-  --color-status-canceled: hsl(194 100% 46%);
-  --color-status-paused: hsl(194 20% 46%);
   --color-status-queued: hsl(194 100% 46%);
   --color-status-requeueing: hsl(194 100% 46%);
+  --color-status-canceled: hsl(0 0% 46%);
+  --color-status-paused: hsl(0 0% 66%);
 
   --color-status-cancel-requested: hsl(194 30% 50%);
   --color-status-under-construction: hsl(194 30% 50%);
