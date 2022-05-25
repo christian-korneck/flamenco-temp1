@@ -2,7 +2,7 @@
   <div class="col col-1">
     <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
-  <div class="col col-2">
+  <div class="col col-2" id="col-job-details">
     <job-details :jobData="jobs.activeJob" />
     <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>

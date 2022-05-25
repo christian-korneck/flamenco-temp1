@@ -5,7 +5,7 @@
     :activeStatuses="shownStatuses"
     @click="toggleStatusFilter"
   />
-  <div class="task-list-container">
+  <div class="task-list-container" id="task-list-container">
     <div class="task-list" id="flamenco_task_list"></div>
   </div>
 </template>
@@ -74,7 +74,8 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
-      height: "300px", // Must be set in order for the virtual DOM to function correctly.
+      height: "100%", // Must be set in order for the virtual DOM to function correctly.
+      maxHeight: "100%",
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active task is tracked by click events.
     };
@@ -124,6 +125,8 @@ export default {
       // let tasks = data.tasks.map((j) => API.TaskUpdate.constructFromObject(j));
       this.tabulator.setData(data.tasks);
       this._refreshAvailableStatuses();
+
+      this._setTableHeight();
     },
     processTaskUpdate(taskUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -171,7 +174,26 @@ export default {
       if (!row) return
       if (row.reformat) row.reformat();
       else if (row.reinitialize) row.reinitialize(true);
+    },
+    _setTableHeight() {
+      let jobDetailsColumn = document.getElementById('col-job-details');
+      let taskListTable = document.getElementById('task-list-container');
+
+      if (!jobDetailsColumn || !taskListTable) {
+        return;
+      }
+
+      let tableHeight = jobDetailsColumn.clientHeight - taskListTable.offsetTop;
+      this.tabulator.setHeight(tableHeight);
     }
   }
 };
+
+function resizeTasksListTable() {
+  if (window.tasksTableVue) {
+    window.tasksTableVue._setTableHeight();
+  }
+}
+
+window.addEventListener('resize', resizeTasksListTable);
 </script>
