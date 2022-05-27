@@ -83,6 +83,11 @@ export default {
     this.tabulator = new Tabulator('#flamenco_task_list', options);
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this._onTableBuilt);
+
+    window.addEventListener('resize', this._setTableHeight);
+  },
+  unmounted() {
+    window.removeEventListener('resize', this._setTableHeight);
   },
   watch: {
     jobID() {
@@ -189,11 +194,4 @@ export default {
   }
 };
 
-function resizeTasksListTable() {
-  if (window.tasksTableVue) {
-    window.tasksTableVue._setTableHeight();
-  }
-}
-
-window.addEventListener('resize', resizeTasksListTable);
 </script>
