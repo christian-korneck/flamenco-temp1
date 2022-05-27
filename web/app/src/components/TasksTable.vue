@@ -190,7 +190,7 @@ export default {
 
       let tableHeight = jobDetailsColumn.clientHeight - taskListTable.offsetTop;
       this.tabulator.setHeight(tableHeight);
-    }
+    },
   }
 };
 
