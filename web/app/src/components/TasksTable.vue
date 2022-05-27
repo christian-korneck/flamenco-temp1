@@ -5,7 +5,7 @@
     :activeStatuses="shownStatuses"
     @click="toggleStatusFilter"
   />
-  <div class="task-list-container" id="task-list-container">
+  <div class="tabulator-container">
     <div class="task-list" id="flamenco_task_list"></div>
   </div>
 </template>
@@ -181,8 +181,8 @@ export default {
       else if (row.reinitialize) row.reinitialize(true);
     },
     _setTableHeight() {
-      let jobDetailsColumn = document.getElementById('col-job-details');
-      let taskListTable = document.getElementById('task-list-container');
+      const jobDetailsColumn = this.$el.parentElement;
+      const tableContainer = this.tabulator.element.parentElement;
 
       if (!jobDetailsColumn || !taskListTable) {
         return;
