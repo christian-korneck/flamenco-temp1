@@ -27,12 +27,14 @@ Note that list is **not** in any specific order.
   - [x] Task details
   - [x] Task action buttons
   - [x] Notification history pop-over
-  - [ ] Task log viewer
+  - [x] Task log viewer
   - [x] Subscription system for "job detail+task" updates.
-  - [ ] Subscription system for "task log" updates.
+  - [x] Subscription system for "task log" updates.
   - [x] Filtering jobs by status
   - [x] Filtering tasks by status
   - [ ] Make tables respect the window height
+    - [ ] Jobs
+    - [x] Tasks
 - [ ] Web frontend for Worker management
   - [x] "Tabs" system + Vue Router support.
 - [ ] Port the old 'fail-requested' task status handling code to the new Manager
