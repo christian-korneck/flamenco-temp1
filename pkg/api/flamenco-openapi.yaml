@@ -459,6 +459,8 @@ paths:
             text/plain:
               schema:
                 type: string
+        "204":
+          description: Returned when the task has no log yet.
         default:
           description: Unexpected error.
           content:
