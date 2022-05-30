@@ -50,6 +50,15 @@ func (db *DB) FetchWorker(ctx context.Context, uuid string) (*Worker, error) {
 	return &w, nil
 }
 
+func (db *DB) FetchWorkers(ctx context.Context) ([]*Worker, error) {
+	workers := make([]*Worker, 0)
+	tx := db.gormDB.WithContext(ctx).Model(&Worker{}).Scan(&workers)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return workers, nil
+}
+
 func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
 	err := db.gormDB.WithContext(ctx).
 		Model(w).

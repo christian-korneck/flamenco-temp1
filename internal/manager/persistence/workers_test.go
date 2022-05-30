@@ -103,3 +103,52 @@ func TestSaveWorker(t *testing.T) {
 	assert.Equal(t, updatedWorker.Name, fetchedWorker.Name, "non-status fields should also have been updated")
 	assert.Equal(t, updatedWorker.Software, fetchedWorker.Software, "non-status fields should also have been updated")
 }
+
+func TestFetchWorkers(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
+	defer cancel()
+
+	// No workers
+	workers, err := db.FetchWorkers(ctx)
+	if !assert.NoError(t, err) {
+		t.Fatal("error fetching empty list of workers, no use in continuing the test")
+	}
+	assert.Empty(t, workers)
+
+	linuxWorker := Worker{
+		UUID:               uuid.New(),
+		Name:               "дрон",
+		Address:            "fe80::5054:ff:fede:2ad7",
+		LastActivity:       "",
+		Platform:           "linux",
+		Software:           "3.0",
+		Status:             api.WorkerStatusAwake,
+		SupportedTaskTypes: "blender,ffmpeg,file-management",
+	}
+
+	// One worker:
+	err = db.CreateWorker(ctx, &linuxWorker)
+	assert.NoError(t, err)
+
+	workers, err = db.FetchWorkers(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, []*Worker{&linuxWorker}, workers)
+
+	// Two workers:
+	windowsWorker := Worker{
+		UUID:               uuid.New(),
+		Name:               "очиститель окон",
+		Address:            "fe80::c000:d000:::3",
+		LastActivity:       "nothing",
+		Platform:           "windows",
+		Software:           "3.0",
+		Status:             api.WorkerStatusOffline,
+		SupportedTaskTypes: "blender,ffmpeg,file-management",
+	}
+	err = db.CreateWorker(ctx, &windowsWorker)
+	assert.NoError(t, err)
+
+	workers, err = db.FetchWorkers(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, []*Worker{&linuxWorker, &windowsWorker}, workers)
+}
