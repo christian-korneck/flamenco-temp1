@@ -19,7 +19,7 @@ import { indicator } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
 import { useTasks } from '@/stores/tasks';
 
-import TaskActionsBar from '@/components/TaskActionsBar.vue'
+import TaskActionsBar from '@/components/jobs/TaskActionsBar.vue'
 import StatusFilterBar from '@/components/StatusFilterBar.vue'
 
 export default {

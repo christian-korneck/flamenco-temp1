@@ -18,7 +18,7 @@ import * as API from '@/manager-api'
 import { indicator } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
 
-import JobActionsBar from '@/components/JobActionsBar.vue'
+import JobActionsBar from '@/components/jobs/JobActionsBar.vue'
 import StatusFilterBar from '@/components/StatusFilterBar.vue'
 
 export default {
