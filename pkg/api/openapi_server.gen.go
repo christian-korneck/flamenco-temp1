@@ -49,6 +49,9 @@ type ServerInterface interface {
 	// Get the Flamenco version of this Manager
 	// (GET /api/version)
 	GetVersion(ctx echo.Context) error
+	// Get list of workers.
+	// (GET /api/worker-mgt/workers)
+	FetchWorkers(ctx echo.Context) error
 	// Register a new worker
 	// (POST /api/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
@@ -247,6 +250,15 @@ func (w *ServerInterfaceWrapper) GetVersion(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetVersion(ctx)
+	return err
+}
+
+// FetchWorkers converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchWorkers(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FetchWorkers(ctx)
 	return err
 }
 
@@ -491,6 +503,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/tasks/:task_id/logtail", wrapper.FetchTaskLogTail)
 	router.POST(baseURL+"/api/tasks/:task_id/setstatus", wrapper.SetTaskStatus)
 	router.GET(baseURL+"/api/version", wrapper.GetVersion)
+	router.GET(baseURL+"/api/worker-mgt/workers", wrapper.FetchWorkers)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/worker/sign-off", wrapper.SignOff)
 	router.POST(baseURL+"/api/worker/sign-on", wrapper.SignOn)

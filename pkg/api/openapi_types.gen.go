@@ -514,6 +514,11 @@ type TaskWorker struct {
 	Name    string `json:"name"`
 }
 
+// List of workers.
+type WorkerList struct {
+	Workers []WorkerSummary `json:"workers"`
+}
+
 // WorkerRegistration defines model for WorkerRegistration.
 type WorkerRegistration struct {
 	Nickname           string   `json:"nickname"`
@@ -541,6 +546,14 @@ type WorkerStateChanged struct {
 
 // WorkerStatus defines model for WorkerStatus.
 type WorkerStatus string
+
+// Basic information about a Worker.
+type WorkerSummary struct {
+	Id              string        `json:"id"`
+	Nickname        string        `json:"nickname"`
+	Status          WorkerStatus  `json:"status"`
+	StatusRequested *WorkerStatus `json:"status_requested,omitempty"`
+}
 
 // SubmitJobJSONBody defines parameters for SubmitJob.
 type SubmitJobJSONBody SubmittedJob

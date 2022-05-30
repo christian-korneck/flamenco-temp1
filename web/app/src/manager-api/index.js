@@ -55,15 +55,18 @@ import TaskStatusChange from './model/TaskStatusChange';
 import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
 import TaskWorker from './model/TaskWorker';
+import WorkerList from './model/WorkerList';
 import WorkerRegistration from './model/WorkerRegistration';
 import WorkerSignOn from './model/WorkerSignOn';
 import WorkerStateChange from './model/WorkerStateChange';
 import WorkerStateChanged from './model/WorkerStateChanged';
 import WorkerStatus from './model/WorkerStatus';
+import WorkerSummary from './model/WorkerSummary';
 import JobsApi from './manager/JobsApi';
 import MetaApi from './manager/MetaApi';
 import ShamanApi from './manager/ShamanApi';
 import WorkerApi from './manager/WorkerApi';
+import WorkerMgtApi from './manager/WorkerMgtApi';
 
 
 /**
@@ -357,6 +360,12 @@ export {
     TaskWorker,
 
     /**
+     * The WorkerList model constructor.
+     * @property {module:model/WorkerList}
+     */
+    WorkerList,
+
+    /**
      * The WorkerRegistration model constructor.
      * @property {module:model/WorkerRegistration}
      */
@@ -387,6 +396,12 @@ export {
     WorkerStatus,
 
     /**
+     * The WorkerSummary model constructor.
+     * @property {module:model/WorkerSummary}
+     */
+    WorkerSummary,
+
+    /**
     * The JobsApi service constructor.
     * @property {module:manager/JobsApi}
     */
@@ -408,5 +423,11 @@ export {
     * The WorkerApi service constructor.
     * @property {module:manager/WorkerApi}
     */
-    WorkerApi
+    WorkerApi,
+
+    /**
+    * The WorkerMgtApi service constructor.
+    * @property {module:manager/WorkerMgtApi}
+    */
+    WorkerMgtApi
 };

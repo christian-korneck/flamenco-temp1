@@ -134,6 +134,9 @@ type ClientInterface interface {
 	// GetVersion request
 	GetVersion(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchWorkers request
+	FetchWorkers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -365,6 +368,18 @@ func (c *Client) SetTaskStatus(ctx context.Context, taskId string, body SetTaskS
 
 func (c *Client) GetVersion(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetVersionRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchWorkers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchWorkersRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -1016,6 +1031,33 @@ func NewGetVersionRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewFetchWorkersRequest generates requests for FetchWorkers
+func NewFetchWorkersRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker-mgt/workers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewRegisterWorkerRequest calls the generic RegisterWorker builder with application/json body
 func NewRegisterWorkerRequest(server string, body RegisterWorkerJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1571,6 +1613,9 @@ type ClientWithResponsesInterface interface {
 	// GetVersion request
 	GetVersionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetVersionResponse, error)
 
+	// FetchWorkers request
+	FetchWorkersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*FetchWorkersResponse, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error)
 
@@ -1882,6 +1927,28 @@ func (r GetVersionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetVersionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchWorkersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WorkerList
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchWorkersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchWorkersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2301,6 +2368,15 @@ func (c *ClientWithResponses) GetVersionWithResponse(ctx context.Context, reqEdi
 		return nil, err
 	}
 	return ParseGetVersionResponse(rsp)
+}
+
+// FetchWorkersWithResponse request returning *FetchWorkersResponse
+func (c *ClientWithResponses) FetchWorkersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*FetchWorkersResponse, error) {
+	rsp, err := c.FetchWorkers(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchWorkersResponse(rsp)
 }
 
 // RegisterWorkerWithBodyWithResponse request with arbitrary body returning *RegisterWorkerResponse
@@ -2789,6 +2865,32 @@ func ParseGetVersionResponse(rsp *http.Response) (*GetVersionResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest FlamencoVersion
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchWorkersResponse parses an HTTP response from a FetchWorkersWithResponse call
+func ParseFetchWorkersResponse(rsp *http.Response) (*FetchWorkersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchWorkersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkerList
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
