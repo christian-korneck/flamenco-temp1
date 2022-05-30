@@ -6,7 +6,7 @@
     @click="toggleStatusFilter"
   />
   <div class="tabulator-container">
-    <div class="task-list" id="flamenco_task_list"></div>
+    <div class="task-list with-clickable-row" id="flamenco_task_list"></div>
   </div>
 </template>
 

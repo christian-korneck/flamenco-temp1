@@ -7,7 +7,7 @@
       :activeStatuses="shownStatuses"
       @click="toggleStatusFilter"
     />
-    <div class="job-list" id="flamenco_job_list"></div>
+    <div class="job-list with-clickable-row" id="flamenco_job_list"></div>
   </div>
 </template>
 

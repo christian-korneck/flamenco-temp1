@@ -368,7 +368,7 @@ ul.status-filter-bar .status-filter-indicator .indicator {
   background-color: transparent;
 }
 
-.job-list .tabulator-row, .task-list .tabulator-row {
+.with-clickable-row .tabulator-row {
   cursor: pointer;
 }
 
