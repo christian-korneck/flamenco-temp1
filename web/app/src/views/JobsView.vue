@@ -240,17 +240,4 @@ export default {
 .isFetching {
   opacity: 50%;
 }
-
-#col-job-details {
-  /* These two are necessary for the automatic resizing of the tasks table: */
-
-  /* Ensures that the table cannot push down the bottom of the column element,
-  *  and thus the column height is a stable reference. */
-  overflow-y: scroll;
-
-  /* Ensures the offsetParent of the table is the column itself; without this,
-   * offsetParent would be <body>. */
-  position: relative;
-}
-
 </style>
