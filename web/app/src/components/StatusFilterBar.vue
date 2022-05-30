@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { indicator } from '@/statusindicator';
 
-const props = defineProps(['availableStatuses', 'activeStatuses']);
+const props = defineProps(['availableStatuses', 'activeStatuses', 'classPrefix']);
 const emit = defineEmits(['click'])
 
 /**
@@ -23,7 +23,7 @@ const visibleStatuses = computed(() => {
       :data-status="status"
       :class="{active: activeStatuses.indexOf(status) >= 0}"
       @click="emit('click', status)"
-      v-html="indicator(status)"
+      v-html="indicator(status, this.classPrefix)"
     ></li>
   </ul>
 </template>

@@ -13,7 +13,7 @@
   <footer class="window-footer" v-if="!showFooterPopup" @click="showFooterPopup = true"><notification-bar /></footer>
   <footer-popup v-if="showFooterPopup" ref="footerPopup" @clickClose="showFooterPopup = false" />
 
-  <update-listener ref="updateListener" :websocketURL="websocketURL"
+  <update-listener ref="updateListener"
     :subscribedJobID="jobID" :subscribedTaskID="taskID"
     @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @taskLogUpdate="onSioTaskLogUpdate"
     @message="onChatMessage"
@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import * as urls from '@/urls'
 import * as API from '@/manager-api';
 import { useJobs } from '@/stores/jobs';
 import { useTasks } from '@/stores/tasks';
@@ -50,7 +49,6 @@ export default {
     UpdateListener,
   },
   data: () => ({
-    websocketURL: urls.ws(),
     messages: [],
 
     jobs: useJobs(),

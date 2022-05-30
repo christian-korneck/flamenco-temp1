@@ -55,6 +55,14 @@
   --color-status-cancel-requested: hsl(194 30% 50%);
   --color-status-under-construction: hsl(194 30% 50%);
 
+  --color-worker-status-starting: hsl(68, 100%, 30%);
+  --color-worker-status-awake: var(--color-status-active);
+  --color-worker-status-asleep: hsl(194, 100%, 19%);
+  --color-worker-status-error: var(--color-status-failed);
+  --color-worker-status-shutdown: var(--color-status-paused);
+  --color-worker-status-testing: hsl(166 100% 46%);
+  --color-worker-status-offline: var(--color-status-canceled);
+
   --color-connection-lost-text: hsl(17, 65%, 65%);
   --color-connection-lost-bg: hsl(17, 65%, 20%);
 }
@@ -358,6 +366,28 @@ ul.status-filter-bar .status-filter-indicator .indicator {
 }
 .status-under-construction {
   --indicator-color: var(--color-status-under-construction);
+}
+
+.worker-status-starting {
+  --indicator-color: var(--color-worker-status-starting);
+}
+.worker-status-awake {
+  --indicator-color: var(--color-worker-status-awake);
+}
+.worker-status-asleep {
+  --indicator-color: var(--color-worker-status-asleep);
+}
+.worker-status-error {
+  --indicator-color: var(--color-worker-status-error);
+}
+.worker-status-shutdown {
+  --indicator-color: var(--color-worker-status-shutdown);
+}
+.worker-status-testing {
+  --indicator-color: var(--color-worker-status-testing);
+}
+.worker-status-offline {
+  --indicator-color: var(--color-worker-status-offline);
 }
 
 .status-archiving,

@@ -8,9 +8,11 @@ import { toTitleCase } from '@/strings';
  *
  * @param {string} status The job/task status. Assumed to only consist of
  *     letters and dashes, HTML-safe, and valid as a CSS class name.
+ * @param {string} classNamePrefix optional prefix used for the class name
  * @returns the HTML for the status indicator.
  */
-export function indicator(status) {
+export function indicator(status, classNamePrefix) {
   const label = toTitleCase(status);
-  return `<span title="${label}" class="indicator status-${status}"></span>`;
+  if (!classNamePrefix) classNamePrefix = ""; // force an empty string for any false value.
+  return `<span title="${label}" class="indicator ${classNamePrefix}status-${status}"></span>`;
 }

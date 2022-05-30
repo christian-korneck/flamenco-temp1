@@ -15,9 +15,10 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/workers',
+      path: '/workers/:workerID?',
       name: 'workers',
-      component: () => import('../views/WorkersView.vue')
+      component: () => import('../views/WorkersView.vue'),
+      props: true,
     },
     {
       path: '/settings',

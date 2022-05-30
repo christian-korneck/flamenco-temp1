@@ -4,9 +4,11 @@
 
 <script>
 import io from "socket.io-client";
+import { ws } from '@/urls'
 import * as API from "@/manager-api"
 import { useSocketStatus } from '@/stores/socket-status';
 
+const websocketURL = ws();
 
 export default {
   emits: [
@@ -15,7 +17,7 @@ export default {
     // SocketIO events:
     "sioReconnected", "sioDisconnected"
   ],
-  props: ["websocketURL", "subscribedJobID", "subscribedTaskID"],
+  props: ["subscribedJobID", "subscribedTaskID"],
   data() {
     return {
       socket: null,
@@ -23,7 +25,7 @@ export default {
     }
   },
   mounted: function () {
-    if (!this.websocketURL) {
+    if (!websocketURL) {
       console.warn("UpdateListener: no websocketURL given, cannot do anything");
       return;
     }
@@ -57,8 +59,8 @@ export default {
     connectToWebsocket() {
       // The SocketIO client API docs are available at:
       // https://github.com/socketio/socket.io-client/blob/2.4.x/docs/API.md
-      console.log("connecting JobsListener to WS", this.websocketURL);
-      const ws = io(this.websocketURL, {
+      console.log("connecting JobsListener to WS", websocketURL);
+      const ws = io(websocketURL, {
         transports: ["websocket"],
       });
       this.socket = ws;
@@ -144,7 +146,7 @@ export default {
         return;
       }
 
-      console.log("disconnecting JobsListener WS", this.websocketURL);
+      console.log("disconnecting JobsListener WS", websocketURL);
       this.socket.disconnect();
       this.socket = null;
     },
