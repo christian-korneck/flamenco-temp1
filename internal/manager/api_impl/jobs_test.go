@@ -4,7 +4,9 @@ package api_impl
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -185,5 +187,48 @@ func TestSetJobStatus_happy(t *testing.T) {
 	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
 	assert.NoError(t, err)
 
+	assertResponseEmpty(t, echoCtx)
+}
+
+func TestFetchTaskLogTail(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobID := "18a9b096-d77e-438c-9be2-74397038298b"
+	taskID := "2e020eee-20f8-4e95-8dcf-65f7dfc3ebab"
+	dbJob := persistence.Job{
+		UUID:     jobID,
+		Name:     "test job",
+		Status:   api.JobStatusActive,
+		Settings: persistence.StringInterfaceMap{},
+		Metadata: persistence.StringStringMap{},
+	}
+	dbTask := persistence.Task{
+		UUID: taskID,
+		Job:  &dbJob,
+		Name: "test task",
+	}
+
+	// The task can be found, but has no on-disk task log.
+	// This should not cause any error, but instead be returned as "no content".
+	mf.persistence.EXPECT().FetchTask(gomock.Any(), taskID).Return(&dbTask, nil)
+	mf.logStorage.EXPECT().Tail(jobID, taskID).
+		Return("", fmt.Errorf("wrapped error: %w", os.ErrNotExist))
+
+	echoCtx := mf.prepareMockedRequest(nil)
+	err := mf.flamenco.FetchTaskLogTail(echoCtx, taskID)
+	assert.NoError(t, err)
+	assertResponseEmpty(t, echoCtx)
+
+	// Check that a 204 No Content is also returned when the task log file on disk exists, but is empty.
+	mf.persistence.EXPECT().FetchTask(gomock.Any(), taskID).Return(&dbTask, nil)
+	mf.logStorage.EXPECT().Tail(jobID, taskID).
+		Return("", fmt.Errorf("wrapped error: %w", os.ErrNotExist))
+
+	echoCtx = mf.prepareMockedRequest(nil)
+	err = mf.flamenco.FetchTaskLogTail(echoCtx, taskID)
+	assert.NoError(t, err)
 	assertResponseEmpty(t, echoCtx)
 }

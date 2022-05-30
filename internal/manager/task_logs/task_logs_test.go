@@ -84,9 +84,13 @@ func TestLogTail(t *testing.T) {
 	jobID := "25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c"
 	taskID := "20ff9d06-53ec-4019-9e2e-1774f05f170a"
 
-	err := s.Write(zerolog.Nop(), jobID, taskID, "Just a single line")
-	assert.NoError(t, err)
 	contents, err := s.Tail(jobID, taskID)
+	assert.ErrorIs(t, err, os.ErrNotExist)
+	assert.Equal(t, "", contents)
+
+	err = s.Write(zerolog.Nop(), jobID, taskID, "Just a single line")
+	assert.NoError(t, err)
+	contents, err = s.Tail(jobID, taskID)
 	assert.NoError(t, err)
 	assert.Equal(t, "Just a single line\n", string(contents))
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 
@@ -197,11 +198,21 @@ func (f *Flamenco) FetchTaskLogTail(e echo.Context, taskID string) error {
 		logger.Error().Err(err).Msg("error fetching task")
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching task: %v", err)
 	}
+	logger = logger.With().Str("job", dbTask.Job.UUID).Logger()
 
 	tail, err := f.logStorage.Tail(dbTask.Job.UUID, taskID)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			logger.Debug().Msg("task tail unavailable, task has no log on disk")
+			return e.NoContent(http.StatusNoContent)
+		}
 		logger.Error().Err(err).Msg("unable to fetch task log tail")
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching task log tail: %v", err)
+	}
+
+	if tail == "" {
+		logger.Debug().Msg("task tail unavailable, on-disk task log is empty")
+		return e.NoContent(http.StatusNoContent)
 	}
 
 	logger.Debug().Msg("fetched task tail")

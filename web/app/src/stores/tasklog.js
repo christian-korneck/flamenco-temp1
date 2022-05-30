@@ -50,6 +50,8 @@ export const useTaskLog = defineStore('taskLog', {
      * @param {string} logChunk
      */
     addChunk(logChunk) {
+      if (!logChunk) return;
+
       const lines = logChunk.trimEnd().split('\n');
       if (lines.length == 0)
         return;
