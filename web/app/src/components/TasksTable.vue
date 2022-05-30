@@ -5,10 +5,11 @@
     :activeStatuses="shownStatuses"
     @click="toggleStatusFilter"
   />
-  <div class="task-list-container">
+  <div class="tabulator-container">
     <div class="task-list" id="flamenco_task_list"></div>
   </div>
 </template>
+
 
 <script lang="js">
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
@@ -74,7 +75,8 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
-      height: "300px", // Must be set in order for the virtual DOM to function correctly.
+      height: "100%", // Must be set in order for the virtual DOM to function correctly.
+      maxHeight: "100%",
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active task is tracked by click events.
     };
@@ -82,6 +84,11 @@ export default {
     this.tabulator = new Tabulator('#flamenco_task_list', options);
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this._onTableBuilt);
+
+    window.addEventListener('resize', this.recalcTableHeight);
+  },
+  unmounted() {
+    window.removeEventListener('resize', this.recalcTableHeight);
   },
   watch: {
     jobID() {
@@ -90,6 +97,12 @@ export default {
     taskID(oldID, newID) {
       this._reformatRow(oldID);
       this._reformatRow(newID);
+    },
+    availableStatuses() {
+      // Statuses changed, so the filter bar could have gone from "no statuses"
+      // to "any statuses" (or one row of filtering stuff to two, I don't know)
+      // and changed height.
+      this.$nextTick(this.recalcTableHeight);
     },
   },
   methods: {
@@ -124,6 +137,8 @@ export default {
       // let tasks = data.tasks.map((j) => API.TaskUpdate.constructFromObject(j));
       this.tabulator.setData(data.tasks);
       this._refreshAvailableStatuses();
+
+      this.recalcTableHeight();
     },
     processTaskUpdate(taskUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -171,7 +186,34 @@ export default {
       if (!row) return
       if (row.reformat) row.reformat();
       else if (row.reinitialize) row.reinitialize(true);
-    }
+    },
+
+    /**
+     * Recalculate the appropriate table height to fit in the column without making that scroll.
+     */
+    recalcTableHeight() {
+      if (!this.tabulator.initialized) {
+        // Sometimes this function is called too early, before the table was initialised.
+        // After the table is initialised it gets resized anyway, so this call can be ignored.
+        return;
+      }
+      const table = this.tabulator.element;
+      const tableContainer = table.parentElement;
+      const outerContainer = tableContainer.parentElement;
+      const availableHeight = outerContainer.clientHeight - 12; // TODO: figure out where the -12 comes from.
+
+      if (tableContainer.offsetParent != tableContainer.parentElement) {
+        // `offsetParent` is assumed to be the actual column in the 3-column
+        // view. To ensure this, it's given `position: relative` in the CSS
+        // styling.
+        console.warn("TaskTable.recalcTableHeight() only works when the offset parent is the real parent of the element.");
+        return;
+      }
+
+      const tableHeight = availableHeight - tableContainer.offsetTop;
+      this.tabulator.setHeight(tableHeight);
+    },
   }
 };
+
 </script>

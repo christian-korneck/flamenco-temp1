@@ -59,6 +59,9 @@ export default {
   props: [
     "jobData", // Job data to show.
   ],
+  emits: [
+    "reshuffled", // Emitted when the size of this component may have changed. Used to resize other components in response.
+  ],
   data() {
     return {
       datetime: datetime, // So that the template can access it.
@@ -105,13 +108,13 @@ export default {
   methods: {
     _refreshJobSettings(newJobData) {
       if (objectEmpty(newJobData)) {
-        this.simpleSettings = null;
+        this._clearJobSettings();
         return;
       }
 
       // Only fetch the job type if it's different from what's already loaded.
       if (objectEmpty(this.jobType) || this.jobType.name != newJobData.type) {
-        this.simpleSettings = null; // They should only be shown when the type info is known.
+        this._clearJobSettings(); // They should only be shown when the type info is known.
 
         this.jobsApi.getJobType(newJobData.type)
           .then(this.onJobTypeLoaded)
@@ -136,14 +139,20 @@ export default {
       }
     },
 
+    _clearJobSettings() {
+      this.simpleSettings = null;
+      this.$emit('reshuffled');
+    },
+
     _setJobSettings(newJobSettings) {
       if (objectEmpty(newJobSettings)) {
-        this.simpleSettings = null;
+        this._clearJobSettings();
         return;
       }
 
       if (objectEmpty(this.jobTypeSettings)) {
         console.warn("empty job type settings");
+        this._clearJobSettings();
         return;
       }
 
@@ -167,6 +176,7 @@ export default {
       }
 
       this.simpleSettings = filtered;
+      this.$emit('reshuffled');
     }
   }
 };

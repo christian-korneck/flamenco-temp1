@@ -2,8 +2,8 @@
   <div class="col col-1">
     <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
-  <div class="col col-2">
-    <job-details :jobData="jobs.activeJob" />
+  <div class="col col-2" id="col-job-details">
+    <job-details :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
     <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
   <div class="col col-3">
@@ -225,6 +225,12 @@ export default {
         this.$refs.tasksTable.onReconnected();
     },
     onSIODisconnected(reason) {
+    },
+
+    _recalcTasksTableHeight() {
+      if (!this.$refs.tasksTable) return;
+      // Any recalculation should be done after the DOM has updated.
+      this.$nextTick(this.$refs.tasksTable.recalcTableHeight);
     },
   },
 }
