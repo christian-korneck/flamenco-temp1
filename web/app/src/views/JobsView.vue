@@ -3,7 +3,7 @@
     <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
   <div class="col col-2" id="col-job-details">
-    <job-details :jobData="jobs.activeJob" />
+    <job-details :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
     <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
   <div class="col col-3">
@@ -226,6 +226,12 @@ export default {
     },
     onSIODisconnected(reason) {
     },
+
+    _recalcTasksTableHeight() {
+      if (!this.$refs.tasksTable) return;
+      // Any recalculation should be done after the DOM has updated.
+      this.$nextTick(this.$refs.tasksTable.recalcTableHeight);
+    },
   },
 }
 </script>
@@ -234,4 +240,17 @@ export default {
 .isFetching {
   opacity: 50%;
 }
+
+#col-job-details {
+  /* These two are necessary for the automatic resizing of the tasks table: */
+
+  /* Ensures that the table cannot push down the bottom of the column element,
+  *  and thus the column height is a stable reference. */
+  overflow-y: scroll;
+
+  /* Ensures the offsetParent of the table is the column itself; without this,
+   * offsetParent would be <body>. */
+  position: relative;
+}
+
 </style>

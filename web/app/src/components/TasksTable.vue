@@ -10,6 +10,7 @@
   </div>
 </template>
 
+
 <script lang="js">
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
@@ -84,10 +85,10 @@ export default {
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this._onTableBuilt);
 
-    window.addEventListener('resize', this._setTableHeight);
+    window.addEventListener('resize', this.recalcTableHeight);
   },
   unmounted() {
-    window.removeEventListener('resize', this._setTableHeight);
+    window.removeEventListener('resize', this.recalcTableHeight);
   },
   watch: {
     jobID() {
@@ -96,6 +97,12 @@ export default {
     taskID(oldID, newID) {
       this._reformatRow(oldID);
       this._reformatRow(newID);
+    },
+    availableStatuses() {
+      // Statuses changed, so the filter bar could have gone from "no statuses"
+      // to "any statuses" (or one row of filtering stuff to two, I don't know)
+      // and changed height.
+      this.$nextTick(this.recalcTableHeight);
     },
   },
   methods: {
@@ -131,7 +138,7 @@ export default {
       this.tabulator.setData(data.tasks);
       this._refreshAvailableStatuses();
 
-      this._setTableHeight();
+      this.recalcTableHeight();
     },
     processTaskUpdate(taskUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -180,15 +187,30 @@ export default {
       if (row.reformat) row.reformat();
       else if (row.reinitialize) row.reinitialize(true);
     },
-    _setTableHeight() {
-      const jobDetailsColumn = this.$el.parentElement;
-      const tableContainer = this.tabulator.element.parentElement;
 
-      if (!jobDetailsColumn || !taskListTable) {
+    /**
+     * Recalculate the appropriate table height to fit in the column without making that scroll.
+     */
+    recalcTableHeight() {
+      if (!this.tabulator.initialized) {
+        // Sometimes this function is called too early, before the table was initialised.
+        // After the table is initialised it gets resized anyway, so this call can be ignored.
+        return;
+      }
+      const table = this.tabulator.element;
+      const tableContainer = table.parentElement;
+      const outerContainer = tableContainer.parentElement;
+      const availableHeight = outerContainer.clientHeight - 12; // TODO: figure out where the -12 comes from.
+
+      if (tableContainer.offsetParent != tableContainer.parentElement) {
+        // `offsetParent` is assumed to be the actual column in the 3-column
+        // view. To ensure this, it's given `position: relative` in the CSS
+        // styling.
+        console.warn("TaskTable.recalcTableHeight() only works when the offset parent is the real parent of the element.");
         return;
       }
 
-      let tableHeight = jobDetailsColumn.clientHeight - taskListTable.offsetTop;
+      const tableHeight = availableHeight - tableContainer.offsetTop;
       this.tabulator.setHeight(tableHeight);
     },
   }
