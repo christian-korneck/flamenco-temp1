@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -42,8 +43,9 @@ import (
 )
 
 var cliArgs struct {
-	version     bool
-	writeConfig bool
+	version        bool
+	writeConfig    bool
+	delayResponses bool
 }
 
 const developmentWebInterfacePort = 8081
@@ -191,6 +193,9 @@ func buildWebService(
 	// Ensure panics when serving a web request won't bring down the server.
 	e.Use(middleware.Recover())
 
+	// For development of the web interface, to get a less predictable order of asynchronous requests.
+	e.Use(randomDelayMiddleware)
+
 	// Disabled, as it causes issues with "204 No Content" responses.
 	// TODO: investigate & file a bug report. Adding the check on an empty slice
 	// seems to fix it:
@@ -324,6 +329,8 @@ func parseCliArgs() {
 	flag.BoolVar(&debug, "debug", false, "Enable debug-level logging.")
 	flag.BoolVar(&trace, "trace", false, "Enable trace-level logging.")
 	flag.BoolVar(&cliArgs.writeConfig, "write-config", false, "Writes configuration to flamenco-manager.yaml, then exits.")
+	flag.BoolVar(&cliArgs.delayResponses, "delay", false,
+		"Add a random delay to any HTTP responses. This aids in development of Flamenco Manager's web frontend.")
 
 	flag.Parse()
 
@@ -402,4 +409,21 @@ func corsOrigins(urls []url.URL) []string {
 	}
 	log.Debug().Str("origins", strings.Join(origins, " ")).Msg("accepted CORS origins")
 	return origins
+}
+
+// randomDelayMiddleware sleeps for a random period of time, as a development tool for frontend work.
+func randomDelayMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		err := next(c)
+
+		// Delay the response a bit.
+		var duration int64 = int64(rand.NormFloat64()*250 + 125) // in msec
+		if duration > 0 {
+			if duration > 1000 {
+				duration = 1000 // Cap at one second.
+			}
+			time.Sleep(time.Duration(duration) * time.Millisecond)
+		}
+		return err
+	}
 }
