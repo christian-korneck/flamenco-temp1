@@ -465,4 +465,8 @@ section.footer-popup .tabulator .tabulator-tableholder .tabulator-placeholder .t
 span.state-transition-arrow {
   font-weight: bold;
   font-size: 110%;
+  color: var(--color-accent);
+}
+span.state-transition-arrow.lazy {
+  color: var(--color-text-muted);
 }

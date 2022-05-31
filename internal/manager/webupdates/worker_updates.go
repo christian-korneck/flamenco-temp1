@@ -20,6 +20,12 @@ func NewWorkerUpdate(worker *persistence.Worker) api.SocketIOWorkerUpdate {
 		Version:  worker.Software,
 		Updated:  worker.UpdatedAt,
 	}
+
+	if worker.StatusRequested != "" {
+		workerUpdate.StatusRequested = &worker.StatusRequested
+		workerUpdate.LazyStatusRequest = &worker.LazyStatusRequest
+	}
+
 	return workerUpdate
 }
 

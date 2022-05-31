@@ -68,10 +68,7 @@ export default {
       this.notifs.addWorkerUpdate(workerUpdate);
 
       if (this.$refs.workersTable) {
-        if (workerUpdate.previous_status)
-          this.$refs.workersTable.processWorkerUpdate(workerUpdate);
-        else
-          this.$refs.workersTable.processNewWorker(workerUpdate);
+        this.$refs.workersTable.processWorkerUpdate(workerUpdate);
       }
       if (this.workerID != workerUpdate.id)
         return;

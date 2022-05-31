@@ -10,11 +10,7 @@
       <dd>{{ workerData.nickname }}</dd>
 
       <dt class="field-status">Status</dt>
-      <dd>{{ workerData.status }}
-        <template v-if="workerData.status_requested">
-          <span class='state-transition-arrow'>➜</span> {{ workerData.status_requested }}
-        </template>
-      </dd>
+      <dd v-html="workerStatusHTML"></dd>
 
       <dt class="field-version">Version</dt>
       <dd title="Version of Flamenco">{{ workerData.version }}</dd>
@@ -39,6 +35,7 @@
 import * as datetime from "@/datetime";
 import { WorkerMgtApi } from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
+import { workerStatus } from "../../statusindicator";
 
 export default {
   props: [
@@ -48,11 +45,18 @@ export default {
     return {
       datetime: datetime, // So that the template can access it.
       api: new WorkerMgtApi(apiClient),
+      workerStatusHTML: "",
     };
   },
   mounted() {
     // Allow testing from the JS console:
     window.workerDetailsVue = this;
+  },
+  watch: {
+    workerData(newData) {
+      this.workerStatusHTML = workerStatus(newData);
+      console.log("new worker data; status=", this.workerStatusHTML);
+    },
   },
   computed: {
     hasWorkerData() {

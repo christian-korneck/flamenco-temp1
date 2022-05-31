@@ -121,3 +121,41 @@ func TestFetchWorker(t *testing.T) {
 		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
 	})
 }
+
+func TestRequestWorkerStatusChange(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+	workerUUID := worker.UUID
+	prevStatus := worker.Status
+
+	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
+
+	requestStatus := api.WorkerStatusAsleep
+	savedWorker := worker
+	savedWorker.StatusRequested = requestStatus
+	savedWorker.LazyStatusRequest = true
+	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &savedWorker).Return(nil)
+
+	// Expect a broadcast of the change
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:                worker.UUID,
+		Nickname:          worker.Name,
+		PreviousStatus:    &prevStatus,
+		Status:            prevStatus,
+		StatusRequested:   &requestStatus,
+		LazyStatusRequest: ptr(true),
+		Updated:           worker.UpdatedAt,
+		Version:           worker.Software,
+	})
+
+	echo := mf.prepareMockedJSONRequest(api.WorkerStatusChangeRequest{
+		StatusRequested: requestStatus,
+		IsLazy:          true,
+	})
+	err := mf.flamenco.RequestWorkerStatusChange(echo, workerUUID)
+	assert.NoError(t, err)
+	assertResponseEmpty(t, echo)
+}

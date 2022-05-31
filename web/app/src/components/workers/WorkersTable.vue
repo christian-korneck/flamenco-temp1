@@ -14,7 +14,7 @@
 <script lang="js">
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { WorkerMgtApi } from '@/manager-api'
-import { indicator } from '@/statusindicator';
+import { indicator, workerStatus } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
 
 import StatusFilterBar from '@/components/StatusFilterBar.vue'
@@ -46,10 +46,8 @@ export default {
           formatter: (cell) => {
             const data = cell.getData();
             const dot = indicator(data.status, 'worker-');
-            if (data.status_requested) {
-              return `${dot} ${data.status} <span class='state-transition-arrow'>➜</span> ${data.status_requested}`;
-            }
-            return `${dot} ${data.status}`;
+            const asString = workerStatus(data);
+            return `${dot} ${asString}`;
           },
         },
         { title: 'Name', field: 'nickname', sorter: 'string' },
@@ -108,22 +106,24 @@ export default {
       this._refreshAvailableStatuses();
     },
     processWorkerUpdate(workerUpdate) {
-      // updateData() will only overwrite properties that are actually set on
-      // workerUpdate, and leave the rest as-is.
-      if (this.tabulator.initialized) {
-        this.tabulator.updateData([workerUpdate])
-          .then(this.sortData);
+      if (!this.tabulator.initialized) return;
+
+      // Contrary to tabulator.getRow(), rowManager.findRow() doesn't log a
+      // warning when the row cannot be found,
+      const existingRow = this.tabulator.rowManager.findRow(workerUpdate.id);
+
+      let promise;
+      if (existingRow) {
+        promise = this.tabulator.updateData([workerUpdate]);
+        // Tabulator doesn't know we're using 'status_requested' in the 'status'
+        // column, so it also won't know to redraw when that field changes.
+        promise.then(() => existingRow.reinitialize(true));
+      } else {
+        promise = this.tabulator.addData([workerUpdate]);
       }
-      this._refreshAvailableStatuses();
-    },
-    processNewWorker(workerUpdate) {
-      if (this.tabulator.initialized) {
-        this.tabulator.updateData([workerUpdate])
-          .then(this.sortData);
-      }
-      this.tabulator.addData([workerUpdate])
-        .then(this.sortData);
-      this._refreshAvailableStatuses();
+      promise
+        .then(this.sortData)
+        .then(this.refreshAvailableStatuses);
     },
 
     onRowClick(event, row) {

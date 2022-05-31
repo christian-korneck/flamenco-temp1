@@ -18,11 +18,13 @@ type Worker struct {
 	Secret string `gorm:"type:varchar(255);default:''"`
 	Name   string `gorm:"type:varchar(64);default:''"`
 
-	Address         string           `gorm:"type:varchar(39);default:'';index"` // 39 = max length of IPv6 address.
-	Platform        string           `gorm:"type:varchar(16);default:''"`
-	Software        string           `gorm:"type:varchar(32);default:''"`
-	Status          api.WorkerStatus `gorm:"type:varchar(16);default:''"`
-	StatusRequested api.WorkerStatus `gorm:"type:varchar(16);default:''"`
+	Address  string           `gorm:"type:varchar(39);default:'';index"` // 39 = max length of IPv6 address.
+	Platform string           `gorm:"type:varchar(16);default:''"`
+	Software string           `gorm:"type:varchar(32);default:''"`
+	Status   api.WorkerStatus `gorm:"type:varchar(16);default:''"`
+
+	StatusRequested   api.WorkerStatus `gorm:"type:varchar(16);default:''"`
+	LazyStatusRequest bool             `gorm:"type:smallint;default:0"`
 
 	SupportedTaskTypes string `gorm:"type:varchar(255);default:''"` // comma-separated list of task types.
 }

@@ -16,3 +16,25 @@ export function indicator(status, classNamePrefix) {
   if (!classNamePrefix) classNamePrefix = ""; // force an empty string for any false value.
   return `<span title="${label}" class="indicator ${classNamePrefix}status-${status}"></span>`;
 }
+
+/**
+ * Construct HTML for showing a worker's status, including any status change
+ * request.
+ *
+ * @param {API.WorkerSummary} workerInfo
+ * @returns the HTML for the worker status.
+ */
+export function workerStatus(worker) {
+  if (!worker.status_requested) {
+    return `${worker.status}`;
+  }
+
+  let arrow;
+  if (worker.lazy_status_request) {
+    arrow = `<span class='state-transition-arrow lazy' title='lazy status transition'>➜</span>`
+  } else {
+    arrow = `<span class='state-transition-arrow forced' title='forced status transition'>➠</span>`
+  }
+
+  return `${worker.status} ${arrow} ${worker.status_requested}`;
+}
