@@ -8,8 +8,8 @@
 /flamenco-worker
 /flamenco-manager_race
 /flamenco-worker_race
-/flamenco-worker.yaml
-/flamenco-worker-credentials.yaml
+flamenco-worker.yaml
+flamenco-worker-credentials.yaml
 node_modules/
 task-logs/
 flamenco-storage/
