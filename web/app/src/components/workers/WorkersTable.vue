@@ -114,6 +114,12 @@ export default {
 
       let promise;
       if (existingRow) {
+        // Tabbulator doesn't update ommitted fields, but if `status_requested`
+        // is ommitted it means "no status change requested"; this should still
+        // force an update.
+        if (!workerUpdate.status_requested) {
+          workerUpdate.status_requested = undefined;
+        }
         promise = this.tabulator.updateData([workerUpdate]);
         // Tabulator doesn't know we're using 'status_requested' in the 'status'
         // column, so it also won't know to redraw when that field changes.
@@ -124,6 +130,9 @@ export default {
       promise
         .then(this.sortData)
         .then(this.refreshAvailableStatuses);
+
+      // TODO: this should also resize the columns, as the status column can
+      // change sizes considerably.
     },
 
     onRowClick(event, row) {
