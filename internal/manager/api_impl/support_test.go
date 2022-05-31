@@ -135,7 +135,6 @@ func testWorker() persistence.Worker {
 		UUID:               "e7632d62-c3b8-4af0-9e78-01752928952c",
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
-		LastActivity:       "",
 		Platform:           "linux",
 		Software:           "3.0",
 		Status:             api.WorkerStatusAwake,

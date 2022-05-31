@@ -21,7 +21,6 @@ func TestCreateFetchWorker(t *testing.T) {
 		UUID:               uuid.New(),
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
-		LastActivity:       "",
 		Platform:           "linux",
 		Software:           "3.0",
 		Status:             api.WorkerStatusAwake,
@@ -39,7 +38,6 @@ func TestCreateFetchWorker(t *testing.T) {
 	assert.Equal(t, w.UUID, fetchedWorker.UUID)
 	assert.Equal(t, w.Name, fetchedWorker.Name)
 	assert.Equal(t, w.Address, fetchedWorker.Address)
-	assert.Equal(t, w.LastActivity, fetchedWorker.LastActivity)
 	assert.Equal(t, w.Platform, fetchedWorker.Platform)
 	assert.Equal(t, w.Software, fetchedWorker.Software)
 	assert.Equal(t, w.Status, fetchedWorker.Status)
@@ -55,7 +53,6 @@ func TestSaveWorker(t *testing.T) {
 		UUID:               uuid.New(),
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
-		LastActivity:       "",
 		Platform:           "linux",
 		Software:           "3.0",
 		Status:             api.WorkerStatusAwake,
@@ -73,7 +70,6 @@ func TestSaveWorker(t *testing.T) {
 	updatedWorker := *fetchedWorker
 	updatedWorker.Name = "7 မှ 9"
 	updatedWorker.Address = "fe80::cafe:f00d"
-	updatedWorker.LastActivity = "Rendering"
 	updatedWorker.Platform = "windows"
 	updatedWorker.Software = "3.1"
 	updatedWorker.Status = api.WorkerStatusAsleep
@@ -119,7 +115,6 @@ func TestFetchWorkers(t *testing.T) {
 		UUID:               uuid.New(),
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
-		LastActivity:       "",
 		Platform:           "linux",
 		Software:           "3.0",
 		Status:             api.WorkerStatusAwake,
@@ -139,7 +134,6 @@ func TestFetchWorkers(t *testing.T) {
 		UUID:               uuid.New(),
 		Name:               "очиститель окон",
 		Address:            "fe80::c000:d000:::3",
-		LastActivity:       "nothing",
 		Platform:           "windows",
 		Software:           "3.0",
 		Status:             api.WorkerStatusOffline,

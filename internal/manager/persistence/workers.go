@@ -19,7 +19,6 @@ type Worker struct {
 	Name   string `gorm:"type:varchar(64);default:''"`
 
 	Address         string           `gorm:"type:varchar(39);default:'';index"` // 39 = max length of IPv6 address.
-	LastActivity    string           `gorm:"type:varchar(255);default:''"`
 	Platform        string           `gorm:"type:varchar(16);default:''"`
 	Software        string           `gorm:"type:varchar(32);default:''"`
 	Status          api.WorkerStatus `gorm:"type:varchar(16);default:''"`

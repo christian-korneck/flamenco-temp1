@@ -307,7 +307,6 @@ func createWorker(ctx context.Context, t *testing.T, db *DB) *Worker {
 		UUID:               "f0a123a9-ab05-4ce2-8577-94802cfe74a4",
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
-		LastActivity:       "",
 		Platform:           "linux",
 		Software:           "3.0",
 		Status:             api.WorkerStatusAwake,

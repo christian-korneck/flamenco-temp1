@@ -66,7 +66,6 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 		Uuid:               dbWorker.UUID,
 		Nickname:           dbWorker.Name,
 		Address:            dbWorker.Address,
-		LastActivity:       dbWorker.LastActivity,
 		Platform:           dbWorker.Platform,
 		Software:           dbWorker.Software,
 		Status:             dbWorker.Status,
