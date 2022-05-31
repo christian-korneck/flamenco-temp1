@@ -1424,43 +1424,33 @@ components:
         #   type: string
         #   format: date-time
         #   description: Last time this worker was seen by the Manager.
-      required: [id, nickname, status]
-
-    Worker:
-      type: object
-      description: All information about a Worker
-      properties:
-        "id": { type: string, format: uuid }
-        "nickname": { type: string }
-        "status": { $ref: "#/components/schemas/WorkerStatus" }
-        "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
-        # These will be implemented soon:
-        # "task_id":
-        #   type: string
-        #   format: uuid
-        #   description: The worker's current/last-worked-on task.
-        # "last_seen":
-        #   type: string
-        #   format: date-time
-        #   description: Last time this worker was seen by the Manager.
-        "ip_address": { type: string, description: IP address of the Worker }
-        "platform":
-          type: string
-          description: Operating system of the Worker
         "version":
           type: string
           description: Version of Flamenco this Worker is running
-        "supported_task_types":
-          type: array
-          items: { type: string }
-      required:
-        - id
-        - nickname
-        - status
-        - ip_address
-        - platform
-        - version
-        - supported_task_types
+      required: [id, nickname, status, "version"]
+
+    Worker:
+      description: All information about a Worker
+      allOf:
+        - $ref: "#/components/schemas/WorkerSummary"
+        - properties:
+            "ip_address":
+              type: string
+              description: IP address of the Worker
+            "platform":
+              type: string
+              description: Operating system of the Worker
+            "supported_task_types":
+              type: array
+              items: { type: string }
+          required:
+            - id
+            - nickname
+            - status
+            - ip_address
+            - platform
+            - version
+            - supported_task_types
 
   securitySchemes:
     worker_auth:
