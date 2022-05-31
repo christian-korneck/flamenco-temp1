@@ -15,11 +15,10 @@
 
 <style scoped>
 .col-workers-list {
-  grid-column-start: col-1;
-  grid-column-end: col-2;
+  grid-area: col-1;
 }
 .col-workers-2 {
-  grid-area: col-3;
+  grid-area: col-2;
 }
 </style>
 
