@@ -42,12 +42,14 @@ func TestFetchWorkers(t *testing.T) {
 				Nickname:        worker1.Name,
 				Status:          worker1.Status,
 				StatusRequested: nil,
+				Version:         worker1.Software,
 			},
 			{
 				Id:              worker2.UUID,
 				Nickname:        worker2.Name,
 				Status:          worker2.Status,
 				StatusRequested: &worker2.StatusRequested,
+				Version:         worker2.Software,
 			},
 		},
 	}
