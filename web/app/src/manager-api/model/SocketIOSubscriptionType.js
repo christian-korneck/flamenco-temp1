@@ -27,6 +27,13 @@ export default class SocketIOSubscriptionType {
 
     
         /**
+         * value: "allWorkers"
+         * @const
+         */
+        "allWorkers" = "allWorkers";
+
+    
+        /**
          * value: "job"
          * @const
          */
