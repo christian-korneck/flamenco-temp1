@@ -91,6 +91,8 @@ const (
 
 // Defines values for SocketIOSubscriptionType.
 const (
+	SocketIOSubscriptionTypeAllJobs SocketIOSubscriptionType = "allJobs"
+
 	SocketIOSubscriptionTypeJob SocketIOSubscriptionType = "job"
 
 	SocketIOSubscriptionTypeTasklog SocketIOSubscriptionType = "tasklog"
@@ -412,7 +414,7 @@ type SocketIOSubscription struct {
 	Type SocketIOSubscriptionType `json:"type"`
 
 	// UUID of the thing to subscribe to / unsubscribe from.
-	Uuid string `json:"uuid"`
+	Uuid *string `json:"uuid,omitempty"`
 }
 
 // SocketIOSubscriptionOperation defines model for SocketIOSubscriptionOperation.

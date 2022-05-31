@@ -112,13 +112,12 @@ class SocketIOSubscription(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, op, type, uuid, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, op, type, *args, **kwargs):  # noqa: E501
         """SocketIOSubscription - a model defined in OpenAPI
 
         Args:
             op (SocketIOSubscriptionOperation):
             type (SocketIOSubscriptionType):
-            uuid (str): UUID of the thing to subscribe to / unsubscribe from.
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -151,6 +150,7 @@ class SocketIOSubscription(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            uuid (str): UUID of the thing to subscribe to / unsubscribe from.. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -180,7 +180,6 @@ class SocketIOSubscription(ModelNormal):
 
         self.op = op
         self.type = type
-        self.uuid = uuid
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -201,13 +200,12 @@ class SocketIOSubscription(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, op, type, uuid, *args, **kwargs):  # noqa: E501
+    def __init__(self, op, type, *args, **kwargs):  # noqa: E501
         """SocketIOSubscription - a model defined in OpenAPI
 
         Args:
             op (SocketIOSubscriptionOperation):
             type (SocketIOSubscriptionType):
-            uuid (str): UUID of the thing to subscribe to / unsubscribe from.
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -240,6 +238,7 @@ class SocketIOSubscription(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            uuid (str): UUID of the thing to subscribe to / unsubscribe from.. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -267,7 +266,6 @@ class SocketIOSubscription(ModelNormal):
 
         self.op = op
         self.type = type
-        self.uuid = uuid
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

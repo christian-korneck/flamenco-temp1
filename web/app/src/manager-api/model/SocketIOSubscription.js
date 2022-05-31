@@ -27,11 +27,10 @@ class SocketIOSubscription {
      * @alias module:model/SocketIOSubscription
      * @param op {module:model/SocketIOSubscriptionOperation} 
      * @param type {module:model/SocketIOSubscriptionType} 
-     * @param uuid {String} UUID of the thing to subscribe to / unsubscribe from.
      */
-    constructor(op, type, uuid) { 
+    constructor(op, type) { 
         
-        SocketIOSubscription.initialize(this, op, type, uuid);
+        SocketIOSubscription.initialize(this, op, type);
     }
 
     /**
@@ -39,10 +38,9 @@ class SocketIOSubscription {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, op, type, uuid) { 
+    static initialize(obj, op, type) { 
         obj['op'] = op;
         obj['type'] = type;
-        obj['uuid'] = uuid;
     }
 
     /**

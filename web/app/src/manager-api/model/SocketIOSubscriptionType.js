@@ -20,6 +20,13 @@ import ApiClient from '../ApiClient';
 export default class SocketIOSubscriptionType {
     
         /**
+         * value: "allJobs"
+         * @const
+         */
+        "allJobs" = "allJobs";
+
+    
+        /**
          * value: "job"
          * @const
          */
