@@ -99,24 +99,24 @@ export default {
       this.tabulator.setData(data.workers);
       this._refreshAvailableStatuses();
     },
-    // processWorkerUpdate(workerUpdate) {
-    //   // updateData() will only overwrite properties that are actually set on
-    //   // workerUpdate, and leave the rest as-is.
-    //   if (this.tabulator.initialized) {
-    //     this.tabulator.updateData([workerUpdate])
-    //       .then(this.sortData);
-    //   }
-    //   this._refreshAvailableStatuses();
-    // },
-    // processNewWorker(workerUpdate) {
-    //   if (this.tabulator.initialized) {
-    //     this.tabulator.updateData([workerUpdate])
-    //       .then(this.sortData);
-    //   }
-    //   this.tabulator.addData([workerUpdate])
-    //     .then(this.sortData);
-    //   this._refreshAvailableStatuses();
-    // },
+    processWorkerUpdate(workerUpdate) {
+      // updateData() will only overwrite properties that are actually set on
+      // workerUpdate, and leave the rest as-is.
+      if (this.tabulator.initialized) {
+        this.tabulator.updateData([workerUpdate])
+          .then(this.sortData);
+      }
+      this._refreshAvailableStatuses();
+    },
+    processNewWorker(workerUpdate) {
+      if (this.tabulator.initialized) {
+        this.tabulator.updateData([workerUpdate])
+          .then(this.sortData);
+      }
+      this.tabulator.addData([workerUpdate])
+        .then(this.sortData);
+      this._refreshAvailableStatuses();
+    },
 
     onRowClick(event, row) {
       // Take a copy of the data, so that it's decoupled from the tabulator data

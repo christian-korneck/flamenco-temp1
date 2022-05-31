@@ -84,10 +84,20 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 	}
 
 	logger.Info().Msg("worker signing on")
-	w, err := f.workerUpdateAfterSignOn(e, req)
+	w, prevStatus, err := f.workerUpdateAfterSignOn(e, req)
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
+
+	// Broadcast the status change.
+	update := webupdates.NewWorkerUpdate(w)
+	if prevStatus != "" {
+		update.PreviousStatus = &prevStatus
+	}
+	if w.StatusRequested != "" {
+		update.StatusRequested = &w.StatusRequested
+	}
+	f.broadcaster.BroadcastWorkerUpdate(update)
 
 	resp := api.WorkerStateChange{}
 	if w.StatusRequested != "" {
@@ -95,14 +105,16 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 	} else {
 		resp.StatusRequested = api.WorkerStatusAwake
 	}
+
 	return e.JSON(http.StatusOK, resp)
 }
 
-func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSONBody) (*persistence.Worker, error) {
+func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSONBody) (*persistence.Worker, api.WorkerStatus, error) {
 	logger := requestLogger(e)
 	w := requestWorkerOrPanic(e)
 
 	// Update the worker for with the new sign-on info.
+	prevStatus := w.Status
 	w.Status = api.WorkerStatusStarting
 	w.Address = e.RealIP()
 	w.Name = update.Nickname
@@ -120,10 +132,10 @@ func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSON
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
 			Msg("error storing Worker in database")
-		return nil, err
+		return nil, "", err
 	}
 
-	return w, nil
+	return w, prevStatus, nil
 }
 
 func (f *Flamenco) SignOff(e echo.Context) error {
@@ -138,6 +150,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 
 	logger.Info().Msg("worker signing off")
 	w := requestWorkerOrPanic(e)
+	prevStatus := w.Status
 	w.Status = api.WorkerStatusOffline
 	if w.StatusRequested == api.WorkerStatusShutdown {
 		w.StatusRequested = ""
@@ -162,6 +175,10 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error re-queueing your tasks")
 	}
+
+	update := webupdates.NewWorkerUpdate(w)
+	update.PreviousStatus = &prevStatus
+	f.broadcaster.BroadcastWorkerUpdate(update)
 
 	return e.NoContent(http.StatusNoContent)
 }
@@ -234,6 +251,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		Str("newStatus", string(req.Status)).
 		Logger()
 
+	prevStatus := w.Status
 	w.Status = req.Status
 	if w.StatusRequested != "" && req.Status != w.StatusRequested {
 		logger.Warn().
@@ -253,6 +271,10 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 			Msg("error storing Worker in database")
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
+
+	update := webupdates.NewWorkerUpdate(w)
+	update.PreviousStatus = &prevStatus
+	f.broadcaster.BroadcastWorkerUpdate(update)
 
 	return e.NoContent(http.StatusNoContent)
 }

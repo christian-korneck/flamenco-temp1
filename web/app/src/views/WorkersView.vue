@@ -7,7 +7,8 @@
   </div>
   <footer>
     <notification-bar />
-    <update-listener ref="updateListener"
+    <update-listener ref="updateListener" mainSubscription="allWorkers"
+      @workerUpdate="onSIOWorkerUpdate"
       @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
 </footer>
 </template>
@@ -24,6 +25,7 @@
 
 <script>
 import { WorkerMgtApi } from '@/manager-api';
+import { useNotifs } from '@/stores/notifications'
 import { useWorkers } from '@/stores/workers';
 import { apiClient } from '@/stores/api-query-count';
 
@@ -43,6 +45,7 @@ export default {
   },
   data: () => ({
     workers: useWorkers(),
+    notifs: useNotifs(),
     api: new WorkerMgtApi(apiClient),
   }),
   mounted() {
@@ -57,8 +60,24 @@ export default {
   methods: {
     // SocketIO connection event handlers:
     onSIOReconnected() {
+      this.$refs.workersTable.onReconnected();
+      this._fetchWorker(this.workerID);
     },
     onSIODisconnected(reason) {
+    },
+    onSIOWorkerUpdate(workerUpdate) {
+      this.notifs.addWorkerUpdate(workerUpdate);
+
+      if (this.$refs.workersTable) {
+        if (workerUpdate.previous_status)
+          this.$refs.workersTable.processWorkerUpdate(workerUpdate);
+        else
+          this.$refs.workersTable.processNewWorker(workerUpdate);
+      }
+      if (this.workerID != workerUpdate.id)
+        return;
+
+      this._fetchWorker(this.workerID);
     },
 
     onTableWorkerClicked(rowData) {

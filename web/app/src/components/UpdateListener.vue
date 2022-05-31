@@ -13,7 +13,7 @@ const websocketURL = ws();
 export default {
   emits: [
     // Data from Flamenco Manager:
-    "jobUpdate", "taskUpdate", "taskLogUpdate", "message",
+    "jobUpdate", "taskUpdate", "taskLogUpdate", "message", "workerUpdate",
     // SocketIO events:
     "sioReconnected", "sioDisconnected"
   ],
@@ -144,6 +144,13 @@ export default {
         // when we'd do an API call.
         const apiTaskLogUpdate = API.SocketIOTaskLogUpdate.constructFromObject(taskLogUpdate)
         this.$emit("taskLogUpdate", apiTaskLogUpdate);
+      });
+
+      this.socket.on("/workers", (workerUpdate) => {
+        // Convert to API object, in order to have the same parsing of data as
+        // when we'd do an API call.
+        const apiWorkerUpdate = API.SocketIOWorkerUpdate.constructFromObject(workerUpdate)
+        this.$emit("workerUpdate", apiWorkerUpdate);
       });
 
       // Chat system, useful for debugging.

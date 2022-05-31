@@ -96,6 +96,17 @@ func TestWorkerSignOn(t *testing.T) {
 	mf := newMockedFlamenco(mockCtrl)
 	worker := testWorker()
 	worker.Status = api.WorkerStatusOffline
+	prevStatus := worker.Status
+
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:              worker.UUID,
+		Nickname:        "Lazy Boi",
+		PreviousStatus:  &prevStatus,
+		Status:          api.WorkerStatusStarting,
+		StatusRequested: nil,
+		Updated:         worker.UpdatedAt,
+		Version:         "3.0-testing",
+	})
 
 	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &worker).Return(nil)
 
@@ -167,11 +178,56 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 			return nil
 		})
 
+	prevStatus := api.WorkerStatusAwake
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:             worker.UUID,
+		Nickname:       worker.Name,
+		PreviousStatus: &prevStatus,
+		Status:         api.WorkerStatusOffline,
+		Updated:        worker.UpdatedAt,
+		Version:        worker.Software,
+	})
+
 	err := mf.flamenco.SignOff(echo)
 	assert.NoError(t, err)
 
 	resp := getRecordedResponse(echo)
 	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+}
+
+func TestWorkerStateChanged(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+	worker.Status = api.WorkerStatusStarting
+	prevStatus := worker.Status
+
+	// Expect a broadcast of the change
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:              worker.UUID,
+		Nickname:        worker.Name,
+		PreviousStatus:  &prevStatus,
+		Status:          api.WorkerStatusAwake,
+		StatusRequested: nil,
+		Updated:         worker.UpdatedAt,
+		Version:         worker.Software,
+	})
+
+	// Expect the Worker to be saved with the new status
+	savedWorker := worker
+	savedWorker.Status = api.WorkerStatusAwake
+	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+
+	// Perform the request
+	echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
+		Status: api.WorkerStatusAwake,
+	})
+	requestWorkerStore(echo, &worker)
+	err := mf.flamenco.WorkerStateChanged(echo)
+	assert.NoError(t, err)
+	assertResponseEmpty(t, echo)
 }
 
 func TestTaskUpdate(t *testing.T) {

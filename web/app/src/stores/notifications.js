@@ -66,6 +66,18 @@ export const useNotifs = defineStore('notifications', {
       this.add(msg)
     },
 
+    /**
+     * @param {API.SocketIOWorkerUpdate} workerUpdate Worker update received via SocketIO.
+     */
+     addWorkerUpdate(workerUpdate) {
+      console.log('Received worker update:', workerUpdate);
+      let msg = `Worker ${workerUpdate.name}`;
+      if (workerUpdate.previous_status && workerUpdate.previous_status != workerUpdate.status) {
+        msg += ` changed status ${workerUpdate.previous_status} ➜ ${workerUpdate.status}`;
+      }
+      this.add(msg)
+    },
+
     /* Ensure there is only 1000 items in the history. */
     _prune() {
       if (this.history.length <= 1000) return;

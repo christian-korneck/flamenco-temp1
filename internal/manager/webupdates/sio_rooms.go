@@ -21,8 +21,9 @@ const (
 	// Predefined SocketIO rooms. There will be others, but those will have a
 	// dynamic name like `job-fa48930a-105c-4125-a7f7-0aa1651dcd57` and cannot be
 	// listed here as constants. See `roomXXX()` functions for those.
-	SocketIORoomChat SocketIORoomName = "Chat" // For chat messages.
-	SocketIORoomJobs SocketIORoomName = "Jobs" // For job updates.
+	SocketIORoomChat    SocketIORoomName = "Chat"    // For chat messages.
+	SocketIORoomJobs    SocketIORoomName = "Jobs"    // For job updates.
+	SocketIORoomWorkers SocketIORoomName = "Workers" // For worker updates.
 )
 
 const (
@@ -32,6 +33,7 @@ const (
 	SIOEventJobUpdate       SocketIOEventType = "/jobs"         // sends api.SocketIOJobUpdate
 	SIOEventTaskUpdate      SocketIOEventType = "/task"         // sends api.SocketIOTaskUpdate
 	SIOEventTaskLogUpdate   SocketIOEventType = "/tasklog"      // sends api.SocketIOTaskLogUpdate
+	SIOEventWorkerUpdate    SocketIOEventType = "/workers"      // sends api.SocketIOWorkerUpdate
 	SIOEventSubscription    SocketIOEventType = "/subscription" // clients send api.SocketIOSubscription
 )
 
@@ -62,6 +64,8 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 	switch subs.Type {
 	case api.SocketIOSubscriptionTypeAllJobs:
 		sioRoom = SocketIORoomJobs
+	case api.SocketIOSubscriptionTypeAllWorkers:
+		sioRoom = SocketIORoomWorkers
 	case api.SocketIOSubscriptionTypeJob:
 		if subs.Uuid == nil {
 			logger.Warn().Msg("socketIO: trying to (un)subscribe to job without UUID")

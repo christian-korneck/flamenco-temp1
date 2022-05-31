@@ -89,6 +89,9 @@ type ChangeBroadcaster interface {
 	// separate broadcast per task.
 
 	BroadcastTaskLogUpdate(taskLogUpdate api.SocketIOTaskLogUpdate)
+
+	BroadcastWorkerUpdate(workerUpdate api.SocketIOWorkerUpdate)
+	BroadcastNewWorker(workerUpdate api.SocketIOWorkerUpdate)
 }
 
 // ChangeBroadcaster should be a subset of webupdates.BiDirComms.
