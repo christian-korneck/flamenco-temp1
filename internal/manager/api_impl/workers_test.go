@@ -89,6 +89,30 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	assertResponseJSON(t, echoCtx, http.StatusLocked, expectBody)
 }
 
+func TestWorkerSignOn(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+	worker.Status = api.WorkerStatusOffline
+
+	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &worker).Return(nil)
+
+	echo := mf.prepareMockedJSONRequest(api.WorkerSignOn{
+		Nickname:           "Lazy Boi",
+		SoftwareVersion:    "3.0-testing",
+		SupportedTaskTypes: []string{"testing", "sleeping", "snoozing"},
+	})
+	requestWorkerStore(echo, &worker)
+	err := mf.flamenco.SignOn(echo)
+	assert.NoError(t, err)
+
+	assertResponseJSON(t, echo, http.StatusOK, api.WorkerStateChange{
+		StatusRequested: api.WorkerStatusAwake,
+	})
+}
+
 func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

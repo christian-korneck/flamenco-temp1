@@ -106,6 +106,7 @@ func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSON
 	w.Status = api.WorkerStatusStarting
 	w.Address = e.RealIP()
 	w.Name = update.Nickname
+	w.Software = update.SoftwareVersion
 
 	// Remove trailing spaces from task types, and convert to lower case.
 	for idx := range update.SupportedTaskTypes {
