@@ -200,6 +200,13 @@ export default {
       const table = this.tabulator.element;
       const tableContainer = table.parentElement;
       const outerContainer = tableContainer.parentElement;
+      if (!outerContainer) {
+        // This can happen when the component was removed before the function is
+        // called. This is possible due to the use of Vue's `nextTick()`
+        // function.
+        return;
+      }
+
       const availableHeight = outerContainer.clientHeight - 12; // TODO: figure out where the -12 comes from.
 
       if (tableContainer.offsetParent != tableContainer.parentElement) {
