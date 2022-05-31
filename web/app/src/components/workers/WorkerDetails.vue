@@ -10,7 +10,23 @@
       <dd>{{ workerData.nickname }}</dd>
 
       <dt class="field-status">Status</dt>
-      <dd>{{ workerData.status }}</dd>
+      <dd>{{ workerData.status }}
+        <template v-if="workerData.status_requested">
+          <span class='state-transition-arrow'>➜</span> {{ workerData.status_requested }}
+        </template>
+      </dd>
+
+      <dt class="field-version">Version</dt>
+      <dd title="Version of Flamenco">{{ workerData.version }}</dd>
+
+      <dt class="field-ip_address">IP Addr</dt>
+      <dd>{{ workerData.ip_address }}</dd>
+
+      <dt class="field-platform">Platform</dt>
+      <dd>{{ workerData.platform }}</dd>
+
+      <dt class="field-supported_task_types">Task Types</dt>
+      <dd>{{ workerData.supported_task_types.join(', ') }}</dd>
     </dl>
   </template>
 

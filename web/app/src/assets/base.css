@@ -461,3 +461,8 @@ section.footer-popup .tabulator .tabulator-tableholder .tabulator-placeholder .t
   color: var(--color-text-hint);
   user-select: none;
 }
+
+span.state-transition-arrow {
+  font-weight: bold;
+  font-size: 110%;
+}
