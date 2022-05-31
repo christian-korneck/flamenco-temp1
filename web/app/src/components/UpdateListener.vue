@@ -17,7 +17,11 @@ export default {
     // SocketIO events:
     "sioReconnected", "sioDisconnected"
   ],
-  props: ["subscribedJobID", "subscribedTaskID"],
+  props: [
+    "mainSubscription",  // One of the 'allXXX' subscription types, see `SocketIOSubscriptionType` in `flamenco-openapi.yaml`.
+    "subscribedJobID",
+    "subscribedTaskID",
+  ],
   data() {
     return {
       socket: null,
@@ -52,6 +56,14 @@ export default {
       }
       if (newTaskID) {
         this._updateTaskLogSubscription("subscribe", newTaskID);
+      }
+    },
+    mainSubscription(newType, oldType) {
+      if (oldType) {
+        this._updateMainSubscription("unsubscribe", oldType);
+      }
+      if (newType) {
+        this._updateMainSubscription("subscribe", newType);
       }
     },
   },
@@ -158,6 +170,17 @@ export default {
     },
 
     /**
+     * Send main subscription (un)subscription request.
+     * @param {string} operation either "subscribe" or "unsubscribe"
+     * @param {string} type see `SocketIOSubscriptionType` in `flamenco-openapi.yaml`.
+     */
+    _updateMainSubscription(operation, type) {
+      const payload = new API.SocketIOSubscription(operation, type);
+      console.log(`sending ${type} ${operation}:`, payload);
+      this.socket.emit("/subscription", payload);
+    },
+
+    /**
      * Send job (un)subscription request.
      * @param {string} operation either "subscribe" or "unsubscribe"
      * @param {string} jobID
@@ -183,6 +206,7 @@ export default {
     _resubscribe() {
       if (this.subscribedJobID) this._updateJobSubscription("subscribe", this.subscribedJobID);
       if (this.subscribedTaskID) this._updateTaskLogSubscription("subscribe", this.subscribedTaskID);
+      if (this.mainSubscription) this._updateMainSubscription("subscribe", this.mainSubscription);
     },
   },
 };

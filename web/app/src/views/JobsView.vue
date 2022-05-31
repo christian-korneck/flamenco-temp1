@@ -13,7 +13,7 @@
   <footer class="window-footer" v-if="!showFooterPopup" @click="showFooterPopup = true"><notification-bar /></footer>
   <footer-popup v-if="showFooterPopup" ref="footerPopup" @clickClose="showFooterPopup = false" />
 
-  <update-listener ref="updateListener"
+  <update-listener ref="updateListener"  mainSubscription="allJobs"
     :subscribedJobID="jobID" :subscribedTaskID="taskID"
     @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @taskLogUpdate="onSioTaskLogUpdate"
     @message="onChatMessage"

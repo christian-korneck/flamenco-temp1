@@ -44,7 +44,6 @@ func (b *BiDirComms) registerSIOEventHandlers() {
 		logger := sioLogger(c)
 		logger.Debug().Msg("socketIO: connected")
 		_ = c.Join(string(SocketIORoomChat)) // All clients connect to the chat room.
-		_ = c.Join(string(SocketIORoomJobs)) // All clients subscribe to job updates.
 	})
 
 	// socket disconnection

@@ -45,23 +45,35 @@ func (b *BiDirComms) registerRoomEventHandlers() {
 
 func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.SocketIOSubscription) string {
 	logger := sioLogger(c)
-	logger = logger.With().
+	logCtx := logger.With().
 		Str("op", string(subs.Op)).
-		Str("type", string(subs.Type)).
-		Str("uuid", string(subs.Uuid)).
-		Logger()
+		Str("type", string(subs.Type))
+	if subs.Uuid != nil {
+		logCtx = logCtx.Str("uuid", string(*subs.Uuid))
+	}
+	logger = logCtx.Logger()
 
-	if !uuid.IsValid(subs.Uuid) {
+	if subs.Uuid != nil && !uuid.IsValid(*subs.Uuid) {
 		logger.Warn().Msg("socketIO: invalid UUID, ignoring subscription request")
 		return "invalid UUID, ignoring request"
 	}
 
 	var sioRoom SocketIORoomName
 	switch subs.Type {
+	case api.SocketIOSubscriptionTypeAllJobs:
+		sioRoom = SocketIORoomJobs
 	case api.SocketIOSubscriptionTypeJob:
-		sioRoom = roomForJob(subs.Uuid)
+		if subs.Uuid == nil {
+			logger.Warn().Msg("socketIO: trying to (un)subscribe to job without UUID")
+			return "operation on job requires a UUID"
+		}
+		sioRoom = roomForJob(*subs.Uuid)
 	case api.SocketIOSubscriptionTypeTasklog:
-		sioRoom = roomForTaskLog(subs.Uuid)
+		if subs.Uuid == nil {
+			logger.Warn().Msg("socketIO: trying to (un)subscribe to task without UUID")
+			return "operation on task requires a UUID"
+		}
+		sioRoom = roomForTaskLog(*subs.Uuid)
 	default:
 		logger.Warn().Msg("socketIO: unknown subscription type, ignoring")
 		return "unknown subscription type, ignoring request"
