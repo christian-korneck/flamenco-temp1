@@ -44,7 +44,7 @@ func (db *DB) FetchWorker(ctx context.Context, uuid string) (*Worker, error) {
 	tx := db.gormDB.WithContext(ctx).
 		First(&w, "uuid = ?", uuid)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, workerError(tx.Error, "fetching worker")
 	}
 	return &w, nil
 }
@@ -53,7 +53,7 @@ func (db *DB) FetchWorkers(ctx context.Context) ([]*Worker, error) {
 	workers := make([]*Worker, 0)
 	tx := db.gormDB.WithContext(ctx).Model(&Worker{}).Scan(&workers)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, workerError(tx.Error, "fetching all workers")
 	}
 	return workers, nil
 }

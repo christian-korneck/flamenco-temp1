@@ -17,6 +17,12 @@ func TestCreateFetchWorker(t *testing.T) {
 	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
 	defer cancel()
 
+	// Test fetching non-existent worker
+	fetchedWorker, err := db.FetchWorker(ctx, "dabf67a1-b591-4232-bf73-0b8de2a9488e")
+	assert.ErrorIs(t, err, ErrWorkerNotFound)
+	assert.Nil(t, fetchedWorker)
+
+	// Test existing worker
 	w := Worker{
 		UUID:               uuid.New(),
 		Name:               "дрон",
@@ -27,10 +33,10 @@ func TestCreateFetchWorker(t *testing.T) {
 		SupportedTaskTypes: "blender,ffmpeg,file-management",
 	}
 
-	err := db.CreateWorker(ctx, &w)
+	err = db.CreateWorker(ctx, &w)
 	assert.NoError(t, err)
 
-	fetchedWorker, err := db.FetchWorker(ctx, w.UUID)
+	fetchedWorker, err = db.FetchWorker(ctx, w.UUID)
 	assert.NoError(t, err)
 	assert.NotNil(t, fetchedWorker)
 
