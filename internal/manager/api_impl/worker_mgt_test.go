@@ -3,6 +3,8 @@ package api_impl
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -52,4 +54,64 @@ func TestFetchWorkers(t *testing.T) {
 	assertResponseJSON(t, echo, http.StatusOK, workers)
 	resp := getRecordedResponse(echo)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestFetchWorker(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+	workerUUID := worker.UUID
+
+	// Test without worker in the database.
+	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).
+		Return(nil, fmt.Errorf("wrapped: %w", persistence.ErrWorkerNotFound))
+	echo := mf.prepareMockedRequest(nil)
+	err := mf.flamenco.FetchWorker(echo, workerUUID)
+	assert.NoError(t, err)
+	assertResponseAPIError(t, echo, http.StatusNotFound, fmt.Sprintf("worker %q not found", workerUUID))
+
+	// Test database error fetching worker.
+	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).
+		Return(nil, errors.New("some unknown error"))
+	echo = mf.prepareMockedRequest(nil)
+	err = mf.flamenco.FetchWorker(echo, workerUUID)
+	assert.NoError(t, err)
+	assertResponseAPIError(t, echo, http.StatusInternalServerError, "error fetching worker: some unknown error")
+
+	// Test with worker that doesn't have a status change requested.
+	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
+
+	echo = mf.prepareMockedRequest(nil)
+	err = mf.flamenco.FetchWorker(echo, workerUUID)
+	assert.NoError(t, err)
+	assertResponseJSON(t, echo, http.StatusOK, api.Worker{
+		Id:                 workerUUID,
+		Nickname:           "дрон",
+		IpAddress:          "fe80::5054:ff:fede:2ad7",
+		Platform:           "linux",
+		Version:            "3.0",
+		Status:             api.WorkerStatusAwake,
+		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
+	})
+
+	// Test with worker that does have a status change requested.
+	requestedStatus := api.WorkerStatusAsleep
+	worker.StatusRequested = requestedStatus
+	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
+
+	echo = mf.prepareMockedRequest(nil)
+	err = mf.flamenco.FetchWorker(echo, worker.UUID)
+	assert.NoError(t, err)
+	assertResponseJSON(t, echo, http.StatusOK, api.Worker{
+		Id:                 workerUUID,
+		Nickname:           "дрон",
+		IpAddress:          "fe80::5054:ff:fede:2ad7",
+		Platform:           "linux",
+		Version:            "3.0",
+		Status:             api.WorkerStatusAwake,
+		StatusRequested:    &requestedStatus,
+		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
+	})
 }
