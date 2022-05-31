@@ -304,8 +304,9 @@ footer {
   background-color: var(--indicator-color);
   border: calc(var(--indicator-size)/2) solid var(--indicator-color);
   border-radius: 50%;
-  display: block;
+  display: inline-block;
   height: var(--indicator-size);
+  vertical-align: middle;
   width: var(--indicator-size);
 }
 

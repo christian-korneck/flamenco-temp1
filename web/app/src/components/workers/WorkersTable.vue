@@ -43,7 +43,11 @@ export default {
         // { title: "ID", field: "id", headerSort: false, formatter: (cell) => cell.getData().id.substr(0, 8), },
         {
           title: 'Status', field: 'status', sorter: 'string',
-          formatter: (cell) => indicator(cell.getData().status, 'worker-'),
+          formatter: (cell) => {
+            const status = cell.getData().status;
+            const dot = indicator(status, 'worker-');
+            return `${dot} ${status}`;
+          },
         },
         { title: 'Name', field: 'nickname', sorter: 'string' },
       ],
