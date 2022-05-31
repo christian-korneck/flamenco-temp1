@@ -716,7 +716,6 @@ components:
         address: { type: string }
         status: { $ref: "#/components/schemas/WorkerStatus" }
         platform: { type: string }
-        last_activity: { type: string }
         software: { type: string }
         supported_task_types:
           type: array
@@ -728,7 +727,6 @@ components:
         - status
         - platform
         - current_task
-        - last_activity
         - software
         - supported_task_types
 
