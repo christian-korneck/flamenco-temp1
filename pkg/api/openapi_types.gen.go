@@ -447,6 +447,22 @@ type SocketIOTaskUpdate struct {
 	Updated time.Time `json:"updated"`
 }
 
+// Subset of a Worker, sent over SocketIO when a worker changes. For new workers, `previous_status` will be excluded.
+type SocketIOWorkerUpdate struct {
+	// UUID of the Worker
+	Id string `json:"id"`
+
+	// Name of the worker
+	Nickname        string        `json:"nickname"`
+	PreviousStatus  *WorkerStatus `json:"previous_status,omitempty"`
+	Status          WorkerStatus  `json:"status"`
+	StatusRequested *WorkerStatus `json:"status_requested,omitempty"`
+
+	// Timestamp of last update
+	Updated time.Time `json:"updated"`
+	Version string    `json:"version"`
+}
+
 // Job definition submitted to Flamenco.
 type SubmittedJob struct {
 	// Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
