@@ -13,6 +13,7 @@
 
 
 import ApiClient from "../ApiClient";
+import Worker from '../model/Worker';
 import WorkerList from '../model/WorkerList';
 
 /**
@@ -33,6 +34,52 @@ export default class WorkerMgtApi {
         this.apiClient = apiClient || ApiClient.instance;
     }
 
+
+
+    /**
+     * Fetch info about the worker.
+     * @param {String} workerId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/Worker} and HTTP response
+     */
+    fetchWorkerWithHttpInfo(workerId) {
+      let postBody = null;
+      // verify the required parameter 'workerId' is set
+      if (workerId === undefined || workerId === null) {
+        throw new Error("Missing the required parameter 'workerId' when calling fetchWorker");
+      }
+
+      let pathParams = {
+        'worker_id': workerId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = Worker;
+      return this.apiClient.callApi(
+        '/api/worker-mgt/workers/{worker_id}', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch info about the worker.
+     * @param {String} workerId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/Worker}
+     */
+    fetchWorker(workerId) {
+      return this.fetchWorkerWithHttpInfo(workerId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
 
 
     /**

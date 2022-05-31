@@ -53,6 +53,7 @@ from flamenco.manager.model.task_status_change import TaskStatusChange
 from flamenco.manager.model.task_summary import TaskSummary
 from flamenco.manager.model.task_update import TaskUpdate
 from flamenco.manager.model.task_worker import TaskWorker
+from flamenco.manager.model.worker import Worker
 from flamenco.manager.model.worker_list import WorkerList
 from flamenco.manager.model.worker_registration import WorkerRegistration
 from flamenco.manager.model.worker_sign_on import WorkerSignOn

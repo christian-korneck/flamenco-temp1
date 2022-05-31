@@ -52,6 +52,9 @@ type ServerInterface interface {
 	// Get list of workers.
 	// (GET /api/worker-mgt/workers)
 	FetchWorkers(ctx echo.Context) error
+	// Fetch info about the worker.
+	// (GET /api/worker-mgt/workers/{worker_id})
+	FetchWorker(ctx echo.Context, workerId string) error
 	// Register a new worker
 	// (POST /api/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
@@ -259,6 +262,22 @@ func (w *ServerInterfaceWrapper) FetchWorkers(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.FetchWorkers(ctx)
+	return err
+}
+
+// FetchWorker converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchWorker(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "worker_id" -------------
+	var workerId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, ctx.Param("worker_id"), &workerId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter worker_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FetchWorker(ctx, workerId)
 	return err
 }
 
@@ -504,6 +523,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/tasks/:task_id/setstatus", wrapper.SetTaskStatus)
 	router.GET(baseURL+"/api/version", wrapper.GetVersion)
 	router.GET(baseURL+"/api/worker-mgt/workers", wrapper.FetchWorkers)
+	router.GET(baseURL+"/api/worker-mgt/workers/:worker_id", wrapper.FetchWorker)
 	router.POST(baseURL+"/api/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/worker/sign-off", wrapper.SignOff)
 	router.POST(baseURL+"/api/worker/sign-on", wrapper.SignOn)

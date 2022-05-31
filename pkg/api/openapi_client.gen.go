@@ -137,6 +137,9 @@ type ClientInterface interface {
 	// FetchWorkers request
 	FetchWorkers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchWorker request
+	FetchWorker(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -380,6 +383,18 @@ func (c *Client) GetVersion(ctx context.Context, reqEditors ...RequestEditorFn) 
 
 func (c *Client) FetchWorkers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchWorkersRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchWorker(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchWorkerRequest(c.Server, workerId)
 	if err != nil {
 		return nil, err
 	}
@@ -1058,6 +1073,40 @@ func NewFetchWorkersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewFetchWorkerRequest generates requests for FetchWorker
+func NewFetchWorkerRequest(server string, workerId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, workerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker-mgt/workers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewRegisterWorkerRequest calls the generic RegisterWorker builder with application/json body
 func NewRegisterWorkerRequest(server string, body RegisterWorkerJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1616,6 +1665,9 @@ type ClientWithResponsesInterface interface {
 	// FetchWorkers request
 	FetchWorkersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*FetchWorkersResponse, error)
 
+	// FetchWorker request
+	FetchWorkerWithResponse(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*FetchWorkerResponse, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error)
 
@@ -1949,6 +2001,28 @@ func (r FetchWorkersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchWorkersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchWorkerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Worker
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchWorkerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchWorkerResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2377,6 +2451,15 @@ func (c *ClientWithResponses) FetchWorkersWithResponse(ctx context.Context, reqE
 		return nil, err
 	}
 	return ParseFetchWorkersResponse(rsp)
+}
+
+// FetchWorkerWithResponse request returning *FetchWorkerResponse
+func (c *ClientWithResponses) FetchWorkerWithResponse(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*FetchWorkerResponse, error) {
+	rsp, err := c.FetchWorker(ctx, workerId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchWorkerResponse(rsp)
 }
 
 // RegisterWorkerWithBodyWithResponse request with arbitrary body returning *RegisterWorkerResponse
@@ -2891,6 +2974,32 @@ func ParseFetchWorkersResponse(rsp *http.Response) (*FetchWorkersResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest WorkerList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchWorkerResponse parses an HTTP response from a FetchWorkerWithResponse call
+func ParseFetchWorkerResponse(rsp *http.Response) (*FetchWorkerResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchWorkerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Worker
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

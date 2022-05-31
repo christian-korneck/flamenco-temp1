@@ -55,6 +55,7 @@ import TaskStatusChange from './model/TaskStatusChange';
 import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
 import TaskWorker from './model/TaskWorker';
+import Worker from './model/Worker';
 import WorkerList from './model/WorkerList';
 import WorkerRegistration from './model/WorkerRegistration';
 import WorkerSignOn from './model/WorkerSignOn';
@@ -358,6 +359,12 @@ export {
      * @property {module:model/TaskWorker}
      */
     TaskWorker,
+
+    /**
+     * The Worker model constructor.
+     * @property {module:model/Worker}
+     */
+    Worker,
 
     /**
      * The WorkerList model constructor.
