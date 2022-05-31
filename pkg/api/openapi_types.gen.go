@@ -316,7 +316,6 @@ type MayKeepRunning struct {
 // RegisteredWorker defines model for RegisteredWorker.
 type RegisteredWorker struct {
 	Address            string       `json:"address"`
-	LastActivity       string       `json:"last_activity"`
 	Nickname           string       `json:"nickname"`
 	Platform           string       `json:"platform"`
 	Software           string       `json:"software"`

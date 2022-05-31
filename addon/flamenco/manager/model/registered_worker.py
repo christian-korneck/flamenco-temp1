@@ -92,7 +92,6 @@ class RegisteredWorker(ModelNormal):
             'address': (str,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'platform': (str,),  # noqa: E501
-            'last_activity': (str,),  # noqa: E501
             'software': (str,),  # noqa: E501
             'supported_task_types': ([str],),  # noqa: E501
         }
@@ -108,7 +107,6 @@ class RegisteredWorker(ModelNormal):
         'address': 'address',  # noqa: E501
         'status': 'status',  # noqa: E501
         'platform': 'platform',  # noqa: E501
-        'last_activity': 'last_activity',  # noqa: E501
         'software': 'software',  # noqa: E501
         'supported_task_types': 'supported_task_types',  # noqa: E501
     }
@@ -120,7 +118,7 @@ class RegisteredWorker(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, uuid, nickname, address, status, platform, last_activity, software, supported_task_types, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, uuid, nickname, address, status, platform, software, supported_task_types, *args, **kwargs):  # noqa: E501
         """RegisteredWorker - a model defined in OpenAPI
 
         Args:
@@ -129,7 +127,6 @@ class RegisteredWorker(ModelNormal):
             address (str):
             status (WorkerStatus):
             platform (str):
-            last_activity (str):
             software (str):
             supported_task_types ([str]):
 
@@ -196,7 +193,6 @@ class RegisteredWorker(ModelNormal):
         self.address = address
         self.status = status
         self.platform = platform
-        self.last_activity = last_activity
         self.software = software
         self.supported_task_types = supported_task_types
         for var_name, var_value in kwargs.items():
@@ -219,7 +215,7 @@ class RegisteredWorker(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, uuid, nickname, address, status, platform, last_activity, software, supported_task_types, *args, **kwargs):  # noqa: E501
+    def __init__(self, uuid, nickname, address, status, platform, software, supported_task_types, *args, **kwargs):  # noqa: E501
         """RegisteredWorker - a model defined in OpenAPI
 
         Args:
@@ -228,7 +224,6 @@ class RegisteredWorker(ModelNormal):
             address (str):
             status (WorkerStatus):
             platform (str):
-            last_activity (str):
             software (str):
             supported_task_types ([str]):
 
@@ -293,7 +288,6 @@ class RegisteredWorker(ModelNormal):
         self.address = address
         self.status = status
         self.platform = platform
-        self.last_activity = last_activity
         self.software = software
         self.supported_task_types = supported_task_types
         for var_name, var_value in kwargs.items():

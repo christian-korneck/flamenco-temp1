@@ -9,7 +9,6 @@ Name | Type | Description | Notes
 **address** | **str** |  | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
 **platform** | **str** |  | 
-**last_activity** | **str** |  | 
 **software** | **str** |  | 
 **supported_task_types** | **[str]** |  | 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]

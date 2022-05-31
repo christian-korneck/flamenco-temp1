@@ -28,13 +28,12 @@ class RegisteredWorker {
      * @param address {String} 
      * @param status {module:model/WorkerStatus} 
      * @param platform {String} 
-     * @param lastActivity {String} 
      * @param software {String} 
      * @param supportedTaskTypes {Array.<String>} 
      */
-    constructor(uuid, nickname, address, status, platform, lastActivity, software, supportedTaskTypes) { 
+    constructor(uuid, nickname, address, status, platform, software, supportedTaskTypes) { 
         
-        RegisteredWorker.initialize(this, uuid, nickname, address, status, platform, lastActivity, software, supportedTaskTypes);
+        RegisteredWorker.initialize(this, uuid, nickname, address, status, platform, software, supportedTaskTypes);
     }
 
     /**
@@ -42,13 +41,12 @@ class RegisteredWorker {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, uuid, nickname, address, status, platform, lastActivity, software, supportedTaskTypes) { 
+    static initialize(obj, uuid, nickname, address, status, platform, software, supportedTaskTypes) { 
         obj['uuid'] = uuid;
         obj['nickname'] = nickname;
         obj['address'] = address;
         obj['status'] = status;
         obj['platform'] = platform;
-        obj['last_activity'] = lastActivity;
         obj['software'] = software;
         obj['supported_task_types'] = supportedTaskTypes;
     }
@@ -78,9 +76,6 @@ class RegisteredWorker {
             }
             if (data.hasOwnProperty('platform')) {
                 obj['platform'] = ApiClient.convertToType(data['platform'], 'String');
-            }
-            if (data.hasOwnProperty('last_activity')) {
-                obj['last_activity'] = ApiClient.convertToType(data['last_activity'], 'String');
             }
             if (data.hasOwnProperty('software')) {
                 obj['software'] = ApiClient.convertToType(data['software'], 'String');
@@ -119,11 +114,6 @@ RegisteredWorker.prototype['status'] = undefined;
  * @member {String} platform
  */
 RegisteredWorker.prototype['platform'] = undefined;
-
-/**
- * @member {String} last_activity
- */
-RegisteredWorker.prototype['last_activity'] = undefined;
 
 /**
  * @member {String} software
