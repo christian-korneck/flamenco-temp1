@@ -90,6 +90,7 @@ class WorkerSummary(ModelNormal):
             'id': (str,),  # noqa: E501
             'nickname': (str,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
+            'version': (str,),  # noqa: E501
             'status_requested': (WorkerStatus,),  # noqa: E501
         }
 
@@ -102,6 +103,7 @@ class WorkerSummary(ModelNormal):
         'id': 'id',  # noqa: E501
         'nickname': 'nickname',  # noqa: E501
         'status': 'status',  # noqa: E501
+        'version': 'version',  # noqa: E501
         'status_requested': 'status_requested',  # noqa: E501
     }
 
@@ -112,13 +114,14 @@ class WorkerSummary(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, id, nickname, status, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, id, nickname, status, version, *args, **kwargs):  # noqa: E501
         """WorkerSummary - a model defined in OpenAPI
 
         Args:
             id (str):
             nickname (str):
             status (WorkerStatus):
+            version (str): Version of Flamenco this Worker is running
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -182,6 +185,7 @@ class WorkerSummary(ModelNormal):
         self.id = id
         self.nickname = nickname
         self.status = status
+        self.version = version
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -202,13 +206,14 @@ class WorkerSummary(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, id, nickname, status, *args, **kwargs):  # noqa: E501
+    def __init__(self, id, nickname, status, version, *args, **kwargs):  # noqa: E501
         """WorkerSummary - a model defined in OpenAPI
 
         Args:
             id (str):
             nickname (str):
             status (WorkerStatus):
+            version (str): Version of Flamenco this Worker is running
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -270,6 +275,7 @@ class WorkerSummary(ModelNormal):
         self.id = id
         self.nickname = nickname
         self.status = status
+        self.version = version
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

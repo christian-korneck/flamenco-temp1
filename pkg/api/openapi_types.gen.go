@@ -533,22 +533,17 @@ type TaskWorker struct {
 	Name    string `json:"name"`
 }
 
-// All information about a Worker
+// Worker defines model for Worker.
 type Worker struct {
-	Id string `json:"id"`
-
+	// Embedded struct due to allOf(#/components/schemas/WorkerSummary)
+	WorkerSummary `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
 	// IP address of the Worker
 	IpAddress string `json:"ip_address"`
-	Nickname  string `json:"nickname"`
 
 	// Operating system of the Worker
-	Platform           string        `json:"platform"`
-	Status             WorkerStatus  `json:"status"`
-	StatusRequested    *WorkerStatus `json:"status_requested,omitempty"`
-	SupportedTaskTypes []string      `json:"supported_task_types"`
-
-	// Version of Flamenco this Worker is running
-	Version string `json:"version"`
+	Platform           string   `json:"platform"`
+	SupportedTaskTypes []string `json:"supported_task_types"`
 }
 
 // List of workers.
@@ -590,6 +585,9 @@ type WorkerSummary struct {
 	Nickname        string        `json:"nickname"`
 	Status          WorkerStatus  `json:"status"`
 	StatusRequested *WorkerStatus `json:"status_requested,omitempty"`
+
+	// Version of Flamenco this Worker is running
+	Version string `json:"version"`
 }
 
 // SubmitJobJSONBody defines parameters for SubmitJob.

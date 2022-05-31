@@ -12,7 +12,9 @@
  */
 
 import ApiClient from '../ApiClient';
+import WorkerAllOf from './WorkerAllOf';
 import WorkerStatus from './WorkerStatus';
+import WorkerSummary from './WorkerSummary';
 
 /**
  * The Worker model module.
@@ -24,17 +26,19 @@ class Worker {
      * Constructs a new <code>Worker</code>.
      * All information about a Worker
      * @alias module:model/Worker
+     * @implements module:model/WorkerSummary
+     * @implements module:model/WorkerAllOf
      * @param id {String} 
      * @param nickname {String} 
      * @param status {module:model/WorkerStatus} 
+     * @param version {String} Version of Flamenco this Worker is running
      * @param ipAddress {String} IP address of the Worker
      * @param platform {String} Operating system of the Worker
-     * @param version {String} Version of Flamenco this Worker is running
      * @param supportedTaskTypes {Array.<String>} 
      */
-    constructor(id, nickname, status, ipAddress, platform, version, supportedTaskTypes) { 
-        
-        Worker.initialize(this, id, nickname, status, ipAddress, platform, version, supportedTaskTypes);
+    constructor(id, nickname, status, version, ipAddress, platform, supportedTaskTypes) { 
+        WorkerSummary.initialize(this, id, nickname, status, version);WorkerAllOf.initialize(this, ipAddress, platform, supportedTaskTypes);
+        Worker.initialize(this, id, nickname, status, version, ipAddress, platform, supportedTaskTypes);
     }
 
     /**
@@ -42,13 +46,13 @@ class Worker {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, nickname, status, ipAddress, platform, version, supportedTaskTypes) { 
+    static initialize(obj, id, nickname, status, version, ipAddress, platform, supportedTaskTypes) { 
         obj['id'] = id;
         obj['nickname'] = nickname;
         obj['status'] = status;
+        obj['version'] = version;
         obj['ip_address'] = ipAddress;
         obj['platform'] = platform;
-        obj['version'] = version;
         obj['supported_task_types'] = supportedTaskTypes;
     }
 
@@ -62,6 +66,8 @@ class Worker {
     static constructFromObject(data, obj) {
         if (data) {
             obj = obj || new Worker();
+            WorkerSummary.constructFromObject(data, obj);
+            WorkerAllOf.constructFromObject(data, obj);
 
             if (data.hasOwnProperty('id')) {
                 obj['id'] = ApiClient.convertToType(data['id'], 'String');
@@ -75,14 +81,14 @@ class Worker {
             if (data.hasOwnProperty('status_requested')) {
                 obj['status_requested'] = WorkerStatus.constructFromObject(data['status_requested']);
             }
+            if (data.hasOwnProperty('version')) {
+                obj['version'] = ApiClient.convertToType(data['version'], 'String');
+            }
             if (data.hasOwnProperty('ip_address')) {
                 obj['ip_address'] = ApiClient.convertToType(data['ip_address'], 'String');
             }
             if (data.hasOwnProperty('platform')) {
                 obj['platform'] = ApiClient.convertToType(data['platform'], 'String');
-            }
-            if (data.hasOwnProperty('version')) {
-                obj['version'] = ApiClient.convertToType(data['version'], 'String');
             }
             if (data.hasOwnProperty('supported_task_types')) {
                 obj['supported_task_types'] = ApiClient.convertToType(data['supported_task_types'], ['String']);
@@ -115,6 +121,12 @@ Worker.prototype['status'] = undefined;
 Worker.prototype['status_requested'] = undefined;
 
 /**
+ * Version of Flamenco this Worker is running
+ * @member {String} version
+ */
+Worker.prototype['version'] = undefined;
+
+/**
  * IP address of the Worker
  * @member {String} ip_address
  */
@@ -127,17 +139,48 @@ Worker.prototype['ip_address'] = undefined;
 Worker.prototype['platform'] = undefined;
 
 /**
- * Version of Flamenco this Worker is running
- * @member {String} version
- */
-Worker.prototype['version'] = undefined;
-
-/**
  * @member {Array.<String>} supported_task_types
  */
 Worker.prototype['supported_task_types'] = undefined;
 
 
+// Implement WorkerSummary interface:
+/**
+ * @member {String} id
+ */
+WorkerSummary.prototype['id'] = undefined;
+/**
+ * @member {String} nickname
+ */
+WorkerSummary.prototype['nickname'] = undefined;
+/**
+ * @member {module:model/WorkerStatus} status
+ */
+WorkerSummary.prototype['status'] = undefined;
+/**
+ * @member {module:model/WorkerStatus} status_requested
+ */
+WorkerSummary.prototype['status_requested'] = undefined;
+/**
+ * Version of Flamenco this Worker is running
+ * @member {String} version
+ */
+WorkerSummary.prototype['version'] = undefined;
+// Implement WorkerAllOf interface:
+/**
+ * IP address of the Worker
+ * @member {String} ip_address
+ */
+WorkerAllOf.prototype['ip_address'] = undefined;
+/**
+ * Operating system of the Worker
+ * @member {String} platform
+ */
+WorkerAllOf.prototype['platform'] = undefined;
+/**
+ * @member {Array.<String>} supported_task_types
+ */
+WorkerAllOf.prototype['supported_task_types'] = undefined;
 
 
 

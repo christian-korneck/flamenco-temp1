@@ -27,10 +27,11 @@ class WorkerSummary {
      * @param id {String} 
      * @param nickname {String} 
      * @param status {module:model/WorkerStatus} 
+     * @param version {String} Version of Flamenco this Worker is running
      */
-    constructor(id, nickname, status) { 
+    constructor(id, nickname, status, version) { 
         
-        WorkerSummary.initialize(this, id, nickname, status);
+        WorkerSummary.initialize(this, id, nickname, status, version);
     }
 
     /**
@@ -38,10 +39,11 @@ class WorkerSummary {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, nickname, status) { 
+    static initialize(obj, id, nickname, status, version) { 
         obj['id'] = id;
         obj['nickname'] = nickname;
         obj['status'] = status;
+        obj['version'] = version;
     }
 
     /**
@@ -66,6 +68,9 @@ class WorkerSummary {
             }
             if (data.hasOwnProperty('status_requested')) {
                 obj['status_requested'] = WorkerStatus.constructFromObject(data['status_requested']);
+            }
+            if (data.hasOwnProperty('version')) {
+                obj['version'] = ApiClient.convertToType(data['version'], 'String');
             }
         }
         return obj;
@@ -93,6 +98,12 @@ WorkerSummary.prototype['status'] = undefined;
  * @member {module:model/WorkerStatus} status_requested
  */
 WorkerSummary.prototype['status_requested'] = undefined;
+
+/**
+ * Version of Flamenco this Worker is running
+ * @member {String} version
+ */
+WorkerSummary.prototype['version'] = undefined;
 
 
 

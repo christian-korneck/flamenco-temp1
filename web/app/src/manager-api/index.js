@@ -57,6 +57,7 @@ import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
 import TaskWorker from './model/TaskWorker';
 import Worker from './model/Worker';
+import WorkerAllOf from './model/WorkerAllOf';
 import WorkerList from './model/WorkerList';
 import WorkerRegistration from './model/WorkerRegistration';
 import WorkerSignOn from './model/WorkerSignOn';
@@ -372,6 +373,12 @@ export {
      * @property {module:model/Worker}
      */
     Worker,
+
+    /**
+     * The WorkerAllOf model constructor.
+     * @property {module:model/WorkerAllOf}
+     */
+    WorkerAllOf,
 
     /**
      * The WorkerList model constructor.

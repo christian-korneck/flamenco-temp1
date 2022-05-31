@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **id** | **str** |  | 
 **nickname** | **str** |  | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
+**version** | **str** | Version of Flamenco this Worker is running | 
 **status_requested** | [**WorkerStatus**](WorkerStatus.md) |  | [optional] 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]
 
