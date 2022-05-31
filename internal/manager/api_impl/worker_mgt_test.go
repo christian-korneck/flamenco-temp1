@@ -87,12 +87,14 @@ func TestFetchWorker(t *testing.T) {
 	err = mf.flamenco.FetchWorker(echo, workerUUID)
 	assert.NoError(t, err)
 	assertResponseJSON(t, echo, http.StatusOK, api.Worker{
-		Id:                 workerUUID,
-		Nickname:           "дрон",
+		WorkerSummary: api.WorkerSummary{
+			Id:       workerUUID,
+			Nickname: "дрон",
+			Version:  "3.0",
+			Status:   api.WorkerStatusAwake,
+		},
 		IpAddress:          "fe80::5054:ff:fede:2ad7",
 		Platform:           "linux",
-		Version:            "3.0",
-		Status:             api.WorkerStatusAwake,
 		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
 	})
 
@@ -105,13 +107,15 @@ func TestFetchWorker(t *testing.T) {
 	err = mf.flamenco.FetchWorker(echo, worker.UUID)
 	assert.NoError(t, err)
 	assertResponseJSON(t, echo, http.StatusOK, api.Worker{
-		Id:                 workerUUID,
-		Nickname:           "дрон",
+		WorkerSummary: api.WorkerSummary{
+			Id:              workerUUID,
+			Nickname:        "дрон",
+			Version:         "3.0",
+			Status:          api.WorkerStatusAwake,
+			StatusRequested: &requestedStatus,
+		},
 		IpAddress:          "fe80::5054:ff:fede:2ad7",
 		Platform:           "linux",
-		Version:            "3.0",
-		Status:             api.WorkerStatusAwake,
-		StatusRequested:    &requestedStatus,
 		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
 	})
 }

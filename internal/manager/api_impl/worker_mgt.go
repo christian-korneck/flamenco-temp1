@@ -68,13 +68,15 @@ func workerSummary(w persistence.Worker) api.WorkerSummary {
 
 func workerDBtoAPI(dbWorker *persistence.Worker) api.Worker {
 	apiWorker := api.Worker{
-		Id:                 dbWorker.UUID,
+		WorkerSummary: api.WorkerSummary{
+			Id:       dbWorker.UUID,
+			Nickname: dbWorker.Name,
+			Status:   dbWorker.Status,
+			Version:  dbWorker.Software,
+		},
 		IpAddress:          dbWorker.Address,
-		Nickname:           dbWorker.Name,
 		Platform:           dbWorker.Platform,
-		Status:             dbWorker.Status,
 		SupportedTaskTypes: dbWorker.TaskTypes(),
-		Version:            dbWorker.Software,
 	}
 
 	if dbWorker.StatusRequested != "" {
