@@ -13,8 +13,10 @@ import (
 )
 
 func (f *Flamenco) FetchWorkers(e echo.Context) error {
+	logger := requestLogger(e)
 	dbWorkers, err := f.persist.FetchWorkers(e.Request().Context())
 	if err != nil {
+		logger.Error().Err(err).Msg("error fetching all workers")
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching workers: %v", err)
 	}
 
@@ -23,6 +25,7 @@ func (f *Flamenco) FetchWorkers(e echo.Context) error {
 		apiWorkers[i] = workerSummary(*dbWorkers[i])
 	}
 
+	logger.Debug().Msg("fetched all workers")
 	return e.JSON(http.StatusOK, api.WorkerList{
 		Workers: apiWorkers,
 	})
