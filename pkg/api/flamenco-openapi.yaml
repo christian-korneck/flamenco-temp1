@@ -281,6 +281,33 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Worker" }
 
+  /api/worker-mgt/workers/{worker_id}/setstatus:
+    summary: Request a status change for the given worker.
+    post:
+      operationId: requestWorkerStatusChange
+      tags: [worker-mgt]
+      parameters:
+        - name: worker_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        description: The status change to request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerStatusChangeRequest"
+      responses:
+        "204":
+          description: Status change was accepted.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   ## Jobs
 
   /api/jobs/types:
@@ -1353,7 +1380,6 @@ components:
       type: object
       description: >
         Subset of a Worker, sent over SocketIO when a worker changes.
-        For new workers, `previous_status` will be excluded.
       properties:
         "id":
           type: string
@@ -1367,6 +1393,11 @@ components:
         "status": { $ref: "#/components/schemas/WorkerStatus" }
         "previous_status": { $ref: "#/components/schemas/WorkerStatus" }
         "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
+        "lazy_status_request":
+          type: boolean
+          description: >
+            Whether the worker is allowed to finish its current task before the
+            status change is enforced. Mandatory when `status_requested` is set.
         "version": { type: string }
       required: [id, nickname, updated, status, version]
 
@@ -1415,6 +1446,7 @@ components:
         "nickname": { type: string }
         "status": { $ref: "#/components/schemas/WorkerStatus" }
         "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
+        "lazy_status_request": { type: boolean }
         # These will be implemented soon:
         # "task_id":
         #   type: string
@@ -1451,6 +1483,18 @@ components:
             - platform
             - version
             - supported_task_types
+
+    WorkerStatusChangeRequest:
+      type: object
+      description: Request for a Worker to change its status.
+      properties:
+        "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
+        "is_lazy":
+          type: boolean
+          description: >
+            Whether the status change should happen immediately, or after the
+            worker's current task is finished.
+      required: [status_requested, is_lazy]
 
   securitySchemes:
     worker_auth:
