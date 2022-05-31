@@ -166,7 +166,7 @@ func NewFlamenco(
 func sendAPIError(e echo.Context, code int, message string, args ...interface{}) error {
 	if len(args) > 0 {
 		// Only interpret 'message' as format string if there are actually format parameters.
-		message = fmt.Sprintf(message, args)
+		message = fmt.Sprintf(message, args...)
 	}
 
 	apiErr := api.Error{
