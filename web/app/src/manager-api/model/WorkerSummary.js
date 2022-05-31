@@ -69,6 +69,9 @@ class WorkerSummary {
             if (data.hasOwnProperty('status_requested')) {
                 obj['status_requested'] = WorkerStatus.constructFromObject(data['status_requested']);
             }
+            if (data.hasOwnProperty('lazy_status_request')) {
+                obj['lazy_status_request'] = ApiClient.convertToType(data['lazy_status_request'], 'Boolean');
+            }
             if (data.hasOwnProperty('version')) {
                 obj['version'] = ApiClient.convertToType(data['version'], 'String');
             }
@@ -98,6 +101,11 @@ WorkerSummary.prototype['status'] = undefined;
  * @member {module:model/WorkerStatus} status_requested
  */
 WorkerSummary.prototype['status_requested'] = undefined;
+
+/**
+ * @member {Boolean} lazy_status_request
+ */
+WorkerSummary.prototype['lazy_status_request'] = undefined;
 
 /**
  * Version of Flamenco this Worker is running

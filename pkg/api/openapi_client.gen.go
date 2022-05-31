@@ -140,6 +140,11 @@ type ClientInterface interface {
 	// FetchWorker request
 	FetchWorker(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RequestWorkerStatusChange request with any body
+	RequestWorkerStatusChangeWithBody(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RequestWorkerStatusChange(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -395,6 +400,30 @@ func (c *Client) FetchWorkers(ctx context.Context, reqEditors ...RequestEditorFn
 
 func (c *Client) FetchWorker(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchWorkerRequest(c.Server, workerId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RequestWorkerStatusChangeWithBody(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRequestWorkerStatusChangeRequestWithBody(c.Server, workerId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RequestWorkerStatusChange(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRequestWorkerStatusChangeRequest(c.Server, workerId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1107,6 +1136,53 @@ func NewFetchWorkerRequest(server string, workerId string) (*http.Request, error
 	return req, nil
 }
 
+// NewRequestWorkerStatusChangeRequest calls the generic RequestWorkerStatusChange builder with application/json body
+func NewRequestWorkerStatusChangeRequest(server string, workerId string, body RequestWorkerStatusChangeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRequestWorkerStatusChangeRequestWithBody(server, workerId, "application/json", bodyReader)
+}
+
+// NewRequestWorkerStatusChangeRequestWithBody generates requests for RequestWorkerStatusChange with any type of body
+func NewRequestWorkerStatusChangeRequestWithBody(server string, workerId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, workerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker-mgt/workers/%s/setstatus", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewRegisterWorkerRequest calls the generic RegisterWorker builder with application/json body
 func NewRegisterWorkerRequest(server string, body RegisterWorkerJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1668,6 +1744,11 @@ type ClientWithResponsesInterface interface {
 	// FetchWorker request
 	FetchWorkerWithResponse(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*FetchWorkerResponse, error)
 
+	// RequestWorkerStatusChange request with any body
+	RequestWorkerStatusChangeWithBodyWithResponse(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestWorkerStatusChangeResponse, error)
+
+	RequestWorkerStatusChangeWithResponse(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestWorkerStatusChangeResponse, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error)
 
@@ -2023,6 +2104,28 @@ func (r FetchWorkerResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchWorkerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RequestWorkerStatusChangeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r RequestWorkerStatusChangeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RequestWorkerStatusChangeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2460,6 +2563,23 @@ func (c *ClientWithResponses) FetchWorkerWithResponse(ctx context.Context, worke
 		return nil, err
 	}
 	return ParseFetchWorkerResponse(rsp)
+}
+
+// RequestWorkerStatusChangeWithBodyWithResponse request with arbitrary body returning *RequestWorkerStatusChangeResponse
+func (c *ClientWithResponses) RequestWorkerStatusChangeWithBodyWithResponse(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestWorkerStatusChangeResponse, error) {
+	rsp, err := c.RequestWorkerStatusChangeWithBody(ctx, workerId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRequestWorkerStatusChangeResponse(rsp)
+}
+
+func (c *ClientWithResponses) RequestWorkerStatusChangeWithResponse(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestWorkerStatusChangeResponse, error) {
+	rsp, err := c.RequestWorkerStatusChange(ctx, workerId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRequestWorkerStatusChangeResponse(rsp)
 }
 
 // RegisterWorkerWithBodyWithResponse request with arbitrary body returning *RegisterWorkerResponse
@@ -3004,6 +3124,32 @@ func ParseFetchWorkerResponse(rsp *http.Response) (*FetchWorkerResponse, error) 
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRequestWorkerStatusChangeResponse parses an HTTP response from a RequestWorkerStatusChangeWithResponse call
+func ParseRequestWorkerStatusChangeResponse(rsp *http.Response) (*RequestWorkerStatusChangeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RequestWorkerStatusChangeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 

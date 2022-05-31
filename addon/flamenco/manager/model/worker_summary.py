@@ -92,6 +92,7 @@ class WorkerSummary(ModelNormal):
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
             'status_requested': (WorkerStatus,),  # noqa: E501
+            'lazy_status_request': (bool,),  # noqa: E501
         }
 
     @cached_property
@@ -105,6 +106,7 @@ class WorkerSummary(ModelNormal):
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
         'status_requested': 'status_requested',  # noqa: E501
+        'lazy_status_request': 'lazy_status_request',  # noqa: E501
     }
 
     read_only_vars = {
@@ -155,6 +157,7 @@ class WorkerSummary(ModelNormal):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             status_requested (WorkerStatus): [optional]  # noqa: E501
+            lazy_status_request (bool): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -247,6 +250,7 @@ class WorkerSummary(ModelNormal):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             status_requested (WorkerStatus): [optional]  # noqa: E501
+            lazy_status_request (bool): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

@@ -64,6 +64,7 @@ import WorkerSignOn from './model/WorkerSignOn';
 import WorkerStateChange from './model/WorkerStateChange';
 import WorkerStateChanged from './model/WorkerStateChanged';
 import WorkerStatus from './model/WorkerStatus';
+import WorkerStatusChangeRequest from './model/WorkerStatusChangeRequest';
 import WorkerSummary from './model/WorkerSummary';
 import JobsApi from './manager/JobsApi';
 import MetaApi from './manager/MetaApi';
@@ -415,6 +416,12 @@ export {
      * @property {module:model/WorkerStatus}
      */
     WorkerStatus,
+
+    /**
+     * The WorkerStatusChangeRequest model constructor.
+     * @property {module:model/WorkerStatusChangeRequest}
+     */
+    WorkerStatusChangeRequest,
 
     /**
      * The WorkerSummary model constructor.

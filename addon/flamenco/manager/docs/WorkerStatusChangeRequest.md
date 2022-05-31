@@ -1,16 +1,12 @@
-# WorkerSummary
+# WorkerStatusChangeRequest
 
-Basic information about a Worker.
+Request for a Worker to change its status.
 
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**nickname** | **str** |  | 
-**status** | [**WorkerStatus**](WorkerStatus.md) |  | 
-**version** | **str** | Version of Flamenco this Worker is running | 
-**status_requested** | [**WorkerStatus**](WorkerStatus.md) |  | [optional] 
-**lazy_status_request** | **bool** |  | [optional] 
+**status_requested** | [**WorkerStatus**](WorkerStatus.md) |  | 
+**is_lazy** | **bool** | Whether the status change should happen immediately, or after the worker&#39;s current task is finished.  | 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

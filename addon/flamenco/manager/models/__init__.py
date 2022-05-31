@@ -62,4 +62,5 @@ from flamenco.manager.model.worker_sign_on import WorkerSignOn
 from flamenco.manager.model.worker_state_change import WorkerStateChange
 from flamenco.manager.model.worker_state_changed import WorkerStateChanged
 from flamenco.manager.model.worker_status import WorkerStatus
+from flamenco.manager.model.worker_status_change_request import WorkerStatusChangeRequest
 from flamenco.manager.model.worker_summary import WorkerSummary

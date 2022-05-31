@@ -13,8 +13,10 @@
 
 
 import ApiClient from "../ApiClient";
+import Error from '../model/Error';
 import Worker from '../model/Worker';
 import WorkerList from '../model/WorkerList';
+import WorkerStatusChangeRequest from '../model/WorkerStatusChangeRequest';
 
 /**
 * WorkerMgt service.
@@ -115,6 +117,56 @@ export default class WorkerMgtApi {
      */
     fetchWorkers() {
       return this.fetchWorkersWithHttpInfo()
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * @param {String} workerId 
+     * @param {module:model/WorkerStatusChangeRequest} workerStatusChangeRequest The status change to request.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
+     */
+    requestWorkerStatusChangeWithHttpInfo(workerId, workerStatusChangeRequest) {
+      let postBody = workerStatusChangeRequest;
+      // verify the required parameter 'workerId' is set
+      if (workerId === undefined || workerId === null) {
+        throw new Error("Missing the required parameter 'workerId' when calling requestWorkerStatusChange");
+      }
+      // verify the required parameter 'workerStatusChangeRequest' is set
+      if (workerStatusChangeRequest === undefined || workerStatusChangeRequest === null) {
+        throw new Error("Missing the required parameter 'workerStatusChangeRequest' when calling requestWorkerStatusChange");
+      }
+
+      let pathParams = {
+        'worker_id': workerId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = null;
+      return this.apiClient.callApi(
+        '/api/worker-mgt/workers/{worker_id}/setstatus', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * @param {String} workerId 
+     * @param {module:model/WorkerStatusChangeRequest} workerStatusChangeRequest The status change to request.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}
+     */
+    requestWorkerStatusChange(workerId, workerStatusChangeRequest) {
+      return this.requestWorkerStatusChangeWithHttpInfo(workerId, workerStatusChangeRequest)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

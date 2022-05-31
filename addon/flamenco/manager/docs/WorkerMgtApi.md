@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**fetch_worker**](WorkerMgtApi.md#fetch_worker) | **GET** /api/worker-mgt/workers/{worker_id} | Fetch info about the worker.
 [**fetch_workers**](WorkerMgtApi.md#fetch_workers) | **GET** /api/worker-mgt/workers | Get list of workers.
+[**request_worker_status_change**](WorkerMgtApi.md#request_worker_status_change) | **POST** /api/worker-mgt/workers/{worker_id}/setstatus | 
 
 
 # **fetch_worker**
@@ -131,6 +132,76 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Known workers |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **request_worker_status_change**
+> request_worker_status_change(worker_id, worker_status_change_request)
+
+
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import worker_mgt_api
+from flamenco.manager.model.error import Error
+from flamenco.manager.model.worker_status_change_request import WorkerStatusChangeRequest
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = worker_mgt_api.WorkerMgtApi(api_client)
+    worker_id = "worker_id_example" # str | 
+    worker_status_change_request = WorkerStatusChangeRequest(
+        status_requested=WorkerStatus("starting"),
+        is_lazy=True,
+    ) # WorkerStatusChangeRequest | The status change to request.
+
+    # example passing only required values which don't have defaults set
+    try:
+        api_instance.request_worker_status_change(worker_id, worker_status_change_request)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling WorkerMgtApi->request_worker_status_change: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **worker_id** | **str**|  |
+ **worker_status_change_request** | [**WorkerStatusChangeRequest**](WorkerStatusChangeRequest.md)| The status change to request. |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Status change was accepted. |  -  |
+**0** | Unexpected error. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

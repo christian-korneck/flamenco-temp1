@@ -336,6 +336,46 @@ func (mr *MockFlamencoClientMockRecorder) RegisterWorkerWithResponse(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterWorkerWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RegisterWorkerWithResponse), varargs...)
 }
 
+// RequestWorkerStatusChangeWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) RequestWorkerStatusChangeWithBodyWithResponse(arg0 context.Context, arg1, arg2 string, arg3 io.Reader, arg4 ...api.RequestEditorFn) (*api.RequestWorkerStatusChangeResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	for _, a := range arg4 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RequestWorkerStatusChangeWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.RequestWorkerStatusChangeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RequestWorkerStatusChangeWithBodyWithResponse indicates an expected call of RequestWorkerStatusChangeWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) RequestWorkerStatusChangeWithBodyWithResponse(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestWorkerStatusChangeWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RequestWorkerStatusChangeWithBodyWithResponse), varargs...)
+}
+
+// RequestWorkerStatusChangeWithResponse mocks base method.
+func (m *MockFlamencoClient) RequestWorkerStatusChangeWithResponse(arg0 context.Context, arg1 string, arg2 api.RequestWorkerStatusChangeJSONRequestBody, arg3 ...api.RequestEditorFn) (*api.RequestWorkerStatusChangeResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RequestWorkerStatusChangeWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.RequestWorkerStatusChangeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RequestWorkerStatusChangeWithResponse indicates an expected call of RequestWorkerStatusChangeWithResponse.
+func (mr *MockFlamencoClientMockRecorder) RequestWorkerStatusChangeWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestWorkerStatusChangeWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RequestWorkerStatusChangeWithResponse), varargs...)
+}
+
 // ScheduleTaskWithResponse mocks base method.
 func (m *MockFlamencoClient) ScheduleTaskWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.ScheduleTaskResponse, error) {
 	m.ctrl.T.Helper()

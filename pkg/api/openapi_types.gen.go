@@ -451,10 +451,13 @@ type SocketIOTaskUpdate struct {
 	Updated time.Time `json:"updated"`
 }
 
-// Subset of a Worker, sent over SocketIO when a worker changes. For new workers, `previous_status` will be excluded.
+// Subset of a Worker, sent over SocketIO when a worker changes.
 type SocketIOWorkerUpdate struct {
 	// UUID of the Worker
 	Id string `json:"id"`
+
+	// Whether the worker is allowed to finish its current task before the status change is enforced. Mandatory when `status_requested` is set.
+	LazyStatusRequest *bool `json:"lazy_status_request,omitempty"`
 
 	// Name of the worker
 	Nickname        string        `json:"nickname"`
@@ -579,12 +582,20 @@ type WorkerStateChanged struct {
 // WorkerStatus defines model for WorkerStatus.
 type WorkerStatus string
 
+// Request for a Worker to change its status.
+type WorkerStatusChangeRequest struct {
+	// Whether the status change should happen immediately, or after the worker's current task is finished.
+	IsLazy          bool         `json:"is_lazy"`
+	StatusRequested WorkerStatus `json:"status_requested"`
+}
+
 // Basic information about a Worker.
 type WorkerSummary struct {
-	Id              string        `json:"id"`
-	Nickname        string        `json:"nickname"`
-	Status          WorkerStatus  `json:"status"`
-	StatusRequested *WorkerStatus `json:"status_requested,omitempty"`
+	Id                string        `json:"id"`
+	LazyStatusRequest *bool         `json:"lazy_status_request,omitempty"`
+	Nickname          string        `json:"nickname"`
+	Status            WorkerStatus  `json:"status"`
+	StatusRequested   *WorkerStatus `json:"status_requested,omitempty"`
 
 	// Version of Flamenco this Worker is running
 	Version string `json:"version"`
@@ -601,6 +612,9 @@ type SetJobStatusJSONBody JobStatusChange
 
 // SetTaskStatusJSONBody defines parameters for SetTaskStatus.
 type SetTaskStatusJSONBody TaskStatusChange
+
+// RequestWorkerStatusChangeJSONBody defines parameters for RequestWorkerStatusChange.
+type RequestWorkerStatusChangeJSONBody WorkerStatusChangeRequest
 
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
@@ -640,6 +654,9 @@ type SetJobStatusJSONRequestBody SetJobStatusJSONBody
 
 // SetTaskStatusJSONRequestBody defines body for SetTaskStatus for application/json ContentType.
 type SetTaskStatusJSONRequestBody SetTaskStatusJSONBody
+
+// RequestWorkerStatusChangeJSONRequestBody defines body for RequestWorkerStatusChange for application/json ContentType.
+type RequestWorkerStatusChangeJSONRequestBody RequestWorkerStatusChangeJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody
