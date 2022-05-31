@@ -1385,7 +1385,7 @@ components:
           type: string
           format: uuid
           description: UUID of the thing to subscribe to / unsubscribe from.
-      required: [op, type, uuid]
+      required: [op, type]
 
     SocketIOSubscriptionOperation:
       type: string
@@ -1393,7 +1393,7 @@ components:
 
     SocketIOSubscriptionType:
       type: string
-      enum: [job, tasklog]
+      enum: [allJobs, job, tasklog]
       description: What kind of thing to subscribe to / unsubscribe from.
 
     # Worker Management
