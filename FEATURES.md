@@ -37,32 +37,36 @@ Note that list is **not** in any specific order.
     - [x] Tasks
 - [ ] Web frontend for Worker management
   - [x] "Tabs" system + Vue Router support.
-- [ ] Port the old 'fail-requested' task status handling code to the new Manager
+- [x] Port the old 'fail-requested' task status handling code to the new Manager
 - [ ] Ensure "task state machine" can run in a single database transaction.
 - [x] At startup check & fix "stuck" jobs.
       Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
 - [ ] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
 - [ ] Worker timeout monitoring
-- [ ] Worker sleep schedule
 - [ ] Last rendered image display
+
+- [ ] Web interface: Support actions on multiple selected things
+  - [ ] Workers
+  - [ ] Jobs
+  - [ ] Tasks
+
+- [ ] Worker sleep schedule
 - [ ] Loading of job compiler scripts from disk
 - [ ] CLI option to write built-in job compiler scripts to disk
 - [ ] Per-job last rendered image
 - [ ] Support pausing jobs.
-- [ ] Job "required specs", to match with certain workers.
-- [ ] API: only allow valid job & task status changes. Currently any change is allowed by the API.
-- [ ] Frontend authentication
-- [ ] User/Job Submission API authentication
-- [ ] Auto-removal of old Workers
 - [ ] Shaman/Job settings: Distinction between "can be auto-deleted" jobs and "must be kept around" jobs.
 - [ ] Job archival/deletion / task cleanup
 - [ ] Caching of job compilers. Currently every operation (including "fetch job
   type info", which is done by the web interface whenever job details are shown)
   will just parse the JS from disk again. It'll be better to only do this when
   the file on disk changed.
-- [ ] Split up OpenAPI-generated server code into an interface per tag. This'll help splitting up the rather large `Flamenco` struct into smaller pieces.
 - [x] Remove the current index and replace it with a redirect to `/jobs`
+- [ ] API: only allow valid job & task status changes. Currently any change is allowed by the API.
+- [ ] Frontend authentication
+- [ ] User/Job Submission API authentication
+- [ ] Auto-removal of old Workers
 
 ## Worker
 
@@ -118,3 +122,5 @@ Note that list is **not** in any specific order.
 - [ ] Video preview of jobs, with black frames for unrendered frames.
 - [ ] "Manual approval" task between low-quality/preview renders and rendering the final quality
 - [ ] Grid view of jobs / tasks, showing the latest-rendered image/video.
+- [ ] Split up OpenAPI-generated server code into an interface per tag. This'll help splitting up the rather large `Flamenco` struct into smaller pieces.
+- [ ] Job "required specs", to match with certain workers.
