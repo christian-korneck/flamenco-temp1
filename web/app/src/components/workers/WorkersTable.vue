@@ -44,9 +44,12 @@ export default {
         {
           title: 'Status', field: 'status', sorter: 'string',
           formatter: (cell) => {
-            const status = cell.getData().status;
-            const dot = indicator(status, 'worker-');
-            return `${dot} ${status}`;
+            const data = cell.getData();
+            const dot = indicator(data.status, 'worker-');
+            if (data.status_requested) {
+              return `${dot} ${data.status} <span class='state-transition-arrow'>➜</span> ${data.status_requested}`;
+            }
+            return `${dot} ${data.status}`;
           },
         },
         { title: 'Name', field: 'nickname', sorter: 'string' },

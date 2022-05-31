@@ -12,7 +12,7 @@
       <dt class="field-status">Status</dt>
       <dd>{{ workerData.status }}
         <template v-if="workerData.status_requested">
-          <span class='state-transition-arrow'>➜</span> {{ workerData.status_requested }}
+          ➜ {{ workerData.status_requested }}
         </template>
       </dd>
 
