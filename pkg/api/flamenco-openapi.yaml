@@ -1349,6 +1349,27 @@ components:
           description: Chunk of the task log. May contain multiple lines of text.
       required: [task_id, log]
 
+    SocketIOWorkerUpdate:
+      type: object
+      description: >
+        Subset of a Worker, sent over SocketIO when a worker changes.
+        For new workers, `previous_status` will be excluded.
+      properties:
+        "id":
+          type: string
+          format: uuid
+          description: UUID of the Worker
+        "nickname": { type: string, description: "Name of the worker" }
+        "updated":
+          type: string
+          format: date-time
+          description: Timestamp of last update
+        "status": { $ref: "#/components/schemas/WorkerStatus" }
+        "previous_status": { $ref: "#/components/schemas/WorkerStatus" }
+        "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
+        "version": { type: string }
+      required: [id, nickname, updated, status, version]
+
     SocketIOSubscription:
       type: object
       description: >
