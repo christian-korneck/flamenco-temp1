@@ -50,6 +50,7 @@ export default {
           },
         },
         { title: 'Name', field: 'nickname', sorter: 'string' },
+        { title: 'Version', field: 'version', sorter: 'string' },
       ],
       rowFormatter(row) {
         const data = row.getData();
