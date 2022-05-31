@@ -37,6 +37,9 @@ Note that list is **not** in any specific order.
     - [x] Tasks
 - [ ] Web frontend for Worker management
   - [x] "Tabs" system + Vue Router support.
+  - [x] API endpoint for worker status change requests
+  - [ ] Web: Worker action buttons
+  - [ ] Implementation of lazy vs. forced status change requests
 - [x] Port the old 'fail-requested' task status handling code to the new Manager
 - [ ] Ensure "task state machine" can run in a single database transaction.
 - [x] At startup check & fix "stuck" jobs.
