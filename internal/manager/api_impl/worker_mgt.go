@@ -59,6 +59,7 @@ func workerSummary(w persistence.Worker) api.WorkerSummary {
 		Id:       w.UUID,
 		Nickname: w.Name,
 		Status:   w.Status,
+		Version:  w.Software,
 	}
 	if w.StatusRequested != "" {
 		summary.StatusRequested = &w.StatusRequested
