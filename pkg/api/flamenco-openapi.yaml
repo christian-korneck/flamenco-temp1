@@ -1393,7 +1393,7 @@ components:
 
     SocketIOSubscriptionType:
       type: string
-      enum: [allJobs, job, tasklog]
+      enum: [allJobs, allWorkers, job, tasklog]
       description: What kind of thing to subscribe to / unsubscribe from.
 
     # Worker Management
