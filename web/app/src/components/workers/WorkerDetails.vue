@@ -55,7 +55,6 @@ export default {
   watch: {
     workerData(newData) {
       this.workerStatusHTML = workerStatus(newData);
-      console.log("new worker data; status=", this.workerStatusHTML);
     },
   },
   computed: {
