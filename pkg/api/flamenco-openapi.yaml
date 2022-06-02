@@ -1455,7 +1455,7 @@ components:
         "version":
           type: string
           description: Version of Flamenco this Worker is running
-      required: [id, nickname, status, "version"]
+      required: [id, nickname, status, version]
 
     Worker:
       description: All information about a Worker
