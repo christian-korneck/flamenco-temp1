@@ -1,6 +1,7 @@
 <template>
   <div>
     <h2 class="column-title">Workers</h2>
+    <worker-actions-bar />
     <status-filter-bar
       :availableStatuses="availableStatuses"
       :activeStatuses="shownStatuses"
@@ -16,8 +17,10 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { WorkerMgtApi } from '@/manager-api'
 import { indicator, workerStatus } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
+import { useWorkers } from '@/stores/workers';
 
 import StatusFilterBar from '@/components/StatusFilterBar.vue'
+import WorkerActionsBar from '@/components/workers/WorkerActionsBar.vue'
 
 export default {
   name: 'WorkersTable',
@@ -25,9 +28,12 @@ export default {
   emits: ["tableRowClicked"],
   components: {
     StatusFilterBar,
+    WorkerActionsBar,
   },
   data: () => {
     return {
+      workers: useWorkers(),
+
       shownStatuses: [],
       availableStatuses: [], // Will be filled after data is loaded from the backend.
     };
