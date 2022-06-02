@@ -194,6 +194,43 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 }
 
+func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+	worker.Status = api.WorkerStatusAwake
+	worker.StatusChangeRequest(api.WorkerStatusOffline, true)
+
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:             worker.UUID,
+		Nickname:       worker.Name,
+		PreviousStatus: ptr(api.WorkerStatusAwake),
+		Status:         api.WorkerStatusOffline,
+		Updated:        worker.UpdatedAt,
+		Version:        worker.Software,
+	})
+
+	// Expect the Worker to be saved with the status change removed.
+	savedWorker := worker
+	savedWorker.Status = api.WorkerStatusOffline
+	savedWorker.StatusChangeClear()
+	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+
+	// Mimick that no tasks are currently being worked on.
+	mf.persistence.EXPECT().
+		FetchTasksOfWorkerInStatus(gomock.Any(), &worker, api.TaskStatusActive).
+		Return(nil, nil)
+
+	// Perform the request
+	echo := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echo, &worker)
+	err := mf.flamenco.SignOff(echo)
+	assert.NoError(t, err)
+	assertResponseEmpty(t, echo)
+}
+
 func TestWorkerStateChanged(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -226,6 +263,78 @@ func TestWorkerStateChanged(t *testing.T) {
 	err := mf.flamenco.WorkerStateChanged(echo)
 	assert.NoError(t, err)
 	assertResponseEmpty(t, echo)
+}
+
+func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+	worker.Status = api.WorkerStatusOffline
+	worker.StatusChangeRequest(api.WorkerStatusAsleep, false)
+
+	{
+		// Expect a broadcast of the change, even though it's not the state that was requested.
+		// This is to allow some flexibility, for example when a worker has to go
+		// asleep but would do so via `offline → starting → asleep`.
+		mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+			Id:             worker.UUID,
+			Nickname:       worker.Name,
+			PreviousStatus: ptr(api.WorkerStatusOffline),
+			Status:         api.WorkerStatusStarting,
+			Updated:        worker.UpdatedAt,
+			Version:        worker.Software,
+			StatusChange: &api.WorkerStatusChangeRequest{
+				Status: api.WorkerStatusAsleep,
+				IsLazy: false,
+			},
+		})
+
+		// Expect the Worker to be saved with the new status, but with the status
+		// request still in place as it hasn't been met yet.
+		savedWorker := worker
+		savedWorker.Status = api.WorkerStatusStarting
+		mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+
+		// Perform the request
+		echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
+			Status: api.WorkerStatusStarting,
+		})
+		requestWorkerStore(echo, &worker)
+		err := mf.flamenco.WorkerStateChanged(echo)
+		assert.NoError(t, err)
+		assertResponseEmpty(t, echo)
+	}
+
+	// Do another status change, which does meet the requested state.
+	{
+		// Expect a broadcast.
+		mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+			Id:             worker.UUID,
+			Nickname:       worker.Name,
+			PreviousStatus: ptr(api.WorkerStatusStarting),
+			Status:         api.WorkerStatusAsleep,
+			Updated:        worker.UpdatedAt,
+			Version:        worker.Software,
+		})
+
+		// Expect the Worker to be saved with the new status and the status request
+		// erased.
+		savedWorker := worker
+		savedWorker.Status = api.WorkerStatusAsleep
+		savedWorker.StatusChangeClear()
+		mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+
+		// Perform the request
+		echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
+			Status: api.WorkerStatusAsleep,
+		})
+		requestWorkerStore(echo, &worker)
+		err := mf.flamenco.WorkerStateChanged(echo)
+		assert.NoError(t, err)
+		assertResponseEmpty(t, echo)
+	}
 }
 
 func TestTaskUpdate(t *testing.T) {
