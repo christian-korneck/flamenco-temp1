@@ -99,13 +99,12 @@ func TestWorkerSignOn(t *testing.T) {
 	prevStatus := worker.Status
 
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
-		Id:              worker.UUID,
-		Nickname:        "Lazy Boi",
-		PreviousStatus:  &prevStatus,
-		Status:          api.WorkerStatusStarting,
-		StatusRequested: nil,
-		Updated:         worker.UpdatedAt,
-		Version:         "3.0-testing",
+		Id:             worker.UUID,
+		Nickname:       "Lazy Boi",
+		PreviousStatus: &prevStatus,
+		Status:         api.WorkerStatusStarting,
+		Updated:        worker.UpdatedAt,
+		Version:        "3.0-testing",
 	})
 
 	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &worker).Return(nil)
@@ -206,13 +205,12 @@ func TestWorkerStateChanged(t *testing.T) {
 
 	// Expect a broadcast of the change
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
-		Id:              worker.UUID,
-		Nickname:        worker.Name,
-		PreviousStatus:  &prevStatus,
-		Status:          api.WorkerStatusAwake,
-		StatusRequested: nil,
-		Updated:         worker.UpdatedAt,
-		Version:         worker.Software,
+		Id:             worker.UUID,
+		Nickname:       worker.Name,
+		PreviousStatus: &prevStatus,
+		Status:         api.WorkerStatusAwake,
+		Updated:        worker.UpdatedAt,
+		Version:        worker.Software,
 	})
 
 	// Expect the Worker to be saved with the new status

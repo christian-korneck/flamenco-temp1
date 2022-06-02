@@ -84,12 +84,12 @@ func (f *Flamenco) RequestWorkerStatusChange(e echo.Context, workerUUID string) 
 	// Store the status change.
 	logger = logger.With().
 		Str("status", string(dbWorker.Status)).
-		Str("requested", string(change.StatusRequested)).
+		Str("requested", string(change.Status)).
 		Bool("lazy", change.IsLazy).
 		Logger()
 
 	logger.Info().Msg("worker status change requested")
-	dbWorker.StatusRequested = change.StatusRequested
+	dbWorker.StatusRequested = change.Status
 	dbWorker.LazyStatusRequest = change.IsLazy
 	if err := f.persist.SaveWorker(e.Request().Context(), dbWorker); err != nil {
 		logger.Error().Err(err).Msg("error saving worker after status change request")
@@ -111,8 +111,10 @@ func workerSummary(w persistence.Worker) api.WorkerSummary {
 		Version:  w.Software,
 	}
 	if w.StatusRequested != "" {
-		summary.StatusRequested = &w.StatusRequested
-		summary.LazyStatusRequest = &w.LazyStatusRequest
+		summary.StatusChange = &api.WorkerStatusChangeRequest{
+			Status: w.StatusRequested,
+			IsLazy: w.LazyStatusRequest,
+		}
 	}
 	return summary
 }

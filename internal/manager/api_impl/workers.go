@@ -94,9 +94,6 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 	if prevStatus != "" {
 		update.PreviousStatus = &prevStatus
 	}
-	if w.StatusRequested != "" {
-		update.StatusRequested = &w.StatusRequested
-	}
 	f.broadcaster.BroadcastWorkerUpdate(update)
 
 	resp := api.WorkerStateChange{}
