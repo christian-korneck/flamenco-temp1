@@ -162,3 +162,49 @@ func TestRequestWorkerStatusChange(t *testing.T) {
 	assert.NoError(t, err)
 	assertResponseEmpty(t, echo)
 }
+
+func TestRequestWorkerStatusChangeRevert(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	// Mimick that a status change request to 'asleep' was already performed.
+	worker.StatusRequested = api.WorkerStatusAsleep
+	worker.LazyStatusRequest = true
+
+	workerUUID := worker.UUID
+	currentStatus := worker.Status
+
+	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
+
+	// Perform a request to go to the current worker status. This should cancel
+	// the previous status change request.
+	requestStatus := currentStatus
+	savedWorker := worker
+	savedWorker.StatusRequested = ""
+	savedWorker.LazyStatusRequest = false
+	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &savedWorker).Return(nil)
+
+	// Expect a broadcast of the change
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:           worker.UUID,
+		Nickname:     worker.Name,
+		Status:       currentStatus,
+		Updated:      worker.UpdatedAt,
+		Version:      worker.Software,
+		StatusChange: nil,
+	})
+
+	echo := mf.prepareMockedJSONRequest(api.WorkerStatusChangeRequest{
+		Status: requestStatus,
+
+		// This shouldn't matter; requesting the current status should simply erase
+		// the previous status change request.
+		IsLazy: true,
+	})
+	err := mf.flamenco.RequestWorkerStatusChange(echo, workerUUID)
+	assert.NoError(t, err)
+	assertResponseEmpty(t, echo)
+}

@@ -81,16 +81,24 @@ func (f *Flamenco) RequestWorkerStatusChange(e echo.Context, workerUUID string) 
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching worker: %v", err)
 	}
 
-	// Store the status change.
 	logger = logger.With().
 		Str("status", string(dbWorker.Status)).
 		Str("requested", string(change.Status)).
 		Bool("lazy", change.IsLazy).
 		Logger()
-
 	logger.Info().Msg("worker status change requested")
-	dbWorker.StatusRequested = change.Status
-	dbWorker.LazyStatusRequest = change.IsLazy
+
+	if dbWorker.Status == change.Status {
+		// Requesting that the worker should go to its current status basically
+		// means cancelling any previous status change request.
+		dbWorker.StatusRequested = ""
+		dbWorker.LazyStatusRequest = false
+	} else {
+		dbWorker.StatusRequested = change.Status
+		dbWorker.LazyStatusRequest = change.IsLazy
+	}
+
+	// Store the status change.
 	if err := f.persist.SaveWorker(e.Request().Context(), dbWorker); err != nil {
 		logger.Error().Err(err).Msg("error saving worker after status change request")
 		return sendAPIError(e, http.StatusInternalServerError, "error saving worker: %v", err)
