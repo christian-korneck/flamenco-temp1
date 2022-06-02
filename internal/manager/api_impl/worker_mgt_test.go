@@ -25,7 +25,7 @@ func TestFetchWorkers(t *testing.T) {
 	worker2.ID = 4
 	worker2.UUID = "f07b6d53-16ec-40a8-a7b4-a9cc8547f790"
 	worker2.Status = api.WorkerStatusAwake
-	worker2.StatusRequested = api.WorkerStatusAsleep
+	worker2.StatusChangeRequest(api.WorkerStatusAsleep, false)
 
 	mf.persistence.EXPECT().FetchWorkers(gomock.Any()).
 		Return([]*persistence.Worker{&worker1, &worker2}, nil)
@@ -104,7 +104,7 @@ func TestFetchWorker(t *testing.T) {
 
 	// Test with worker that does have a status change requested.
 	requestedStatus := api.WorkerStatusAsleep
-	worker.StatusRequested = requestedStatus
+	worker.StatusChangeRequest(requestedStatus, false)
 	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
 
 	echo = mf.prepareMockedRequest(nil)
@@ -137,8 +137,7 @@ func TestRequestWorkerStatusChange(t *testing.T) {
 
 	requestStatus := api.WorkerStatusAsleep
 	savedWorker := worker
-	savedWorker.StatusRequested = requestStatus
-	savedWorker.LazyStatusRequest = true
+	savedWorker.StatusChangeRequest(requestStatus, true)
 	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &savedWorker).Return(nil)
 
 	// Expect a broadcast of the change
@@ -171,8 +170,7 @@ func TestRequestWorkerStatusChangeRevert(t *testing.T) {
 	worker := testWorker()
 
 	// Mimick that a status change request to 'asleep' was already performed.
-	worker.StatusRequested = api.WorkerStatusAsleep
-	worker.LazyStatusRequest = true
+	worker.StatusChangeRequest(api.WorkerStatusAsleep, true)
 
 	workerUUID := worker.UUID
 	currentStatus := worker.Status
@@ -183,8 +181,7 @@ func TestRequestWorkerStatusChangeRevert(t *testing.T) {
 	// the previous status change request.
 	requestStatus := currentStatus
 	savedWorker := worker
-	savedWorker.StatusRequested = ""
-	savedWorker.LazyStatusRequest = false
+	savedWorker.StatusChangeClear()
 	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &savedWorker).Return(nil)
 
 	// Expect a broadcast of the change

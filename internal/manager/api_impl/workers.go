@@ -150,7 +150,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	prevStatus := w.Status
 	w.Status = api.WorkerStatusOffline
 	if w.StatusRequested == api.WorkerStatusOffline {
-		w.StatusRequested = ""
+		w.StatusChangeClear()
 	}
 
 	// Pass a generic background context, as these changes should be stored even
@@ -258,7 +258,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		logger.Info().Msg("worker changed status")
 		// Either there was no status change request (and this is a no-op) or the
 		// status change was actually acknowledging the request.
-		w.StatusRequested = ""
+		w.StatusChangeClear()
 	}
 
 	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)

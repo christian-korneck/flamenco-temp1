@@ -91,11 +91,9 @@ func (f *Flamenco) RequestWorkerStatusChange(e echo.Context, workerUUID string) 
 	if dbWorker.Status == change.Status {
 		// Requesting that the worker should go to its current status basically
 		// means cancelling any previous status change request.
-		dbWorker.StatusRequested = ""
-		dbWorker.LazyStatusRequest = false
+		dbWorker.StatusChangeClear()
 	} else {
-		dbWorker.StatusRequested = change.Status
-		dbWorker.LazyStatusRequest = change.IsLazy
+		dbWorker.StatusChangeRequest(change.Status, change.IsLazy)
 	}
 
 	// Store the status change.

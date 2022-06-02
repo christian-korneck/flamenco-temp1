@@ -75,7 +75,7 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 
 	mf := newMockedFlamenco(mockCtrl)
 	worker := testWorker()
-	worker.StatusRequested = api.WorkerStatusAsleep
+	worker.StatusChangeRequest(api.WorkerStatusAsleep, false)
 
 	// Explicitly NO expected calls to the persistence layer. Since the worker is
 	// not in a state that allows task execution, there should be no DB queries.
@@ -355,7 +355,7 @@ func TestMayWorkerRun(t *testing.T) {
 
 	// Test: unhappy, assigned and runnable but worker should go to bed.
 	{
-		worker.StatusRequested = api.WorkerStatusAsleep
+		worker.StatusChangeRequest(api.WorkerStatusAsleep, false)
 		echo := prepareRequest()
 		task.WorkerID = &worker.ID
 		task.Status = api.TaskStatusActive
