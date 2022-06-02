@@ -146,6 +146,10 @@ a:hover {
   text-decoration: underline;
 }
 
+a.router-link-active {
+  color: var(--color-accent-text);
+}
+
 header {
   align-items: center;
   color: var(--color-text-muted);
