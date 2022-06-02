@@ -54,7 +54,10 @@ export default {
   },
   watch: {
     workerData(newData) {
-      this.workerStatusHTML = workerStatus(newData);
+      if (newData)
+        this.workerStatusHTML = workerStatus(newData);
+      else
+        this.workerStatusHTML = "";
     },
   },
   computed: {
