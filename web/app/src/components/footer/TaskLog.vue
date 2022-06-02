@@ -34,10 +34,7 @@ onMounted(() => {
   tabulator.on("tableBuilt", _subscribeToPinia);
   console.log("Task log list: mounted on task ID", tasks.activeTaskID);
 
-  if (tasks.activeTaskID)
-    _fetchLogTail(tasks.activeTaskID);
-  else
-    taskLog.clear();
+  _fetchLogTail(tasks.activeTaskID);
 });
 onUnmounted(() => {
   taskLog.clear();
@@ -61,6 +58,8 @@ function _subscribeToPinia() {
 
 function _fetchLogTail(taskID) {
   taskLog.clear();
+
+  if (!taskID) return;
 
   const jobsAPI = new API.JobsApi(apiClient);
   return jobsAPI.fetchTaskLogTail(taskID)
