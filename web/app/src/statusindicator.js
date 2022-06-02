@@ -31,9 +31,9 @@ export function workerStatus(worker) {
 
   let arrow;
   if (worker.lazy_status_request) {
-    arrow = `<span class='state-transition-arrow lazy' title='lazy status transition'>➜</span>`
+    arrow = `<span class='state-transition-arrow lazy' title='lazy status transition'>➠</span>`
   } else {
-    arrow = `<span class='state-transition-arrow forced' title='forced status transition'>➠</span>`
+    arrow = `<span class='state-transition-arrow forced' title='forced status transition'>➜</span>`
   }
 
   return `${worker.status} ${arrow} ${worker.status_requested}`;
