@@ -143,7 +143,6 @@ func TestRequestWorkerStatusChange(t *testing.T) {
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:                worker.UUID,
 		Nickname:          worker.Name,
-		PreviousStatus:    &prevStatus,
 		Status:            prevStatus,
 		StatusRequested:   &requestStatus,
 		LazyStatusRequest: ptr(true),
