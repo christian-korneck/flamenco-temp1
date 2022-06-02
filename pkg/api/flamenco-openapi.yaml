@@ -1392,12 +1392,8 @@ components:
           description: Timestamp of last update
         "status": { $ref: "#/components/schemas/WorkerStatus" }
         "previous_status": { $ref: "#/components/schemas/WorkerStatus" }
-        "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
-        "lazy_status_request":
-          type: boolean
-          description: >
-            Whether the worker is allowed to finish its current task before the
-            status change is enforced. Mandatory when `status_requested` is set.
+        "status_change":
+          $ref: "#/components/schemas/WorkerStatusChangeRequest"
         "version": { type: string }
       required: [id, nickname, updated, status, version]
 
@@ -1445,8 +1441,8 @@ components:
         "id": { type: string, format: uuid }
         "nickname": { type: string }
         "status": { $ref: "#/components/schemas/WorkerStatus" }
-        "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
-        "lazy_status_request": { type: boolean }
+        "status_change":
+          $ref: "#/components/schemas/WorkerStatusChangeRequest"
         # These will be implemented soon:
         # "task_id":
         #   type: string
@@ -1486,15 +1482,15 @@ components:
 
     WorkerStatusChangeRequest:
       type: object
-      description: Request for a Worker to change its status.
+      description: Request for a Worker to change its status to `status`.
       properties:
-        "status_requested": { $ref: "#/components/schemas/WorkerStatus" }
+        "status": { $ref: "#/components/schemas/WorkerStatus" }
         "is_lazy":
           type: boolean
           description: >
             Whether the status change should happen immediately, or after the
             worker's current task is finished.
-      required: [status_requested, is_lazy]
+      required: [status, is_lazy]
 
   securitySchemes:
     worker_auth:
