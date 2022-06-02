@@ -149,7 +149,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	w := requestWorkerOrPanic(e)
 	prevStatus := w.Status
 	w.Status = api.WorkerStatusOffline
-	if w.StatusRequested == api.WorkerStatusShutdown {
+	if w.StatusRequested == api.WorkerStatusOffline {
 		w.StatusRequested = ""
 	}
 

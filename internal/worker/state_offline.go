@@ -11,11 +11,11 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 )
 
-func (w *Worker) gotoStateShutdown(context.Context) {
+func (w *Worker) gotoStateOffline(context.Context) {
 	w.stateMutex.Lock()
 	defer w.stateMutex.Unlock()
 
-	w.state = api.WorkerStatusShutdown
+	w.state = api.WorkerStatusOffline
 
 	logger := log.With().Int("pid", os.Getpid()).Logger()
 	proc, err := os.FindProcess(os.Getpid())
@@ -26,7 +26,7 @@ func (w *Worker) gotoStateShutdown(context.Context) {
 	logger.Warn().Msg("sending our own process an interrupt signal")
 	err = proc.Signal(os.Interrupt)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("unable to find send interrupt signal to our own process")
+		logger.Fatal().Err(err).Msg("unable to send interrupt signal to our own process")
 	}
 }
 
@@ -34,7 +34,7 @@ func (w *Worker) gotoStateShutdown(context.Context) {
 // Does NOT actually peform a shutdown; is intended to be called while shutdown is in progress.
 func (w *Worker) SignOff(ctx context.Context) {
 	w.stateMutex.Lock()
-	w.state = api.WorkerStatusShutdown
+	w.state = api.WorkerStatusOffline
 	logger := log.With().Str("state", string(w.state)).Logger()
 	w.stateMutex.Unlock()
 

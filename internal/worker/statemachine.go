@@ -14,7 +14,7 @@ import (
 func (w *Worker) setupStateMachine() {
 	w.stateStarters[api.WorkerStatusAsleep] = w.gotoStateAsleep
 	w.stateStarters[api.WorkerStatusAwake] = w.gotoStateAwake
-	w.stateStarters[api.WorkerStatusShutdown] = w.gotoStateShutdown
+	w.stateStarters[api.WorkerStatusOffline] = w.gotoStateOffline
 }
 
 // Called whenever the Flamenco Manager has a change in current status for us.
