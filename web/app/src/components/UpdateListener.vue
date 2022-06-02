@@ -193,7 +193,8 @@ export default {
      * @param {string} jobID
      */
     _updateJobSubscription(operation, jobID) {
-      const payload = new API.SocketIOSubscription(operation, "job", jobID);
+      const payload = new API.SocketIOSubscription(operation, "job");
+      payload.uuid = jobID;
       console.log(`sending job ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
     },
@@ -204,7 +205,8 @@ export default {
      * @param {string} jobID
      */
     _updateTaskLogSubscription(operation, taskID) {
-      const payload = new API.SocketIOSubscription(operation, "tasklog", taskID);
+      const payload = new API.SocketIOSubscription(operation, "tasklog");
+      payload.uuid = taskID;
       console.log(`sending tasklog ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
     },
