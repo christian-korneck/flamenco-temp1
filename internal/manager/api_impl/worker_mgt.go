@@ -51,7 +51,7 @@ func (f *Flamenco) FetchWorker(e echo.Context, workerUUID string) error {
 	}
 
 	logger.Debug().Msg("fetched worker")
-	apiWorker := workerDBtoAPI(dbWorker)
+	apiWorker := workerDBtoAPI(*dbWorker)
 	return e.JSON(http.StatusOK, apiWorker)
 }
 
@@ -117,22 +117,12 @@ func workerSummary(w persistence.Worker) api.WorkerSummary {
 	return summary
 }
 
-func workerDBtoAPI(dbWorker *persistence.Worker) api.Worker {
+func workerDBtoAPI(w persistence.Worker) api.Worker {
 	apiWorker := api.Worker{
-		WorkerSummary: api.WorkerSummary{
-			Id:       dbWorker.UUID,
-			Nickname: dbWorker.Name,
-			Status:   dbWorker.Status,
-			Version:  dbWorker.Software,
-		},
-		IpAddress:          dbWorker.Address,
-		Platform:           dbWorker.Platform,
-		SupportedTaskTypes: dbWorker.TaskTypes(),
-	}
-
-	if dbWorker.StatusRequested != "" {
-		apiWorker.StatusRequested = &dbWorker.StatusRequested
-		apiWorker.LazyStatusRequest = &dbWorker.LazyStatusRequest
+		WorkerSummary:      workerSummary(w),
+		IpAddress:          w.Address,
+		Platform:           w.Platform,
+		SupportedTaskTypes: w.TaskTypes(),
 	}
 
 	return apiWorker
