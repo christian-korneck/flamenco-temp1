@@ -777,7 +777,7 @@ components:
 
     WorkerStatus:
       type: string
-      enum: [starting, awake, asleep, error, shutdown, testing, offline]
+      enum: [starting, awake, asleep, error, testing, offline]
 
     WorkerSignOn:
       type: object
