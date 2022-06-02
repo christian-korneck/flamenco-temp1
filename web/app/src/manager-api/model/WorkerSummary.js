@@ -13,6 +13,7 @@
 
 import ApiClient from '../ApiClient';
 import WorkerStatus from './WorkerStatus';
+import WorkerStatusChangeRequest from './WorkerStatusChangeRequest';
 
 /**
  * The WorkerSummary model module.
@@ -66,11 +67,8 @@ class WorkerSummary {
             if (data.hasOwnProperty('status')) {
                 obj['status'] = WorkerStatus.constructFromObject(data['status']);
             }
-            if (data.hasOwnProperty('status_requested')) {
-                obj['status_requested'] = WorkerStatus.constructFromObject(data['status_requested']);
-            }
-            if (data.hasOwnProperty('lazy_status_request')) {
-                obj['lazy_status_request'] = ApiClient.convertToType(data['lazy_status_request'], 'Boolean');
+            if (data.hasOwnProperty('status_change')) {
+                obj['status_change'] = WorkerStatusChangeRequest.constructFromObject(data['status_change']);
             }
             if (data.hasOwnProperty('version')) {
                 obj['version'] = ApiClient.convertToType(data['version'], 'String');
@@ -98,14 +96,9 @@ WorkerSummary.prototype['nickname'] = undefined;
 WorkerSummary.prototype['status'] = undefined;
 
 /**
- * @member {module:model/WorkerStatus} status_requested
+ * @member {module:model/WorkerStatusChangeRequest} status_change
  */
-WorkerSummary.prototype['status_requested'] = undefined;
-
-/**
- * @member {Boolean} lazy_status_request
- */
-WorkerSummary.prototype['lazy_status_request'] = undefined;
+WorkerSummary.prototype['status_change'] = undefined;
 
 /**
  * Version of Flamenco this Worker is running

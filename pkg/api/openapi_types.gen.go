@@ -456,14 +456,13 @@ type SocketIOWorkerUpdate struct {
 	// UUID of the Worker
 	Id string `json:"id"`
 
-	// Whether the worker is allowed to finish its current task before the status change is enforced. Mandatory when `status_requested` is set.
-	LazyStatusRequest *bool `json:"lazy_status_request,omitempty"`
-
 	// Name of the worker
-	Nickname        string        `json:"nickname"`
-	PreviousStatus  *WorkerStatus `json:"previous_status,omitempty"`
-	Status          WorkerStatus  `json:"status"`
-	StatusRequested *WorkerStatus `json:"status_requested,omitempty"`
+	Nickname       string        `json:"nickname"`
+	PreviousStatus *WorkerStatus `json:"previous_status,omitempty"`
+	Status         WorkerStatus  `json:"status"`
+
+	// Request for a Worker to change its status to `status`.
+	StatusChange *WorkerStatusChangeRequest `json:"status_change,omitempty"`
 
 	// Timestamp of last update
 	Updated time.Time `json:"updated"`
@@ -582,20 +581,21 @@ type WorkerStateChanged struct {
 // WorkerStatus defines model for WorkerStatus.
 type WorkerStatus string
 
-// Request for a Worker to change its status.
+// Request for a Worker to change its status to `status`.
 type WorkerStatusChangeRequest struct {
 	// Whether the status change should happen immediately, or after the worker's current task is finished.
-	IsLazy          bool         `json:"is_lazy"`
-	StatusRequested WorkerStatus `json:"status_requested"`
+	IsLazy bool         `json:"is_lazy"`
+	Status WorkerStatus `json:"status"`
 }
 
 // Basic information about a Worker.
 type WorkerSummary struct {
-	Id                string        `json:"id"`
-	LazyStatusRequest *bool         `json:"lazy_status_request,omitempty"`
-	Nickname          string        `json:"nickname"`
-	Status            WorkerStatus  `json:"status"`
-	StatusRequested   *WorkerStatus `json:"status_requested,omitempty"`
+	Id       string       `json:"id"`
+	Nickname string       `json:"nickname"`
+	Status   WorkerStatus `json:"status"`
+
+	// Request for a Worker to change its status to `status`.
+	StatusChange *WorkerStatusChangeRequest `json:"status_change,omitempty"`
 
 	// Version of Flamenco this Worker is running
 	Version string `json:"version"`

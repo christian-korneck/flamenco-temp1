@@ -163,7 +163,7 @@ with flamenco.manager.ApiClient() as api_client:
     api_instance = worker_mgt_api.WorkerMgtApi(api_client)
     worker_id = "worker_id_example" # str | 
     worker_status_change_request = WorkerStatusChangeRequest(
-        status_requested=WorkerStatus("starting"),
+        status=WorkerStatus("starting"),
         is_lazy=True,
     ) # WorkerStatusChangeRequest | The status change to request.
 

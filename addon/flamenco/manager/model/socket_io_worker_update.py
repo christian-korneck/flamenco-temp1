@@ -31,7 +31,9 @@ from flamenco.manager.exceptions import ApiAttributeError
 
 def lazy_import():
     from flamenco.manager.model.worker_status import WorkerStatus
+    from flamenco.manager.model.worker_status_change_request import WorkerStatusChangeRequest
     globals()['WorkerStatus'] = WorkerStatus
+    globals()['WorkerStatusChangeRequest'] = WorkerStatusChangeRequest
 
 
 class SocketIOWorkerUpdate(ModelNormal):
@@ -93,8 +95,7 @@ class SocketIOWorkerUpdate(ModelNormal):
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
             'previous_status': (WorkerStatus,),  # noqa: E501
-            'status_requested': (WorkerStatus,),  # noqa: E501
-            'lazy_status_request': (bool,),  # noqa: E501
+            'status_change': (WorkerStatusChangeRequest,),  # noqa: E501
         }
 
     @cached_property
@@ -109,8 +110,7 @@ class SocketIOWorkerUpdate(ModelNormal):
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
         'previous_status': 'previous_status',  # noqa: E501
-        'status_requested': 'status_requested',  # noqa: E501
-        'lazy_status_request': 'lazy_status_request',  # noqa: E501
+        'status_change': 'status_change',  # noqa: E501
     }
 
     read_only_vars = {
@@ -162,8 +162,7 @@ class SocketIOWorkerUpdate(ModelNormal):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             previous_status (WorkerStatus): [optional]  # noqa: E501
-            status_requested (WorkerStatus): [optional]  # noqa: E501
-            lazy_status_request (bool): Whether the worker is allowed to finish its current task before the status change is enforced. Mandatory when `status_requested` is set. . [optional]  # noqa: E501
+            status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -258,8 +257,7 @@ class SocketIOWorkerUpdate(ModelNormal):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             previous_status (WorkerStatus): [optional]  # noqa: E501
-            status_requested (WorkerStatus): [optional]  # noqa: E501
-            lazy_status_request (bool): Whether the worker is allowed to finish its current task before the status change is enforced. Mandatory when `status_requested` is set. . [optional]  # noqa: E501
+            status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

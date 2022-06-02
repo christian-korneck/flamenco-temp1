@@ -22,14 +22,14 @@ import WorkerStatus from './WorkerStatus';
 class WorkerStatusChangeRequest {
     /**
      * Constructs a new <code>WorkerStatusChangeRequest</code>.
-     * Request for a Worker to change its status.
+     * Request for a Worker to change its status to &#x60;status&#x60;.
      * @alias module:model/WorkerStatusChangeRequest
-     * @param statusRequested {module:model/WorkerStatus} 
+     * @param status {module:model/WorkerStatus} 
      * @param isLazy {Boolean} Whether the status change should happen immediately, or after the worker's current task is finished. 
      */
-    constructor(statusRequested, isLazy) { 
+    constructor(status, isLazy) { 
         
-        WorkerStatusChangeRequest.initialize(this, statusRequested, isLazy);
+        WorkerStatusChangeRequest.initialize(this, status, isLazy);
     }
 
     /**
@@ -37,8 +37,8 @@ class WorkerStatusChangeRequest {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, statusRequested, isLazy) { 
-        obj['status_requested'] = statusRequested;
+    static initialize(obj, status, isLazy) { 
+        obj['status'] = status;
         obj['is_lazy'] = isLazy;
     }
 
@@ -53,8 +53,8 @@ class WorkerStatusChangeRequest {
         if (data) {
             obj = obj || new WorkerStatusChangeRequest();
 
-            if (data.hasOwnProperty('status_requested')) {
-                obj['status_requested'] = WorkerStatus.constructFromObject(data['status_requested']);
+            if (data.hasOwnProperty('status')) {
+                obj['status'] = WorkerStatus.constructFromObject(data['status']);
             }
             if (data.hasOwnProperty('is_lazy')) {
                 obj['is_lazy'] = ApiClient.convertToType(data['is_lazy'], 'Boolean');
@@ -67,9 +67,9 @@ class WorkerStatusChangeRequest {
 }
 
 /**
- * @member {module:model/WorkerStatus} status_requested
+ * @member {module:model/WorkerStatus} status
  */
-WorkerStatusChangeRequest.prototype['status_requested'] = undefined;
+WorkerStatusChangeRequest.prototype['status'] = undefined;
 
 /**
  * Whether the status change should happen immediately, or after the worker's current task is finished. 

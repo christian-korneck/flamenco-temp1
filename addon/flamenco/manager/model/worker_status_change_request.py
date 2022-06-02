@@ -87,7 +87,7 @@ class WorkerStatusChangeRequest(ModelNormal):
         """
         lazy_import()
         return {
-            'status_requested': (WorkerStatus,),  # noqa: E501
+            'status': (WorkerStatus,),  # noqa: E501
             'is_lazy': (bool,),  # noqa: E501
         }
 
@@ -97,7 +97,7 @@ class WorkerStatusChangeRequest(ModelNormal):
 
 
     attribute_map = {
-        'status_requested': 'status_requested',  # noqa: E501
+        'status': 'status',  # noqa: E501
         'is_lazy': 'is_lazy',  # noqa: E501
     }
 
@@ -108,11 +108,11 @@ class WorkerStatusChangeRequest(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, status_requested, is_lazy, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, status, is_lazy, *args, **kwargs):  # noqa: E501
         """WorkerStatusChangeRequest - a model defined in OpenAPI
 
         Args:
-            status_requested (WorkerStatus):
+            status (WorkerStatus):
             is_lazy (bool): Whether the status change should happen immediately, or after the worker's current task is finished. 
 
         Keyword Args:
@@ -173,7 +173,7 @@ class WorkerStatusChangeRequest(ModelNormal):
         self._configuration = _configuration
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
-        self.status_requested = status_requested
+        self.status = status
         self.is_lazy = is_lazy
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
@@ -195,11 +195,11 @@ class WorkerStatusChangeRequest(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, status_requested, is_lazy, *args, **kwargs):  # noqa: E501
+    def __init__(self, status, is_lazy, *args, **kwargs):  # noqa: E501
         """WorkerStatusChangeRequest - a model defined in OpenAPI
 
         Args:
-            status_requested (WorkerStatus):
+            status (WorkerStatus):
             is_lazy (bool): Whether the status change should happen immediately, or after the worker's current task is finished. 
 
         Keyword Args:
@@ -258,7 +258,7 @@ class WorkerStatusChangeRequest(ModelNormal):
         self._configuration = _configuration
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
-        self.status_requested = status_requested
+        self.status = status
         self.is_lazy = is_lazy
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \

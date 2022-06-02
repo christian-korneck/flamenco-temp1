@@ -13,6 +13,7 @@
 
 import ApiClient from '../ApiClient';
 import WorkerStatus from './WorkerStatus';
+import WorkerStatusChangeRequest from './WorkerStatusChangeRequest';
 
 /**
  * The SocketIOWorkerUpdate model module.
@@ -74,11 +75,8 @@ class SocketIOWorkerUpdate {
             if (data.hasOwnProperty('previous_status')) {
                 obj['previous_status'] = WorkerStatus.constructFromObject(data['previous_status']);
             }
-            if (data.hasOwnProperty('status_requested')) {
-                obj['status_requested'] = WorkerStatus.constructFromObject(data['status_requested']);
-            }
-            if (data.hasOwnProperty('lazy_status_request')) {
-                obj['lazy_status_request'] = ApiClient.convertToType(data['lazy_status_request'], 'Boolean');
+            if (data.hasOwnProperty('status_change')) {
+                obj['status_change'] = WorkerStatusChangeRequest.constructFromObject(data['status_change']);
             }
             if (data.hasOwnProperty('version')) {
                 obj['version'] = ApiClient.convertToType(data['version'], 'String');
@@ -119,15 +117,9 @@ SocketIOWorkerUpdate.prototype['status'] = undefined;
 SocketIOWorkerUpdate.prototype['previous_status'] = undefined;
 
 /**
- * @member {module:model/WorkerStatus} status_requested
+ * @member {module:model/WorkerStatusChangeRequest} status_change
  */
-SocketIOWorkerUpdate.prototype['status_requested'] = undefined;
-
-/**
- * Whether the worker is allowed to finish its current task before the status change is enforced. Mandatory when `status_requested` is set. 
- * @member {Boolean} lazy_status_request
- */
-SocketIOWorkerUpdate.prototype['lazy_status_request'] = undefined;
+SocketIOWorkerUpdate.prototype['status_change'] = undefined;
 
 /**
  * @member {String} version

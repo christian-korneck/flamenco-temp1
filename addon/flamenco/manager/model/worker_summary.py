@@ -31,7 +31,9 @@ from flamenco.manager.exceptions import ApiAttributeError
 
 def lazy_import():
     from flamenco.manager.model.worker_status import WorkerStatus
+    from flamenco.manager.model.worker_status_change_request import WorkerStatusChangeRequest
     globals()['WorkerStatus'] = WorkerStatus
+    globals()['WorkerStatusChangeRequest'] = WorkerStatusChangeRequest
 
 
 class WorkerSummary(ModelNormal):
@@ -91,8 +93,7 @@ class WorkerSummary(ModelNormal):
             'nickname': (str,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
-            'status_requested': (WorkerStatus,),  # noqa: E501
-            'lazy_status_request': (bool,),  # noqa: E501
+            'status_change': (WorkerStatusChangeRequest,),  # noqa: E501
         }
 
     @cached_property
@@ -105,8 +106,7 @@ class WorkerSummary(ModelNormal):
         'nickname': 'nickname',  # noqa: E501
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
-        'status_requested': 'status_requested',  # noqa: E501
-        'lazy_status_request': 'lazy_status_request',  # noqa: E501
+        'status_change': 'status_change',  # noqa: E501
     }
 
     read_only_vars = {
@@ -156,8 +156,7 @@ class WorkerSummary(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
-            status_requested (WorkerStatus): [optional]  # noqa: E501
-            lazy_status_request (bool): [optional]  # noqa: E501
+            status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -249,8 +248,7 @@ class WorkerSummary(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
-            status_requested (WorkerStatus): [optional]  # noqa: E501
-            lazy_status_request (bool): [optional]  # noqa: E501
+            status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
