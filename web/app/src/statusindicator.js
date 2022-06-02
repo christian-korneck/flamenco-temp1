@@ -25,16 +25,16 @@ export function indicator(status, classNamePrefix) {
  * @returns the HTML for the worker status.
  */
 export function workerStatus(worker) {
-  if (!worker.status_requested) {
+  if (!worker.status_change) {
     return `${worker.status}`;
   }
 
   let arrow;
-  if (worker.lazy_status_request) {
+  if (worker.status_change.is_lazy) {
     arrow = `<span class='state-transition-arrow lazy' title='lazy status transition'>➠</span>`
   } else {
     arrow = `<span class='state-transition-arrow forced' title='forced status transition'>➜</span>`
   }
 
-  return `${worker.status} ${arrow} ${worker.status_requested}`;
+  return `${worker.status} ${arrow} ${worker.status_change.status}`;
 }

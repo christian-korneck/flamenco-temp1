@@ -114,14 +114,14 @@ export default {
 
       let promise;
       if (existingRow) {
-        // Tabbulator doesn't update ommitted fields, but if `status_requested`
+        // Tabbulator doesn't update ommitted fields, but if `status_change`
         // is ommitted it means "no status change requested"; this should still
-        // force an update.
-        if (!workerUpdate.status_requested) {
-          workerUpdate.status_requested = undefined;
+        // force an update of the `status_change` field.
+        if (!workerUpdate.status_change) {
+          workerUpdate.status_change = null;
         }
         promise = this.tabulator.updateData([workerUpdate]);
-        // Tabulator doesn't know we're using 'status_requested' in the 'status'
+        // Tabulator doesn't know we're using 'status_change' in the 'status'
         // column, so it also won't know to redraw when that field changes.
         promise.then(() => existingRow.reinitialize(true));
       } else {
