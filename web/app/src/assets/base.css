@@ -5,9 +5,9 @@
 
   --color-background: #111;
   --color-background-column: #202020;
-  --color-accent: hsl(226, 100%, 73%);
-  --color-accent-text: hsl(226 100% 84%);
-  --color-accent-background: hsl(226 18% 28%);
+  --color-accent: hsl(254, 100%, 73%);
+  --color-accent-text: hsl(254 100% 84%);
+  --color-accent-background: hsl(254 18% 28%);
   --color-text: #ddd;
   --color-text-highlight: #fff;
   --color-text-muted: #999;
@@ -25,8 +25,8 @@
 
   --table-color-background-row: #303030;
   --table-color-background-row-odd: #2b2b2b;
-  --table-color-background-row-selected: hsl(226, 44%, 36%);
-  --table-color-background-row-active: hsl(226, 54%, 43%);
+  --table-color-background-row-selected: hsl(254, 44%, 36%);
+  --table-color-background-row-active: hsl(254, 54%, 43%);
 
   --table-color-border: var(--color-border);
 
