@@ -127,8 +127,6 @@ const (
 
 	WorkerStatusOffline WorkerStatus = "offline"
 
-	WorkerStatusShutdown WorkerStatus = "shutdown"
-
 	WorkerStatusStarting WorkerStatus = "starting"
 
 	WorkerStatusTesting WorkerStatus = "testing"

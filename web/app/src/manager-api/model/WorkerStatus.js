@@ -48,13 +48,6 @@ export default class WorkerStatus {
 
     
         /**
-         * value: "shutdown"
-         * @const
-         */
-        "shutdown" = "shutdown";
-
-    
-        /**
          * value: "testing"
          * @const
          */
