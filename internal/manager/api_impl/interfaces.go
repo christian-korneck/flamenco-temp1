@@ -31,6 +31,8 @@ type PersistenceService interface {
 	SaveTask(ctx context.Context, task *persistence.Task) error
 	SaveTaskActivity(ctx context.Context, t *persistence.Task) error
 	FetchTasksOfWorkerInStatus(context.Context, *persistence.Worker, api.TaskStatus) ([]*persistence.Task, error)
+	// TaskTouchedByWorker marks the task as 'touched' by a worker. This is used for timeout detection.
+	TaskTouchedByWorker(context.Context, *persistence.Task) error
 
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)

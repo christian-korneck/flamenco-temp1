@@ -51,6 +51,7 @@ func TestOneJobOneTask(t *testing.T) {
 	assert.Equal(t, w.ID, *task.WorkerID, "task must be assigned to the requesting worker")
 
 	// Check the task in the database.
+	now := db.gormDB.NowFunc()
 	dbTask, err := db.FetchTask(context.Background(), authTask.UUID)
 	assert.NoError(t, err)
 	if dbTask == nil {
@@ -60,6 +61,7 @@ func TestOneJobOneTask(t *testing.T) {
 		t.Fatal("no worker assigned to task")
 	}
 	assert.Equal(t, w.ID, *dbTask.WorkerID, "task must be assigned to the requesting worker")
+	assert.WithinDuration(t, now, dbTask.LastTouchedAt, time.Second, "task must be 'touched' by the worker after scheduling")
 }
 
 func TestOneJobThreeTasksByPrio(t *testing.T) {

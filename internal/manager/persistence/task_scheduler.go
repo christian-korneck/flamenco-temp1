@@ -141,7 +141,6 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 }
 
 func assignTaskToWorker(tx *gorm.DB, w *Worker, t *Task) error {
-	// Without the Select() call, Gorm will try and also store task.Job in the
-	// jobs database, which is not what we want.
-	return tx.Model(t).Select("worker_id").Updates(Task{WorkerID: &w.ID}).Error
+	return tx.Model(t).
+		Updates(Task{WorkerID: &w.ID, LastTouchedAt: tx.NowFunc()}).Error
 }

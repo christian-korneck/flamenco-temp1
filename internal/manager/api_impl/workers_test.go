@@ -389,6 +389,14 @@ func TestTaskUpdate(t *testing.T) {
 		Log:    "line1\nline2\n",
 	})
 
+	// Expect a 'touch' of the task.
+	var touchedTask persistence.Task
+	mf.persistence.EXPECT().TaskTouchedByWorker(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(ctx context.Context, task *persistence.Task) error {
+			touchedTask = *task
+			return nil
+		})
+
 	// Do the call.
 	echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
 	requestWorkerStore(echoCtx, &worker)
@@ -398,6 +406,7 @@ func TestTaskUpdate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, mockTask.UUID, statusChangedtask.UUID)
 	assert.Equal(t, mockTask.UUID, actUpdatedTask.UUID)
+	assert.Equal(t, mockTask.UUID, touchedTask.UUID)
 	assert.Equal(t, "testing", statusChangedtask.Activity)
 	assert.Equal(t, "testing", actUpdatedTask.Activity)
 }
@@ -440,6 +449,9 @@ func TestMayWorkerRun(t *testing.T) {
 
 	// Test: happy, task assigned to this worker.
 	{
+		// Expect a 'touch' of the task.
+		mf.persistence.EXPECT().TaskTouchedByWorker(gomock.Any(), &task).Return(nil)
+
 		echo := prepareRequest()
 		task.WorkerID = &worker.ID
 		err := mf.flamenco.MayWorkerRun(echo, task.UUID)

@@ -213,6 +213,25 @@ func TestFetchTasksOfWorkerInStatus(t *testing.T) {
 	assert.Empty(t, tasks, "worker should have no task in status %q", w)
 }
 
+func TestTaskTouchedByWorker(t *testing.T) {
+	ctx, close, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer close()
+
+	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
+	assert.NoError(t, err)
+	assert.True(t, task.LastTouchedAt.IsZero())
+
+	now := db.gormDB.NowFunc()
+	err = db.TaskTouchedByWorker(ctx, task)
+	assert.NoError(t, err)
+
+	// Test the task instance as well as the database entry.
+	dbTask, err := db.FetchTask(ctx, task.UUID)
+	assert.NoError(t, err)
+	assert.WithinDuration(t, now, task.LastTouchedAt, time.Second)
+	assert.WithinDuration(t, now, dbTask.LastTouchedAt, time.Second)
+}
+
 func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 	task1 := job_compilers.AuthoredTask{
 		Name: "render-1-3",

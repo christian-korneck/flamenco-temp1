@@ -385,8 +385,14 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 
 	// TODO: check whether this task may undergo the requested status change.
 
-	if err := f.doTaskUpdate(ctx, logger, worker, dbTask, taskUpdate); err != nil {
-		return sendAPIError(e, http.StatusInternalServerError, "unable to handle status update: %v", err)
+	taskUpdateErr := f.doTaskUpdate(ctx, logger, worker, dbTask, taskUpdate)
+	workerUpdateErr := f.workerPingedTask(ctx, logger, dbTask)
+
+	if taskUpdateErr != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "unable to handle task update: %v", taskUpdateErr)
+	}
+	if workerUpdateErr != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "unable to handle worker update: %v", workerUpdateErr)
 	}
 
 	return e.NoContent(http.StatusNoContent)
@@ -437,6 +443,19 @@ func (f *Flamenco) doTaskUpdate(
 	return dbErrActivity
 }
 
+func (f *Flamenco) workerPingedTask(
+	ctx context.Context,
+	logger zerolog.Logger,
+	task *persistence.Task,
+) error {
+	err := f.persist.TaskTouchedByWorker(ctx, task)
+	if err != nil {
+		logger.Error().Err(err).Msg("error marking task as 'touched' by worker")
+		return err
+	}
+	return nil
+}
+
 // taskLogAppend appends a chunk of log lines to the task's log, and broadcasts it over SocketIO.
 func (f *Flamenco) taskLogAppend(logger zerolog.Logger, dbTask *persistence.Task, logChunk string) {
 	// Errors writing the log to file should be logged in our own logging
@@ -484,7 +503,9 @@ func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
 	mkr := mayWorkerRun(worker, dbTask)
 
 	if mkr.MayKeepRunning {
-		// TODO: record that this worker "touched" this task, for timeout calculations.
+		// Errors saving the "worker pinged task" field in the database are just
+		// logged. It's not something to bother the worker with.
+		_ = f.workerPingedTask(ctx, logger, dbTask)
 	}
 
 	return e.JSON(http.StatusOK, mkr)

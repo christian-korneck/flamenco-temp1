@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -43,8 +44,9 @@ type Task struct {
 	Status   api.TaskStatus `gorm:"type:varchar(16);default:''"`
 
 	// Which worker is/was working on this.
-	WorkerID *uint
-	Worker   *Worker `gorm:"foreignkey:WorkerID;references:ID;constraint:OnDelete:CASCADE"`
+	WorkerID      *uint
+	Worker        *Worker `gorm:"foreignkey:WorkerID;references:ID;constraint:OnDelete:CASCADE"`
+	LastTouchedAt time.Time
 
 	// Dependencies are tasks that need to be completed before this one can run.
 	Dependencies []*Task `gorm:"many2many:task_dependencies;constraint:OnDelete:CASCADE"`
@@ -382,6 +384,17 @@ func (db *DB) UpdateJobsTaskStatusesConditional(ctx context.Context, job *Job,
 		Updates(Task{Status: taskStatus, Activity: activity})
 	if tx.Error != nil {
 		return taskError(tx.Error, "updating status of all tasks in status %v of job %s", statusesToUpdate, job.UUID)
+	}
+	return nil
+}
+
+// TaskTouchedByWorker marks the task as 'touched' by a worker. This is used for timeout detection.
+func (db *DB) TaskTouchedByWorker(ctx context.Context, t *Task) error {
+	tx := db.gormDB.WithContext(ctx).
+		Model(t).
+		Updates(Task{LastTouchedAt: db.gormDB.NowFunc()})
+	if err := tx.Error; err != nil {
+		return taskError(err, "saving task 'last touched at'")
 	}
 	return nil
 }
