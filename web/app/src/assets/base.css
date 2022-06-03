@@ -264,7 +264,7 @@ footer {
   margin-left: var(--spacer-sm);
 }
 
-.btn-bar .btn[disabled] {
+.btn[disabled] {
   background-color: transparent;
   border-color: var(--color-text-muted);
   color: var(--color-text-muted);
@@ -272,12 +272,12 @@ footer {
   pointer-events: none;
 }
 
-.btn-bar .btn:hover:not([disabled]) {
+.btn:hover:not([disabled]) {
   transition: all 100ms;
   color: white;
 }
 
-.btn-bar .btn:focus {
+.btn:focus {
   /* Make sure the outline is clearly visible inside the button. */
   outline-offset: -0.5em;
 }

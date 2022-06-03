@@ -74,8 +74,8 @@ export const useNotifs = defineStore('notifications', {
       let msg = `Worker ${workerUpdate.name}`;
       if (workerUpdate.previous_status && workerUpdate.previous_status != workerUpdate.status) {
         msg += ` changed status ${workerUpdate.previous_status} ➜ ${workerUpdate.status}`;
+        this.add(msg);
       }
-      this.add(msg)
     },
 
     /* Ensure there is only 1000 items in the history. */
