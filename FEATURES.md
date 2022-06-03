@@ -32,16 +32,16 @@ Note that list is **not** in any specific order.
   - [x] Subscription system for "task log" updates.
   - [x] Filtering jobs by status
   - [x] Filtering tasks by status
-  - [ ] Make tables respect the window height
-    - [ ] Jobs
-    - [x] Tasks
-- [ ] Web frontend for Worker management
+- [ ] Make tables respect the window height
+  - [ ] Jobs
+  - [x] Tasks
+  - [ ] Workers
+- [x] Web frontend for Worker management
   - [x] "Tabs" system + Vue Router support.
   - [x] API endpoint for worker status change requests
-  - [ ] Web: Worker action buttons
-  - [ ] Implementation of lazy vs. forced status change requests
+  - [x] Web: Worker action buttons
+  - [x] Implementation of lazy vs. forced status change requests
 - [x] Port the old 'fail-requested' task status handling code to the new Manager
-- [ ] Ensure "task state machine" can run in a single database transaction.
 - [x] At startup check & fix "stuck" jobs.
       Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
 - [ ] Task timeout monitoring
@@ -70,6 +70,7 @@ Note that list is **not** in any specific order.
 - [ ] Frontend authentication
 - [ ] User/Job Submission API authentication
 - [ ] Auto-removal of old Workers
+- [ ] Ensure "task state machine" can run in a single database transaction.
 
 ## Worker
 
