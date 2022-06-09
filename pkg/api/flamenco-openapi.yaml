@@ -1107,6 +1107,10 @@ components:
           type: array
           items: { $ref: "#/components/schemas/Command" }
         "worker": { $ref: "#/components/schemas/TaskWorker" }
+        "last_touched":
+          type: string
+          format: date-time
+          description: Timestamp of when any worker worked on this task.
       required:
         - id
         - created
