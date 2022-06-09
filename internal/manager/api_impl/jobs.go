@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -219,13 +217,6 @@ func (f *Flamenco) FetchTaskLogTail(e echo.Context, taskID string) error {
 
 	logger.Debug().Msg("fetched task tail")
 	return e.String(http.StatusOK, tail)
-}
-
-// taskLogAppendTimestamped writes the given log text, prefixed with the current
-// date & time, to the task's log.
-func (f *Flamenco) taskLogAppendTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error {
-	now := f.clock.Now().Format(time.RFC3339)
-	return f.logStorage.Write(logger, jobID, taskID, now+" "+logText)
 }
 
 func jobDBtoAPI(dbJob *persistence.Job) api.Job {

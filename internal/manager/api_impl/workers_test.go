@@ -36,7 +36,8 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf.persistence.EXPECT().ScheduleTask(echo.Request().Context(), &worker).Return(&task, nil)
 
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task.UUID,
-		"2022-06-09T11:14:41+02:00 Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
+		"2022-06-09T11:14:41+02:00 Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)\n")
+	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()) // The task log should be updated; this test assumes the contents are ok.
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
@@ -166,7 +167,7 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	// Expect this re-queueing to end up in the task's log and activity.
 	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task1) // TODO: test saved activity value
 	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task2) // TODO: test saved activity value
-	logMsg := "Task was requeued by Manager because the worker assigned to it signed off.\n"
+	logMsg := "2022-06-09T11:14:41+02:00 Task was requeued by Manager because the worker assigned to it signed off.\n"
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task1.UUID, logMsg)
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task2.UUID, logMsg)
 	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{TaskId: task1.UUID, Log: logMsg})
