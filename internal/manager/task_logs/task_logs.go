@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"git.blender.org/flamenco/internal/manager/webupdates"
+	"git.blender.org/flamenco/pkg/api"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -24,13 +26,29 @@ const (
 type Storage struct {
 	BasePath string // Directory where task logs are stored.
 
+	broadcaster ChangeBroadcaster
+
 	// Locks to only allow one goroutine at a time to handle the logs of a certain task.
 	mutex     *sync.Mutex
 	taskLocks map[string]*sync.Mutex
 }
 
+// Generate mock implementations of these interfaces.
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/task_logs ChangeBroadcaster
+
+type ChangeBroadcaster interface {
+	// BroadcastTaskLogUpdate sends the task log update to SocketIO clients.
+	BroadcastTaskLogUpdate(taskLogUpdate api.SocketIOTaskLogUpdate)
+}
+
+// ChangeBroadcaster should be a subset of webupdates.BiDirComms
+var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
+
 // NewStorage creates a new log storage rooted at `basePath`.
-func NewStorage(basePath string) *Storage {
+func NewStorage(
+	basePath string,
+	broadcaster ChangeBroadcaster,
+) *Storage {
 	if !filepath.IsAbs(basePath) {
 		absPath, err := filepath.Abs(basePath)
 		if err != nil {
@@ -44,13 +62,33 @@ func NewStorage(basePath string) *Storage {
 		Msg("task logs")
 
 	return &Storage{
-		BasePath:  basePath,
-		mutex:     new(sync.Mutex),
-		taskLocks: make(map[string]*sync.Mutex),
+		BasePath:    basePath,
+		broadcaster: broadcaster,
+		mutex:       new(sync.Mutex),
+		taskLocks:   make(map[string]*sync.Mutex),
 	}
 }
 
+// Write appends text to a task's log file, and broadcasts the log lines via SocketIO.
 func (s *Storage) Write(logger zerolog.Logger, jobID, taskID string, logText string) error {
+	if err := s.writeToDisk(logger, jobID, taskID, logText); err != nil {
+		return err
+	}
+
+	// Broadcast the task log to SocketIO clients.
+	taskUpdate := webupdates.NewTaskLogUpdate(taskID, logText)
+	s.broadcaster.BroadcastTaskLogUpdate(taskUpdate)
+	return nil
+}
+
+// // Write appends text, prefixed with the current date & time, to a task's log file,
+// // and broadcasts the log lines via SocketIO.
+// func (s *Storage) WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error {
+// 	now := s.clock.Now().Format(time.RFC3339)
+// 	return s.Write(logger, jobID, taskID, now+" "+logText)
+// }
+
+func (s *Storage) writeToDisk(logger zerolog.Logger, jobID, taskID string, logText string) error {
 	// Shortcut to avoid creating an empty log file. It also solves an
 	// index out of bounds error further down when we check the last character.
 	if logText == "" {

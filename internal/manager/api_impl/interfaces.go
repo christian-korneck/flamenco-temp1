@@ -72,7 +72,9 @@ type ChangeBroadcaster interface {
 	// after the job's tasks have been created, and thus there is no need for a
 	// separate broadcast per task.
 
-	BroadcastTaskLogUpdate(taskLogUpdate api.SocketIOTaskLogUpdate)
+	// Note that there is no call to BoardcastTaskLogUpdate. It's the
+	// responsibility of `LogStorage.Write` to broadcast the changes to SocketIO
+	// clients.
 
 	BroadcastWorkerUpdate(workerUpdate api.SocketIOWorkerUpdate)
 	BroadcastNewWorker(workerUpdate api.SocketIOWorkerUpdate)

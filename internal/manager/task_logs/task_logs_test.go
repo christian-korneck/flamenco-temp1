@@ -11,22 +11,20 @@ import (
 	"sync"
 	"testing"
 
+	"git.blender.org/flamenco/internal/manager/task_logs/mocks"
+	"github.com/benbjohnson/clock"
+	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
-func tempStorage() *Storage {
-	temppath, err := ioutil.TempDir("", "testlogs")
-	if err != nil {
-		panic(err)
-	}
-	return NewStorage(temppath)
-}
-
 func TestLogWriting(t *testing.T) {
-	s := tempStorage()
-	defer os.RemoveAll(s.BasePath)
+	s, finish, mocks := taskLogsTestFixtures(t)
+	defer finish()
+
+	// Expect broadcastst for each call to s.Write()
+	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(2)
 
 	err := s.Write(zerolog.Nop(),
 		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
@@ -52,8 +50,10 @@ func TestLogWriting(t *testing.T) {
 }
 
 func TestLogRotation(t *testing.T) {
-	s := tempStorage()
-	defer os.RemoveAll(s.BasePath)
+	s, finish, mocks := taskLogsTestFixtures(t)
+	defer finish()
+
+	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any())
 
 	err := s.Write(zerolog.Nop(),
 		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
@@ -81,11 +81,14 @@ func TestLogRotation(t *testing.T) {
 }
 
 func TestLogTail(t *testing.T) {
-	s := tempStorage()
-	defer os.RemoveAll(s.BasePath)
+	s, finish, mocks := taskLogsTestFixtures(t)
+	defer finish()
 
 	jobID := "25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c"
 	taskID := "20ff9d06-53ec-4019-9e2e-1774f05f170a"
+
+	// Expect broadcastst for each call to s.Write()
+	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(3)
 
 	contents, err := s.Tail(jobID, taskID)
 	assert.ErrorIs(t, err, os.ErrNotExist)
@@ -142,9 +145,8 @@ func TestLogTail(t *testing.T) {
 }
 
 func TestLogWritingParallel(t *testing.T) {
-	s := tempStorage()
-	defer os.RemoveAll(s.BasePath)
-	// defer t.Errorf("not removing %s", s.BasePath)
+	s, finish, mocks := taskLogsTestFixtures(t)
+	defer finish()
 
 	numGoroutines := 1000 // How many goroutines run in parallel.
 	runLength := 100      // How many characters are logged, per goroutine.
@@ -153,6 +155,8 @@ func TestLogWritingParallel(t *testing.T) {
 
 	jobID := "6d9a05a1-261e-4f6f-93b0-8c4f6b6d500d"
 	taskID := "d19888cc-c389-4a24-aebf-8458ababdb02"
+
+	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(numGoroutines)
 
 	for i := 0; i < numGoroutines; i++ {
 		// Write lines of 100 characters to the task log. Each goroutine writes a
@@ -187,4 +191,31 @@ func TestLogWritingParallel(t *testing.T) {
 			assert.Lenf(t, line, runLength, "each line should be %d runes long; line #%d is not", line, lineIndex)
 		}
 	}
+}
+
+type TaskLogsMocks struct {
+	clock       *clock.Mock
+	broadcaster *mocks.MockChangeBroadcaster
+}
+
+func taskLogsTestFixtures(t *testing.T) (*Storage, func(), *TaskLogsMocks) {
+	mockCtrl := gomock.NewController(t)
+
+	mocks := &TaskLogsMocks{
+		broadcaster: mocks.NewMockChangeBroadcaster(mockCtrl),
+	}
+
+	temppath, err := ioutil.TempDir("", "testlogs")
+	if err != nil {
+		panic(err)
+	}
+
+	// This should be called at the end of each unit test.
+	finish := func() {
+		os.RemoveAll(temppath)
+		mockCtrl.Finish()
+	}
+
+	sm := NewStorage(temppath, mocks.broadcaster)
+	return sm, finish, mocks
 }

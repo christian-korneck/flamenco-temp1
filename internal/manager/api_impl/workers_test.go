@@ -38,7 +38,6 @@ func TestTaskScheduleHappy(t *testing.T) {
 
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task.UUID,
 		"2022-06-09T11:14:41+02:00 Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)\n")
-	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()) // The task log should be updated; this test assumes the contents are ok.
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
@@ -171,8 +170,6 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	logMsg := "2022-06-09T11:14:41+02:00 Task was requeued by Manager because the worker assigned to it signed off.\n"
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task1.UUID, logMsg)
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task2.UUID, logMsg)
-	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{TaskId: task1.UUID, Log: logMsg})
-	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{TaskId: task2.UUID, Log: logMsg})
 
 	// Expect worker to be saved as 'offline'.
 	mf.persistence.EXPECT().
@@ -389,10 +386,6 @@ func TestTaskUpdate(t *testing.T) {
 
 	// Expect the log to be written and broadcast over SocketIO.
 	mf.logStorage.EXPECT().Write(gomock.Any(), jobID, taskID, "line1\nline2\n")
-	mf.broadcaster.EXPECT().BroadcastTaskLogUpdate(api.SocketIOTaskLogUpdate{
-		TaskId: taskID,
-		Log:    "line1\nline2\n",
-	})
 
 	// Expect a 'touch' of the task.
 	var touchedTask persistence.Task

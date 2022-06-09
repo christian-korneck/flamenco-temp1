@@ -441,7 +441,8 @@ func (f *Flamenco) doTaskUpdate(
 	}
 
 	if update.Log != nil {
-		f.taskLogAppend(logger, dbTask, *update.Log)
+		// Errors writing the log to disk are already logged by logStorage, and can be safely ignored here.
+		_ = f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID, *update.Log)
 	}
 
 	// Any error updating the status is more important than an error updating the
@@ -465,25 +466,10 @@ func (f *Flamenco) workerPingedTask(
 	return nil
 }
 
-// taskLogAppend appends a chunk of log lines to the task's log, and broadcasts it over SocketIO.
-func (f *Flamenco) taskLogAppend(logger zerolog.Logger, dbTask *persistence.Task, logChunk string) {
-	// Errors writing the log to file should be logged in our own logging
-	// system, but shouldn't ripple up. As such, `err` is not returned to
-	// the caller.
-	err := f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID, logChunk)
-	if err != nil {
-		logger.Error().Err(err).Msg("error writing task log")
-	}
-
-	// Broadcast the task log to SocketIO clients.
-	taskUpdate := webupdates.NewTaskLogUpdate(dbTask.UUID, logChunk)
-	f.broadcaster.BroadcastTaskLogUpdate(taskUpdate)
-}
-
 // taskLogAppendTimestamped writes the given log text, prefixed with the current date & time, to the task's log.
 func (f *Flamenco) taskLogAppendTimestamped(logger zerolog.Logger, dbTask *persistence.Task, logText string) {
 	now := f.clock.Now().Format(time.RFC3339)
-	f.taskLogAppend(logger, dbTask, now+" "+logText)
+	_ = f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID, now+" "+logText)
 }
 
 func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
