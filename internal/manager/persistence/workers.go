@@ -29,6 +29,10 @@ type Worker struct {
 	SupportedTaskTypes string `gorm:"type:varchar(255);default:''"` // comma-separated list of task types.
 }
 
+func (w *Worker) Identifier() string {
+	return fmt.Sprintf("%s (%s)", w.Name, w.UUID)
+}
+
 // TaskTypes returns the worker's supported task types as list of strings.
 func (w *Worker) TaskTypes() []string {
 	return strings.Split(w.SupportedTaskTypes, ",")

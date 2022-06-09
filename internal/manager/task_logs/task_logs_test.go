@@ -7,9 +7,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +21,7 @@ func tempStorage() *Storage {
 	if err != nil {
 		panic(err)
 	}
-	return &Storage{temppath}
+	return NewStorage(temppath)
 }
 
 func TestLogWriting(t *testing.T) {
@@ -136,4 +139,52 @@ func TestLogTail(t *testing.T) {
 			"This is line #997\nThis is line #998\nThis is line #999\n",
 		string(contents),
 	)
+}
+
+func TestLogWritingParallel(t *testing.T) {
+	s := tempStorage()
+	defer os.RemoveAll(s.BasePath)
+	// defer t.Errorf("not removing %s", s.BasePath)
+
+	numGoroutines := 1000 // How many goroutines run in parallel.
+	runLength := 100      // How many characters are logged, per goroutine.
+	wg := sync.WaitGroup{}
+	wg.Add(numGoroutines)
+
+	jobID := "6d9a05a1-261e-4f6f-93b0-8c4f6b6d500d"
+	taskID := "d19888cc-c389-4a24-aebf-8458ababdb02"
+
+	for i := 0; i < numGoroutines; i++ {
+		// Write lines of 100 characters to the task log. Each goroutine writes a
+		// different character, starting at 'A'.
+		go func(i int32) {
+			defer wg.Done()
+
+			logger := log.With().Int32("goroutine", i).Logger()
+			letter := rune(int32('A') + (i % 26))
+			if len(string(letter)) > 1 {
+				panic("this test assumes only single-byte runes are used")
+			}
+			logText := strings.Repeat(string(letter), runLength)
+
+			assert.NoError(t, s.Write(logger, jobID, taskID, logText))
+		}(int32(i))
+	}
+	wg.Wait()
+
+	// Test that the final log contains 1000 lines of of 100 characters, without
+	// any run getting interrupted by another one.
+	contents, err := os.ReadFile(s.filepath(jobID, taskID))
+	assert.NoError(t, err)
+	lines := strings.Split(string(contents), "\n")
+	assert.Equal(t, numGoroutines+1, len(lines),
+		"each goroutine should have written a single line, and the file should have a newline at the end")
+
+	for lineIndex, line := range lines {
+		if lineIndex == numGoroutines {
+			assert.Empty(t, line, "the last line should be empty")
+		} else {
+			assert.Lenf(t, line, runLength, "each line should be %d runes long; line #%d is not", line, lineIndex)
+		}
+	}
 }

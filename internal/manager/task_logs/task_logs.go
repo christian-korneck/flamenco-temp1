@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -22,6 +23,10 @@ const (
 // Storage can write data to task logs, rotate logs, etc.
 type Storage struct {
 	BasePath string // Directory where task logs are stored.
+
+	// Locks to only allow one goroutine at a time to handle the logs of a certain task.
+	mutex     *sync.Mutex
+	taskLocks map[string]*sync.Mutex
 }
 
 // NewStorage creates a new log storage rooted at `basePath`.
@@ -39,7 +44,9 @@ func NewStorage(basePath string) *Storage {
 		Msg("task logs")
 
 	return &Storage{
-		BasePath: basePath,
+		BasePath:  basePath,
+		mutex:     new(sync.Mutex),
+		taskLocks: make(map[string]*sync.Mutex),
 	}
 }
 
@@ -49,6 +56,9 @@ func (s *Storage) Write(logger zerolog.Logger, jobID, taskID string, logText str
 	if logText == "" {
 		return nil
 	}
+
+	s.taskLock(taskID)
+	defer s.taskUnlock(taskID)
 
 	filepath := s.filepath(jobID, taskID)
 	logger = logger.With().Str("filepath", filepath).Logger()
@@ -94,6 +104,9 @@ func (s *Storage) RotateFile(logger zerolog.Logger, jobID, taskID string) {
 	logpath := s.filepath(jobID, taskID)
 	logger = logger.With().Str("logpath", logpath).Logger()
 
+	s.taskLock(taskID)
+	defer s.taskUnlock(taskID)
+
 	err := rotateLogFile(logger, logpath)
 	if err != nil {
 		// rotateLogFile() has already logged something, so we can ignore `err`.
@@ -116,6 +129,9 @@ func (s *Storage) filepath(jobID, taskID string) string {
 // Tail reads the final few lines of a task log.
 func (s *Storage) Tail(jobID, taskID string) (string, error) {
 	filepath := s.filepath(jobID, taskID)
+
+	s.taskLock(taskID)
+	defer s.taskUnlock(taskID)
 
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -162,4 +178,26 @@ func (s *Storage) Tail(jobID, taskID string) (string, error) {
 	}
 
 	return string(buffer), nil
+}
+
+func (s *Storage) taskLock(taskID string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	mutex := s.taskLocks[taskID]
+	if mutex == nil {
+		mutex = new(sync.Mutex)
+		s.taskLocks[taskID] = mutex
+	}
+	mutex.Lock()
+}
+
+func (s *Storage) taskUnlock(taskID string) {
+	// This code doesn't modify s.taskLocks, and the task should have been locked
+	// already by now.
+	mutex := s.taskLocks[taskID]
+	if mutex == nil {
+		panic("trying to unlock task that is not yet locked")
+	}
+	mutex.Unlock()
 }
