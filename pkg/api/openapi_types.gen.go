@@ -483,13 +483,16 @@ type Task struct {
 	Commands []Command `json:"commands"`
 
 	// Creation timestamp
-	Created  time.Time  `json:"created"`
-	Id       string     `json:"id"`
-	JobId    string     `json:"job_id"`
-	Name     string     `json:"name"`
-	Priority int        `json:"priority"`
-	Status   TaskStatus `json:"status"`
-	TaskType string     `json:"task_type"`
+	Created time.Time `json:"created"`
+	Id      string    `json:"id"`
+	JobId   string    `json:"job_id"`
+
+	// Timestamp of when any worker worked on this task.
+	LastTouched *time.Time `json:"last_touched,omitempty"`
+	Name        string     `json:"name"`
+	Priority    int        `json:"priority"`
+	Status      TaskStatus `json:"status"`
+	TaskType    string     `json:"task_type"`
 
 	// Timestamp of last update.
 	Updated time.Time   `json:"updated"`

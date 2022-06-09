@@ -104,6 +104,9 @@ class Task {
             if (data.hasOwnProperty('worker')) {
                 obj['worker'] = TaskWorker.constructFromObject(data['worker']);
             }
+            if (data.hasOwnProperty('last_touched')) {
+                obj['last_touched'] = ApiClient.convertToType(data['last_touched'], 'Date');
+            }
         }
         return obj;
     }
@@ -167,6 +170,12 @@ Task.prototype['commands'] = undefined;
  * @member {module:model/TaskWorker} worker
  */
 Task.prototype['worker'] = undefined;
+
+/**
+ * Timestamp of when any worker worked on this task.
+ * @member {Date} last_touched
+ */
+Task.prototype['last_touched'] = undefined;
 
 
 
