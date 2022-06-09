@@ -32,7 +32,7 @@ var defaultConfig = Conf{
 			},
 		},
 
-		// ActiveTaskTimeoutInterval:   10 * time.Minute,
+		TaskTimeout: 10 * time.Minute,
 		// ActiveWorkerTimeoutInterval: 1 * time.Minute,
 
 		// // Days are assumed to be 24 hours long. This is not exactly accurate, but should

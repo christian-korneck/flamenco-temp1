@@ -35,6 +35,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/swagger_ui"
 	"git.blender.org/flamenco/internal/manager/task_logs"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/internal/manager/timeout_checker"
 	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/internal/own_url"
 	"git.blender.org/flamenco/internal/upnp_ssdp"
@@ -106,10 +107,15 @@ func main() {
 	//
 	// go persist.PeriodicMaintenanceLoop(mainCtx)
 
+	timeService := clock.New()
 	webUpdater := webupdates.New()
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater)
-	flamenco := buildFlamencoAPI(configService, persist, taskStateMachine, webUpdater)
+	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, timeService, webUpdater)
+	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine, logStorage, webUpdater)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
+
+	timeoutChecker := timeout_checker.New(
+		configService.Get().TaskTimeout, timeService, persist, taskStateMachine, logStorage)
 
 	installSignalHandler(mainCtxCancel)
 
@@ -144,22 +150,29 @@ func main() {
 		}()
 	}
 
+	// Start the timeout checker.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		timeoutChecker.Run(mainCtx)
+	}()
+
 	wg.Wait()
 	log.Info().Msg("shutdown complete")
 }
 
 func buildFlamencoAPI(
+	timeService clock.Clock,
 	configService *config.Service,
 	persist *persistence.DB,
 	taskStateMachine *task_state_machine.StateMachine,
+	logStorage *task_logs.Storage,
 	webUpdater *webupdates.BiDirComms,
 ) api.ServerInterface {
-	timeService := clock.New()
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
-	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, timeService, webUpdater)
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(
 		compiler, persist, webUpdater, logStorage, configService,
