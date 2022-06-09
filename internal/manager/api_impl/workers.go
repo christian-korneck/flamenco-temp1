@@ -318,6 +318,13 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		return e.NoContent(http.StatusNoContent)
 	}
 
+	// Add a note to the task log about the worker assignment.
+	err = f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID,
+		fmt.Sprintf("Task assigned to worker %s (%s)", worker.Name, worker.UUID))
+	if err != nil {
+		logger.Error().Err(err).Msg("error writing to task log")
+	}
+
 	// Convert database objects to API objects:
 	apiCommands := []api.Command{}
 	for _, cmd := range dbTask.Commands {
