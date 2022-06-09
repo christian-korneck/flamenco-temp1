@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"git.blender.org/flamenco/internal/manager/task_logs/mocks"
 	"github.com/benbjohnson/clock"
@@ -202,8 +203,15 @@ func taskLogsTestFixtures(t *testing.T) (*Storage, func(), *TaskLogsMocks) {
 	mockCtrl := gomock.NewController(t)
 
 	mocks := &TaskLogsMocks{
+		clock:       clock.NewMock(),
 		broadcaster: mocks.NewMockChangeBroadcaster(mockCtrl),
 	}
+
+	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T16:52:04+02:00")
+	if err != nil {
+		panic(err)
+	}
+	mocks.clock.Set(mockedNow)
 
 	temppath, err := ioutil.TempDir("", "testlogs")
 	if err != nil {
@@ -216,6 +224,6 @@ func taskLogsTestFixtures(t *testing.T) (*Storage, func(), *TaskLogsMocks) {
 		mockCtrl.Finish()
 	}
 
-	sm := NewStorage(temppath, mocks.broadcaster)
+	sm := NewStorage(temppath, mocks.clock, mocks.broadcaster)
 	return sm, finish, mocks
 }

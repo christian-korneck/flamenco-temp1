@@ -10,9 +10,11 @@ import (
 	"path"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
+	"github.com/benbjohnson/clock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -26,6 +28,7 @@ const (
 type Storage struct {
 	BasePath string // Directory where task logs are stored.
 
+	clock       clock.Clock
 	broadcaster ChangeBroadcaster
 
 	// Locks to only allow one goroutine at a time to handle the logs of a certain task.
@@ -47,6 +50,7 @@ var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
 // NewStorage creates a new log storage rooted at `basePath`.
 func NewStorage(
 	basePath string,
+	clock clock.Clock,
 	broadcaster ChangeBroadcaster,
 ) *Storage {
 	if !filepath.IsAbs(basePath) {
@@ -63,6 +67,7 @@ func NewStorage(
 
 	return &Storage{
 		BasePath:    basePath,
+		clock:       clock,
 		broadcaster: broadcaster,
 		mutex:       new(sync.Mutex),
 		taskLocks:   make(map[string]*sync.Mutex),
@@ -81,12 +86,12 @@ func (s *Storage) Write(logger zerolog.Logger, jobID, taskID string, logText str
 	return nil
 }
 
-// // Write appends text, prefixed with the current date & time, to a task's log file,
-// // and broadcasts the log lines via SocketIO.
-// func (s *Storage) WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error {
-// 	now := s.clock.Now().Format(time.RFC3339)
-// 	return s.Write(logger, jobID, taskID, now+" "+logText)
-// }
+// Write appends text, prefixed with the current date & time, to a task's log file,
+// and broadcasts the log lines via SocketIO.
+func (s *Storage) WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error {
+	now := s.clock.Now().Format(time.RFC3339)
+	return s.Write(logger, jobID, taskID, now+" "+logText)
+}
 
 func (s *Storage) writeToDisk(logger zerolog.Logger, jobID, taskID string, logText string) error {
 	// Shortcut to avoid creating an empty log file. It also solves an

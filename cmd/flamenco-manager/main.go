@@ -159,7 +159,7 @@ func buildFlamencoAPI(
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
-	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, webUpdater)
+	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, timeService, webUpdater)
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(
 		compiler, persist, webUpdater, logStorage, configService,

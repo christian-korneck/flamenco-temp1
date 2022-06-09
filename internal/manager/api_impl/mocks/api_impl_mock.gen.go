@@ -448,6 +448,20 @@ func (mr *MockLogStorageMockRecorder) Write(arg0, arg1, arg2, arg3 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockLogStorage)(nil).Write), arg0, arg1, arg2, arg3)
 }
 
+// WriteTimestamped mocks base method.
+func (m *MockLogStorage) WriteTimestamped(arg0 zerolog.Logger, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteTimestamped", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteTimestamped indicates an expected call of WriteTimestamped.
+func (mr *MockLogStorageMockRecorder) WriteTimestamped(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteTimestamped", reflect.TypeOf((*MockLogStorage)(nil).WriteTimestamped), arg0, arg1, arg2, arg3)
+}
+
 // MockConfigService is a mock of ConfigService interface.
 type MockConfigService struct {
 	ctrl     *gomock.Controller

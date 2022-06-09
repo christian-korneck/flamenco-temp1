@@ -92,6 +92,7 @@ type JobCompiler interface {
 // LogStorage handles incoming task logs.
 type LogStorage interface {
 	Write(logger zerolog.Logger, jobID, taskID string, logText string) error
+	WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error
 	RotateFile(logger zerolog.Logger, jobID, taskID string)
 	Tail(jobID, taskID string) (string, error)
 }

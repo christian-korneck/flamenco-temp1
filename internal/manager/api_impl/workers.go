@@ -211,7 +211,8 @@ func (f *Flamenco) workerRequeueActiveTasks(ctx context.Context, logger zerolog.
 			lastErr = err
 		}
 
-		f.taskLogAppendTimestamped(logger, task, "Task was requeued by Manager because the worker assigned to it signed off.\n")
+		_ = f.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID,
+			"Task was requeued by Manager because the worker assigned to it signed off.")
 	}
 
 	return lastErr
@@ -319,8 +320,10 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Add a note to the task log about the worker assignment.
-	f.taskLogAppendTimestamped(logger, dbTask,
-		fmt.Sprintf("Task assigned to worker %s (%s)\n", worker.Name, worker.UUID))
+	msg := fmt.Sprintf("Task assigned to worker %s (%s)", worker.Name, worker.UUID)
+	if err := f.logStorage.WriteTimestamped(logger, dbTask.Job.UUID, dbTask.UUID, msg); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "internal error appending to task log: %v", err)
+	}
 
 	// Start timeout measurement as soon as the Worker gets the task assigned.
 	if err := f.workerPingedTask(e.Request().Context(), logger, dbTask); err != nil {
@@ -464,12 +467,6 @@ func (f *Flamenco) workerPingedTask(
 		return err
 	}
 	return nil
-}
-
-// taskLogAppendTimestamped writes the given log text, prefixed with the current date & time, to the task's log.
-func (f *Flamenco) taskLogAppendTimestamped(logger zerolog.Logger, dbTask *persistence.Task, logText string) {
-	now := f.clock.Now().Format(time.RFC3339)
-	_ = f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID, now+" "+logText)
 }
 
 func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {

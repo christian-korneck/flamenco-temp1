@@ -36,8 +36,8 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf.persistence.EXPECT().ScheduleTask(echo.Request().Context(), &worker).Return(&task, nil)
 	mf.persistence.EXPECT().TaskTouchedByWorker(echo.Request().Context(), &task)
 
-	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task.UUID,
-		"2022-06-09T11:14:41+02:00 Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)\n")
+	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task.UUID,
+		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
@@ -167,9 +167,9 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	// Expect this re-queueing to end up in the task's log and activity.
 	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task1) // TODO: test saved activity value
 	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task2) // TODO: test saved activity value
-	logMsg := "2022-06-09T11:14:41+02:00 Task was requeued by Manager because the worker assigned to it signed off.\n"
-	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task1.UUID, logMsg)
-	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task2.UUID, logMsg)
+	logMsg := "Task was requeued by Manager because the worker assigned to it signed off."
+	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task1.UUID, logMsg)
+	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task2.UUID, logMsg)
 
 	// Expect worker to be saved as 'offline'.
 	mf.persistence.EXPECT().
