@@ -26,6 +26,9 @@
 
       <dt class="field-updated">Updated</dt>
       <dd>{{ datetime.relativeTime(taskData.updated) }}</dd>
+
+      <dt class="field-last-touched">Last Touched by Worker</dt>
+      <dd>{{ datetime.relativeTime(taskData.last_touched) }}</dd>
     </dl>
 
     <h3 class="sub-title">Commands</h3>

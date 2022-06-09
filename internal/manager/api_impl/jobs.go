@@ -265,6 +265,10 @@ func taskDBtoAPI(dbTask *persistence.Task) api.Task {
 		}
 	}
 
+	if !dbTask.LastTouchedAt.IsZero() {
+		apiTask.LastTouched = &dbTask.LastTouchedAt
+	}
+
 	for i := range dbTask.Commands {
 		apiTask.Commands[i] = commandDBtoAPI(dbTask.Commands[i])
 	}
