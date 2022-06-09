@@ -322,6 +322,11 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	f.taskLogAppendTimestamped(logger, dbTask,
 		fmt.Sprintf("Task assigned to worker %s (%s)\n", worker.Name, worker.UUID))
 
+	// Start timeout measurement as soon as the Worker gets the task assigned.
+	if err := f.workerPingedTask(e.Request().Context(), logger, dbTask); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "internal error updating task for timeout calculation: %v", err)
+	}
+
 	// Convert database objects to API objects:
 	apiCommands := []api.Command{}
 	for _, cmd := range dbTask.Commands {
