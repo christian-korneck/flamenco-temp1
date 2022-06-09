@@ -8,7 +8,9 @@ package api_impl
 import (
 	"context"
 	"io"
+	"time"
 
+	"github.com/benbjohnson/clock"
 	"github.com/rs/zerolog"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
@@ -124,3 +126,11 @@ type Shaman interface {
 }
 
 var _ Shaman = (*shaman.Server)(nil)
+
+// TimeService provides functionality from the stdlib `time` module, but in a
+// way that allows mocking.
+type TimeService interface {
+	Now() time.Time
+}
+
+var _ TimeService = (clock.Clock)(nil)

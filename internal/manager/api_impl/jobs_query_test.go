@@ -26,8 +26,8 @@ func TestFetchTask(t *testing.T) {
 	dbTask := persistence.Task{
 		Model: gorm.Model{
 			ID:        327,
-			CreatedAt: time.Now().Add(-30 * time.Second),
-			UpdatedAt: time.Now(),
+			CreatedAt: mf.clock.Now().Add(-30 * time.Second),
+			UpdatedAt: mf.clock.Now(),
 		},
 		UUID:         taskUUID,
 		Name:         "симпатичная задача",

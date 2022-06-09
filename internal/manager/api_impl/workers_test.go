@@ -36,7 +36,7 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf.persistence.EXPECT().ScheduleTask(echo.Request().Context(), &worker).Return(&task, nil)
 
 	mf.logStorage.EXPECT().Write(gomock.Any(), job.UUID, task.UUID,
-		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
+		"2022-06-09T11:14:41+02:00 Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)

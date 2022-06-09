@@ -319,7 +319,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Add a note to the task log about the worker assignment.
-	err = f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID,
+	err = f.taskLogAppendTimestamped(logger, dbTask.Job.UUID, dbTask.UUID,
 		fmt.Sprintf("Task assigned to worker %s (%s)", worker.Name, worker.UUID))
 	if err != nil {
 		logger.Error().Err(err).Msg("error writing to task log")

@@ -22,6 +22,7 @@ type Flamenco struct {
 	config       ConfigService
 	stateMachine TaskStateMachine
 	shaman       Shaman
+	clock        TimeService
 
 	// The task scheduler can be locked to prevent multiple Workers from getting
 	// the same task. It is also used for certain other queries, like
@@ -40,6 +41,7 @@ func NewFlamenco(
 	cs ConfigService,
 	sm TaskStateMachine,
 	sha Shaman,
+	ts TimeService,
 ) *Flamenco {
 	return &Flamenco{
 		jobCompiler:  jc,
@@ -49,6 +51,7 @@ func NewFlamenco(
 		config:       cs,
 		stateMachine: sm,
 		shaman:       sha,
+		clock:        ts,
 	}
 }
 

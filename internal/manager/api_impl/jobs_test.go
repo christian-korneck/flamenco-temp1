@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	"time"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -41,7 +40,7 @@ func TestSubmitJob(t *testing.T) {
 		JobType:  submittedJob.Type,
 		Priority: submittedJob.Priority,
 		Status:   api.JobStatusUnderConstruction,
-		Created:  time.Now(),
+		Created:  mf.clock.Now(),
 	}
 	mf.jobCompiler.EXPECT().Compile(gomock.Any(), submittedJob).Return(&authoredJob, nil)
 

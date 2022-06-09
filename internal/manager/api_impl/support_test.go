@@ -10,7 +10,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/benbjohnson/clock"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -30,6 +32,7 @@ type mockedFlamenco struct {
 	config       *mocks.MockConfigService
 	stateMachine *mocks.MockTaskStateMachine
 	shaman       *mocks.MockShaman
+	clock        *clock.Mock
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
@@ -40,7 +43,15 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	cs := mocks.NewMockConfigService(mockCtrl)
 	sm := mocks.NewMockTaskStateMachine(mockCtrl)
 	sha := mocks.NewMockShaman(mockCtrl)
-	f := NewFlamenco(jc, ps, cb, ls, cs, sm, sha)
+
+	clock := clock.NewMock()
+	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T11:14:41+02:00")
+	if err != nil {
+		panic(err)
+	}
+	clock.Set(mockedNow)
+
+	f := NewFlamenco(jc, ps, cb, ls, cs, sm, sha, clock)
 
 	return mockedFlamenco{
 		flamenco:     f,
@@ -50,6 +61,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 		logStorage:   ls,
 		config:       cs,
 		stateMachine: sm,
+		clock:        clock,
 	}
 }
 
