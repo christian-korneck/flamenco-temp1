@@ -279,10 +279,10 @@ func buildWebService(
 	}
 
 	// Log available routes
-	routeLogger := log.Level(zerolog.DebugLevel)
-	routeLogger.Debug().Msg("available routes:")
+	routeLogger := log.Level(zerolog.TraceLevel)
+	routeLogger.Trace().Msg("available routes:")
 	for _, route := range e.Routes() {
-		routeLogger.Debug().Msgf("%7s %s", route.Method, route.Path)
+		routeLogger.Trace().Msgf("%7s %s", route.Method, route.Path)
 	}
 
 	return e
