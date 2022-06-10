@@ -49,7 +49,8 @@ func openDB(ctx context.Context, dsn string) (*DB, error) {
 	dblogger := NewDBLogger(log.Level(globalLogLevel))
 
 	config := gorm.Config{
-		Logger: dblogger,
+		Logger:  dblogger,
+		NowFunc: nowFunc,
 	}
 
 	return openDBWithConfig(dsn, &config)
@@ -77,6 +78,12 @@ func openDBWithConfig(dsn string, config *gorm.Config) (*DB, error) {
 	}
 
 	return &db, nil
+}
+
+// nowFunc returns 'now' in UTC, so that GORM-managed times (createdAt,
+// deletedAt, updatedAt) are stored in UTC.
+func nowFunc() time.Time {
+	return time.Now().UTC()
 }
 
 // PeriodicMaintenanceLoop periodically vacuums the database.
