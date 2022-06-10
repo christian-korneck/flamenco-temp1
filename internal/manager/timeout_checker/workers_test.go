@@ -35,9 +35,14 @@ func TestWorkerTimeout(t *testing.T) {
 		StatusRequested: api.WorkerStatusAwake,
 	}
 
+	// No tasks are timing out in this test.
 	mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, gomock.Any()).Return([]*persistence.Task{}, nil)
+
 	mocks.persist.EXPECT().FetchTimedOutWorkers(mocks.ctx, gomock.Any()).
 		Return([]*persistence.Worker{&worker}, nil)
+
+	// Expect all tasks assigned to the worker to get requeued.
+	mocks.taskStateMachine.EXPECT().RequeueTasksOfWorker(mocks.ctx, &worker, "worker timed out")
 
 	persistedWorker := worker
 	persistedWorker.Status = api.WorkerStatusError
@@ -45,8 +50,6 @@ func TestWorkerTimeout(t *testing.T) {
 	// to change into anything until this timeout has been address.
 	persistedWorker.StatusChangeClear()
 	mocks.persist.EXPECT().SaveWorker(mocks.ctx, &persistedWorker).Return(nil)
-
-	// TODO: expect all tasks assigned to the worker to get requeued.
 
 	// All the timeouts should be handled after the initial sleep.
 	mocks.clock.Add(timeoutInitialSleep)

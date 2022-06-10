@@ -26,6 +26,7 @@ var _ PersistenceService = (*persistence.DB)(nil)
 type TaskStateMachine interface {
 	// TaskStatusChange gives a Task a new status, and handles the resulting status changes on the job.
 	TaskStatusChange(ctx context.Context, task *persistence.Task, newStatus api.TaskStatus) error
+	RequeueTasksOfWorker(ctx context.Context, worker *persistence.Worker, reason string) error
 }
 
 var _ TaskStateMachine = (*task_state_machine.StateMachine)(nil)
