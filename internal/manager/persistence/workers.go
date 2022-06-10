@@ -102,3 +102,14 @@ func (db *DB) SaveWorker(ctx context.Context, w *Worker) error {
 	}
 	return nil
 }
+
+// WorkerSeen marks the worker as 'seen' by this Manager. This is used for timeout detection.
+func (db *DB) WorkerSeen(ctx context.Context, w *Worker) error {
+	tx := db.gormDB.WithContext(ctx).
+		Model(w).
+		Updates(Worker{LastSeenAt: db.gormDB.NowFunc()})
+	if err := tx.Error; err != nil {
+		return workerError(err, "saving worker 'last seen at'")
+	}
+	return nil
+}

@@ -109,6 +109,7 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSONBody) (*persistence.Worker, api.WorkerStatus, error) {
 	logger := requestLogger(e)
 	w := requestWorkerOrPanic(e)
+	ctx := e.Request().Context()
 
 	// Update the worker for with the new sign-on info.
 	prevStatus := w.Status
@@ -124,11 +125,16 @@ func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSON
 	w.SupportedTaskTypes = strings.Join(update.SupportedTaskTypes, ",")
 
 	// Save the new Worker info to the database.
-	err := f.persist.SaveWorker(e.Request().Context(), w)
+	err := f.persist.SaveWorker(ctx, w)
 	if err != nil {
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
 			Msg("error storing Worker in database")
+		return nil, "", err
+	}
+
+	err = f.workerSeen(ctx, logger, w)
+	if err != nil {
 		return nil, "", err
 	}
 
@@ -166,6 +172,9 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 			Msg("error storing worker status in database")
 		return sendAPIError(e, http.StatusInternalServerError, "error storing new status in database")
 	}
+
+	// Ignore database errors here; the rest of the signoff process should just happen.
+	_ = f.workerSeen(ctx, logger, w)
 
 	// Re-queue all tasks (should be only one) this worker is now working on.
 	err = f.stateMachine.RequeueTasksOfWorker(ctx, w, "worker signed off")
@@ -224,12 +233,17 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		w.StatusChangeClear()
 	}
 
-	err = f.persist.SaveWorkerStatus(e.Request().Context(), w)
+	ctx := e.Request().Context()
+	err = f.persist.SaveWorkerStatus(ctx, w)
 	if err != nil {
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
 			Msg("error storing Worker in database")
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
+	}
+
+	if err := f.workerSeen(ctx, logger, w); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "error storing worker 'last seen' timestamp in database")
 	}
 
 	update := webupdates.NewWorkerUpdate(w)
@@ -288,8 +302,12 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Start timeout measurement as soon as the Worker gets the task assigned.
-	if err := f.workerPingedTask(e.Request().Context(), logger, dbTask); err != nil {
+	ctx := e.Request().Context()
+	if err := f.workerPingedTask(ctx, logger, dbTask); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error updating task for timeout calculation: %v", err)
+	}
+	if err := f.workerSeen(ctx, logger, worker); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "error storing worker 'last seen' timestamp in database")
 	}
 
 	// Convert database objects to API objects:
@@ -361,12 +379,16 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 
 	taskUpdateErr := f.doTaskUpdate(ctx, logger, worker, dbTask, taskUpdate)
 	workerUpdateErr := f.workerPingedTask(ctx, logger, dbTask)
+	workerSeenErr := f.workerSeen(ctx, logger, worker)
 
 	if taskUpdateErr != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "unable to handle task update: %v", taskUpdateErr)
 	}
 	if workerUpdateErr != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "unable to handle worker update: %v", workerUpdateErr)
+	}
+	if workerSeenErr != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "unable to handle worker 'last seen' update: %v", workerSeenErr)
 	}
 
 	return e.NoContent(http.StatusNoContent)
@@ -431,6 +453,20 @@ func (f *Flamenco) workerPingedTask(
 	return nil
 }
 
+// workerSeen marks the worker as 'seen' and logs any database error that may occur.
+func (f *Flamenco) workerSeen(
+	ctx context.Context,
+	logger zerolog.Logger,
+	w *persistence.Worker,
+) error {
+	err := f.persist.WorkerSeen(ctx, w)
+	if err != nil {
+		logger.Error().Err(err).Msg("error marking Worker as 'seen' in the database")
+		return err
+	}
+	return nil
+}
+
 func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
@@ -462,11 +498,12 @@ func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
 
 	mkr := mayWorkerRun(worker, dbTask)
 
+	// Errors saving the "worker pinged task" and "worker seen" fields in the
+	// database are just logged. It's not something to bother the worker with.
 	if mkr.MayKeepRunning {
-		// Errors saving the "worker pinged task" field in the database are just
-		// logged. It's not something to bother the worker with.
 		_ = f.workerPingedTask(ctx, logger, dbTask)
 	}
+	_ = f.workerSeen(ctx, logger, worker)
 
 	return e.JSON(http.StatusOK, mkr)
 }

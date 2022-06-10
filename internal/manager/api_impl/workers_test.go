@@ -33,8 +33,11 @@ func TestTaskScheduleHappy(t *testing.T) {
 		UUID: "4107c7aa-e86d-4244-858b-6c4fce2af503",
 		Job:  &job,
 	}
-	mf.persistence.EXPECT().ScheduleTask(echo.Request().Context(), &worker).Return(&task, nil)
-	mf.persistence.EXPECT().TaskTouchedByWorker(echo.Request().Context(), &task)
+
+	ctx := echo.Request().Context()
+	mf.persistence.EXPECT().ScheduleTask(ctx, &worker).Return(&task, nil)
+	mf.persistence.EXPECT().TaskTouchedByWorker(ctx, &task)
+	mf.persistence.EXPECT().WorkerSeen(ctx, &worker)
 
 	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task.UUID,
 		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
@@ -112,6 +115,7 @@ func TestWorkerSignOn(t *testing.T) {
 	})
 
 	mf.persistence.EXPECT().SaveWorker(gomock.Any(), &worker).Return(nil)
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 	echo := mf.prepareMockedJSONRequest(api.WorkerSignOn{
 		Nickname:           "Lazy Boi",
@@ -142,6 +146,7 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 
 	// Expect worker's tasks to be re-queued.
 	mf.stateMachine.EXPECT().RequeueTasksOfWorker(expectCtx, &worker, "worker signed off").Return(nil)
+	mf.persistence.EXPECT().WorkerSeen(expectCtx, &worker)
 
 	// Expect worker to be saved as 'offline'.
 	mf.persistence.EXPECT().
@@ -193,6 +198,7 @@ func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
 	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
 
 	mf.stateMachine.EXPECT().RequeueTasksOfWorker(gomock.Any(), &worker, "worker signed off").Return(nil)
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 	// Perform the request
 	echo := mf.prepareMockedRequest(nil)
@@ -225,6 +231,7 @@ func TestWorkerStateChanged(t *testing.T) {
 	savedWorker := worker
 	savedWorker.Status = api.WorkerStatusAwake
 	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 	// Perform the request
 	echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
@@ -267,6 +274,7 @@ func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
 		savedWorker := worker
 		savedWorker.Status = api.WorkerStatusStarting
 		mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 		// Perform the request
 		echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
@@ -296,6 +304,7 @@ func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
 		savedWorker.Status = api.WorkerStatusAsleep
 		savedWorker.StatusChangeClear()
 		mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 		// Perform the request
 		echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
@@ -363,6 +372,7 @@ func TestTaskUpdate(t *testing.T) {
 			touchedTask = *task
 			return nil
 		})
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 	// Do the call.
 	echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
@@ -402,6 +412,11 @@ func TestMayWorkerRun(t *testing.T) {
 	}
 
 	mf.persistence.EXPECT().FetchTask(gomock.Any(), task.UUID).Return(&task, nil).AnyTimes()
+
+	// Expect the worker to be marked as 'seen' regardless of whether it may run
+	// its current task or not, so equal to the number of calls to
+	// `MayWorkerRun()` below.
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker).Times(4)
 
 	// Test: unhappy, task unassigned
 	{

@@ -243,6 +243,20 @@ func (mr *MockPersistenceServiceMockRecorder) TaskTouchedByWorker(arg0, arg1 int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TaskTouchedByWorker", reflect.TypeOf((*MockPersistenceService)(nil).TaskTouchedByWorker), arg0, arg1)
 }
 
+// WorkerSeen mocks base method.
+func (m *MockPersistenceService) WorkerSeen(arg0 context.Context, arg1 *persistence.Worker) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WorkerSeen", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WorkerSeen indicates an expected call of WorkerSeen.
+func (mr *MockPersistenceServiceMockRecorder) WorkerSeen(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkerSeen", reflect.TypeOf((*MockPersistenceService)(nil).WorkerSeen), arg0, arg1)
+}
+
 // MockChangeBroadcaster is a mock of ChangeBroadcaster interface.
 type MockChangeBroadcaster struct {
 	ctrl     *gomock.Controller
