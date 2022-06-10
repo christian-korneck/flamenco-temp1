@@ -1,5 +1,5 @@
 {
-  "go.coverOnSave": true,
+  "go.coverOnSave": false,
   "go.coverOnTestPackage": true,
   "go.coverOnSingleTest": true,
   "go.coverageDecorator": {
