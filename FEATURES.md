@@ -44,7 +44,7 @@ Note that list is **not** in any specific order.
 - [x] Port the old 'fail-requested' task status handling code to the new Manager
 - [x] At startup check & fix "stuck" jobs.
       Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
-- [ ] Task timeout monitoring
+- [x] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
 - [ ] Worker timeout monitoring
 - [ ] Last rendered image display
