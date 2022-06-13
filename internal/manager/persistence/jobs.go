@@ -162,8 +162,9 @@ func (db *DB) StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.Au
 			}
 
 			dbTask.Dependencies = deps
-			if err := tx.Save(dbTask).Error; err != nil {
-				return taskError(err, "unable to store dependencies of task %q", authoredTask.UUID)
+			subQuery := tx.Model(dbTask).Updates(Task{Dependencies: deps})
+			if subQuery.Error != nil {
+				return taskError(subQuery.Error, "unable to store dependencies of task %q", authoredTask.UUID)
 			}
 		}
 
