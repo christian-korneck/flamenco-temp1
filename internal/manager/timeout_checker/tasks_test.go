@@ -10,7 +10,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
@@ -114,7 +113,7 @@ func TestTaskTimeout(t *testing.T) {
 	worker := persistence.Worker{
 		UUID:  "WORKER-UUID",
 		Name:  "Tester",
-		Model: gorm.Model{ID: 47},
+		Model: persistence.Model{ID: 47},
 	}
 	taskUnassigned := persistence.Task{
 		UUID:          "TASK-UUID-UNASSIGNED",

@@ -8,13 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"gorm.io/gorm"
-
 	"git.blender.org/flamenco/pkg/api"
 )
 
 type Worker struct {
-	gorm.Model
+	Model
 	UUID   string `gorm:"type:char(36);default:'';unique;index;default:''"`
 	Secret string `gorm:"type:varchar(255);default:''"`
 	Name   string `gorm:"type:varchar(64);default:''"`

@@ -10,7 +10,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine/mocks"
@@ -442,13 +441,13 @@ func (m *StateMachineMocks) expectBroadcastTaskChange(
 /* taskWithStatus() creates a task of a certain status, with a job of a certain status. */
 func taskWithStatus(jobStatus api.JobStatus, taskStatus api.TaskStatus) *persistence.Task {
 	job := persistence.Job{
-		Model: gorm.Model{ID: 47},
+		Model: persistence.Model{ID: 47},
 		UUID:  "test-job-f3f5-4cef-9cd7-e67eb28eaf3e",
 
 		Status: jobStatus,
 	}
 	task := persistence.Task{
-		Model: gorm.Model{ID: 327},
+		Model: persistence.Model{ID: 327},
 		UUID:  "testtask-0001-4e28-aeea-8cbaf2fc96a5",
 
 		JobID: job.ID,
@@ -464,7 +463,7 @@ func taskWithStatus(jobStatus api.JobStatus, taskStatus api.TaskStatus) *persist
 func taskOfSameJob(task *persistence.Task, taskStatus api.TaskStatus) *persistence.Task {
 	newTaskID := task.ID + 1
 	return &persistence.Task{
-		Model:  gorm.Model{ID: newTaskID},
+		Model:  persistence.Model{ID: newTaskID},
 		UUID:   fmt.Sprintf("testtask-%04d-4e28-aeea-8cbaf2fc96a5", newTaskID),
 		JobID:  task.JobID,
 		Job:    task.Job,

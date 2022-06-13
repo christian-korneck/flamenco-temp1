@@ -10,7 +10,6 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 func TestFetchTask(t *testing.T) {
@@ -24,7 +23,7 @@ func TestFetchTask(t *testing.T) {
 	jobUUID := "8b179118-0189-478a-b463-73798409898c"
 
 	dbTask := persistence.Task{
-		Model: gorm.Model{
+		Model: persistence.Model{
 			ID:        327,
 			CreatedAt: mf.clock.Now().Add(-30 * time.Second),
 			UpdatedAt: mf.clock.Now(),

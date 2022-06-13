@@ -9,7 +9,6 @@ import (
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/golang/mock/gomock"
-	"gorm.io/gorm"
 )
 
 const workerTimeout = 20 * time.Minute
@@ -31,7 +30,7 @@ func TestWorkerTimeout(t *testing.T) {
 	worker := persistence.Worker{
 		UUID:            "WORKER-UUID",
 		Name:            "Tester",
-		Model:           gorm.Model{ID: 47},
+		Model:           persistence.Model{ID: 47},
 		LastSeenAt:      lastSeenAt,
 		Status:          api.WorkerStatusAsleep,
 		StatusRequested: api.WorkerStatusAwake,

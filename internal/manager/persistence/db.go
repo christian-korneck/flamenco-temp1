@@ -21,6 +21,16 @@ type DB struct {
 	gormDB *gorm.DB
 }
 
+// Model contains the common database fields for most model structs.
+// It is a copy of the gorm.Model struct, but without the `DeletedAt` field.
+// Soft deletion is not used by Flamenco. If it ever becomes necessary to
+// support soft-deletion, see https://gorm.io/docs/delete.html#Soft-Delete
+type Model struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 func OpenDB(ctx context.Context, dsn string) (*DB, error) {
 	log.Info().Str("dsn", dsn).Msg("opening database")
 

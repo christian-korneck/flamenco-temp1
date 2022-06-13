@@ -16,7 +16,7 @@ import (
 )
 
 type Job struct {
-	gorm.Model
+	Model
 	UUID string `gorm:"type:char(36);default:'';unique;index"`
 
 	Name     string        `gorm:"type:varchar(64);default:''"`
@@ -33,7 +33,7 @@ type StringInterfaceMap map[string]interface{}
 type StringStringMap map[string]string
 
 type Task struct {
-	gorm.Model
+	Model
 	UUID string `gorm:"type:char(36);default:'';unique;index"`
 
 	Name     string         `gorm:"type:varchar(64);default:''"`

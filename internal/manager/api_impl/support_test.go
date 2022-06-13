@@ -16,7 +16,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 
 	"git.blender.org/flamenco/internal/manager/api_impl/mocks"
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -143,7 +142,7 @@ func assertResponseEmpty(t *testing.T, echoCtx echo.Context) {
 
 func testWorker() persistence.Worker {
 	return persistence.Worker{
-		Model:              gorm.Model{ID: 1},
+		Model:              persistence.Model{ID: 1},
 		UUID:               "e7632d62-c3b8-4af0-9e78-01752928952c",
 		Name:               "дрон",
 		Address:            "fe80::5054:ff:fede:2ad7",
