@@ -7,7 +7,7 @@ import (
 )
 
 func (db *DB) migrate() error {
-	err := db.gormDB.AutoMigrate(&Job{}, &Task{}, &Worker{})
+	err := db.gormDB.AutoMigrate(&Job{}, &Task{}, &TaskFailure{}, &Worker{})
 	if err != nil {
 		return fmt.Errorf("failed to automigrate database: %v", err)
 	}

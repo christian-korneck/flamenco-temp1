@@ -7,9 +7,12 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"math"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/pkg/api"
@@ -93,6 +96,17 @@ func (js *StringStringMap) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 	return json.Unmarshal(b, &js)
+}
+
+// TaskFailure keeps track of which Worker failed which Task.
+type TaskFailure struct {
+	// Don't include the standard Gorm ID, UpdatedAt, or DeletedAt fields, as they're useless here.
+	// Entries will never be updated, and should never be soft-deleted but just purged from existence.
+	CreatedAt time.Time
+	TaskID    uint    `gorm:"primaryKey;autoIncrement:false"`
+	Task      *Task   `gorm:"foreignkey:TaskID;references:ID;constraint:OnDelete:CASCADE"`
+	WorkerID  uint    `gorm:"primaryKey;autoIncrement:false"`
+	Worker    *Worker `gorm:"foreignkey:WorkerID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 // StoreJob stores an AuthoredJob and its tasks, and saves it to the database.
@@ -410,4 +424,38 @@ func (db *DB) TaskTouchedByWorker(ctx context.Context, t *Task) error {
 		return taskError(err, "saving task 'last touched at'")
 	}
 	return nil
+}
+
+// AddWorkerToTaskFailedList records that the given worker failed the given task.
+// This information is not used directly by the task scheduler. It's used to
+// determine whether there are any workers left to perform this task, and thus
+// whether it should be hard- or soft-failed.
+//
+// Calling this multiple times with the same task/worker is a no-op.
+//
+// Returns the new number of workers that failed this task.
+func (db *DB) AddWorkerToTaskFailedList(ctx context.Context, t *Task, w *Worker) (numFailed int, err error) {
+	entry := TaskFailure{
+		Task:   t,
+		Worker: w,
+	}
+	tx := db.gormDB.WithContext(ctx).
+		Clauses(clause.OnConflict{DoNothing: true}).
+		Create(&entry)
+	if tx.Error != nil {
+		return 0, tx.Error
+	}
+
+	var numFailed64 int64
+	tx = db.gormDB.WithContext(ctx).Model(&TaskFailure{}).
+		Where("task_id=?", t.ID).
+		Count(&numFailed64)
+
+	// Integer literals are of type `int`, so that's just a bit nicer to work with
+	// than `int64`.
+	if numFailed64 > math.MaxUint32 {
+		log.Warn().Int64("numFailed", numFailed64).Msg("number of failed workers is crazy high, something is wrong here")
+		return math.MaxUint32, tx.Error
+	}
+	return int(numFailed64), tx.Error
 }

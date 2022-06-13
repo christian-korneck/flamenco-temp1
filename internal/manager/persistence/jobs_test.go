@@ -263,6 +263,47 @@ func TestTaskTouchedByWorker(t *testing.T) {
 	assert.WithinDuration(t, now, dbTask.LastTouchedAt, time.Second)
 }
 
+func TestAddWorkerToTaskFailedList(t *testing.T) {
+	ctx, close, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer close()
+
+	task, err := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
+	assert.NoError(t, err)
+
+	worker1 := createWorker(ctx, t, db)
+
+	// Create another working, using the 1st as template:
+	newWorker := *worker1
+	newWorker.ID = 0
+	newWorker.UUID = "89ed2b02-b51b-4cd4-b44a-4a1c8d01db85"
+	newWorker.Name = "Worker 2"
+	assert.NoError(t, db.SaveWorker(ctx, &newWorker))
+	worker2, err := db.FetchWorker(ctx, newWorker.UUID)
+	assert.NoError(t, err)
+
+	// First failure should be registered just fine.
+	numFailed, err := db.AddWorkerToTaskFailedList(ctx, task, worker1)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, numFailed)
+
+	// Calling again should be a no-op and not cause any errors.
+	numFailed, err = db.AddWorkerToTaskFailedList(ctx, task, worker1)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, numFailed)
+
+	// Another worker should be able to fail this task as well.
+	numFailed, err = db.AddWorkerToTaskFailedList(ctx, task, worker2)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, numFailed)
+
+	// Deleting the task should also delete the failures.
+	assert.NoError(t, db.DeleteJob(ctx, authoredJob.JobID))
+	var num int64
+	tx := db.gormDB.Model(&TaskFailure{}).Count(&num)
+	assert.NoError(t, tx.Error)
+	assert.Zero(t, num)
+}
+
 func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 	task1 := job_compilers.AuthoredTask{
 		Name: "render-1-3",
