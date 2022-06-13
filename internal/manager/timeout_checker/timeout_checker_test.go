@@ -6,9 +6,11 @@ import (
 	"context"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/benbjohnson/clock"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/internal/manager/timeout_checker/mocks"
 )
@@ -71,4 +73,16 @@ func timeoutCheckerTestFixtures(t *testing.T) (*TimeoutChecker, func(), *Timeout
 		mocks.logStorage,
 	)
 	return sm, finish, mocks
+}
+
+// canaryTest will abort the current test if timing constants do not have the
+// expected value. Unit tests will fail rather cryptically by themselves if the
+// timing of the timeout checker is not what is expected.
+func canaryTest(t *testing.T) {
+	if assert.Equal(t, 5*time.Minute, timeoutInitialSleep, "timeoutInitialSleep does not have the expected value") &&
+		assert.Equal(t, 1*time.Minute, timeoutCheckInterval, "timeoutCheckInterval does not have the expected value") {
+		return
+	}
+	t.Fatal("timing-related constants are not as expected by the unit test, preemptively aborting.")
+	t.FailNow()
 }

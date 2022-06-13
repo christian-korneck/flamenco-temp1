@@ -15,6 +15,8 @@ import (
 const workerTimeout = 20 * time.Minute
 
 func TestWorkerTimeout(t *testing.T) {
+	canaryTest(t)
+
 	ttc, finish, mocks := timeoutCheckerTestFixtures(t)
 	defer finish()
 

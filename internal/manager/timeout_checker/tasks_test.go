@@ -19,6 +19,8 @@ import (
 const taskTimeout = 20 * time.Minute
 
 func TestTimeoutCheckerTiming(t *testing.T) {
+	canaryTest(t)
+
 	ttc, finish, mocks := timeoutCheckerTestFixtures(t)
 	defer finish()
 
@@ -81,12 +83,7 @@ func TestTimeoutCheckerTiming(t *testing.T) {
 }
 
 func TestTaskTimeout(t *testing.T) {
-	// Canary test: if these constants do not have the expected value, the test
-	// will fail rather cryptically.
-	if !assert.Equal(t, 5*time.Minute, timeoutInitialSleep, "timeoutInitialSleep does not have the expected value") ||
-		!assert.Equal(t, 1*time.Minute, timeoutCheckInterval, "timeoutCheckInterval does not have the expected value") {
-		t.FailNow()
-	}
+	canaryTest(t)
 
 	ttc, finish, mocks := timeoutCheckerTestFixtures(t)
 	defer finish()
