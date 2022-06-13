@@ -45,6 +45,7 @@ func (ttc *TimeoutChecker) timeoutWorker(ctx context.Context, worker *persistenc
 		Logger()
 	logger.Warn().Msg("TimeoutChecker: worker timed out")
 
+	prevStatus := worker.Status
 	worker.Status = api.WorkerStatusError
 	worker.StatusChangeClear()
 
@@ -58,5 +59,13 @@ func (ttc *TimeoutChecker) timeoutWorker(ctx context.Context, worker *persistenc
 		logger.Error().Err(err).Msg("TimeoutChecker: error re-queueing tasks of timed-out worker")
 	}
 
-	// TODO: broadcast worker change via SocketIO
+	// Broadcast worker change via SocketIO
+	ttc.broadcaster.BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:             worker.UUID,
+		Nickname:       worker.Name,
+		PreviousStatus: &prevStatus,
+		Status:         api.WorkerStatusError,
+		Updated:        worker.UpdatedAt,
+		Version:        worker.Software,
+	})
 }

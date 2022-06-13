@@ -53,6 +53,16 @@ func TestWorkerTimeout(t *testing.T) {
 	persistedWorker.StatusChangeClear()
 	mocks.persist.EXPECT().SaveWorker(mocks.ctx, &persistedWorker).Return(nil)
 
+	prevStatus := worker.Status
+	mocks.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
+		Id:             worker.UUID,
+		Nickname:       worker.Name,
+		PreviousStatus: &prevStatus,
+		Status:         api.WorkerStatusError,
+		Updated:        persistedWorker.UpdatedAt,
+		Version:        persistedWorker.Software,
+	})
+
 	// All the timeouts should be handled after the initial sleep.
 	mocks.clock.Add(timeoutInitialSleep)
 }

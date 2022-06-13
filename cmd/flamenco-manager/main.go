@@ -117,7 +117,7 @@ func main() {
 	timeoutChecker := timeout_checker.New(
 		configService.Get().TaskTimeout,
 		configService.Get().WorkerTimeout,
-		timeService, persist, taskStateMachine, logStorage)
+		timeService, persist, taskStateMachine, logStorage, webUpdater)
 
 	installSignalHandler(mainCtxCancel)
 

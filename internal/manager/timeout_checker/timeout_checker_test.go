@@ -20,6 +20,7 @@ type TimeoutCheckerMocks struct {
 	persist          *mocks.MockPersistenceService
 	taskStateMachine *mocks.MockTaskStateMachine
 	logStorage       *mocks.MockLogStorage
+	broadcaster      *mocks.MockChangeBroadcaster
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -43,6 +44,7 @@ func timeoutCheckerTestFixtures(t *testing.T) (*TimeoutChecker, func(), *Timeout
 		persist:          mocks.NewMockPersistenceService(mockCtrl),
 		taskStateMachine: mocks.NewMockTaskStateMachine(mockCtrl),
 		logStorage:       mocks.NewMockLogStorage(mockCtrl),
+		broadcaster:      mocks.NewMockChangeBroadcaster(mockCtrl),
 
 		wg: new(sync.WaitGroup),
 	}
@@ -71,6 +73,7 @@ func timeoutCheckerTestFixtures(t *testing.T) (*TimeoutChecker, func(), *Timeout
 		mocks.persist,
 		mocks.taskStateMachine,
 		mocks.logStorage,
+		mocks.broadcaster,
 	)
 	return sm, finish, mocks
 }

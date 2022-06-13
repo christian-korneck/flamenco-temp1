@@ -26,6 +26,7 @@ type TimeoutChecker struct {
 	persist          PersistenceService
 	taskStateMachine TaskStateMachine
 	logStorage       LogStorage
+	broadcaster      ChangeBroadcaster
 }
 
 // New creates a new TimeoutChecker.
@@ -36,6 +37,7 @@ func New(
 	persist PersistenceService,
 	taskStateMachine TaskStateMachine,
 	logStorage LogStorage,
+	broadcaster ChangeBroadcaster,
 ) *TimeoutChecker {
 	return &TimeoutChecker{
 		taskTimeout:   taskTimeout,
@@ -45,6 +47,7 @@ func New(
 		persist:          persist,
 		taskStateMachine: taskStateMachine,
 		logStorage:       logStorage,
+		broadcaster:      broadcaster,
 	}
 }
 

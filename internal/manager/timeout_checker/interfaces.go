@@ -8,12 +8,13 @@ import (
 
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
+	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/rs/zerolog"
 )
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/timeout_checker PersistenceService,TaskStateMachine,LogStorage
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/timeout_checker PersistenceService,TaskStateMachine,LogStorage,ChangeBroadcaster
 
 type PersistenceService interface {
 	FetchTimedOutTasks(ctx context.Context, untouchedSince time.Time) ([]*persistence.Task, error)
@@ -35,3 +36,12 @@ var _ TaskStateMachine = (*task_state_machine.StateMachine)(nil)
 type LogStorage interface {
 	WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error
 }
+
+// TODO: Refactor the way worker status changes are handled, so that this
+// service doens't need to broadcast its own worker updates.
+type ChangeBroadcaster interface {
+	BroadcastWorkerUpdate(workerUpdate api.SocketIOWorkerUpdate)
+}
+
+// ChangeBroadcaster should be a subset of webupdates.BiDirComms.
+var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)

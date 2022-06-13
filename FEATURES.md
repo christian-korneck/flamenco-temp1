@@ -46,7 +46,7 @@ Note that list is **not** in any specific order.
       Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
 - [x] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
-- [ ] Worker timeout monitoring
+- [x] Worker timeout monitoring
 - [ ] Last rendered image display
 
 - [ ] Web interface: Support actions on multiple selected things
