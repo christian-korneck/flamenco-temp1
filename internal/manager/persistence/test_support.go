@@ -18,8 +18,7 @@ import (
 
 // Change this to a filename if you want to run a single test and inspect the
 // resulting database.
-// const TestDSN = "file::memory:"
-const TestDSN = "/home/sybren/workspace/flamenco/tests.sqlite"
+const TestDSN = "file::memory:"
 
 func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 	// Delete the SQLite file if it exists on disk.
