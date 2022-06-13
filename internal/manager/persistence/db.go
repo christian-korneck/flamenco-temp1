@@ -5,6 +5,7 @@ package persistence
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -82,6 +83,19 @@ func openDBWithConfig(dsn string, config *gorm.Config) (*DB, error) {
 	// It's not certain that this'll improve the situation, but it's worth a try.
 	sqlDB.SetMaxIdleConns(1) // Max num of connections in the idle connection pool.
 	sqlDB.SetMaxOpenConns(1) // Max num of open connections to the database.
+
+	// Enable foreign key checks.
+	log.Trace().Msg("enabling SQLite foreign key checks")
+	if tx := gormDB.Exec("PRAGMA foreign_keys = 1"); tx.Error != nil {
+		return nil, fmt.Errorf("enabling foreign keys: %w", tx.Error)
+	}
+	var fkEnabled int
+	if tx := gormDB.Raw("PRAGMA foreign_keys").Scan(&fkEnabled); tx.Error != nil {
+		return nil, fmt.Errorf("checking whether the database has foreign key checks enabled: %w", tx.Error)
+	}
+	if fkEnabled == 0 {
+		log.Error().Msg("SQLite database does not want to enable foreign keys, this may cause data loss")
+	}
 
 	db := DB{
 		gormDB: gormDB,
