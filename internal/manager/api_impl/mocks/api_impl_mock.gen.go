@@ -40,6 +40,21 @@ func (m *MockPersistenceService) EXPECT() *MockPersistenceServiceMockRecorder {
 	return m.recorder
 }
 
+// AddWorkerToTaskFailedList mocks base method.
+func (m *MockPersistenceService) AddWorkerToTaskFailedList(arg0 context.Context, arg1 *persistence.Task, arg2 *persistence.Worker) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddWorkerToTaskFailedList", arg0, arg1, arg2)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddWorkerToTaskFailedList indicates an expected call of AddWorkerToTaskFailedList.
+func (mr *MockPersistenceServiceMockRecorder) AddWorkerToTaskFailedList(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorkerToTaskFailedList", reflect.TypeOf((*MockPersistenceService)(nil).AddWorkerToTaskFailedList), arg0, arg1, arg2)
+}
+
 // CreateWorker mocks base method.
 func (m *MockPersistenceService) CreateWorker(arg0 context.Context, arg1 *persistence.Worker) error {
 	m.ctrl.T.Helper()
@@ -510,6 +525,20 @@ func (m *MockConfigService) ExpandVariables(arg0 string, arg1 config.VariableAud
 func (mr *MockConfigServiceMockRecorder) ExpandVariables(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVariables", reflect.TypeOf((*MockConfigService)(nil).ExpandVariables), arg0, arg1, arg2)
+}
+
+// Get mocks base method.
+func (m *MockConfigService) Get() *config.Conf {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get")
+	ret0, _ := ret[0].(*config.Conf)
+	return ret0
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockConfigServiceMockRecorder) Get() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfigService)(nil).Get))
 }
 
 // MockTaskStateMachine is a mock of TaskStateMachine interface.

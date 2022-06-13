@@ -96,7 +96,7 @@ type Base struct {
 
 	// When this many workers have tried the task and failed, it will be hard-failed
 	// (even when there are workers left that could technically retry the task).
-	// TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
+	TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
 
 	// TestTasks TestTasks `yaml:"test_tasks"`
 

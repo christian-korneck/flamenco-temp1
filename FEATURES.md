@@ -46,6 +46,9 @@ Note that list is **not** in any specific order.
       Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
 - [x] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
+  - [x] Keep track of which worker failed which task.
+  - [ ] Clear task failure list when the task gets (re)queued.
+  - [ ] Keep track of a blocklist as `(worker ID, job ID, task type)` tuple in the database.
 - [x] Worker timeout monitoring
 - [ ] Last rendered image display
 

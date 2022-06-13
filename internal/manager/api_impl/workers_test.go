@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
+	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 )
@@ -328,7 +329,7 @@ func TestTaskUpdate(t *testing.T) {
 	taskUpdate := api.TaskUpdateJSONRequestBody{
 		Activity:   ptr("testing"),
 		Log:        ptr("line1\nline2\n"),
-		TaskStatus: ptr(api.TaskStatusFailed),
+		TaskStatus: ptr(api.TaskStatusCompleted),
 	}
 
 	// Construct the task that's supposed to be updated.
@@ -348,7 +349,7 @@ func TestTaskUpdate(t *testing.T) {
 
 	// Expect the task status change to be handed to the state machine.
 	var statusChangedtask persistence.Task
-	mf.stateMachine.EXPECT().TaskStatusChange(gomock.Any(), gomock.AssignableToTypeOf(&persistence.Task{}), api.TaskStatusFailed).
+	mf.stateMachine.EXPECT().TaskStatusChange(gomock.Any(), gomock.AssignableToTypeOf(&persistence.Task{}), api.TaskStatusCompleted).
 		DoAndReturn(func(ctx context.Context, task *persistence.Task, newStatus api.TaskStatus) error {
 			statusChangedtask = *task
 			return nil
@@ -386,6 +387,79 @@ func TestTaskUpdate(t *testing.T) {
 	assert.Equal(t, mockTask.UUID, touchedTask.UUID)
 	assert.Equal(t, "testing", statusChangedtask.Activity)
 	assert.Equal(t, "testing", actUpdatedTask.Activity)
+}
+
+func TestTaskUpdateFailed(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	// Construct the JSON request object.
+	taskUpdate := api.TaskUpdateJSONRequestBody{
+		TaskStatus: ptr(api.TaskStatusFailed),
+	}
+
+	// Construct the task that's supposed to be updated.
+	taskID := "181eab68-1123-4790-93b1-94309a899411"
+	jobID := "e4719398-7cfa-4877-9bab-97c2d6c158b5"
+	mockJob := persistence.Job{UUID: jobID}
+	mockTask := persistence.Task{
+		UUID:     taskID,
+		Worker:   &worker,
+		WorkerID: &worker.ID,
+		Job:      &mockJob,
+		Activity: "pre-update activity",
+	}
+
+	conf := config.Conf{
+		Base: config.Base{
+			TaskFailAfterSoftFailCount: 3,
+		},
+	}
+	mf.config.EXPECT().Get().Return(&conf).AnyTimes()
+
+	// Expect the task to be fetched for each sub-test:
+	mf.persistence.EXPECT().FetchTask(gomock.Any(), taskID).Return(&mockTask, nil).Times(2)
+
+	// Expect a 'touch' of the task for each sub-test:
+	mf.persistence.EXPECT().TaskTouchedByWorker(gomock.Any(), &mockTask).Times(2)
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker).Times(2)
+
+	{
+		// Expect the Worker to be added to the list of workers.
+		// This returns 1, which is less than the failure threshold -> soft failure expected.
+		mf.persistence.EXPECT().AddWorkerToTaskFailedList(gomock.Any(), &mockTask, &worker).Return(1, nil)
+
+		// Expect soft failure.
+		mf.stateMachine.EXPECT().TaskStatusChange(gomock.Any(), &mockTask, api.TaskStatusSoftFailed)
+		mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), jobID, taskID,
+			"Task failed by 1 worker, Manager will mark it as soft failure. 2 more failures will cause hard failure.")
+
+		// Do the call.
+		echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
+		requestWorkerStore(echoCtx, &worker)
+		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
+		assert.NoError(t, err)
+		assertResponseEmpty(t, echoCtx)
+	}
+
+	{
+		// Test with more (mocked) failures in the past, pushing the task over the threshold.
+		mf.persistence.EXPECT().AddWorkerToTaskFailedList(gomock.Any(), &mockTask, &worker).
+			Return(conf.TaskFailAfterSoftFailCount, nil)
+		mf.stateMachine.EXPECT().TaskStatusChange(gomock.Any(), &mockTask, api.TaskStatusFailed)
+		mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), jobID, taskID,
+			"Task failed by 3 workers, Manager will mark it as hard failure")
+
+		// Do the call.
+		echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
+		requestWorkerStore(echoCtx, &worker)
+		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
+		assert.NoError(t, err)
+		assertResponseEmpty(t, echoCtx)
+	}
 }
 
 func TestMayWorkerRun(t *testing.T) {

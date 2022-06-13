@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
@@ -360,7 +361,7 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	}
 
 	// Decode the request body.
-	var taskUpdate api.TaskUpdateJSONRequestBody
+	var taskUpdate api.TaskUpdate
 	if err := e.Bind(&taskUpdate); err != nil {
 		logger.Warn().Err(err).Msg("bad request received")
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
@@ -375,7 +376,15 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 		return sendAPIError(e, http.StatusConflict, "task %+v is not assigned to you", taskID)
 	}
 
-	// TODO: check whether this task may undergo the requested status change.
+	// Status 'soft-failed' should never be sent by a Worker. Distinguishing
+	// between soft and hard failures is up to the Manager.
+	// Workers should always just send 'failed' instead.
+	if taskUpdate.TaskStatus != nil && *taskUpdate.TaskStatus == api.TaskStatusSoftFailed {
+		logger.Warn().Str("status", string(*taskUpdate.TaskStatus)).
+			Msg("worker trying to update task to not-allowed status")
+		return sendAPIError(e, http.StatusBadRequest,
+			"task status %s not allowed to be sent by Worker", *taskUpdate.TaskStatus)
+	}
 
 	taskUpdateErr := f.doTaskUpdate(ctx, logger, worker, dbTask, taskUpdate)
 	workerUpdateErr := f.workerPingedTask(ctx, logger, dbTask)
@@ -394,18 +403,19 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 	return e.NoContent(http.StatusNoContent)
 }
 
+// doTaskUpdate actually updates the task and its log file.
 func (f *Flamenco) doTaskUpdate(
 	ctx context.Context,
 	logger zerolog.Logger,
 	w *persistence.Worker,
 	dbTask *persistence.Task,
-	update api.TaskUpdateJSONRequestBody,
+	update api.TaskUpdate,
 ) error {
 	if dbTask.Job == nil {
 		logger.Panic().Msg("dbTask.Job is nil, unable to continue")
 	}
 
-	var dbErrActivity, dbErrStatus error
+	var dbErrActivity error
 
 	if update.Activity != nil {
 		dbTask.Activity = *update.Activity
@@ -422,25 +432,92 @@ func (f *Flamenco) doTaskUpdate(
 		_ = f.logStorage.Write(logger, dbTask.Job.UUID, dbTask.UUID, *update.Log)
 	}
 
-	if update.TaskStatus != nil {
-		oldTaskStatus := dbTask.Status
-		err := f.stateMachine.TaskStatusChange(ctx, dbTask, *update.TaskStatus)
-		if err != nil {
-			logger.Error().Err(err).
-				Str("newTaskStatus", string(*update.TaskStatus)).
-				Str("oldTaskStatus", string(oldTaskStatus)).
-				Msg("error changing task status")
-			dbErrStatus = fmt.Errorf("changing status of task %s to %q: %w",
-				dbTask.UUID, *update.TaskStatus, err)
-		}
+	if update.TaskStatus == nil {
+		return dbErrActivity
 	}
 
-	// Any error updating the status is more important than an error updating the
-	// activity.
-	if dbErrStatus != nil {
-		return dbErrStatus
+	oldTaskStatus := dbTask.Status
+	var err error
+	if *update.TaskStatus == api.TaskStatusFailed {
+		// Failure is more complex than just going to the failed state.
+		err = f.onTaskFailed(ctx, logger, w, dbTask, update)
+	} else {
+		// Just go to the given state.
+		err = f.stateMachine.TaskStatusChange(ctx, dbTask, *update.TaskStatus)
 	}
-	return dbErrActivity
+
+	if err != nil {
+		logger.Error().Err(err).
+			Str("newTaskStatus", string(*update.TaskStatus)).
+			Str("oldTaskStatus", string(oldTaskStatus)).
+			Msg("error changing task status")
+		return fmt.Errorf("changing status of task %s to %q: %w",
+			dbTask.UUID, *update.TaskStatus, err)
+	}
+
+	return nil
+}
+
+// onTaskFailed decides whether a task is soft- or hard-failed. Note that this
+// means that the task may NOT go to the status mentioned in the `update`
+// parameter, but go to `soft-failed` instead.
+func (f *Flamenco) onTaskFailed(
+	ctx context.Context,
+	logger zerolog.Logger,
+	worker *persistence.Worker,
+	task *persistence.Task,
+	update api.TaskUpdate,
+) error {
+	// Sanity check.
+	if update.TaskStatus == nil || *update.TaskStatus != api.TaskStatusFailed {
+		panic("onTaskFailed should only be called with a task update that indicates task failure")
+	}
+
+	// Bookkeeping of failure.
+	numFailed, err := f.persist.AddWorkerToTaskFailedList(ctx, task, worker)
+	if err != nil {
+		return fmt.Errorf("adding worker to failure list of task: %w", err)
+	}
+	// f.maybeBlocklistWorker(ctx, w, dbTask)
+
+	threshold := f.config.Get().TaskFailAfterSoftFailCount
+	logger = logger.With().
+		Int("failedByWorkerCount", numFailed).
+		Int("threshold", threshold).
+		Logger()
+
+	var (
+		newStatus         api.TaskStatus
+		localLog, taskLog string
+	)
+	pluralizer := pluralize.NewClient()
+	if numFailed >= threshold {
+		newStatus = api.TaskStatusFailed
+
+		localLog = "too many workers failed this task, hard-failing it"
+		taskLog = fmt.Sprintf(
+			"Task failed by %s, Manager will mark it as hard failure",
+			pluralizer.Pluralize("worker", numFailed, true),
+		)
+	} else {
+		newStatus = api.TaskStatusSoftFailed
+
+		localLog = "worker failed this task, soft-failing to give another worker a try"
+		failsToThreshold := threshold - numFailed
+		taskLog = fmt.Sprintf(
+			"Task failed by %s, Manager will mark it as soft failure. %d more %s will cause hard failure.",
+			pluralizer.Pluralize("worker", numFailed, true),
+			failsToThreshold,
+			pluralizer.Pluralize("failure", failsToThreshold, false),
+		)
+	}
+
+	if err := f.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID, taskLog); err != nil {
+		logger.Error().Err(err).Msg("error writing failure notice to task log")
+	}
+
+	logger.Info().Str("newTaskStatus", string(newStatus)).Msg(localLog)
+	return f.stateMachine.TaskStatusChange(ctx, task, newStatus)
 }
 
 func (f *Flamenco) workerPingedTask(

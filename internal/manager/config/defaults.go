@@ -40,7 +40,7 @@ var defaultConfig = Conf{
 		// TaskCleanupMaxAge: 14 * 24 * time.Hour,
 
 		// BlacklistThreshold:         3,
-		// TaskFailAfterSoftFailCount: 3,
+		TaskFailAfterSoftFailCount: 3,
 
 		// WorkerCleanupStatus: []string{string(api.WorkerStatusOffline)},
 

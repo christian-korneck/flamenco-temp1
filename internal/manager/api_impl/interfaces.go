@@ -13,6 +13,7 @@ import (
 	"github.com/benbjohnson/clock"
 	"github.com/rs/zerolog"
 
+	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
@@ -45,6 +46,7 @@ type PersistenceService interface {
 	// ScheduleTask finds a task to execute by the given worker, and assigns it to that worker.
 	// If no task is available, (nil, nil) is returned, as this is not an error situation.
 	ScheduleTask(ctx context.Context, w *persistence.Worker) (*persistence.Task, error)
+	AddWorkerToTaskFailedList(context.Context, *persistence.Task, *persistence.Worker) (numFailed int, err error)
 
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
@@ -101,6 +103,8 @@ type LogStorage interface {
 
 type ConfigService interface {
 	VariableReplacer
+
+	Get() *config.Conf
 
 	// EffectiveStoragePath returns the job storage path used by Flamenco. It's
 	// basically the configured storage path, but can be influenced by other
