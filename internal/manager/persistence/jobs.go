@@ -183,6 +183,18 @@ func (db *DB) FetchJob(ctx context.Context, jobUUID string) (*Job, error) {
 	return &dbJob, nil
 }
 
+// DeleteJob deletes a job from the database.
+// The deletion cascades to its tasks and other job-related tables.
+func (db *DB) DeleteJob(ctx context.Context, jobUUID string) error {
+	tx := db.gormDB.WithContext(ctx).
+		Where("uuid = ?", jobUUID).
+		Delete(&Job{})
+	if tx.Error != nil {
+		return jobError(tx.Error, "deleting job")
+	}
+	return nil
+}
+
 func (db *DB) FetchJobsInStatus(ctx context.Context, jobStatuses ...api.JobStatus) ([]*Job, error) {
 	var jobs []*Job
 

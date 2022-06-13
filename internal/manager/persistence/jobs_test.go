@@ -53,6 +53,34 @@ func TestStoreAuthoredJob(t *testing.T) {
 	assert.Equal(t, api.TaskStatusQueued, tasks[2].Status)
 }
 
+func TestDeleteJob(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
+	defer cancel()
+
+	authJob := createTestAuthoredJobWithTasks()
+	persistAuthoredJob(t, ctx, db, authJob)
+
+	// Delete the job.
+	err := db.DeleteJob(ctx, authJob.JobID)
+	assert.NoError(t, err)
+
+	// Test it cannot be found via the API.
+	_, err = db.FetchJob(ctx, authJob.JobID)
+	assert.ErrorIs(t, err, ErrJobNotFound, "deleted jobs should not be found")
+
+	// Test that the job is really gone.
+	var numJobs int64
+	tx := db.gormDB.Model(&Job{}).Count(&numJobs)
+	assert.NoError(t, tx.Error)
+	assert.Equal(t, int64(0), numJobs, "the job should have been deleted")
+
+	// Test that the tasks are gone too.
+	var numTasks int64
+	tx = db.gormDB.Model(&Task{}).Count(&numTasks)
+	assert.NoError(t, tx.Error)
+	assert.Equal(t, int64(0), numTasks, "tasks should have been deleted along with their job")
+}
+
 func TestJobHasTasksInStatus(t *testing.T) {
 	ctx, close, db, job, _ := jobTasksTestFixtures(t)
 	defer close()
