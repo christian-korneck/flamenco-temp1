@@ -22,13 +22,14 @@ const taskFailJobPercentage = 10 // Integer from 0 to 100.
 type StateMachine struct {
 	persist     PersistenceService
 	broadcaster ChangeBroadcaster
+	logStorage  LogStorage
 }
 
-
-func NewStateMachine(persist PersistenceService, broadcaster ChangeBroadcaster) *StateMachine {
+func NewStateMachine(persist PersistenceService, broadcaster ChangeBroadcaster, logStorage LogStorage) *StateMachine {
 	return &StateMachine{
 		persist:     persist,
 		broadcaster: broadcaster,
+		logStorage:  logStorage,
 	}
 }
 

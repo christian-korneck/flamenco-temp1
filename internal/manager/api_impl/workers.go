@@ -168,7 +168,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	}
 
 	// Re-queue all tasks (should be only one) this worker is now working on.
-	err = f.workerRequeueActiveTasks(ctx, logger, w)
+	err = f.stateMachine.RequeueTasksOfWorker(ctx, w, "worker signed off")
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error re-queueing your tasks")
 	}
@@ -178,44 +178,6 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	f.broadcaster.BroadcastWorkerUpdate(update)
 
 	return e.NoContent(http.StatusNoContent)
-}
-
-// workerRequeueActiveTasks re-queues all active tasks (should be max one) of this worker.
-func (f *Flamenco) workerRequeueActiveTasks(ctx context.Context, logger zerolog.Logger, worker *persistence.Worker) error {
-	// Fetch the tasks to update.
-	tasks, err := f.persist.FetchTasksOfWorkerInStatus(ctx, worker, api.TaskStatusActive)
-	if err != nil {
-		return fmt.Errorf("fetching tasks of worker %s in status %q: %w", worker.UUID, api.TaskStatusActive, err)
-	}
-
-	// Run each task change through the task state machine.
-	var lastErr error
-	for _, task := range tasks {
-		logger.Info().
-			Str("task", task.UUID).
-			Msg("re-queueing task")
-
-			// Write to task activity that it got requeued because of worker sign-off.
-		task.Activity = "Task requeued because worked signed off"
-		if err := f.persist.SaveTaskActivity(ctx, task); err != nil {
-			logger.Warn().Err(err).
-				Str("task", task.UUID).
-				Msg("error queueing task on worker sign-off")
-			lastErr = err
-		}
-
-		if err := f.stateMachine.TaskStatusChange(ctx, task, api.TaskStatusQueued); err != nil {
-			logger.Warn().Err(err).
-				Str("task", task.UUID).
-				Msg("error queueing task on worker sign-off")
-			lastErr = err
-		}
-
-		_ = f.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID,
-			"Task was requeued by Manager because the worker assigned to it signed off.")
-	}
-
-	return lastErr
 }
 
 // (GET /api/worker/state)

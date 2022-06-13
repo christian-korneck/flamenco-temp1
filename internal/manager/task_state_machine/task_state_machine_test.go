@@ -20,6 +20,7 @@ import (
 type StateMachineMocks struct {
 	persist     *mocks.MockPersistenceService
 	broadcaster *mocks.MockChangeBroadcaster
+	logStorage  *mocks.MockLogStorage
 }
 
 // In the comments below, "T" indicates the performed task status change, and
@@ -361,8 +362,9 @@ func mockedTaskStateMachine(mockCtrl *gomock.Controller) (*StateMachine, *StateM
 	mocks := StateMachineMocks{
 		persist:     mocks.NewMockPersistenceService(mockCtrl),
 		broadcaster: mocks.NewMockChangeBroadcaster(mockCtrl),
+		logStorage:  mocks.NewMockLogStorage(mockCtrl),
 	}
-	sm := NewStateMachine(mocks.persist, mocks.broadcaster)
+	sm := NewStateMachine(mocks.persist, mocks.broadcaster, mocks.logStorage)
 	return sm, &mocks
 }
 

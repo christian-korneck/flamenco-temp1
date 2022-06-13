@@ -109,8 +109,8 @@ func main() {
 
 	timeService := clock.New()
 	webUpdater := webupdates.New()
-	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater)
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, timeService, webUpdater)
+	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater, logStorage)
 	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine, logStorage, webUpdater)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
 

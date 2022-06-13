@@ -134,23 +134,6 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	mf := newMockedFlamenco(mockCtrl)
 	worker := testWorker()
 
-	job := persistence.Job{
-		UUID: "583a7d59-887a-4c6c-b3e4-a753018f71b0",
-	}
-	// Mock that the worker has two active tasks. It shouldn't happen, but even
-	// when it does, both should be requeued when the worker signs off.
-	task1 := persistence.Task{
-		UUID:   "4107c7aa-e86d-4244-858b-6c4fce2af503",
-		Job:    &job,
-		Status: api.TaskStatusActive,
-	}
-	task2 := persistence.Task{
-		UUID:   "beb3f39b-57a5-44bf-a0ad-533e3513a0b6",
-		Job:    &job,
-		Status: api.TaskStatusActive,
-	}
-	workerTasks := []*persistence.Task{&task1, &task2}
-
 	// Signing off should be handled completely, even when the HTTP connection
 	// breaks. This means using a different context than the one passed by Echo.
 	echo := mf.prepareMockedRequest(nil)
@@ -158,18 +141,7 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	expectCtx := gomock.Not(gomock.Eq(echo.Request().Context()))
 
 	// Expect worker's tasks to be re-queued.
-	mf.persistence.EXPECT().
-		FetchTasksOfWorkerInStatus(expectCtx, &worker, api.TaskStatusActive).
-		Return(workerTasks, nil)
-	mf.stateMachine.EXPECT().TaskStatusChange(expectCtx, &task1, api.TaskStatusQueued)
-	mf.stateMachine.EXPECT().TaskStatusChange(expectCtx, &task2, api.TaskStatusQueued)
-
-	// Expect this re-queueing to end up in the task's log and activity.
-	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task1) // TODO: test saved activity value
-	mf.persistence.EXPECT().SaveTaskActivity(expectCtx, &task2) // TODO: test saved activity value
-	logMsg := "Task was requeued by Manager because the worker assigned to it signed off."
-	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task1.UUID, logMsg)
-	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task2.UUID, logMsg)
+	mf.stateMachine.EXPECT().RequeueTasksOfWorker(expectCtx, &worker, "worker signed off").Return(nil)
 
 	// Expect worker to be saved as 'offline'.
 	mf.persistence.EXPECT().
@@ -220,10 +192,7 @@ func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
 	savedWorker.StatusChangeClear()
 	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
 
-	// Mimick that no tasks are currently being worked on.
-	mf.persistence.EXPECT().
-		FetchTasksOfWorkerInStatus(gomock.Any(), &worker, api.TaskStatusActive).
-		Return(nil, nil)
+	mf.stateMachine.EXPECT().RequeueTasksOfWorker(gomock.Any(), &worker, "worker signed off").Return(nil)
 
 	// Perform the request
 	echo := mf.prepareMockedRequest(nil)

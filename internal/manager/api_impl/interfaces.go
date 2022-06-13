@@ -32,7 +32,6 @@ type PersistenceService interface {
 	FetchTask(ctx context.Context, taskID string) (*persistence.Task, error)
 	SaveTask(ctx context.Context, task *persistence.Task) error
 	SaveTaskActivity(ctx context.Context, t *persistence.Task) error
-	FetchTasksOfWorkerInStatus(context.Context, *persistence.Worker, api.TaskStatus) ([]*persistence.Task, error)
 	// TaskTouchedByWorker marks the task as 'touched' by a worker. This is used for timeout detection.
 	TaskTouchedByWorker(context.Context, *persistence.Task) error
 
@@ -59,6 +58,8 @@ type TaskStateMachine interface {
 
 	// JobStatusChange gives a Job a new status, and handles the resulting status changes on its tasks.
 	JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus, reason string) error
+
+	RequeueTasksOfWorker(ctx context.Context, worker *persistence.Worker, reason string) error
 }
 
 // TaskStateMachine should be a subset of task_state_machine.StateMachine.
