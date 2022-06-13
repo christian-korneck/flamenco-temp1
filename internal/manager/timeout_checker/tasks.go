@@ -19,7 +19,7 @@ func (ttc *TimeoutChecker) checkTasks(ctx context.Context) {
 	logger := log.With().
 		Time("threshold", timeoutThreshold.Local()).
 		Logger()
-	logger.Debug().Msg("TimeoutChecker: finding active tasks that have not been touched since threshold")
+	logger.Trace().Msg("TimeoutChecker: finding active tasks that have not been touched since threshold")
 
 	tasks, err := ttc.persist.FetchTimedOutTasks(ctx, timeoutThreshold)
 	if err != nil {
