@@ -24,44 +24,58 @@ func TestTimeoutCheckerTiming(t *testing.T) {
 	ttc, finish, mocks := timeoutCheckerTestFixtures(t)
 	defer finish()
 
+	// Determine the deadlines relative to the initial clock value.
+	initialTime := mocks.clock.Now().UTC()
+	deadlines := []time.Time{
+		initialTime.Add(-taskTimeout + timeoutInitialSleep + 0*timeoutCheckInterval),
+		initialTime.Add(-taskTimeout + timeoutInitialSleep + 1*timeoutCheckInterval),
+		initialTime.Add(-taskTimeout + timeoutInitialSleep + 2*timeoutCheckInterval),
+	}
+
 	mocks.run(ttc)
 
 	// Wait for the timeout checker to actually be sleeping, otherwise it could
 	// have a different sleep-start time than we expect.
 	time.Sleep(1 * time.Millisecond)
 
-	// Determine the deadlines relative to the initial clock value.
-	initialTime := mocks.clock.Now().UTC()
-	deadlines := []time.Time{
-		initialTime.Add(timeoutInitialSleep - taskTimeout),
-		initialTime.Add(timeoutInitialSleep - taskTimeout + 1*timeoutCheckInterval),
-		initialTime.Add(timeoutInitialSleep - taskTimeout + 2*timeoutCheckInterval),
-	}
-
+	// No workers are timing out in this test.
 	mocks.persist.EXPECT().FetchTimedOutWorkers(mocks.ctx, gomock.Any()).AnyTimes().Return(nil, nil)
 
 	// Expect three fetches, one after the initial sleep time, and two a regular interval later.
-	fetchTimes := make([]time.Time, len(deadlines))
+	fetchTimes := make([]time.Time, 0)
 	firstCall := mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, deadlines[0]).
-		DoAndReturn(func(ctx context.Context, timeout time.Time) ([]*persistence.Task, error) {
-			fetchTimes[0] = mocks.clock.Now().UTC()
+		DoAndReturn(func(ctx context.Context, deadline time.Time) ([]*persistence.Task, error) {
+			fetchTimes = append(fetchTimes, mocks.clock.Now().UTC())
 			return []*persistence.Task{}, nil
 		})
 
 	secondCall := mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, deadlines[1]).
-		DoAndReturn(func(ctx context.Context, timeout time.Time) ([]*persistence.Task, error) {
-			fetchTimes[1] = mocks.clock.Now().UTC()
+		DoAndReturn(func(ctx context.Context, deadline time.Time) ([]*persistence.Task, error) {
+			fetchTimes = append(fetchTimes, mocks.clock.Now().UTC())
 			// Return a database error. This shouldn't break the check loop.
 			return []*persistence.Task{}, errors.New("testing what errors do")
 		}).
 		After(firstCall)
 
-	mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, deadlines[2]).
-		DoAndReturn(func(ctx context.Context, timeout time.Time) ([]*persistence.Task, error) {
-			fetchTimes[2] = mocks.clock.Now().UTC()
+	thirdCall := mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, deadlines[2]).
+		DoAndReturn(func(ctx context.Context, deadline time.Time) ([]*persistence.Task, error) {
+			fetchTimes = append(fetchTimes, mocks.clock.Now().UTC())
 			return []*persistence.Task{}, nil
 		}).
 		After(secondCall)
+
+	// Having an AnyTimes() expectation here makes it possible to produce some
+	// more sensible error messages than the mocking framework would give (which
+	// would just abort the test saying the call doesn't match the above three
+	// expectations).
+	mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, gomock.Any()).
+		DoAndReturn(func(ctx context.Context, deadline time.Time) ([]*persistence.Task, error) {
+			fetchTimes = append(fetchTimes, mocks.clock.Now().UTC())
+			assert.Failf(t, "extra call to FetchTimedOutTasks", "deadline=%s", deadline.String())
+			return []*persistence.Task{}, nil
+		}).
+		After(thirdCall).
+		AnyTimes()
 
 	mocks.clock.Add(2 * time.Minute) // Should still be sleeping.
 	mocks.clock.Add(2 * time.Minute) // Should still be sleeping.
@@ -131,11 +145,11 @@ func TestTaskTimeout(t *testing.T) {
 	mocks.taskStateMachine.EXPECT().TaskStatusChange(mocks.ctx, &taskAssigned, api.TaskStatusFailed)
 
 	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, taskUnassigned.UUID,
-		"Task timed out. It was assigned to worker -unassigned-, but untouched since 1969-12-31T23:00:00Z")
+		"Task timed out. It was assigned to worker -unassigned-, but untouched since 2022-06-09T11:00:00Z")
 	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, taskUnknownWorker.UUID,
-		"Task timed out. It was assigned to worker -unknown-, but untouched since 1969-12-31T23:00:00Z")
+		"Task timed out. It was assigned to worker -unknown-, but untouched since 2022-06-09T11:00:00Z")
 	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, taskAssigned.UUID,
-		"Task timed out. It was assigned to worker Tester (WORKER-UUID), but untouched since 1969-12-31T23:00:00Z")
+		"Task timed out. It was assigned to worker Tester (WORKER-UUID), but untouched since 2022-06-09T11:00:00Z")
 
 	// All the timeouts should be handled after the initial sleep.
 	mocks.clock.Add(timeoutInitialSleep)

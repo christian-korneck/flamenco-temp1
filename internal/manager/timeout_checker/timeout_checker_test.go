@@ -47,11 +47,11 @@ func timeoutCheckerTestFixtures(t *testing.T) (*TimeoutChecker, func(), *Timeout
 		wg: new(sync.WaitGroup),
 	}
 
-	// mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T16:52:04+02:00")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// mocks.clock.Set(mockedNow)
+	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T12:00:00+00:00")
+	if err != nil {
+		panic(err)
+	}
+	mocks.clock.Set(mockedNow)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	mocks.ctx = ctx
