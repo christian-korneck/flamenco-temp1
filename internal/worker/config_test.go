@@ -11,7 +11,7 @@ import (
 func TestParseURL(t *testing.T) {
 	test := func(expected, input string) {
 		actualURL, err := ParseURL(input)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, expected, actualURL.String())
 	}
 
