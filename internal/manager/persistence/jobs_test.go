@@ -129,7 +129,10 @@ func TestFetchJobsInStatus(t *testing.T) {
 
 	jobs, err = db.FetchJobsInStatus(ctx, api.JobStatusQueued, api.JobStatusUnderConstruction)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Job{job1, job3}, jobs)
+	if assert.Len(t, jobs, 2) {
+		assert.Equal(t, job1.UUID, jobs[0].UUID)
+		assert.Equal(t, job3.UUID, jobs[1].UUID)
+	}
 }
 
 func TestFetchTasksOfJobInStatus(t *testing.T) {

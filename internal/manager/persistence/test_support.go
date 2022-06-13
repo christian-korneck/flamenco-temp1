@@ -18,7 +18,8 @@ import (
 
 // Change this to a filename if you want to run a single test and inspect the
 // resulting database.
-const TestDSN = "file::memory:"
+// const TestDSN = "file::memory:"
+const TestDSN = "/home/sybren/workspace/flamenco/tests.sqlite"
 
 func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 	// Delete the SQLite file if it exists on disk.
@@ -42,6 +43,7 @@ func CreateTestDB(t *testing.T) (db *DB, closer func()) {
 	config := gorm.Config{
 		Logger:   dblogger,
 		ConnPool: sqliteConn,
+		NowFunc:  nowFunc,
 	}
 
 	db, err = openDBWithConfig(TestDSN, &config)

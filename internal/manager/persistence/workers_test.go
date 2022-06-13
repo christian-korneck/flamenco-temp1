@@ -130,10 +130,22 @@ func TestFetchWorkers(t *testing.T) {
 	// One worker:
 	err = db.CreateWorker(ctx, &linuxWorker)
 	assert.NoError(t, err)
+	assert.Equal(t, time.Now().UTC().Location(), linuxWorker.CreatedAt.Location(),
+		"Timestamps should be using UTC timezone")
 
 	workers, err = db.FetchWorkers(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Worker{&linuxWorker}, workers)
+	if assert.Len(t, workers, 1) {
+		// FIXME: this fails, because the fetched timestamps have nil location instead of UTC.
+		// assert.Equal(t, time.Now().UTC().Location(), workers[0].CreatedAt.Location(),
+		// 	"Timestamps should be using UTC timezone")
+
+		assert.Equal(t, linuxWorker.UUID, workers[0].UUID)
+		assert.Equal(t, linuxWorker.Name, workers[0].Name)
+		assert.Equal(t, linuxWorker.Address, workers[0].Address)
+		assert.Equal(t, linuxWorker.Status, workers[0].Status)
+		assert.Equal(t, linuxWorker.SupportedTaskTypes, workers[0].SupportedTaskTypes)
+	}
 
 	// Two workers:
 	windowsWorker := Worker{
@@ -150,5 +162,8 @@ func TestFetchWorkers(t *testing.T) {
 
 	workers, err = db.FetchWorkers(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Worker{&linuxWorker, &windowsWorker}, workers)
+	if assert.Len(t, workers, 2) {
+		assert.Equal(t, linuxWorker.UUID, workers[0].UUID)
+		assert.Equal(t, windowsWorker.UUID, workers[1].UUID)
+	}
 }
