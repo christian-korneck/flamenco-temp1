@@ -84,8 +84,8 @@ type Base struct {
 	// TLSCert        string `yaml:"tlscert"`
 	// ACMEDomainName string `yaml:"acme_domain_name"` // for the ACME Let's Encrypt client
 
-	TaskTimeout time.Duration `yaml:"task_timeout"`
-	// ActiveWorkerTimeoutInterval time.Duration `yaml:"active_worker_timeout_interval"`
+	TaskTimeout   time.Duration `yaml:"task_timeout"`
+	WorkerTimeout time.Duration `yaml:"worker_timeout"`
 
 	// WorkerCleanupMaxAge time.Duration `yaml:"worker_cleanup_max_age"`
 	// WorkerCleanupStatus []string      `yaml:"worker_cleanup_status"`

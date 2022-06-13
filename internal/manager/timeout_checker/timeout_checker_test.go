@@ -64,6 +64,7 @@ func timeoutCheckerTestFixtures(t *testing.T) (*TimeoutChecker, func(), *Timeout
 
 	sm := New(
 		taskTimeout,
+		workerTimeout,
 		mocks.clock,
 		mocks.persist,
 		mocks.taskStateMachine,

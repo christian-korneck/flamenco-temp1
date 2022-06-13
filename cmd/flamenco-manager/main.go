@@ -115,7 +115,9 @@ func main() {
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
 
 	timeoutChecker := timeout_checker.New(
-		configService.Get().TaskTimeout, timeService, persist, taskStateMachine, logStorage)
+		configService.Get().TaskTimeout,
+		configService.Get().WorkerTimeout,
+		timeService, persist, taskStateMachine, logStorage)
 
 	installSignalHandler(mainCtxCancel)
 

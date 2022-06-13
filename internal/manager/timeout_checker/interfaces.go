@@ -17,6 +17,8 @@ import (
 
 type PersistenceService interface {
 	FetchTimedOutTasks(ctx context.Context, untouchedSince time.Time) ([]*persistence.Task, error)
+	FetchTimedOutWorkers(ctx context.Context, lastSeenBefore time.Time) ([]*persistence.Worker, error)
+	SaveWorker(ctx context.Context, w *persistence.Worker) error
 }
 
 var _ PersistenceService = (*persistence.DB)(nil)

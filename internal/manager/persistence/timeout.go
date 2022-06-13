@@ -31,3 +31,16 @@ func (db *DB) FetchTimedOutTasks(ctx context.Context, untouchedSince time.Time) 
 	}
 	return result, nil
 }
+
+func (db *DB) FetchTimedOutWorkers(ctx context.Context, lastSeenBefore time.Time) ([]*Worker, error) {
+	result := []*Worker{}
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Worker{}).
+		Where("workers.status = ?", api.WorkerStatusAwake).
+		Where("workers.last_seen_at <= ?", lastSeenBefore).
+		Scan(&result)
+	if tx.Error != nil {
+		return nil, workerError(tx.Error, "finding timed out workers (last seen before %s)", lastSeenBefore.String())
+	}
+	return result, nil
+}

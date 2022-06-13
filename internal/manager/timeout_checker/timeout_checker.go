@@ -19,7 +19,8 @@ const timeoutInitialSleep = 5 * time.Minute
 
 // TimeoutChecker periodically times out tasks and workers if the worker hasn't sent any update recently.
 type TimeoutChecker struct {
-	taskTimeout time.Duration
+	taskTimeout   time.Duration
+	workerTimeout time.Duration
 
 	clock            clock.Clock
 	persist          PersistenceService
@@ -29,14 +30,16 @@ type TimeoutChecker struct {
 
 // New creates a new TimeoutChecker.
 func New(
-	taskTimeout time.Duration,
+	taskTimeout,
+	workerTimeout time.Duration,
 	clock clock.Clock,
 	persist PersistenceService,
 	taskStateMachine TaskStateMachine,
 	logStorage LogStorage,
 ) *TimeoutChecker {
 	return &TimeoutChecker{
-		taskTimeout: taskTimeout,
+		taskTimeout:   taskTimeout,
+		workerTimeout: workerTimeout,
 
 		clock:            clock,
 		persist:          persist,
@@ -72,34 +75,6 @@ func (ttc *TimeoutChecker) Run(ctx context.Context) {
 			waitDur = timeoutCheckInterval
 		}
 		ttc.checkTasks(ctx)
-		// ttc.checkWorkers(ctx)
+		ttc.checkWorkers(ctx)
 	}
 }
-
-// func (ttc *TimeoutChecker) checkWorkers(db *mgo.Database) {
-// 	timeoutThreshold := UtcNow().Add(-ttc.config.ActiveWorkerTimeoutInterval)
-// 	log.Debugf("Failing all awake workers that have not been seen since %s", timeoutThreshold)
-
-// 	var timedoutWorkers []Worker
-// 	// find all awake workers that either have never been seen, or were seen long ago.
-// 	query := M{
-// 		"status": workerStatusAwake,
-// 		"$or": []M{
-// 			M{"last_activity": M{"$lte": timeoutThreshold}},
-// 			M{"last_activity": M{"$exists": false}},
-// 		},
-// 	}
-// 	projection := M{
-// 		"_id":      1,
-// 		"nickname": 1,
-// 		"address":  1,
-// 		"status":   1,
-// 	}
-// 	if err := db.C("flamenco_workers").Find(query).Select(projection).All(&timedoutWorkers); err != nil {
-// 		log.Warningf("Error finding timed-out workers: %s", err)
-// 	}
-
-// 	for _, worker := range timedoutWorkers {
-// 		worker.Timeout(db, ttc.scheduler)
-// 	}
-// }

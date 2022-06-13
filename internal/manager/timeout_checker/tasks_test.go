@@ -36,6 +36,8 @@ func TestTimeoutCheckerTiming(t *testing.T) {
 		initialTime.Add(timeoutInitialSleep - taskTimeout + 2*timeoutCheckInterval),
 	}
 
+	mocks.persist.EXPECT().FetchTimedOutWorkers(mocks.ctx, gomock.Any()).AnyTimes().Return(nil, nil)
+
 	// Expect three fetches, one after the initial sleep time, and two a regular interval later.
 	fetchTimes := make([]time.Time, len(deadlines))
 	firstCall := mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, deadlines[0]).
@@ -121,6 +123,8 @@ func TestTaskTimeout(t *testing.T) {
 		WorkerID:      &worker.ID,
 		Worker:        &worker,
 	}
+
+	mocks.persist.EXPECT().FetchTimedOutWorkers(mocks.ctx, gomock.Any()).AnyTimes().Return(nil, nil)
 
 	mocks.persist.EXPECT().FetchTimedOutTasks(mocks.ctx, gomock.Any()).
 		Return([]*persistence.Task{&taskUnassigned, &taskUnknownWorker, &taskAssigned}, nil)

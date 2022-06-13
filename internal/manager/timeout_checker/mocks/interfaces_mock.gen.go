@@ -53,6 +53,35 @@ func (mr *MockPersistenceServiceMockRecorder) FetchTimedOutTasks(arg0, arg1 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTimedOutTasks", reflect.TypeOf((*MockPersistenceService)(nil).FetchTimedOutTasks), arg0, arg1)
 }
 
+// FetchTimedOutWorkers mocks base method.
+func (m *MockPersistenceService) FetchTimedOutWorkers(arg0 context.Context, arg1 time.Time) ([]*persistence.Worker, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchTimedOutWorkers", arg0, arg1)
+	ret0, _ := ret[0].([]*persistence.Worker)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchTimedOutWorkers indicates an expected call of FetchTimedOutWorkers.
+func (mr *MockPersistenceServiceMockRecorder) FetchTimedOutWorkers(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTimedOutWorkers", reflect.TypeOf((*MockPersistenceService)(nil).FetchTimedOutWorkers), arg0, arg1)
+}
+
+// SaveWorker mocks base method.
+func (m *MockPersistenceService) SaveWorker(arg0 context.Context, arg1 *persistence.Worker) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveWorker", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveWorker indicates an expected call of SaveWorker.
+func (mr *MockPersistenceServiceMockRecorder) SaveWorker(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveWorker", reflect.TypeOf((*MockPersistenceService)(nil).SaveWorker), arg0, arg1)
+}
+
 // MockTaskStateMachine is a mock of TaskStateMachine interface.
 type MockTaskStateMachine struct {
 	ctrl     *gomock.Controller
