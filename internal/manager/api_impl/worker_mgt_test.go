@@ -38,16 +38,16 @@ func TestFetchWorkers(t *testing.T) {
 	workers := api.WorkerList{
 		Workers: []api.WorkerSummary{
 			{
-				Id:       worker1.UUID,
-				Nickname: worker1.Name,
-				Status:   worker1.Status,
-				Version:  worker1.Software,
+				Id:      worker1.UUID,
+				Name:    worker1.Name,
+				Status:  worker1.Status,
+				Version: worker1.Software,
 			},
 			{
-				Id:       worker2.UUID,
-				Nickname: worker2.Name,
-				Status:   worker2.Status,
-				Version:  worker2.Software,
+				Id:      worker2.UUID,
+				Name:    worker2.Name,
+				Status:  worker2.Status,
+				Version: worker2.Software,
 				StatusChange: &api.WorkerStatusChangeRequest{
 					Status: worker2.StatusRequested,
 					IsLazy: false,
@@ -92,10 +92,10 @@ func TestFetchWorker(t *testing.T) {
 	assert.NoError(t, err)
 	assertResponseJSON(t, echo, http.StatusOK, api.Worker{
 		WorkerSummary: api.WorkerSummary{
-			Id:       workerUUID,
-			Nickname: "дрон",
-			Version:  "3.0",
-			Status:   api.WorkerStatusAwake,
+			Id:      workerUUID,
+			Name:    "дрон",
+			Version: "3.0",
+			Status:  api.WorkerStatusAwake,
 		},
 		IpAddress:          "fe80::5054:ff:fede:2ad7",
 		Platform:           "linux",
@@ -113,7 +113,7 @@ func TestFetchWorker(t *testing.T) {
 	assertResponseJSON(t, echo, http.StatusOK, api.Worker{
 		WorkerSummary: api.WorkerSummary{
 			Id:           workerUUID,
-			Nickname:     "дрон",
+			Name:         "дрон",
 			Version:      "3.0",
 			Status:       api.WorkerStatusAwake,
 			StatusChange: &api.WorkerStatusChangeRequest{Status: requestedStatus},
@@ -142,11 +142,11 @@ func TestRequestWorkerStatusChange(t *testing.T) {
 
 	// Expect a broadcast of the change
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
-		Id:       worker.UUID,
-		Nickname: worker.Name,
-		Status:   prevStatus,
-		Updated:  worker.UpdatedAt,
-		Version:  worker.Software,
+		Id:      worker.UUID,
+		Name:    worker.Name,
+		Status:  prevStatus,
+		Updated: worker.UpdatedAt,
+		Version: worker.Software,
 		StatusChange: &api.WorkerStatusChangeRequest{
 			Status: requestStatus,
 			IsLazy: true,
@@ -187,7 +187,7 @@ func TestRequestWorkerStatusChangeRevert(t *testing.T) {
 	// Expect a broadcast of the change
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:           worker.UUID,
-		Nickname:     worker.Name,
+		Name:         worker.Name,
 		Status:       currentStatus,
 		Updated:      worker.UpdatedAt,
 		Version:      worker.Software,

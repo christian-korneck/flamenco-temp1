@@ -111,10 +111,10 @@ func (f *Flamenco) RequestWorkerStatusChange(e echo.Context, workerUUID string) 
 
 func workerSummary(w persistence.Worker) api.WorkerSummary {
 	summary := api.WorkerSummary{
-		Id:       w.UUID,
-		Nickname: w.Name,
-		Status:   w.Status,
-		Version:  w.Software,
+		Id:      w.UUID,
+		Name:    w.Name,
+		Status:  w.Status,
+		Version: w.Software,
 	}
 	if w.StatusRequested != "" {
 		summary.StatusChange = &api.WorkerStatusChangeRequest{

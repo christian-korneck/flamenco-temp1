@@ -161,7 +161,7 @@ func TestWorkerSignOn(t *testing.T) {
 
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
-		Nickname:       "Lazy Boi",
+		Name:           "Lazy Boi",
 		PreviousStatus: &prevStatus,
 		Status:         api.WorkerStatusStarting,
 		Updated:        worker.UpdatedAt,
@@ -172,7 +172,7 @@ func TestWorkerSignOn(t *testing.T) {
 	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 	echo := mf.prepareMockedJSONRequest(api.WorkerSignOn{
-		Nickname:           "Lazy Boi",
+		Name:               "Lazy Boi",
 		SoftwareVersion:    "3.0-testing",
 		SupportedTaskTypes: []string{"testing", "sleeping", "snoozing"},
 	})
@@ -213,7 +213,7 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	prevStatus := api.WorkerStatusAwake
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
-		Nickname:       worker.Name,
+		Name:           worker.Name,
 		PreviousStatus: &prevStatus,
 		Status:         api.WorkerStatusOffline,
 		Updated:        worker.UpdatedAt,
@@ -238,7 +238,7 @@ func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
 
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
-		Nickname:       worker.Name,
+		Name:           worker.Name,
 		PreviousStatus: ptr(api.WorkerStatusAwake),
 		Status:         api.WorkerStatusOffline,
 		Updated:        worker.UpdatedAt,
@@ -274,7 +274,7 @@ func TestWorkerStateChanged(t *testing.T) {
 	// Expect a broadcast of the change
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
-		Nickname:       worker.Name,
+		Name:           worker.Name,
 		PreviousStatus: &prevStatus,
 		Status:         api.WorkerStatusAwake,
 		Updated:        worker.UpdatedAt,
@@ -312,7 +312,7 @@ func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
 		// asleep but would do so via `offline → starting → asleep`.
 		mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 			Id:             worker.UUID,
-			Nickname:       worker.Name,
+			Name:           worker.Name,
 			PreviousStatus: ptr(api.WorkerStatusOffline),
 			Status:         api.WorkerStatusStarting,
 			Updated:        worker.UpdatedAt,
@@ -345,7 +345,7 @@ func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
 		// Expect a broadcast.
 		mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 			Id:             worker.UUID,
-			Nickname:       worker.Name,
+			Name:           worker.Name,
 			PreviousStatus: ptr(api.WorkerStatusStarting),
 			Status:         api.WorkerStatusAsleep,
 			Updated:        worker.UpdatedAt,

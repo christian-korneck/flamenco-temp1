@@ -83,7 +83,7 @@ func register(ctx context.Context, cfg WorkerConfig, client FlamencoClient) Work
 	secretKey := hex.EncodeToString(secret)
 
 	req := api.RegisterWorkerJSONRequestBody{
-		Nickname:           mustHostname(),
+		Name:               mustHostname(),
 		Platform:           runtime.GOOS,
 		Secret:             secretKey,
 		SupportedTaskTypes: cfg.TaskTypes,
@@ -142,13 +142,13 @@ func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.W
 	logger := log.With().Str("manager", cfg.ManagerURL).Logger()
 
 	req := api.SignOnJSONRequestBody{
-		Nickname:           mustHostname(),
+		Name:               mustHostname(),
 		SupportedTaskTypes: cfg.TaskTypes,
 		SoftwareVersion:    appinfo.ApplicationVersion,
 	}
 
 	logger.Info().
-		Str("nickname", req.Nickname).
+		Str("name", req.Name).
 		Str("softwareVersion", req.SoftwareVersion).
 		Interface("taskTypes", req.SupportedTaskTypes).
 		Msg("signing on at Manager")

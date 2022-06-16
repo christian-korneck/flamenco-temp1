@@ -39,7 +39,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 
 	// TODO: validate the request, should at least have non-empty name, secret, and platform.
 
-	logger.Info().Str("nickname", req.Nickname).Msg("registering new worker")
+	logger.Info().Str("name", req.Name).Msg("registering new worker")
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Secret), bcryptCost)
 	if err != nil {
@@ -49,7 +49,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 
 	dbWorker := persistence.Worker{
 		UUID:               uuid.New(),
-		Name:               req.Nickname,
+		Name:               req.Name,
 		Secret:             string(hashedPassword),
 		Platform:           req.Platform,
 		Address:            e.RealIP(),
@@ -65,7 +65,7 @@ func (f *Flamenco) RegisterWorker(e echo.Context) error {
 
 	return e.JSON(http.StatusOK, &api.RegisteredWorker{
 		Uuid:               dbWorker.UUID,
-		Nickname:           dbWorker.Name,
+		Name:               dbWorker.Name,
 		Address:            dbWorker.Address,
 		Platform:           dbWorker.Platform,
 		Software:           dbWorker.Software,
@@ -116,7 +116,7 @@ func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSON
 	prevStatus := w.Status
 	w.Status = api.WorkerStatusStarting
 	w.Address = e.RealIP()
-	w.Name = update.Nickname
+	w.Name = update.Name
 	w.Software = update.SoftwareVersion
 
 	// Remove trailing spaces from task types, and convert to lower case.

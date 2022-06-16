@@ -62,7 +62,7 @@ func (ttc *TimeoutChecker) timeoutWorker(ctx context.Context, worker *persistenc
 	// Broadcast worker change via SocketIO
 	ttc.broadcaster.BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
-		Nickname:       worker.Name,
+		Name:           worker.Name,
 		PreviousStatus: &prevStatus,
 		Status:         api.WorkerStatusError,
 		Updated:        worker.UpdatedAt,

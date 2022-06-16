@@ -55,7 +55,7 @@ func TestWorkerTimeout(t *testing.T) {
 	prevStatus := worker.Status
 	mocks.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
-		Nickname:       worker.Name,
+		Name:           worker.Name,
 		PreviousStatus: &prevStatus,
 		Status:         api.WorkerStatusError,
 		Updated:        persistedWorker.UpdatedAt,
