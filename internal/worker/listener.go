@@ -81,8 +81,10 @@ func (l *Listener) TaskStarted(ctx context.Context, taskID string) error {
 
 // TaskFailed tells the Manager the task failed for some reason.
 func (l *Listener) TaskFailed(ctx context.Context, taskID string, reason string) error {
+	msg := fmt.Sprintf("Failed: %v", reason)
 	return l.sendTaskUpdate(ctx, taskID, api.TaskUpdateJSONRequestBody{
-		Activity:   ptr(fmt.Sprintf("Failed: %v", reason)),
+		Activity:   &msg,
+		Log:        &msg, // Make sure that this failure also ends up in the task log.
 		TaskStatus: ptr(api.TaskStatusFailed),
 	})
 }
