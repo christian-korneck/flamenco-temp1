@@ -162,34 +162,34 @@ func cmdFramesToVideoParams(logger zerolog.Logger, cmd api.Command) (CreateVideo
 
 	if parameters.exe, ok = cmdParameter[string](cmd, "exe"); !ok || parameters.exe == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'exe' parameter")
-		return parameters, fmt.Errorf("missing 'exe' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterMissingError("exe", cmd)
 	}
 	if parameters.fps, ok = cmdParameter[float64](cmd, "fps"); !ok || parameters.fps == 0.0 {
 		logger.Warn().Interface("command", cmd).Msg("missing 'fps' parameter")
-		return parameters, fmt.Errorf("missing 'fps' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterMissingError("fps", cmd)
 	}
 	if parameters.inputGlob, ok = cmdParameter[string](cmd, "inputGlob"); !ok || parameters.inputGlob == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'inputGlob' parameter")
-		return parameters, fmt.Errorf("missing 'inputGlob' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterMissingError("inputGlob", cmd)
 	}
 	if parameters.outputFile, ok = cmdParameter[string](cmd, "outputFile"); !ok || parameters.outputFile == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'outputFile' parameter")
-		return parameters, fmt.Errorf("missing 'outputFile' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterMissingError("outputFile", cmd)
 	}
 	if parameters.argsBefore, ok = cmdParameterAsStrings(cmd, "argsBefore"); !ok {
 		logger.Warn().Interface("command", cmd).Msg("invalid 'argsBefore' parameter")
-		return parameters, fmt.Errorf("invalid 'argsBefore' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterInvalidError("argsBefore", cmd, "cannot convert to list of strings")
 	}
 	if parameters.args, ok = cmdParameterAsStrings(cmd, "args"); !ok {
 		logger.Warn().Interface("command", cmd).Msg("invalid 'args' parameter")
-		return parameters, fmt.Errorf("invalid 'args' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterInvalidError("args", cmd, "cannot convert to list of strings")
 	}
 
 	// Move any CLI args from 'exe' to 'argsBefore'.
 	exeArgs, err := shlex.Split(parameters.exe)
 	if err != nil {
 		logger.Warn().Err(err).Interface("command", cmd).Msg("error parsing 'exe' parameter with shlex")
-		return parameters, fmt.Errorf("parsing 'exe' parameter %q: %w", parameters.exe, err)
+		return parameters, NewParameterInvalidError("exe", cmd, err.Error())
 	}
 	if len(exeArgs) > 1 {
 		allArgsBefore := []string{}

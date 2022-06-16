@@ -157,26 +157,26 @@ func cmdBlenderRenderParams(logger zerolog.Logger, cmd api.Command) (BlenderPara
 
 	if parameters.exe, ok = cmdParameter[string](cmd, "exe"); !ok || parameters.exe == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'exe' parameter")
-		return parameters, fmt.Errorf("missing 'exe' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterMissingError("exe", cmd)
 	}
 	if parameters.argsBefore, ok = cmdParameterAsStrings(cmd, "argsBefore"); !ok {
 		logger.Warn().Interface("command", cmd).Msg("invalid 'argsBefore' parameter")
-		return parameters, fmt.Errorf("invalid 'argsBefore' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterInvalidError("argsBefore", cmd, "cannot convert to list of strings")
 	}
 	if parameters.blendfile, ok = cmdParameter[string](cmd, "blendfile"); !ok || parameters.blendfile == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'blendfile' parameter")
-		return parameters, fmt.Errorf("missing 'blendfile' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterMissingError("blendfile", cmd)
 	}
 	if parameters.args, ok = cmdParameterAsStrings(cmd, "args"); !ok {
 		logger.Warn().Interface("command", cmd).Msg("invalid 'args' parameter")
-		return parameters, fmt.Errorf("invalid 'args' parameter: %+v", cmd.Parameters)
+		return parameters, NewParameterInvalidError("args", cmd, "cannot convert to list of strings")
 	}
 
 	// Move any CLI args from 'exe' to 'argsBefore'.
 	exeArgs, err := shlex.Split(parameters.exe)
 	if err != nil {
 		logger.Warn().Err(err).Interface("command", cmd).Msg("error parsing 'exe' parameter with shlex")
-		return parameters, fmt.Errorf("parsing 'exe' parameter %q: %w", parameters.exe, err)
+		return parameters, NewParameterInvalidError("exe", cmd, err.Error())
 	}
 	if len(exeArgs) > 1 {
 		allArgsBefore := []string{}

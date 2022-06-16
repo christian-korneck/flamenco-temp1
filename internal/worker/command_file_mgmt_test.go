@@ -39,7 +39,11 @@ func TestCmdMoveDirectoryNonExistentSourceDir(t *testing.T) {
 	f.mocks.listener.EXPECT().LogProduced(gomock.Any(), taskID,
 		"move-directory: source path \"render/output/here__intermediate\" does not exist, not moving anything")
 	err := f.run()
-	assert.Error(t, err)
+	var paramErr ParameterInvalidError
+	if assert.ErrorAs(t, err, &paramErr) {
+		assert.Equal(t, "src", paramErr.Parameter)
+		assert.Equal(t, "path does not exist", paramErr.Message)
+	}
 }
 
 func TestCmdMoveDirectoryHappy(t *testing.T) {

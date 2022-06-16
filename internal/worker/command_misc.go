@@ -6,7 +6,6 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -20,7 +19,7 @@ import (
 func (ce *CommandExecutor) cmdEcho(ctx context.Context, logger zerolog.Logger, taskID string, cmd api.Command) error {
 	message, ok := cmd.Parameters["message"]
 	if !ok {
-		return fmt.Errorf("missing 'message' setting")
+		return NewParameterMissingError("message", cmd)
 	}
 	messageStr := fmt.Sprintf("%v", message)
 
@@ -36,7 +35,7 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 
 	sleepTime, ok := cmd.Parameters["duration_in_seconds"]
 	if !ok {
-		return errors.New("missing setting 'duration_in_seconds'")
+		return NewParameterMissingError("duration_in_seconds", cmd)
 	}
 
 	var duration time.Duration
@@ -47,7 +46,7 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 		duration = time.Duration(v) * time.Second
 	default:
 		log.Warn().Interface("duration_in_seconds", v).Msg("bad type for setting 'duration_in_seconds', expected int")
-		return fmt.Errorf("bad type for setting 'duration_in_seconds', expected int, not %T", v)
+		return NewParameterInvalidError("duration_in_seconds", cmd, "bad type %T, expecting int or float", sleepTime)
 	}
 
 	log.Info().Str("duration", duration.String()).Msg("sleep")

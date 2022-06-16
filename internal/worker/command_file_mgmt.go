@@ -26,11 +26,11 @@ func (ce *CommandExecutor) cmdMoveDirectory(ctx context.Context, logger zerolog.
 
 	if src, ok = cmdParameter[string](cmd, "src"); !ok || src == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'src' parameter")
-		return fmt.Errorf("missing 'src' parameter: %+v", cmd.Parameters)
+		return NewParameterMissingError("src", cmd)
 	}
 	if dest, ok = cmdParameter[string](cmd, "dest"); !ok || dest == "" {
 		logger.Warn().Interface("command", cmd).Msg("missing 'dest' parameter")
-		return fmt.Errorf("missing 'dest' parameter: %+v", cmd.Parameters)
+		return NewParameterMissingError("dest", cmd)
 	}
 
 	logger = logger.With().
@@ -39,12 +39,11 @@ func (ce *CommandExecutor) cmdMoveDirectory(ctx context.Context, logger zerolog.
 		Logger()
 	if !fileExists(src) {
 		logger.Warn().Msg("source path does not exist, not moving anything")
-
 		msg := fmt.Sprintf("%s: source path %q does not exist, not moving anything", cmd.Name, src)
 		if err := ce.listener.LogProduced(ctx, taskID, msg); err != nil {
 			return err
 		}
-		return fmt.Errorf(msg)
+		return NewParameterInvalidError("src", cmd, "path does not exist")
 	}
 
 	if fileExists(dest) {
