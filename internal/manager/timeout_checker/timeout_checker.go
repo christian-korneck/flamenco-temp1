@@ -62,6 +62,7 @@ func (ttc *TimeoutChecker) Run(ctx context.Context) {
 
 	log.Info().
 		Str("taskTimeout", ttc.taskTimeout.String()).
+		Str("workerTimeout", ttc.workerTimeout.String()).
 		Str("initialSleep", timeoutInitialSleep.String()).
 		Str("checkInterval", timeoutCheckInterval.String()).
 		Msg("TimeoutChecker: starting up")
