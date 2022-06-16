@@ -144,14 +144,16 @@ func shutdown() {
 	done := make(chan struct{})
 	go func() {
 		if w != nil {
-			shutdownCtx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
-			defer cancelFunc()
-			w.SignOff(shutdownCtx)
 			w.Close()
 			listener.Wait()
 			if err := buffer.Close(); err != nil {
 				log.Error().Err(err).Msg("closing upstream task buffer")
 			}
+
+			// Sign off as the last step. Any flushes should happen while we're still signed on.
+			signoffCtx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancelFunc()
+			w.SignOff(signoffCtx)
 		}
 		close(done)
 	}()

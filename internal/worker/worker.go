@@ -63,5 +63,4 @@ func (w *Worker) Close() {
 	log.Debug().Msg("worker gracefully shutting down")
 	close(w.doneChan)
 	w.doneWg.Wait()
-	log.Debug().Msg("worker shut down")
 }
