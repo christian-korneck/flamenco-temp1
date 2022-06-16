@@ -57,6 +57,29 @@ func TestTaskScheduleHappy(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
+func TestTaskScheduleNoTaskAvailable(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	echo := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echo, &worker)
+
+	// Expect a call into the persistence layer, which should return nil.
+	ctx := echo.Request().Context()
+	mf.persistence.EXPECT().ScheduleTask(ctx, &worker).Return(nil, nil)
+
+	// This call should still trigger a "worker seen" call, as the worker is
+	// actively asking for tasks.
+	mf.persistence.EXPECT().WorkerSeen(ctx, &worker)
+
+	err := mf.flamenco.ScheduleTask(echo)
+	assert.NoError(t, err)
+	assertResponseEmpty(t, echo)
+}
+
 func TestTaskScheduleNonActiveStatus(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

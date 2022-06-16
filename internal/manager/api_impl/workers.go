@@ -257,10 +257,19 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
+	ctx := e.Request().Context()
 	logger.Debug().Msg("worker requesting task")
 
 	f.taskSchedulerMutex.Lock()
 	defer f.taskSchedulerMutex.Unlock()
+
+	// The worker is actively asking for a task, so note that it was seen
+	// regardless of any failures below, or whether there actually is a task to
+	// run.
+	if err := f.workerSeen(ctx, logger, worker); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError,
+			"error storing worker 'last seen' timestamp in database")
+	}
 
 	// Check that this worker is actually allowed to do work.
 	requiredStatusToGetTask := api.WorkerStatusAwake
@@ -303,12 +312,8 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Start timeout measurement as soon as the Worker gets the task assigned.
-	ctx := e.Request().Context()
 	if err := f.workerPingedTask(ctx, logger, dbTask); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error updating task for timeout calculation: %v", err)
-	}
-	if err := f.workerSeen(ctx, logger, worker); err != nil {
-		return sendAPIError(e, http.StatusInternalServerError, "error storing worker 'last seen' timestamp in database")
 	}
 
 	// Convert database objects to API objects:
