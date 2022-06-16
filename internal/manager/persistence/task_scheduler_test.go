@@ -259,6 +259,36 @@ func TestAssignedToOtherWorker(t *testing.T) {
 	assert.Equal(t, *task.WorkerID, w.ID, "the task should now be assigned to the worker it was scheduled for")
 }
 
+func TestPreviouslyFailed(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
+
+	w := linuxWorker(t, db)
+
+	att1 := authorTestTask("1 failed task", "blender")
+	att2 := authorTestTask("2 expected task", "blender")
+	atj := authorTestJob(
+		"1295757b-e668-4c49-8b89-f73db8270e42",
+		"simple-blender-render",
+		att1, att2)
+	job := constructTestJob(ctx, t, db, atj)
+
+	// Mimick that this worker already failed the first task.
+	tasks, err := db.FetchTasksOfJob(ctx, job)
+	assert.NoError(t, err)
+	numFailed, err := db.AddWorkerToTaskFailedList(ctx, tasks[0], &w)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, numFailed)
+
+	// This should assign the 2nd task.
+	task, err := db.ScheduleTask(ctx, &w)
+	assert.NoError(t, err)
+	if task == nil {
+		t.Fatal("task is nil")
+	}
+	assert.Equal(t, att2.Name, task.Name, "the second task should have been chosen")
+}
+
 // To test: blocklists
 
 // To test: variable replacement

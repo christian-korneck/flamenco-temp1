@@ -118,10 +118,12 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 	findTaskResult := tx.
 		Model(&task).
 		Joins("left join jobs on tasks.job_id = jobs.id").
+		Joins("left join task_failures TF on tasks.id = TF.task_id and TF.worker_id=?", w.ID).
 		Where("tasks.status in ?", schedulableTaskStatuses). // Schedulable task statuses
 		Where("jobs.status in ?", schedulableJobStatuses).   // Schedulable job statuses
 		Where("tasks.type in ?", w.TaskTypes()).             // Supported task types
 		Where("tasks.id not in (?)", incompleteDepsQuery).   // Dependencies completed
+		Where("TF.worker_id is NULL").                       // Not failed before
 		// TODO: Non-blocklisted
 		Order("jobs.priority desc").  // Highest job priority
 		Order("tasks.priority desc"). // Highest task priority
