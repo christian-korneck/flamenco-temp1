@@ -5,7 +5,7 @@ package worker
 import (
 	"context"
 	"errors"
-	"os"
+	"fmt"
 	"testing"
 
 	"github.com/benbjohnson/clock"
@@ -16,8 +16,6 @@ import (
 	"git.blender.org/flamenco/internal/worker/mocks"
 	"git.blender.org/flamenco/pkg/api"
 )
-
-const testBufferDBFilename = ":memory:"
 
 type UpstreamBufferDBMocks struct {
 	client *mocks.MockFlamencoClient
@@ -30,15 +28,19 @@ func mockUpstreamBufferDB(t *testing.T, mockCtrl *gomock.Controller) (*UpstreamB
 		clock:  clock.NewMock(),
 	}
 
-	// Always start tests with a fresh database.
-	os.Remove(testBufferDBFilename)
-
 	ub, err := NewUpstreamBuffer(mocks.client, mocks.clock)
 	if err != nil {
 		t.Fatalf("unable to create upstream buffer: %v", err)
 	}
 
 	return ub, &mocks
+}
+
+// sqliteTestDBName returns a DSN for SQLite that separates tests from each
+// other, but lets all connections made within the same test to connect to the
+// same in-memory instance.
+func sqliteTestDBName(t *testing.T) string {
+	return fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())
 }
 
 func TestUpstreamBufferCloseUnopened(t *testing.T) {
@@ -57,7 +59,7 @@ func TestUpstreamBufferManagerUnavailable(t *testing.T) {
 	ctx := context.Background()
 
 	ub, mocks := mockUpstreamBufferDB(t, mockCtrl)
-	assert.NoError(t, ub.OpenDB(ctx, testBufferDBFilename))
+	assert.NoError(t, ub.OpenDB(ctx, sqliteTestDBName(t)))
 
 	// Send a task update without Manager available.
 	taskID := "3960dec4-978e-40ab-bede-bfa6428c6ebc"
