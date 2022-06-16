@@ -124,6 +124,32 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	assertResponseJSON(t, echoCtx, http.StatusLocked, expectBody)
 }
 
+func TestTaskScheduleOtherStatusRequestedAndBadState(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	// Even when the worker is in a state that doesn't allow execution, if there
+	// is a status change requested, this should be communicated to the worker.
+	worker.Status = api.WorkerStatusError
+	worker.StatusChangeRequest(api.WorkerStatusAwake, false)
+
+	echoCtx := mf.prepareMockedRequest(nil)
+	requestWorkerStore(echoCtx, &worker)
+
+	// The worker should be marked as 'seen', even when it's in a state that
+	// doesn't allow task execution.
+	mf.persistence.EXPECT().WorkerSeen(echoCtx.Request().Context(), &worker)
+
+	err := mf.flamenco.ScheduleTask(echoCtx)
+	assert.NoError(t, err)
+
+	expectBody := api.WorkerStateChange{StatusRequested: api.WorkerStatusAwake}
+	assertResponseJSON(t, echoCtx, http.StatusLocked, expectBody)
+}
+
 func TestWorkerSignOn(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

@@ -272,15 +272,6 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Check that this worker is actually allowed to do work.
-	requiredStatusToGetTask := api.WorkerStatusAwake
-	if worker.Status != requiredStatusToGetTask {
-		logger.Warn().
-			Str("workerStatus", string(worker.Status)).
-			Str("requiredStatus", string(requiredStatusToGetTask)).
-			Msg("worker asking for task but is in wrong state")
-		return sendAPIError(e, http.StatusConflict,
-			fmt.Sprintf("worker is in state %q, requires state %q to execute tasks", worker.Status, requiredStatusToGetTask))
-	}
 	if worker.StatusRequested != "" {
 		logger.Warn().
 			Str("workerStatus", string(worker.Status)).
@@ -289,6 +280,16 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		return e.JSON(http.StatusLocked, api.WorkerStateChange{
 			StatusRequested: worker.StatusRequested,
 		})
+	}
+
+	requiredStatusToGetTask := api.WorkerStatusAwake
+	if worker.Status != requiredStatusToGetTask {
+		logger.Warn().
+			Str("workerStatus", string(worker.Status)).
+			Str("requiredStatus", string(requiredStatusToGetTask)).
+			Msg("worker asking for task but is in wrong state")
+		return sendAPIError(e, http.StatusConflict,
+			fmt.Sprintf("worker is in state %q, requires state %q to execute tasks", worker.Status, requiredStatusToGetTask))
 	}
 
 	// Get a task to execute:
