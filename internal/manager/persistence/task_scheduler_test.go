@@ -259,7 +259,7 @@ func TestAssignedToOtherWorker(t *testing.T) {
 	assert.Equal(t, *task.WorkerID, w.ID, "the task should now be assigned to the worker it was scheduled for")
 }
 
-// To test: blacklists
+// To test: blocklists
 
 // To test: variable replacement
 

@@ -83,7 +83,7 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 	task := Task{}
 
 	// If a task is alreay active & assigned to this worker, return just that.
-	// Note that this task type could be blacklisted or no longer supported by the
+	// Note that this task type could be blocklisted or no longer supported by the
 	// Worker, but since it's active that is unlikely.
 	assignedTaskResult := tx.
 		Model(&task).
@@ -122,7 +122,7 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 		Where("jobs.status in ?", schedulableJobStatuses).   // Schedulable job statuses
 		Where("tasks.type in ?", w.TaskTypes()).             // Supported task types
 		Where("tasks.id not in (?)", incompleteDepsQuery).   // Dependencies completed
-		// TODO: Non-blacklisted
+		// TODO: Non-blocklisted
 		Order("jobs.priority desc").  // Highest job priority
 		Order("tasks.priority desc"). // Highest task priority
 		Limit(1).

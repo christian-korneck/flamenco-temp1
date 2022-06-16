@@ -469,7 +469,7 @@ func (sm *StateMachine) requeueTasks(
 		return "", fmt.Errorf("queueing tasks of job %s: %w", job.UUID, err)
 	}
 
-	// TODO: also reset the 'failed by workers' blacklist.
+	// TODO: also reset the 'failed by workers' blocklist.
 
 	// The appropriate tasks have been requeued, so now the job can go from "requeueing" to "queued".
 	return api.JobStatusQueued, nil
