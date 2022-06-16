@@ -90,7 +90,11 @@ func (w *Worker) runStateAwake(ctx context.Context) {
 		}
 
 		// Do some rate limiting. This is mostly useful while developing.
-		time.Sleep(durationTaskComplete)
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(durationTaskComplete):
+		}
 	}
 }
 
