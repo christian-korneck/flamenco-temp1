@@ -88,11 +88,13 @@ func TestTaskScheduleNonActiveStatus(t *testing.T) {
 	worker := testWorker()
 	worker.Status = api.WorkerStatusAsleep
 
-	// Explicitly NO expected calls to the persistence layer. Since the worker is
-	// not in a state that allows task execution, there should be no DB queries.
-
 	echoCtx := mf.prepareMockedRequest(nil)
 	requestWorkerStore(echoCtx, &worker)
+
+	// The worker should be marked as 'seen', even when it's in a state that
+	// doesn't allow task execution.
+	mf.persistence.EXPECT().WorkerSeen(echoCtx.Request().Context(), &worker)
+
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
 
@@ -108,11 +110,13 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 	worker := testWorker()
 	worker.StatusChangeRequest(api.WorkerStatusAsleep, false)
 
-	// Explicitly NO expected calls to the persistence layer. Since the worker is
-	// not in a state that allows task execution, there should be no DB queries.
-
 	echoCtx := mf.prepareMockedRequest(nil)
 	requestWorkerStore(echoCtx, &worker)
+
+	// The worker should be marked as 'seen', even when it's in a state that
+	// doesn't allow task execution.
+	mf.persistence.EXPECT().WorkerSeen(echoCtx.Request().Context(), &worker)
+
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
 
