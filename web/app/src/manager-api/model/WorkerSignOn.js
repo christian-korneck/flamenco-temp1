@@ -22,13 +22,13 @@ class WorkerSignOn {
     /**
      * Constructs a new <code>WorkerSignOn</code>.
      * @alias module:model/WorkerSignOn
-     * @param nickname {String} 
+     * @param name {String} 
      * @param supportedTaskTypes {Array.<String>} 
      * @param softwareVersion {String} 
      */
-    constructor(nickname, supportedTaskTypes, softwareVersion) { 
+    constructor(name, supportedTaskTypes, softwareVersion) { 
         
-        WorkerSignOn.initialize(this, nickname, supportedTaskTypes, softwareVersion);
+        WorkerSignOn.initialize(this, name, supportedTaskTypes, softwareVersion);
     }
 
     /**
@@ -36,8 +36,8 @@ class WorkerSignOn {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, nickname, supportedTaskTypes, softwareVersion) { 
-        obj['nickname'] = nickname;
+    static initialize(obj, name, supportedTaskTypes, softwareVersion) { 
+        obj['name'] = name;
         obj['supported_task_types'] = supportedTaskTypes;
         obj['software_version'] = softwareVersion;
     }
@@ -53,8 +53,8 @@ class WorkerSignOn {
         if (data) {
             obj = obj || new WorkerSignOn();
 
-            if (data.hasOwnProperty('nickname')) {
-                obj['nickname'] = ApiClient.convertToType(data['nickname'], 'String');
+            if (data.hasOwnProperty('name')) {
+                obj['name'] = ApiClient.convertToType(data['name'], 'String');
             }
             if (data.hasOwnProperty('supported_task_types')) {
                 obj['supported_task_types'] = ApiClient.convertToType(data['supported_task_types'], ['String']);
@@ -70,9 +70,9 @@ class WorkerSignOn {
 }
 
 /**
- * @member {String} nickname
+ * @member {String} name
  */
-WorkerSignOn.prototype['nickname'] = undefined;
+WorkerSignOn.prototype['name'] = undefined;
 
 /**
  * @member {Array.<String>} supported_task_types

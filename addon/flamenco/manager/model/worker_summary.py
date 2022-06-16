@@ -90,7 +90,7 @@ class WorkerSummary(ModelNormal):
         lazy_import()
         return {
             'id': (str,),  # noqa: E501
-            'nickname': (str,),  # noqa: E501
+            'name': (str,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
             'status_change': (WorkerStatusChangeRequest,),  # noqa: E501
@@ -103,7 +103,7 @@ class WorkerSummary(ModelNormal):
 
     attribute_map = {
         'id': 'id',  # noqa: E501
-        'nickname': 'nickname',  # noqa: E501
+        'name': 'name',  # noqa: E501
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
         'status_change': 'status_change',  # noqa: E501
@@ -116,12 +116,12 @@ class WorkerSummary(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, id, nickname, status, version, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, id, name, status, version, *args, **kwargs):  # noqa: E501
         """WorkerSummary - a model defined in OpenAPI
 
         Args:
             id (str):
-            nickname (str):
+            name (str):
             status (WorkerStatus):
             version (str): Version of Flamenco this Worker is running
 
@@ -185,7 +185,7 @@ class WorkerSummary(ModelNormal):
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
         self.id = id
-        self.nickname = nickname
+        self.name = name
         self.status = status
         self.version = version
         for var_name, var_value in kwargs.items():
@@ -208,12 +208,12 @@ class WorkerSummary(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, id, nickname, status, version, *args, **kwargs):  # noqa: E501
+    def __init__(self, id, name, status, version, *args, **kwargs):  # noqa: E501
         """WorkerSummary - a model defined in OpenAPI
 
         Args:
             id (str):
-            nickname (str):
+            name (str):
             status (WorkerStatus):
             version (str): Version of Flamenco this Worker is running
 
@@ -275,7 +275,7 @@ class WorkerSummary(ModelNormal):
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
         self.id = id
-        self.nickname = nickname
+        self.name = name
         self.status = status
         self.version = version
         for var_name, var_value in kwargs.items():

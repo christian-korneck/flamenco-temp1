@@ -6,7 +6,7 @@ All information about a Worker
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **str** |  | 
-**nickname** | **str** |  | 
+**name** | **str** |  | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
 **version** | **str** | Version of Flamenco this Worker is running | 
 **ip_address** | **str** | IP address of the Worker | 

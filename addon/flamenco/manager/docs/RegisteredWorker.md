@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **uuid** | **str** |  | 
-**nickname** | **str** |  | 
+**name** | **str** |  | 
 **address** | **str** |  | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
 **platform** | **str** |  | 

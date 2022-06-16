@@ -25,11 +25,11 @@ class WorkerRegistration {
      * @param secret {String} 
      * @param platform {String} 
      * @param supportedTaskTypes {Array.<String>} 
-     * @param nickname {String} 
+     * @param name {String} 
      */
-    constructor(secret, platform, supportedTaskTypes, nickname) { 
+    constructor(secret, platform, supportedTaskTypes, name) { 
         
-        WorkerRegistration.initialize(this, secret, platform, supportedTaskTypes, nickname);
+        WorkerRegistration.initialize(this, secret, platform, supportedTaskTypes, name);
     }
 
     /**
@@ -37,11 +37,11 @@ class WorkerRegistration {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, secret, platform, supportedTaskTypes, nickname) { 
+    static initialize(obj, secret, platform, supportedTaskTypes, name) { 
         obj['secret'] = secret;
         obj['platform'] = platform;
         obj['supported_task_types'] = supportedTaskTypes;
-        obj['nickname'] = nickname;
+        obj['name'] = name;
     }
 
     /**
@@ -64,8 +64,8 @@ class WorkerRegistration {
             if (data.hasOwnProperty('supported_task_types')) {
                 obj['supported_task_types'] = ApiClient.convertToType(data['supported_task_types'], ['String']);
             }
-            if (data.hasOwnProperty('nickname')) {
-                obj['nickname'] = ApiClient.convertToType(data['nickname'], 'String');
+            if (data.hasOwnProperty('name')) {
+                obj['name'] = ApiClient.convertToType(data['name'], 'String');
             }
         }
         return obj;
@@ -90,9 +90,9 @@ WorkerRegistration.prototype['platform'] = undefined;
 WorkerRegistration.prototype['supported_task_types'] = undefined;
 
 /**
- * @member {String} nickname
+ * @member {String} name
  */
-WorkerRegistration.prototype['nickname'] = undefined;
+WorkerRegistration.prototype['name'] = undefined;
 
 
 

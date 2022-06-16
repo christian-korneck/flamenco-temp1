@@ -81,7 +81,7 @@ class WorkerSignOn(ModelNormal):
                 and the value is attribute type.
         """
         return {
-            'nickname': (str,),  # noqa: E501
+            'name': (str,),  # noqa: E501
             'supported_task_types': ([str],),  # noqa: E501
             'software_version': (str,),  # noqa: E501
         }
@@ -92,7 +92,7 @@ class WorkerSignOn(ModelNormal):
 
 
     attribute_map = {
-        'nickname': 'nickname',  # noqa: E501
+        'name': 'name',  # noqa: E501
         'supported_task_types': 'supported_task_types',  # noqa: E501
         'software_version': 'software_version',  # noqa: E501
     }
@@ -104,11 +104,11 @@ class WorkerSignOn(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, nickname, supported_task_types, software_version, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, name, supported_task_types, software_version, *args, **kwargs):  # noqa: E501
         """WorkerSignOn - a model defined in OpenAPI
 
         Args:
-            nickname (str):
+            name (str):
             supported_task_types ([str]):
             software_version (str):
 
@@ -170,7 +170,7 @@ class WorkerSignOn(ModelNormal):
         self._configuration = _configuration
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
-        self.nickname = nickname
+        self.name = name
         self.supported_task_types = supported_task_types
         self.software_version = software_version
         for var_name, var_value in kwargs.items():
@@ -193,11 +193,11 @@ class WorkerSignOn(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, nickname, supported_task_types, software_version, *args, **kwargs):  # noqa: E501
+    def __init__(self, name, supported_task_types, software_version, *args, **kwargs):  # noqa: E501
         """WorkerSignOn - a model defined in OpenAPI
 
         Args:
-            nickname (str):
+            name (str):
             supported_task_types ([str]):
             software_version (str):
 
@@ -257,7 +257,7 @@ class WorkerSignOn(ModelNormal):
         self._configuration = _configuration
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
-        self.nickname = nickname
+        self.name = name
         self.supported_task_types = supported_task_types
         self.software_version = software_version
         for var_name, var_value in kwargs.items():

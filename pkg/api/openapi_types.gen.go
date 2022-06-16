@@ -318,7 +318,7 @@ type MayKeepRunning struct {
 // RegisteredWorker defines model for RegisteredWorker.
 type RegisteredWorker struct {
 	Address            string       `json:"address"`
-	Nickname           string       `json:"nickname"`
+	Name               string       `json:"name"`
 	Platform           string       `json:"platform"`
 	Software           string       `json:"software"`
 	Status             WorkerStatus `json:"status"`
@@ -455,7 +455,7 @@ type SocketIOWorkerUpdate struct {
 	Id string `json:"id"`
 
 	// Name of the worker
-	Nickname       string        `json:"nickname"`
+	Name           string        `json:"name"`
 	PreviousStatus *WorkerStatus `json:"previous_status,omitempty"`
 	Status         WorkerStatus  `json:"status"`
 
@@ -556,7 +556,7 @@ type WorkerList struct {
 
 // WorkerRegistration defines model for WorkerRegistration.
 type WorkerRegistration struct {
-	Nickname           string   `json:"nickname"`
+	Name               string   `json:"name"`
 	Platform           string   `json:"platform"`
 	Secret             string   `json:"secret"`
 	SupportedTaskTypes []string `json:"supported_task_types"`
@@ -564,7 +564,7 @@ type WorkerRegistration struct {
 
 // WorkerSignOn defines model for WorkerSignOn.
 type WorkerSignOn struct {
-	Nickname           string   `json:"nickname"`
+	Name               string   `json:"name"`
 	SoftwareVersion    string   `json:"software_version"`
 	SupportedTaskTypes []string `json:"supported_task_types"`
 }
@@ -591,9 +591,9 @@ type WorkerStatusChangeRequest struct {
 
 // Basic information about a Worker.
 type WorkerSummary struct {
-	Id       string       `json:"id"`
-	Nickname string       `json:"nickname"`
-	Status   WorkerStatus `json:"status"`
+	Id     string       `json:"id"`
+	Name   string       `json:"name"`
+	Status WorkerStatus `json:"status"`
 
 	// Request for a Worker to change its status to `status`.
 	StatusChange *WorkerStatusChangeRequest `json:"status_change,omitempty"`

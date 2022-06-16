@@ -90,7 +90,7 @@ class SocketIOWorkerUpdate(ModelNormal):
         lazy_import()
         return {
             'id': (str,),  # noqa: E501
-            'nickname': (str,),  # noqa: E501
+            'name': (str,),  # noqa: E501
             'updated': (datetime,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
@@ -105,7 +105,7 @@ class SocketIOWorkerUpdate(ModelNormal):
 
     attribute_map = {
         'id': 'id',  # noqa: E501
-        'nickname': 'nickname',  # noqa: E501
+        'name': 'name',  # noqa: E501
         'updated': 'updated',  # noqa: E501
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
@@ -120,12 +120,12 @@ class SocketIOWorkerUpdate(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, id, nickname, updated, status, version, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, id, name, updated, status, version, *args, **kwargs):  # noqa: E501
         """SocketIOWorkerUpdate - a model defined in OpenAPI
 
         Args:
             id (str): UUID of the Worker
-            nickname (str): Name of the worker
+            name (str): Name of the worker
             updated (datetime): Timestamp of last update
             status (WorkerStatus):
             version (str):
@@ -191,7 +191,7 @@ class SocketIOWorkerUpdate(ModelNormal):
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
         self.id = id
-        self.nickname = nickname
+        self.name = name
         self.updated = updated
         self.status = status
         self.version = version
@@ -215,12 +215,12 @@ class SocketIOWorkerUpdate(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, id, nickname, updated, status, version, *args, **kwargs):  # noqa: E501
+    def __init__(self, id, name, updated, status, version, *args, **kwargs):  # noqa: E501
         """SocketIOWorkerUpdate - a model defined in OpenAPI
 
         Args:
             id (str): UUID of the Worker
-            nickname (str): Name of the worker
+            name (str): Name of the worker
             updated (datetime): Timestamp of last update
             status (WorkerStatus):
             version (str):
@@ -284,7 +284,7 @@ class SocketIOWorkerUpdate(ModelNormal):
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
         self.id = id
-        self.nickname = nickname
+        self.name = name
         self.updated = updated
         self.status = status
         self.version = version

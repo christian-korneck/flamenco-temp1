@@ -30,16 +30,16 @@ class Worker {
      * @implements module:model/WorkerSummary
      * @implements module:model/WorkerAllOf
      * @param id {String} 
-     * @param nickname {String} 
+     * @param name {String} 
      * @param status {module:model/WorkerStatus} 
      * @param version {String} Version of Flamenco this Worker is running
      * @param ipAddress {String} IP address of the Worker
      * @param platform {String} Operating system of the Worker
      * @param supportedTaskTypes {Array.<String>} 
      */
-    constructor(id, nickname, status, version, ipAddress, platform, supportedTaskTypes) { 
-        WorkerSummary.initialize(this, id, nickname, status, version);WorkerAllOf.initialize(this, ipAddress, platform, supportedTaskTypes);
-        Worker.initialize(this, id, nickname, status, version, ipAddress, platform, supportedTaskTypes);
+    constructor(id, name, status, version, ipAddress, platform, supportedTaskTypes) { 
+        WorkerSummary.initialize(this, id, name, status, version);WorkerAllOf.initialize(this, ipAddress, platform, supportedTaskTypes);
+        Worker.initialize(this, id, name, status, version, ipAddress, platform, supportedTaskTypes);
     }
 
     /**
@@ -47,9 +47,9 @@ class Worker {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, nickname, status, version, ipAddress, platform, supportedTaskTypes) { 
+    static initialize(obj, id, name, status, version, ipAddress, platform, supportedTaskTypes) { 
         obj['id'] = id;
-        obj['nickname'] = nickname;
+        obj['name'] = name;
         obj['status'] = status;
         obj['version'] = version;
         obj['ip_address'] = ipAddress;
@@ -73,8 +73,8 @@ class Worker {
             if (data.hasOwnProperty('id')) {
                 obj['id'] = ApiClient.convertToType(data['id'], 'String');
             }
-            if (data.hasOwnProperty('nickname')) {
-                obj['nickname'] = ApiClient.convertToType(data['nickname'], 'String');
+            if (data.hasOwnProperty('name')) {
+                obj['name'] = ApiClient.convertToType(data['name'], 'String');
             }
             if (data.hasOwnProperty('status')) {
                 obj['status'] = WorkerStatus.constructFromObject(data['status']);
@@ -107,9 +107,9 @@ class Worker {
 Worker.prototype['id'] = undefined;
 
 /**
- * @member {String} nickname
+ * @member {String} name
  */
-Worker.prototype['nickname'] = undefined;
+Worker.prototype['name'] = undefined;
 
 /**
  * @member {module:model/WorkerStatus} status
@@ -151,9 +151,9 @@ Worker.prototype['supported_task_types'] = undefined;
  */
 WorkerSummary.prototype['id'] = undefined;
 /**
- * @member {String} nickname
+ * @member {String} name
  */
-WorkerSummary.prototype['nickname'] = undefined;
+WorkerSummary.prototype['name'] = undefined;
 /**
  * @member {module:model/WorkerStatus} status
  */

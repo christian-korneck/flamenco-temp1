@@ -94,7 +94,7 @@ class Worker(ModelComposed):
         lazy_import()
         return {
             'id': (str,),  # noqa: E501
-            'nickname': (str,),  # noqa: E501
+            'name': (str,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
             'ip_address': (str,),  # noqa: E501
@@ -110,7 +110,7 @@ class Worker(ModelComposed):
 
     attribute_map = {
         'id': 'id',  # noqa: E501
-        'nickname': 'nickname',  # noqa: E501
+        'name': 'name',  # noqa: E501
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
         'ip_address': 'ip_address',  # noqa: E501
@@ -129,7 +129,7 @@ class Worker(ModelComposed):
 
         Keyword Args:
             id (str):
-            nickname (str):
+            name (str):
             status (WorkerStatus):
             version (str): Version of Flamenco this Worker is running
             ip_address (str): IP address of the Worker
@@ -236,7 +236,7 @@ class Worker(ModelComposed):
 
         Keyword Args:
             id (str):
-            nickname (str):
+            name (str):
             status (WorkerStatus):
             version (str): Version of Flamenco this Worker is running
             ip_address (str): IP address of the Worker

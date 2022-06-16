@@ -6,7 +6,7 @@ Subset of a Worker, sent over SocketIO when a worker changes.
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **str** | UUID of the Worker | 
-**nickname** | **str** | Name of the worker | 
+**name** | **str** | Name of the worker | 
 **updated** | **datetime** | Timestamp of last update | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
 **version** | **str** |  | 

@@ -26,14 +26,14 @@ class SocketIOWorkerUpdate {
      * Subset of a Worker, sent over SocketIO when a worker changes. 
      * @alias module:model/SocketIOWorkerUpdate
      * @param id {String} UUID of the Worker
-     * @param nickname {String} Name of the worker
+     * @param name {String} Name of the worker
      * @param updated {Date} Timestamp of last update
      * @param status {module:model/WorkerStatus} 
      * @param version {String} 
      */
-    constructor(id, nickname, updated, status, version) { 
+    constructor(id, name, updated, status, version) { 
         
-        SocketIOWorkerUpdate.initialize(this, id, nickname, updated, status, version);
+        SocketIOWorkerUpdate.initialize(this, id, name, updated, status, version);
     }
 
     /**
@@ -41,9 +41,9 @@ class SocketIOWorkerUpdate {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, id, nickname, updated, status, version) { 
+    static initialize(obj, id, name, updated, status, version) { 
         obj['id'] = id;
-        obj['nickname'] = nickname;
+        obj['name'] = name;
         obj['updated'] = updated;
         obj['status'] = status;
         obj['version'] = version;
@@ -63,8 +63,8 @@ class SocketIOWorkerUpdate {
             if (data.hasOwnProperty('id')) {
                 obj['id'] = ApiClient.convertToType(data['id'], 'String');
             }
-            if (data.hasOwnProperty('nickname')) {
-                obj['nickname'] = ApiClient.convertToType(data['nickname'], 'String');
+            if (data.hasOwnProperty('name')) {
+                obj['name'] = ApiClient.convertToType(data['name'], 'String');
             }
             if (data.hasOwnProperty('updated')) {
                 obj['updated'] = ApiClient.convertToType(data['updated'], 'Date');
@@ -96,9 +96,9 @@ SocketIOWorkerUpdate.prototype['id'] = undefined;
 
 /**
  * Name of the worker
- * @member {String} nickname
+ * @member {String} name
  */
-SocketIOWorkerUpdate.prototype['nickname'] = undefined;
+SocketIOWorkerUpdate.prototype['name'] = undefined;
 
 /**
  * Timestamp of last update

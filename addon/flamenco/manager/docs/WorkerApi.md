@@ -125,7 +125,7 @@ with flamenco.manager.ApiClient() as api_client:
         supported_task_types=[
             "supported_task_types_example",
         ],
-        nickname="nickname_example",
+        name="name_example",
     ) # WorkerRegistration | Worker to register
 
     # example passing only required values which don't have defaults set
@@ -356,7 +356,7 @@ with flamenco.manager.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = worker_api.WorkerApi(api_client)
     worker_sign_on = WorkerSignOn(
-        nickname="nickname_example",
+        name="name_example",
         supported_task_types=[
             "supported_task_types_example",
         ],

@@ -88,7 +88,7 @@ class RegisteredWorker(ModelNormal):
         lazy_import()
         return {
             'uuid': (str,),  # noqa: E501
-            'nickname': (str,),  # noqa: E501
+            'name': (str,),  # noqa: E501
             'address': (str,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'platform': (str,),  # noqa: E501
@@ -103,7 +103,7 @@ class RegisteredWorker(ModelNormal):
 
     attribute_map = {
         'uuid': 'uuid',  # noqa: E501
-        'nickname': 'nickname',  # noqa: E501
+        'name': 'name',  # noqa: E501
         'address': 'address',  # noqa: E501
         'status': 'status',  # noqa: E501
         'platform': 'platform',  # noqa: E501
@@ -118,12 +118,12 @@ class RegisteredWorker(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, uuid, nickname, address, status, platform, software, supported_task_types, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, uuid, name, address, status, platform, software, supported_task_types, *args, **kwargs):  # noqa: E501
         """RegisteredWorker - a model defined in OpenAPI
 
         Args:
             uuid (str):
-            nickname (str):
+            name (str):
             address (str):
             status (WorkerStatus):
             platform (str):
@@ -189,7 +189,7 @@ class RegisteredWorker(ModelNormal):
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
         self.uuid = uuid
-        self.nickname = nickname
+        self.name = name
         self.address = address
         self.status = status
         self.platform = platform
@@ -215,12 +215,12 @@ class RegisteredWorker(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, uuid, nickname, address, status, platform, software, supported_task_types, *args, **kwargs):  # noqa: E501
+    def __init__(self, uuid, name, address, status, platform, software, supported_task_types, *args, **kwargs):  # noqa: E501
         """RegisteredWorker - a model defined in OpenAPI
 
         Args:
             uuid (str):
-            nickname (str):
+            name (str):
             address (str):
             status (WorkerStatus):
             platform (str):
@@ -284,7 +284,7 @@ class RegisteredWorker(ModelNormal):
         self._visited_composed_classes = _visited_composed_classes + (self.__class__,)
 
         self.uuid = uuid
-        self.nickname = nickname
+        self.name = name
         self.address = address
         self.status = status
         self.platform = platform

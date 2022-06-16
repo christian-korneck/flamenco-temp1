@@ -24,16 +24,16 @@ class RegisteredWorker {
      * Constructs a new <code>RegisteredWorker</code>.
      * @alias module:model/RegisteredWorker
      * @param uuid {String} 
-     * @param nickname {String} 
+     * @param name {String} 
      * @param address {String} 
      * @param status {module:model/WorkerStatus} 
      * @param platform {String} 
      * @param software {String} 
      * @param supportedTaskTypes {Array.<String>} 
      */
-    constructor(uuid, nickname, address, status, platform, software, supportedTaskTypes) { 
+    constructor(uuid, name, address, status, platform, software, supportedTaskTypes) { 
         
-        RegisteredWorker.initialize(this, uuid, nickname, address, status, platform, software, supportedTaskTypes);
+        RegisteredWorker.initialize(this, uuid, name, address, status, platform, software, supportedTaskTypes);
     }
 
     /**
@@ -41,9 +41,9 @@ class RegisteredWorker {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, uuid, nickname, address, status, platform, software, supportedTaskTypes) { 
+    static initialize(obj, uuid, name, address, status, platform, software, supportedTaskTypes) { 
         obj['uuid'] = uuid;
-        obj['nickname'] = nickname;
+        obj['name'] = name;
         obj['address'] = address;
         obj['status'] = status;
         obj['platform'] = platform;
@@ -65,8 +65,8 @@ class RegisteredWorker {
             if (data.hasOwnProperty('uuid')) {
                 obj['uuid'] = ApiClient.convertToType(data['uuid'], 'String');
             }
-            if (data.hasOwnProperty('nickname')) {
-                obj['nickname'] = ApiClient.convertToType(data['nickname'], 'String');
+            if (data.hasOwnProperty('name')) {
+                obj['name'] = ApiClient.convertToType(data['name'], 'String');
             }
             if (data.hasOwnProperty('address')) {
                 obj['address'] = ApiClient.convertToType(data['address'], 'String');
@@ -96,9 +96,9 @@ class RegisteredWorker {
 RegisteredWorker.prototype['uuid'] = undefined;
 
 /**
- * @member {String} nickname
+ * @member {String} name
  */
-RegisteredWorker.prototype['nickname'] = undefined;
+RegisteredWorker.prototype['name'] = undefined;
 
 /**
  * @member {String} address

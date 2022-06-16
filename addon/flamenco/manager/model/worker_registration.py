@@ -84,7 +84,7 @@ class WorkerRegistration(ModelNormal):
             'secret': (str,),  # noqa: E501
             'platform': (str,),  # noqa: E501
             'supported_task_types': ([str],),  # noqa: E501
-            'nickname': (str,),  # noqa: E501
+            'name': (str,),  # noqa: E501
         }
 
     @cached_property
@@ -96,7 +96,7 @@ class WorkerRegistration(ModelNormal):
         'secret': 'secret',  # noqa: E501
         'platform': 'platform',  # noqa: E501
         'supported_task_types': 'supported_task_types',  # noqa: E501
-        'nickname': 'nickname',  # noqa: E501
+        'name': 'name',  # noqa: E501
     }
 
     read_only_vars = {
@@ -106,14 +106,14 @@ class WorkerRegistration(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, secret, platform, supported_task_types, nickname, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, secret, platform, supported_task_types, name, *args, **kwargs):  # noqa: E501
         """WorkerRegistration - a model defined in OpenAPI
 
         Args:
             secret (str):
             platform (str):
             supported_task_types ([str]):
-            nickname (str):
+            name (str):
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -176,7 +176,7 @@ class WorkerRegistration(ModelNormal):
         self.secret = secret
         self.platform = platform
         self.supported_task_types = supported_task_types
-        self.nickname = nickname
+        self.name = name
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -197,14 +197,14 @@ class WorkerRegistration(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, secret, platform, supported_task_types, nickname, *args, **kwargs):  # noqa: E501
+    def __init__(self, secret, platform, supported_task_types, name, *args, **kwargs):  # noqa: E501
         """WorkerRegistration - a model defined in OpenAPI
 
         Args:
             secret (str):
             platform (str):
             supported_task_types ([str]):
-            nickname (str):
+            name (str):
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -265,7 +265,7 @@ class WorkerRegistration(ModelNormal):
         self.secret = secret
         self.platform = platform
         self.supported_task_types = supported_task_types
-        self.nickname = nickname
+        self.name = name
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
