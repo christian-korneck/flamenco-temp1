@@ -744,20 +744,20 @@ components:
 
     WorkerRegistration:
       type: object
-      required: [secret, platform, supported_task_types, nickname]
+      required: [secret, platform, supported_task_types, name]
       properties:
         secret: { type: string }
         platform: { type: string }
         supported_task_types:
           type: array
           items: { type: string }
-        nickname: { type: string }
+        name: { type: string }
 
     RegisteredWorker:
       type: object
       properties:
         uuid: { type: string, format: uuid }
-        nickname: { type: string }
+        name: { type: string }
         address: { type: string }
         status: { $ref: "#/components/schemas/WorkerStatus" }
         platform: { type: string }
@@ -767,7 +767,7 @@ components:
           items: { type: string }
       required:
         - uuid
-        - nickname
+        - name
         - address
         - status
         - platform
@@ -782,12 +782,12 @@ components:
     WorkerSignOn:
       type: object
       properties:
-        nickname: { type: string }
+        name: { type: string }
         supported_task_types:
           type: array
           items: { type: string }
         software_version: { type: string }
-      required: [nickname, supported_task_types, software_version]
+      required: [name, supported_task_types, software_version]
 
     WorkerStateChange:
       type: object
@@ -1389,7 +1389,7 @@ components:
           type: string
           format: uuid
           description: UUID of the Worker
-        "nickname": { type: string, description: "Name of the worker" }
+        "name": { type: string, description: "Name of the worker" }
         "updated":
           type: string
           format: date-time
@@ -1399,7 +1399,7 @@ components:
         "status_change":
           $ref: "#/components/schemas/WorkerStatusChangeRequest"
         "version": { type: string }
-      required: [id, nickname, updated, status, version]
+      required: [id, name, updated, status, version]
 
     SocketIOSubscription:
       type: object
@@ -1443,7 +1443,7 @@ components:
       description: Basic information about a Worker.
       properties:
         "id": { type: string, format: uuid }
-        "nickname": { type: string }
+        "name": { type: string }
         "status": { $ref: "#/components/schemas/WorkerStatus" }
         "status_change":
           $ref: "#/components/schemas/WorkerStatusChangeRequest"
@@ -1459,7 +1459,7 @@ components:
         "version":
           type: string
           description: Version of Flamenco this Worker is running
-      required: [id, nickname, status, version]
+      required: [id, name, status, version]
 
     Worker:
       description: All information about a Worker
@@ -1477,7 +1477,7 @@ components:
               items: { type: string }
           required:
             - id
-            - nickname
+            - name
             - status
             - ip_address
             - platform
