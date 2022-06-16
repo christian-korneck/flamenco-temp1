@@ -49,7 +49,12 @@ func (ce *CommandExecutor) cmdSleep(ctx context.Context, logger zerolog.Logger, 
 		return NewParameterInvalidError("duration_in_seconds", cmd, "bad type %T, expecting int or float", sleepTime)
 	}
 
-	log.Info().Str("duration", duration.String()).Msg("sleep")
+	logger = log.With().Str("duration", duration.String()).Logger()
+	if duration < 0 {
+		logger.Error().Msg("cannot sleep negative durations")
+		return NewParameterInvalidError("duration_in_seconds", cmd, "cannot be negative")
+	}
+	logger.Info().Msg("sleep")
 
 	select {
 	case <-ctx.Done():

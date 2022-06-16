@@ -74,3 +74,24 @@ loop:
 	// Within the step size is precise enough. We're testing our implementation, not the precision of `time.After()`.
 	assert.WithinDuration(t, timeBefore.Add(47*time.Second), timeAfter, timeStepSize)
 }
+
+func TestCommandSleepNegative(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	ce, _ := testCommandExecutor(t, mockCtrl)
+
+	ctx := context.Background()
+	taskID := "90e9d656-e201-4ef0-b6b0-c80684fafa27"
+	cmd := api.Command{
+		Name:       "sleep",
+		Parameters: map[string]interface{}{"duration_in_seconds": -47},
+	}
+
+	err := ce.Run(ctx, taskID, cmd)
+	var paramErr ParameterInvalidError
+	if assert.ErrorAs(t, err, &paramErr) {
+		assert.Equal(t, "duration_in_seconds", paramErr.Parameter)
+		assert.Equal(t, -47, paramErr.ParamValue())
+		assert.Equal(t, "cannot be negative", paramErr.Message)
+	}
+}
