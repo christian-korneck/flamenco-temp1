@@ -679,6 +679,20 @@ func (mr *MockTaskStateMachineMockRecorder) RequeueActiveTasksOfWorker(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequeueActiveTasksOfWorker", reflect.TypeOf((*MockTaskStateMachine)(nil).RequeueActiveTasksOfWorker), arg0, arg1, arg2)
 }
 
+// RequeueFailedTasksOfWorkerOfJob mocks base method.
+func (m *MockTaskStateMachine) RequeueFailedTasksOfWorkerOfJob(arg0 context.Context, arg1 *persistence.Worker, arg2 *persistence.Job, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RequeueFailedTasksOfWorkerOfJob", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RequeueFailedTasksOfWorkerOfJob indicates an expected call of RequeueFailedTasksOfWorkerOfJob.
+func (mr *MockTaskStateMachineMockRecorder) RequeueFailedTasksOfWorkerOfJob(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequeueFailedTasksOfWorkerOfJob", reflect.TypeOf((*MockTaskStateMachine)(nil).RequeueFailedTasksOfWorkerOfJob), arg0, arg1, arg2, arg3)
+}
+
 // TaskStatusChange mocks base method.
 func (m *MockTaskStateMachine) TaskStatusChange(arg0 context.Context, arg1 *persistence.Task, arg2 api.TaskStatus) error {
 	m.ctrl.T.Helper()

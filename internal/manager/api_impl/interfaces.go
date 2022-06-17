@@ -75,6 +75,7 @@ type TaskStateMachine interface {
 	JobStatusChange(ctx context.Context, job *persistence.Job, newJobStatus api.JobStatus, reason string) error
 
 	RequeueActiveTasksOfWorker(ctx context.Context, worker *persistence.Worker, reason string) error
+	RequeueFailedTasksOfWorkerOfJob(ctx context.Context, worker *persistence.Worker, job *persistence.Job, reason string) error
 }
 
 // TaskStateMachine should be a subset of task_state_machine.StateMachine.

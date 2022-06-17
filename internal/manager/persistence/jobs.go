@@ -287,6 +287,21 @@ func (db *DB) FetchTasksOfWorkerInStatus(ctx context.Context, worker *Worker, ta
 	return result, nil
 }
 
+func (db *DB) FetchTasksOfWorkerInStatusOfJob(ctx context.Context, worker *Worker, taskStatus api.TaskStatus, job *Job) ([]*Task, error) {
+	result := []*Task{}
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Task{}).
+		Joins("Job").
+		Where("tasks.worker_id = ?", worker.ID).
+		Where("tasks.status = ?", taskStatus).
+		Where("job.id = ?", job.ID).
+		Scan(&result)
+	if tx.Error != nil {
+		return nil, taskError(tx.Error, "finding tasks of worker %s in status %q and job %s", worker.UUID, taskStatus, job.UUID)
+	}
+	return result, nil
+}
+
 func (db *DB) JobHasTasksInStatus(ctx context.Context, job *Job, taskStatus api.TaskStatus) (bool, error) {
 	var numTasksInStatus int64
 	tx := db.gormDB.WithContext(ctx).

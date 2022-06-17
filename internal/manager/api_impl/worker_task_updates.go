@@ -161,14 +161,21 @@ func (f *Flamenco) onTaskFailed(
 	}
 
 	logger = logger.With().Str("taskType", task.Type).Logger()
-	shouldHardFail, err := f.maybeBlocklistWorker(ctx, logger, worker, task)
+	wasBlacklisted, shoudlFailJob, err := f.maybeBlocklistWorker(ctx, logger, worker, task)
 	if err != nil {
 		return fmt.Errorf("block-listing worker: %w", err)
 	}
-	if shouldHardFail {
-		// Hard failure because of blocklisting should simply fail the entire job.
-		// There are no more workers left to finish it.
+	if shoudlFailJob {
+		// There are no more workers left to finish the job.
 		return f.failJobAfterCatastroficTaskFailure(ctx, logger, worker, task)
+	}
+	if wasBlacklisted {
+		// Requeue all tasks of this job & task type that were hard-failed before by this worker.
+		reason := fmt.Sprintf("worker %s was blocked from tasks of type %q", worker.Name, task.Type)
+		err := f.stateMachine.RequeueFailedTasksOfWorkerOfJob(ctx, worker, task.Job, reason)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Determine whether this is soft or hard failure.
@@ -186,22 +193,18 @@ func (f *Flamenco) onTaskFailed(
 // maybeBlocklistWorker potentially block-lists the Worker, and checks whether
 // there are any workers left to run tasks of this type.
 //
-// Returns "must hard-fail". That is, returns `false` if there are still workers
-// left to run tasks of this type, on this job.
-//
-// If the worker is NOT block-listed at this moment, always returns `false`.
-//
-// Returns `true` if ALL workers that can execute this task type are blocked
-// from working on this job.
+// Returns whether the worker was blacklisted, and whether the entire job should
+// be failed (in case this was the last worker that could have worked on this
+// task).
 func (f *Flamenco) maybeBlocklistWorker(
 	ctx context.Context,
 	logger zerolog.Logger,
 	worker *persistence.Worker,
 	task *persistence.Task,
-) (bool, error) {
+) (wasBlacklisted, shouldFailJob bool, err error) {
 	numFailures, err := f.persist.CountTaskFailuresOfWorker(ctx, task.Job, worker, task.Type)
 	if err != nil {
-		return false, fmt.Errorf("counting failures of worker on job %q, task type %q: %w", task.Job.UUID, task.Type, err)
+		return false, false, fmt.Errorf("counting failures of worker on job %q, task type %q: %w", task.Job.UUID, task.Type, err)
 	}
 	// The received task update hasn't been persisted in the database yet,
 	// so we should count that too.
@@ -213,17 +216,17 @@ func (f *Flamenco) maybeBlocklistWorker(
 		// TODO: This might need special handling, as this worker will be blocked
 		// from retrying this particular task. It could have been the last worker to
 		// be allowed this task type; if that is the case, the job is now stuck.
-		return false, nil
+		return false, false, nil
 	}
 
 	// Blocklist the Worker.
 	if err := f.blocklistWorker(ctx, logger, worker, task); err != nil {
-		return false, err
+		return true, false, err
 	}
 
 	// Return hard-failure if there are no workers left for this task type.
 	numWorkers, err := f.numWorkersCapableOfRunningTask(ctx, task)
-	return numWorkers == 0, err
+	return true, numWorkers == 0, err
 }
 
 func (f *Flamenco) blocklistWorker(
@@ -239,8 +242,6 @@ func (f *Flamenco) blocklistWorker(
 	if err != nil {
 		return fmt.Errorf("adding worker to block list: %w", err)
 	}
-
-	// TODO: requeue all tasks of this job & task type that were hard-failed by this worker.
 	return nil
 }
 

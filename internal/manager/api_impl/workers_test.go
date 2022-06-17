@@ -590,6 +590,12 @@ func TestBlockingAfterFailure(t *testing.T) {
 		mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), jobID, taskID,
 			"Task failed by 1 worker, Manager will mark it as soft failure. 2 more failures will cause hard failure.")
 
+		// Because the job didn't fail in its entirety, the tasks previously failed
+		// by the Worker should be requeued so they can be picked up by another.
+		mf.stateMachine.EXPECT().RequeueFailedTasksOfWorkerOfJob(
+			gomock.Any(), &worker, &mockJob,
+			"worker дрон was blocked from tasks of type \"misc\"")
+
 		// Do the call.
 		echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
 		requestWorkerStore(echoCtx, &worker)
@@ -618,6 +624,8 @@ func TestBlockingAfterFailure(t *testing.T) {
 		// Expect failure of the job.
 		mf.stateMachine.EXPECT().
 			JobStatusChange(gomock.Any(), &mockJob, api.JobStatusFailed, "no more workers left to run tasks of type \"misc\"")
+
+		// Because the job failed, there is no need to re-queue any tasks previously failed by this worker.
 
 		// Do the call.
 		echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
@@ -651,6 +659,8 @@ func TestBlockingAfterFailure(t *testing.T) {
 		// Expect failure of the job.
 		mf.stateMachine.EXPECT().
 			JobStatusChange(gomock.Any(), &mockJob, api.JobStatusFailed, "no more workers left to run tasks of type \"misc\"")
+
+		// Because the job failed, there is no need to re-queue any tasks previously failed by this worker.
 
 		// Do the call.
 		echoCtx := mf.prepareMockedJSONRequest(taskUpdate)
@@ -743,5 +753,4 @@ func TestMayWorkerRun(t *testing.T) {
 			StatusChangeRequested: true,
 		})
 	}
-
 }

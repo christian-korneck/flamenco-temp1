@@ -4,7 +4,6 @@ package task_state_machine
 
 import (
 	"context"
-	"fmt"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
@@ -19,15 +18,45 @@ func (sm *StateMachine) RequeueActiveTasksOfWorker(
 	worker *persistence.Worker,
 	reason string,
 ) error {
+	// Fetch the tasks to update.
+	tasks, err := sm.persist.FetchTasksOfWorkerInStatus(
+		ctx, worker, api.TaskStatusActive)
+	if err != nil {
+		return err
+	}
+
+	return sm.requeueTasksOfWorker(ctx, tasks, worker, reason)
+}
+
+// RequeueFailedTasksOfWorkerOfJob re-queues all failed tasks of this worker on this job.
+//
+// `reason`: a string that can be appended to text like "Task requeued because "
+func (sm *StateMachine) RequeueFailedTasksOfWorkerOfJob(
+	ctx context.Context,
+	worker *persistence.Worker,
+	job *persistence.Job,
+	reason string,
+) error {
+	// Fetch the tasks to update.
+	tasks, err := sm.persist.FetchTasksOfWorkerInStatusOfJob(
+		ctx, worker, api.TaskStatusFailed, job)
+	if err != nil {
+		return err
+	}
+
+	return sm.requeueTasksOfWorker(ctx, tasks, worker, reason)
+}
+
+func (sm *StateMachine) requeueTasksOfWorker(
+	ctx context.Context,
+	tasks []*persistence.Task,
+	worker *persistence.Worker,
+	reason string,
+) error {
 	logger := log.With().
 		Str("worker", worker.UUID).
+		Str("reason", reason).
 		Logger()
-
-	// Fetch the tasks to update.
-	tasks, err := sm.persist.FetchTasksOfWorkerInStatus(ctx, worker, api.TaskStatusActive)
-	if err != nil {
-		return fmt.Errorf("fetching tasks of worker %s in status %q: %w", worker.UUID, api.TaskStatusActive, err)
-	}
 
 	// Run each task change through the task state machine.
 	var lastErr error
