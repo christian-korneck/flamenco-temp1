@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -17,6 +18,8 @@ import (
 	"git.blender.org/flamenco/internal/appinfo"
 	"git.blender.org/flamenco/pkg/api"
 )
+
+const workerNameEnvVariable = "FLAMENCO_WORKER_NAME"
 
 var (
 	errSignOnCanceled          = errors.New("sign-on cancelled")                             // For example by closing the context.
@@ -179,6 +182,16 @@ func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.W
 
 // mustHostname either the hostname or logs a fatal error.
 func mustHostname() string {
+	name, ok := os.LookupEnv(workerNameEnvVariable)
+	if ok && name != "" {
+		name = strings.TrimSpace(name)
+		log.Info().
+			Str("name", name).
+			Str("fromVariable", workerNameEnvVariable).
+			Msg("worker name obtained from environment variable instead of using the hostname")
+		return name
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Fatal().Err(err).Msg("error getting hostname")
