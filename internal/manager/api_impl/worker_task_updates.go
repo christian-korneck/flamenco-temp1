@@ -212,7 +212,10 @@ func (f *Flamenco) maybeBlocklistWorker(
 
 	threshold := f.config.Get().BlocklistThreshold
 	if numFailures < threshold {
-		logger.Info().Int("numFailedTasks", numFailures).Msg("not enough failed tasks to blocklist worker")
+		logger.Info().
+			Int("numFailedTasks", numFailures).
+			Int("threshold", threshold).
+			Msg("not enough failed tasks to blocklist worker")
 		return false, false, nil
 	}
 
