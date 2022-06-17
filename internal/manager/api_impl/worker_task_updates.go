@@ -213,9 +213,6 @@ func (f *Flamenco) maybeBlocklistWorker(
 	threshold := f.config.Get().BlocklistThreshold
 	if numFailures < threshold {
 		logger.Info().Int("numFailedTasks", numFailures).Msg("not enough failed tasks to blocklist worker")
-		// TODO: This might need special handling, as this worker will be blocked
-		// from retrying this particular task. It could have been the last worker to
-		// be allowed this task type; if that is the case, the job is now stuck.
 		return false, false, nil
 	}
 
