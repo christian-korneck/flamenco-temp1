@@ -43,7 +43,7 @@ func TestWorkerTimeout(t *testing.T) {
 		Return([]*persistence.Worker{&worker}, nil)
 
 	// Expect all tasks assigned to the worker to get requeued.
-	mocks.taskStateMachine.EXPECT().RequeueTasksOfWorker(mocks.ctx, &worker, "worker timed out")
+	mocks.taskStateMachine.EXPECT().RequeueActiveTasksOfWorker(mocks.ctx, &worker, "worker timed out")
 
 	persistedWorker := worker
 	persistedWorker.Status = api.WorkerStatusError

@@ -199,7 +199,7 @@ func TestWorkerSignoffTaskRequeue(t *testing.T) {
 	expectCtx := gomock.Not(gomock.Eq(echo.Request().Context()))
 
 	// Expect worker's tasks to be re-queued.
-	mf.stateMachine.EXPECT().RequeueTasksOfWorker(expectCtx, &worker, "worker signed off").Return(nil)
+	mf.stateMachine.EXPECT().RequeueActiveTasksOfWorker(expectCtx, &worker, "worker signed off").Return(nil)
 	mf.persistence.EXPECT().WorkerSeen(expectCtx, &worker)
 
 	// Expect worker to be saved as 'offline'.
@@ -251,7 +251,7 @@ func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
 	savedWorker.StatusChangeClear()
 	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
 
-	mf.stateMachine.EXPECT().RequeueTasksOfWorker(gomock.Any(), &worker, "worker signed off").Return(nil)
+	mf.stateMachine.EXPECT().RequeueActiveTasksOfWorker(gomock.Any(), &worker, "worker signed off").Return(nil)
 	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 
 	// Perform the request

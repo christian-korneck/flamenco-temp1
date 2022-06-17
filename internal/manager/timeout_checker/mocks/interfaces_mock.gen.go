@@ -105,18 +105,18 @@ func (m *MockTaskStateMachine) EXPECT() *MockTaskStateMachineMockRecorder {
 	return m.recorder
 }
 
-// RequeueTasksOfWorker mocks base method.
-func (m *MockTaskStateMachine) RequeueTasksOfWorker(arg0 context.Context, arg1 *persistence.Worker, arg2 string) error {
+// RequeueActiveTasksOfWorker mocks base method.
+func (m *MockTaskStateMachine) RequeueActiveTasksOfWorker(arg0 context.Context, arg1 *persistence.Worker, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RequeueTasksOfWorker", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RequeueActiveTasksOfWorker", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RequeueTasksOfWorker indicates an expected call of RequeueTasksOfWorker.
-func (mr *MockTaskStateMachineMockRecorder) RequeueTasksOfWorker(arg0, arg1, arg2 interface{}) *gomock.Call {
+// RequeueActiveTasksOfWorker indicates an expected call of RequeueActiveTasksOfWorker.
+func (mr *MockTaskStateMachineMockRecorder) RequeueActiveTasksOfWorker(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequeueTasksOfWorker", reflect.TypeOf((*MockTaskStateMachine)(nil).RequeueTasksOfWorker), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequeueActiveTasksOfWorker", reflect.TypeOf((*MockTaskStateMachine)(nil).RequeueActiveTasksOfWorker), arg0, arg1, arg2)
 }
 
 // TaskStatusChange mocks base method.

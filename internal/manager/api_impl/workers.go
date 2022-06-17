@@ -177,7 +177,7 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	_ = f.workerSeen(ctx, logger, w)
 
 	// Re-queue all tasks (should be only one) this worker is now working on.
-	err = f.stateMachine.RequeueTasksOfWorker(ctx, w, "worker signed off")
+	err = f.stateMachine.RequeueActiveTasksOfWorker(ctx, w, "worker signed off")
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error re-queueing your tasks")
 	}

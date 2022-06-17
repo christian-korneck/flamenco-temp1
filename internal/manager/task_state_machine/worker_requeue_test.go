@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRequeueTasksOfWorker(t *testing.T) {
+func TestRequeueActiveTasksOfWorker(t *testing.T) {
 	mockCtrl, ctx, sm, mocks := taskStateMachineTestFixtures(t)
 	defer mockCtrl.Finish()
 
@@ -59,6 +59,6 @@ func TestRequeueTasksOfWorker(t *testing.T) {
 		Updated:        task2.UpdatedAt,
 	})
 
-	err := sm.RequeueTasksOfWorker(ctx, &worker, "worker had to test")
+	err := sm.RequeueActiveTasksOfWorker(ctx, &worker, "worker had to test")
 	assert.NoError(t, err)
 }

@@ -54,7 +54,7 @@ func (ttc *TimeoutChecker) timeoutWorker(ctx context.Context, worker *persistenc
 		logger.Error().Err(err).Msg("TimeoutChecker: error saving timed-out worker to database")
 	}
 
-	err = ttc.taskStateMachine.RequeueTasksOfWorker(ctx, worker, "worker timed out")
+	err = ttc.taskStateMachine.RequeueActiveTasksOfWorker(ctx, worker, "worker timed out")
 	if err != nil {
 		logger.Error().Err(err).Msg("TimeoutChecker: error re-queueing tasks of timed-out worker")
 	}

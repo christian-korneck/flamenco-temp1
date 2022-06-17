@@ -11,10 +11,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// RequeueTasksOfWorker re-queues all active tasks (should be max one) of this worker.
+// RequeueActiveTasksOfWorker re-queues all active tasks (should be max one) of this worker.
 //
 // `reason`: a string that can be appended to text like "Task requeued because "
-func (sm *StateMachine) RequeueTasksOfWorker(
+func (sm *StateMachine) RequeueActiveTasksOfWorker(
 	ctx context.Context,
 	worker *persistence.Worker,
 	reason string,
