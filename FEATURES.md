@@ -42,8 +42,9 @@ Note that list is **not** in any specific order.
   - [x] Web: Worker action buttons
   - [x] Implementation of lazy vs. forced status change requests
 - [x] Port the old 'fail-requested' task status handling code to the new Manager
-- [x] At startup check & fix "stuck" jobs.
-      Example: jobs in statuses `cancel-requested`, `requeueing`, etc.
+- [ ] At startup check & fix "stuck" jobs.
+    - [x] Jobs in transitional statuses `cancel-requested`, `requeueing`, etc.
+    - [ ] Jobs with impossible to execute tasks. For example, consider the scenario where all but one worker were blocklisted for a certain task type, and the last worker that could run it, failed it. Now if that failure was that Worker's first one, it wouldn't get blocklisted and still counts as "can execute this task type on this job". However, since it failed the task, it won't be allowed to retry it, and thus the task will get stuck in `soft-failed` status.
 - [x] Task timeout monitoring
 - [ ] Worker blocklisting & failed task requeueing
   - [x] Keep track of which worker failed which task.
