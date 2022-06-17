@@ -103,7 +103,7 @@ Note that list is **not** in any specific order.
 - [x] Worker sign on/off
 - [x] Task status change handling
 - [x] UPnP/SSDP for automatic Manager finding
-- [ ] Worker status change management, including lazy status changes
+- [x] Worker status change management, including lazy status changes
 - [ ] Worker test mode
 - [ ] Worker registration secret (to protect the Manager from arbitrary Workers registering)
 - [x] Support the may-i-keep-running protocol thingy
