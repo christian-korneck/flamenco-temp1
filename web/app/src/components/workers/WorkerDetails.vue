@@ -6,8 +6,8 @@
       <dt class="field-id">ID</dt>
       <dd>{{ workerData.id }}</dd>
 
-      <dt class="field-nickname">Nickname</dt>
-      <dd>{{ workerData.nickname }}</dd>
+      <dt class="field-name">Name</dt>
+      <dd>{{ workerData.name }}</dd>
 
       <dt class="field-status">Status</dt>
       <dd v-html="workerStatusHTML"></dd>

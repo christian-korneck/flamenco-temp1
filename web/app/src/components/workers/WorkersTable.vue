@@ -56,7 +56,7 @@ export default {
             return `${dot} ${asString}`;
           },
         },
-        { title: 'Name', field: 'nickname', sorter: 'string' },
+        { title: 'Name', field: 'name', sorter: 'string' },
         { title: 'Version', field: 'version', sorter: 'string' },
       ],
       rowFormatter(row) {
@@ -65,7 +65,7 @@ export default {
         row.getElement().classList.toggle("active-row", isActive);
       },
       initialSort: [
-        { column: "nickname", dir: "asc" },
+        { column: "name", dir: "asc" },
       ],
       height: "360px", // Must be set in order for the virtual DOM to function correctly.
       data: [], // Will be filled via a Flamenco API request.
