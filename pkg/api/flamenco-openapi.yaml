@@ -1111,6 +1111,9 @@ components:
           type: string
           format: date-time
           description: Timestamp of when any worker worked on this task.
+        "failed_by_workers":
+          type: array
+          items: { $ref: "#/components/schemas/TaskWorker" }
       required:
         - id
         - created
@@ -1125,6 +1128,7 @@ components:
 
     TaskWorker:
       type: object
+      description: Worker reference, as used in Task objects.
       properties:
         "id": { type: string, format: uuid }
         "name": { type: string }
