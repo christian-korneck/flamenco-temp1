@@ -49,7 +49,8 @@ Note that list is **not** in any specific order.
 - [ ] Worker blocklisting & failed task requeueing
   - [x] Keep track of which worker failed which task.
   - [x] Clear task failure list when the task gets (re)queued.
-  - [ ] Keep track of a blocklist as `(worker ID, job ID, task type)` tuple in the database.
+  - [x] Keep track of a blocklist as `(worker ID, job ID, task type)` tuple in the database.
+  - [ ] Show blocklist in web interface, and allow removal of workers.
 - [x] Worker timeout monitoring
 - [ ] Last rendered image display
 
