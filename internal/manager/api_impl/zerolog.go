@@ -5,10 +5,9 @@ package api_impl
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 func requestLogger(e echo.Context) zerolog.Logger {
-	logger := log.Ctx(e.Request().Context())
+	logger := zerolog.Ctx(e.Request().Context())
 	return *logger
 }

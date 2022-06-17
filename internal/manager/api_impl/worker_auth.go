@@ -9,7 +9,6 @@ import (
 	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -65,19 +64,14 @@ func requestWorkerStore(e echo.Context, w *persistence.Worker) {
 	req := e.Request()
 	reqCtx := context.WithValue(req.Context(), workerKey, w)
 
-	// Take copies now to avoid race conditions later.
-	wUUID := w.UUID
-	wName := w.Name
-
 	// Update the logger in this context to reflect the Worker.
-	l := zerolog.Ctx(reqCtx)
-	l.UpdateContext(func(c zerolog.Context) zerolog.Context {
-		return c.
-			Str("wUUID", wUUID).
-			Str("wName", wName)
-	})
+	logger := requestLogger(e).With().
+		Str("wUUID", w.UUID).
+		Str("wName", w.Name).
+		Logger()
 
-	e.SetRequest(req.WithContext(reqCtx))
+	newCtx := logger.WithContext(reqCtx)
+	e.SetRequest(req.WithContext(newCtx))
 }
 
 // requestWorker returns the Worker associated with this HTTP request, or nil if there is none.
