@@ -12,6 +12,9 @@
       <dt class="field-status">Status</dt>
       <dd>{{ taskData.status }}</dd>
 
+      <dt class="field-worker">Assigned To</dt>
+      <dd><worker-link :worker="taskData.worker" /></dd>
+
       <dt class="field-activity">Activity</dt>
       <dd>{{ taskData.activity }}</dd>
 
@@ -33,7 +36,7 @@
       <template v-if="taskData.failed_by_workers.length > 0">
       <dt class="field-failed-by-workers">Failed by Workers</dt>
       <dd v-for="worker in taskData.failed_by_workers">
-        <router-link :to="{ name: 'workers', params: { workerID: worker.id } }">{{ worker.name }} ({{ worker.address }})</router-link>
+        <worker-link :worker="worker" />
       </dd>
       </template>
     </dl>
@@ -56,11 +59,13 @@
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
+import WorkerLink from '@/components/WorkerLink.vue';
 
 export default {
   props: [
     "taskData", // Task data to show.
   ],
+  components: {WorkerLink},
   data() {
     return {
       datetime: datetime, // So that the template can access it.

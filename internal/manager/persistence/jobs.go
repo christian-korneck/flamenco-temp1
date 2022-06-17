@@ -238,6 +238,7 @@ func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
 	dbTask := Task{}
 	tx := db.gormDB.WithContext(ctx).
 		Joins("Job").
+		Joins("Worker").
 		First(&dbTask, "tasks.uuid = ?", taskUUID)
 	if tx.Error != nil {
 		return nil, taskError(tx.Error, "fetching task")
