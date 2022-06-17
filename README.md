@@ -138,6 +138,20 @@ tables. Because of this, avoid `NOT NULL` columns, as they will be problematic
 in this process.
 
 
+## Task Statuses
+
+The following table shows the meaning of the different task statuses:
+
++---------------+---------+-----------+
+| Status        | Meaning | Next Status |
++---------------+---------+-----------+
+| `queued`      | Ready to be worked on by a Worker | `active`, `canceled` |
+| `active`      | Assigned to a worker for execution | `completed`, `canceled`, `failed`, `soft-failed` |
+| `soft-failed` | Same as `queued`, but has been failed by a worker in an earlier execution | `completed`, `failed`, `canceled` |
+| `completed`   | Worker executed the task succesfully | `requeued` |
+| `paused`      | Not yet implemented | |
++---------------+---------+-----------+
+
 ## License
 
 Flamenco is licensed under the GPLv3+ license.
