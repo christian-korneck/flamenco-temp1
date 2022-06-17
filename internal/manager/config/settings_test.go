@@ -20,6 +20,8 @@ func TestDefaultSettings(t *testing.T) {
 	assert.Equal(t, false, config.Variables["ffmpeg"].IsTwoWay)
 	assert.Equal(t, "ffmpeg", config.Variables["ffmpeg"].Values[0].Value)
 	assert.Equal(t, VariablePlatformLinux, config.Variables["ffmpeg"].Values[0].Platform)
+
+	assert.Greater(t, config.BlocklistThreshold, 0)
 }
 
 func TestVariableValidation(t *testing.T) {

@@ -159,7 +159,17 @@ func (f *Flamenco) onTaskFailed(
 	if err != nil {
 		return fmt.Errorf("adding worker to failure list of task: %w", err)
 	}
-	// f.maybeBlocklistWorker(ctx, logger, worker, task)
+
+	logger = logger.With().Str("taskType", task.Type).Logger()
+	shouldHardFail, err := f.maybeBlocklistWorker(ctx, logger, worker, task)
+	if err != nil {
+		return fmt.Errorf("block-listing worker: %w", err)
+	}
+	if shouldHardFail {
+		// Hard failure because of blocklisting should simply fail the entire job.
+		// There are no more workers left to finish it.
+		return f.failJobAfterCatastroficTaskFailure(ctx, logger, worker, task)
+	}
 
 	// Determine whether this is soft or hard failure.
 	threshold := f.config.Get().TaskFailAfterSoftFailCount
@@ -171,6 +181,120 @@ func (f *Flamenco) onTaskFailed(
 		return f.softFailTask(ctx, logger, worker, task, numFailed)
 	}
 	return f.hardFailTask(ctx, logger, worker, task, numFailed)
+}
+
+// maybeBlocklistWorker potentially block-lists the Worker, and checks whether
+// there are any workers left to run tasks of this type.
+//
+// Returns "must hard-fail". That is, returns `false` if there are still workers
+// left to run tasks of this type, on this job.
+//
+// If the worker is NOT block-listed at this moment, always returns `false`.
+//
+// Returns `true` if ALL workers that can execute this task type are blocked
+// from working on this job.
+func (f *Flamenco) maybeBlocklistWorker(
+	ctx context.Context,
+	logger zerolog.Logger,
+	worker *persistence.Worker,
+	task *persistence.Task,
+) (bool, error) {
+	numFailures, err := f.persist.CountTaskFailuresOfWorker(ctx, task.Job, worker, task.Type)
+	if err != nil {
+		return false, fmt.Errorf("counting failures of worker on job %q, task type %q: %w", task.Job.UUID, task.Type, err)
+	}
+	// The received task update hasn't been persisted in the database yet,
+	// so we should count that too.
+	numFailures++
+
+	threshold := f.config.Get().BlocklistThreshold
+	if numFailures < threshold {
+		logger.Info().Int("numFailedTasks", numFailures).Msg("not enough failed tasks to blocklist worker")
+		// TODO: This might need special handling, as this worker will be blocked
+		// from retrying this particular task. It could have been the last worker to
+		// be allowed this task type; if that is the case, the job is now stuck.
+		return false, nil
+	}
+
+	// Blocklist the Worker.
+	if err := f.blocklistWorker(ctx, logger, worker, task); err != nil {
+		return false, err
+	}
+
+	// Return hard-failure if there are no workers left for this task type.
+	numWorkers, err := f.numWorkersCapableOfRunningTask(ctx, task)
+	return numWorkers == 0, err
+}
+
+func (f *Flamenco) blocklistWorker(
+	ctx context.Context,
+	logger zerolog.Logger,
+	worker *persistence.Worker,
+	task *persistence.Task,
+) error {
+	logger.Warn().
+		Str("job", task.Job.UUID).
+		Msg("block-listing worker")
+	err := f.persist.AddWorkerToJobBlocklist(ctx, task.Job, worker, task.Type)
+	if err != nil {
+		return fmt.Errorf("adding worker to block list: %w", err)
+	}
+
+	// TODO: requeue all tasks of this job & task type that were hard-failed by this worker.
+	return nil
+}
+
+func (f *Flamenco) numWorkersCapableOfRunningTask(ctx context.Context, task *persistence.Task) (int, error) {
+	// See which workers are left to run tasks of this type, on this job,
+	workersLeft, err := f.persist.WorkersLeftToRun(ctx, task.Job, task.Type)
+	if err != nil {
+		return 0, fmt.Errorf("fetching workers available to run tasks of type %q on job %q: %w",
+			task.Job.UUID, task.Type, err)
+	}
+
+	// Remove (from the list of available workers) those who failed this task before.
+	failers, err := f.persist.FetchTaskFailureList(ctx, task)
+	if err != nil {
+		return 0, fmt.Errorf("fetching failure list of task %q: %w", task.UUID, err)
+	}
+	for _, failure := range failers {
+		delete(workersLeft, failure.UUID)
+	}
+
+	return len(workersLeft), nil
+}
+
+// failJobAfterCatastroficTaskFailure fails the entire job.
+// This function is meant to be called when a task is failed, causing a block of
+// the worker, and leaving no workers any more to do tasks of this type.
+func (f *Flamenco) failJobAfterCatastroficTaskFailure(
+	ctx context.Context,
+	logger zerolog.Logger,
+	worker *persistence.Worker,
+	task *persistence.Task,
+) error {
+	taskLog := fmt.Sprintf(
+		"Task failed by worker %s, Manager will fail the entire job as there are no more workers left for tasks of type %q.",
+		worker.Identifier(), task.Type,
+	)
+	if err := f.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID, taskLog); err != nil {
+		logger.Error().Err(err).Msg("error writing failure notice to task log")
+	}
+
+	if err := f.stateMachine.TaskStatusChange(ctx, task, api.TaskStatusFailed); err != nil {
+		logger.Error().
+			Err(err).
+			Str("newStatus", string(api.TaskStatusFailed)).
+			Msg("error changing task status")
+	}
+
+	newJobStatus := api.JobStatusFailed
+	logger.Info().
+		Str("job", task.Job.UUID).
+		Str("newJobStatus", string(newJobStatus)).
+		Msg("no more workers left to run tasks of this type, failing the entire job")
+	reason := fmt.Sprintf("no more workers left to run tasks of type %q", task.Type)
+	return f.stateMachine.JobStatusChange(ctx, task.Job, newJobStatus, reason)
 }
 
 func (f *Flamenco) hardFailTask(

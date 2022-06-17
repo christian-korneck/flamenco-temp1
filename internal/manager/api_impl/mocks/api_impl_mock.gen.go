@@ -40,6 +40,20 @@ func (m *MockPersistenceService) EXPECT() *MockPersistenceServiceMockRecorder {
 	return m.recorder
 }
 
+// AddWorkerToJobBlocklist mocks base method.
+func (m *MockPersistenceService) AddWorkerToJobBlocklist(arg0 context.Context, arg1 *persistence.Job, arg2 *persistence.Worker, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddWorkerToJobBlocklist", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddWorkerToJobBlocklist indicates an expected call of AddWorkerToJobBlocklist.
+func (mr *MockPersistenceServiceMockRecorder) AddWorkerToJobBlocklist(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorkerToJobBlocklist", reflect.TypeOf((*MockPersistenceService)(nil).AddWorkerToJobBlocklist), arg0, arg1, arg2, arg3)
+}
+
 // AddWorkerToTaskFailedList mocks base method.
 func (m *MockPersistenceService) AddWorkerToTaskFailedList(arg0 context.Context, arg1 *persistence.Task, arg2 *persistence.Worker) (int, error) {
 	m.ctrl.T.Helper()
@@ -81,6 +95,21 @@ func (m *MockPersistenceService) ClearFailureListOfTask(arg0 context.Context, ar
 func (mr *MockPersistenceServiceMockRecorder) ClearFailureListOfTask(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearFailureListOfTask", reflect.TypeOf((*MockPersistenceService)(nil).ClearFailureListOfTask), arg0, arg1)
+}
+
+// CountTaskFailuresOfWorker mocks base method.
+func (m *MockPersistenceService) CountTaskFailuresOfWorker(arg0 context.Context, arg1 *persistence.Job, arg2 *persistence.Worker, arg3 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountTaskFailuresOfWorker", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountTaskFailuresOfWorker indicates an expected call of CountTaskFailuresOfWorker.
+func (mr *MockPersistenceServiceMockRecorder) CountTaskFailuresOfWorker(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountTaskFailuresOfWorker", reflect.TypeOf((*MockPersistenceService)(nil).CountTaskFailuresOfWorker), arg0, arg1, arg2, arg3)
 }
 
 // CreateWorker mocks base method.
@@ -313,6 +342,21 @@ func (m *MockPersistenceService) WorkerSeen(arg0 context.Context, arg1 *persiste
 func (mr *MockPersistenceServiceMockRecorder) WorkerSeen(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkerSeen", reflect.TypeOf((*MockPersistenceService)(nil).WorkerSeen), arg0, arg1)
+}
+
+// WorkersLeftToRun mocks base method.
+func (m *MockPersistenceService) WorkersLeftToRun(arg0 context.Context, arg1 *persistence.Job, arg2 string) (map[string]bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WorkersLeftToRun", arg0, arg1, arg2)
+	ret0, _ := ret[0].(map[string]bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WorkersLeftToRun indicates an expected call of WorkersLeftToRun.
+func (mr *MockPersistenceServiceMockRecorder) WorkersLeftToRun(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkersLeftToRun", reflect.TypeOf((*MockPersistenceService)(nil).WorkersLeftToRun), arg0, arg1, arg2)
 }
 
 // MockChangeBroadcaster is a mock of ChangeBroadcaster interface.

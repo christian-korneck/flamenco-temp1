@@ -53,6 +53,13 @@ type PersistenceService interface {
 	// ClearFailureListOfJob en-mass, for all tasks of this job, clears the list of workers that failed those tasks.
 	ClearFailureListOfJob(context.Context, *persistence.Job) error
 
+	// AddWorkerToJobBlocklist prevents this Worker of getting any task, of this type, on this job, from the task scheduler.
+	AddWorkerToJobBlocklist(ctx context.Context, job *persistence.Job, worker *persistence.Worker, taskType string) error
+	// WorkersLeftToRun returns a set of worker UUIDs that can run tasks of the given type on the given job.
+	WorkersLeftToRun(ctx context.Context, job *persistence.Job, taskType string) (map[string]bool, error)
+	// CountTaskFailuresOfWorker returns the number of task failures of this worker, on this particular job and task type.
+	CountTaskFailuresOfWorker(ctx context.Context, job *persistence.Job, worker *persistence.Worker, taskType string) (int, error)
+
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
 	QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*persistence.Task, error)

@@ -92,7 +92,7 @@ type Base struct {
 
 	/* This many failures (on a given job+task type combination) will ban a worker
 	 * from that task type on that job. */
-	// BlocklistThreshold int `yaml:"blocklist_threshold"`
+	BlocklistThreshold int `yaml:"blocklist_threshold"`
 
 	// When this many workers have tried the task and failed, it will be hard-failed
 	// (even when there are workers left that could technically retry the task).
