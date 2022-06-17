@@ -103,6 +103,7 @@ class Task(ModelNormal):
             'commands': ([Command],),  # noqa: E501
             'worker': (TaskWorker,),  # noqa: E501
             'last_touched': (datetime,),  # noqa: E501
+            'failed_by_workers': ([TaskWorker],),  # noqa: E501
         }
 
     @cached_property
@@ -123,6 +124,7 @@ class Task(ModelNormal):
         'commands': 'commands',  # noqa: E501
         'worker': 'worker',  # noqa: E501
         'last_touched': 'last_touched',  # noqa: E501
+        'failed_by_workers': 'failed_by_workers',  # noqa: E501
     }
 
     read_only_vars = {
@@ -180,6 +182,7 @@ class Task(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             worker (TaskWorker): [optional]  # noqa: E501
             last_touched (datetime): Timestamp of when any worker worked on this task.. [optional]  # noqa: E501
+            failed_by_workers ([TaskWorker]): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -285,6 +288,7 @@ class Task(ModelNormal):
                                 _visited_composed_classes = (Animal,)
             worker (TaskWorker): [optional]  # noqa: E501
             last_touched (datetime): Timestamp of when any worker worked on this task.. [optional]  # noqa: E501
+            failed_by_workers ([TaskWorker]): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

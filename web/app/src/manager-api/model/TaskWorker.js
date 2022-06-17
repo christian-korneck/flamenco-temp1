@@ -21,6 +21,7 @@ import ApiClient from '../ApiClient';
 class TaskWorker {
     /**
      * Constructs a new <code>TaskWorker</code>.
+     * Worker reference, as used in Task objects.
      * @alias module:model/TaskWorker
      * @param id {String} 
      * @param name {String} 

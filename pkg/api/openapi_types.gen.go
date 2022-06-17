@@ -483,9 +483,10 @@ type Task struct {
 	Commands []Command `json:"commands"`
 
 	// Creation timestamp
-	Created time.Time `json:"created"`
-	Id      string    `json:"id"`
-	JobId   string    `json:"job_id"`
+	Created         time.Time     `json:"created"`
+	FailedByWorkers *[]TaskWorker `json:"failed_by_workers,omitempty"`
+	Id              string        `json:"id"`
+	JobId           string        `json:"job_id"`
 
 	// Timestamp of when any worker worked on this task.
 	LastTouched *time.Time `json:"last_touched,omitempty"`
@@ -495,8 +496,10 @@ type Task struct {
 	TaskType    string     `json:"task_type"`
 
 	// Timestamp of last update.
-	Updated time.Time   `json:"updated"`
-	Worker  *TaskWorker `json:"worker,omitempty"`
+	Updated time.Time `json:"updated"`
+
+	// Worker reference, as used in Task objects.
+	Worker *TaskWorker `json:"worker,omitempty"`
 }
 
 // TaskStatus defines model for TaskStatus.
@@ -529,7 +532,7 @@ type TaskUpdate struct {
 	TaskStatus *TaskStatus `json:"taskStatus,omitempty"`
 }
 
-// TaskWorker defines model for TaskWorker.
+// Worker reference, as used in Task objects.
 type TaskWorker struct {
 	Address string `json:"address"`
 	Id      string `json:"id"`

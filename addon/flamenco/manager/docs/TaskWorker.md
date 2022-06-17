@@ -1,5 +1,6 @@
 # TaskWorker
 
+Worker reference, as used in Task objects.
 
 ## Properties
 Name | Type | Description | Notes

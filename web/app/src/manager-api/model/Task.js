@@ -107,6 +107,9 @@ class Task {
             if (data.hasOwnProperty('last_touched')) {
                 obj['last_touched'] = ApiClient.convertToType(data['last_touched'], 'Date');
             }
+            if (data.hasOwnProperty('failed_by_workers')) {
+                obj['failed_by_workers'] = ApiClient.convertToType(data['failed_by_workers'], [TaskWorker]);
+            }
         }
         return obj;
     }
@@ -176,6 +179,11 @@ Task.prototype['worker'] = undefined;
  * @member {Date} last_touched
  */
 Task.prototype['last_touched'] = undefined;
+
+/**
+ * @member {Array.<module:model/TaskWorker>} failed_by_workers
+ */
+Task.prototype['failed_by_workers'] = undefined;
 
 
 
