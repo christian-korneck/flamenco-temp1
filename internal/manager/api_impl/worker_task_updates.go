@@ -167,37 +167,59 @@ func (f *Flamenco) onTaskFailed(
 		Int("failedByWorkerCount", numFailed).
 		Int("threshold", threshold).
 		Logger()
-
-	var (
-		newStatus         api.TaskStatus
-		localLog, taskLog string
-	)
-	pluralizer := pluralize.NewClient()
-	if numFailed >= threshold {
-		newStatus = api.TaskStatusFailed
-
-		localLog = "too many workers failed this task, hard-failing it"
-		taskLog = fmt.Sprintf(
-			"Task failed by %s, Manager will mark it as hard failure",
-			pluralizer.Pluralize("worker", numFailed, true),
-		)
-	} else {
-		newStatus = api.TaskStatusSoftFailed
-
-		localLog = "worker failed this task, soft-failing to give another worker a try"
-		failsToThreshold := threshold - numFailed
-		taskLog = fmt.Sprintf(
-			"Task failed by %s, Manager will mark it as soft failure. %d more %s will cause hard failure.",
-			pluralizer.Pluralize("worker", numFailed, true),
-			failsToThreshold,
-			pluralizer.Pluralize("failure", failsToThreshold, false),
-		)
+	if numFailed < threshold {
+		return f.softFailTask(ctx, logger, worker, task, numFailed)
 	}
+	return f.hardFailTask(ctx, logger, worker, task, numFailed)
+}
 
+func (f *Flamenco) hardFailTask(
+	ctx context.Context,
+	logger zerolog.Logger,
+	worker *persistence.Worker,
+	task *persistence.Task,
+	numFailed int,
+) error {
+	// Add the failure to the task log.
+	pluralizer := pluralize.NewClient()
+	taskLog := fmt.Sprintf(
+		"Task failed by %s, Manager will mark it as hard failure",
+		pluralizer.Pluralize("worker", numFailed, true),
+	)
 	if err := f.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID, taskLog); err != nil {
 		logger.Error().Err(err).Msg("error writing failure notice to task log")
 	}
 
-	logger.Info().Str("newTaskStatus", string(newStatus)).Msg(localLog)
-	return f.stateMachine.TaskStatusChange(ctx, task, newStatus)
+	// Mark the task as failed.
+	logger.Info().Str("newTaskStatus", string(api.TaskStatusFailed)).
+		Msg("too many workers failed this task, hard-failing it")
+	return f.stateMachine.TaskStatusChange(ctx, task, api.TaskStatusFailed)
+}
+
+func (f *Flamenco) softFailTask(
+	ctx context.Context,
+	logger zerolog.Logger,
+	worker *persistence.Worker,
+	task *persistence.Task,
+	numFailed int,
+) error {
+	threshold := f.config.Get().TaskFailAfterSoftFailCount
+	failsToThreshold := threshold - numFailed
+
+	// Add the failure to the task log.
+	pluralizer := pluralize.NewClient()
+	taskLog := fmt.Sprintf(
+		"Task failed by %s, Manager will mark it as soft failure. %d more %s will cause hard failure.",
+		pluralizer.Pluralize("worker", numFailed, true),
+		failsToThreshold,
+		pluralizer.Pluralize("failure", failsToThreshold, false),
+	)
+	if err := f.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID, taskLog); err != nil {
+		logger.Error().Err(err).Msg("error writing failure notice to task log")
+	}
+
+	// Mark the task as soft-failed.
+	logger.Info().Str("newTaskStatus", string(api.TaskStatusSoftFailed)).
+		Msg("worker failed this task, soft-failing to give another worker a try")
+	return f.stateMachine.TaskStatusChange(ctx, task, api.TaskStatusSoftFailed)
 }
