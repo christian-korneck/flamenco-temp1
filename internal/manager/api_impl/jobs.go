@@ -275,18 +275,11 @@ func taskDBtoAPI(dbTask *persistence.Task) api.Task {
 		Status:   dbTask.Status,
 		Activity: dbTask.Activity,
 		Commands: make([]api.Command, len(dbTask.Commands)),
+		Worker:   workerToTaskWorker(dbTask.Worker),
 	}
 
 	if dbTask.Job != nil {
 		apiTask.JobId = dbTask.Job.UUID
-	}
-
-	if dbTask.Worker != nil {
-		apiTask.Worker = &api.TaskWorker{
-			Id:      dbTask.Worker.UUID,
-			Name:    dbTask.Worker.Name,
-			Address: dbTask.Worker.Address,
-		}
 	}
 
 	if !dbTask.LastTouchedAt.IsZero() {
@@ -304,5 +297,17 @@ func commandDBtoAPI(dbCommand persistence.Command) api.Command {
 	return api.Command{
 		Name:       dbCommand.Name,
 		Parameters: dbCommand.Parameters,
+	}
+}
+
+// workerToTaskWorker is nil-safe.
+func workerToTaskWorker(worker *persistence.Worker) *api.TaskWorker {
+	if worker == nil {
+		return nil
+	}
+	return &api.TaskWorker{
+		Id:      worker.UUID,
+		Name:    worker.Name,
+		Address: worker.Address,
 	}
 }

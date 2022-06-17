@@ -29,6 +29,13 @@
 
       <dt class="field-last-touched">Last Touched by Worker</dt>
       <dd>{{ datetime.relativeTime(taskData.last_touched) }}</dd>
+
+      <template v-if="taskData.failed_by_workers.length > 0">
+      <dt class="field-failed-by-workers">Failed by Workers</dt>
+      <dd v-for="worker in taskData.failed_by_workers">
+        <router-link :to="{ name: 'workers', params: { workerID: worker.id } }">{{ worker.name }} ({{ worker.address }})</router-link>
+      </dd>
+      </template>
     </dl>
 
     <h3 class="sub-title">Commands</h3>

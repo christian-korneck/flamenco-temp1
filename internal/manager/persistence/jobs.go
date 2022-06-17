@@ -482,3 +482,15 @@ func (db *DB) ClearFailureListOfJob(ctx context.Context, j *Job) error {
 		Delete(&TaskFailure{})
 	return tx.Error
 }
+
+func (db *DB) FetchTaskFailureList(ctx context.Context, t *Task) ([]*Worker, error) {
+	var workers []*Worker
+
+	tx := db.gormDB.WithContext(ctx).
+		Model(&Worker{}).
+		Joins("inner join task_failures TF on TF.worker_id = workers.id").
+		Where("TF.task_id = ?", t.ID).
+		Scan(&workers)
+
+	return workers, tx.Error
+}

@@ -22,6 +22,8 @@ func TestFetchTask(t *testing.T) {
 	workerUUID := "b5725bb3-d540-4070-a2b6-7b4b26925f94"
 	jobUUID := "8b179118-0189-478a-b463-73798409898c"
 
+	taskWorker := persistence.Worker{UUID: workerUUID, Name: "Radnik", Address: "Slapić"}
+
 	dbTask := persistence.Task{
 		Model: persistence.Model{
 			ID:        327,
@@ -36,7 +38,7 @@ func TestFetchTask(t *testing.T) {
 		Priority:     47,
 		Status:       api.TaskStatusQueued,
 		WorkerID:     new(uint),
-		Worker:       &persistence.Worker{UUID: workerUUID, Name: "Radnik", Address: "Slapić"},
+		Worker:       &taskWorker,
 		Dependencies: []*persistence.Task{},
 		Activity:     "used in unit test",
 
@@ -68,11 +70,18 @@ func TestFetchTask(t *testing.T) {
 					"src":  "/render/_flamenco/tests/renders/2022-04-29 Weekly/2022-04-29_140531__intermediate-2022-04-29_140531",
 				}},
 		},
+
+		FailedByWorkers: ptr([]api.TaskWorker{
+			{Id: workerUUID, Name: "Radnik", Address: "Slapić"},
+		}),
 	}
 
-	mf.persistence.EXPECT().FetchTask(gomock.Any(), taskUUID).Return(&dbTask, nil)
-
 	echoCtx := mf.prepareMockedRequest(nil)
+	ctx := echoCtx.Request().Context()
+	mf.persistence.EXPECT().FetchTask(ctx, taskUUID).Return(&dbTask, nil)
+	mf.persistence.EXPECT().FetchTaskFailureList(ctx, &dbTask).
+		Return([]*persistence.Worker{&taskWorker}, nil)
+
 	err := mf.flamenco.FetchTask(echoCtx, taskUUID)
 	assert.NoError(t, err)
 

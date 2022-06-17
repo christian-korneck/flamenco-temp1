@@ -379,6 +379,47 @@ func TestClearFailureListOfJob(t *testing.T) {
 	}
 }
 
+func TestFetchTaskFailureList(t *testing.T) {
+	ctx, close, db, _, authoredJob1 := jobTasksTestFixtures(t)
+	defer close()
+
+	// Test with non-existing task.
+	fakeTask := Task{Model: Model{ID: 327}}
+	failures, err := db.FetchTaskFailureList(ctx, &fakeTask)
+	assert.NoError(t, err)
+	assert.Empty(t, failures)
+
+	task1_1, _ := db.FetchTask(ctx, authoredJob1.Tasks[1].UUID)
+	task1_2, _ := db.FetchTask(ctx, authoredJob1.Tasks[2].UUID)
+
+	// Test without failures.
+	failures, err = db.FetchTaskFailureList(ctx, task1_1)
+	assert.NoError(t, err)
+	assert.Empty(t, failures)
+
+	worker1 := createWorker(ctx, t, db)
+	worker2 := createWorkerFrom(ctx, t, db, *worker1)
+
+	// Store some failures for different tasks and jobs
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1_1, worker1)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1_1, worker2)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1_2, worker1)
+
+	// Fetch one task's failure list.
+	failures, err = db.FetchTaskFailureList(ctx, task1_1)
+	assert.NoError(t, err)
+
+	if assert.Len(t, failures, 2) {
+		assert.Equal(t, worker1.UUID, failures[0].UUID)
+		assert.Equal(t, worker1.Name, failures[0].Name)
+		assert.Equal(t, worker1.Address, failures[0].Address)
+
+		assert.Equal(t, worker2.UUID, failures[1].UUID)
+		assert.Equal(t, worker2.Name, failures[1].Name)
+		assert.Equal(t, worker2.Address, failures[1].Address)
+	}
+}
+
 func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 	task1 := job_compilers.AuthoredTask{
 		Name: "render-1-3",

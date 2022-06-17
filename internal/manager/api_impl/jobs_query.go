@@ -2,6 +2,7 @@
 package api_impl
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -99,8 +100,9 @@ func (f *Flamenco) FetchTask(e echo.Context, taskID string) error {
 		return sendAPIError(e, http.StatusBadRequest, "job ID not valid")
 	}
 
+	// Fetch & convert the task.
 	task, err := f.persist.FetchTask(ctx, taskID)
-	if err == persistence.ErrTaskNotFound {
+	if errors.Is(err, persistence.ErrTaskNotFound) {
 		logger.Debug().Msg("non-existent task requested")
 		return sendAPIError(e, http.StatusNotFound, "no such task")
 	}
@@ -108,8 +110,20 @@ func (f *Flamenco) FetchTask(e echo.Context, taskID string) error {
 		logger.Warn().Err(err).Msg("error fetching task")
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching task")
 	}
-
 	apiTask := taskDBtoAPI(task)
+
+	// Fetch & convert the failure list.
+	failedWorkers, err := f.persist.FetchTaskFailureList(ctx, task)
+	if err != nil {
+		logger.Warn().Err(err).Msg("error fetching task failure list")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task failure list")
+	}
+	failedTaskWorkers := make([]api.TaskWorker, len(failedWorkers))
+	for idx, worker := range failedWorkers {
+		failedTaskWorkers[idx] = *workerToTaskWorker(worker)
+	}
+	apiTask.FailedByWorkers = &failedTaskWorkers
+
 	return e.JSON(http.StatusOK, apiTask)
 }
 
