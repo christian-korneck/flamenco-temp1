@@ -113,10 +113,10 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 		return nil
 
 	case api.TaskStatusCanceled:
-		return sm.onTaskStatusCanceled(ctx, logger, job)
+		return sm.updateJobOnTaskStatusCanceled(ctx, logger, job)
 
 	case api.TaskStatusFailed:
-		return sm.onTaskStatusFailed(ctx, logger, job)
+		return sm.updateJobOnTaskStatusFailed(ctx, logger, job)
 
 	case api.TaskStatusActive, api.TaskStatusSoftFailed:
 		switch job.Status {
@@ -130,7 +130,7 @@ func (sm *StateMachine) updateJobAfterTaskStatusChange(
 		}
 
 	case api.TaskStatusCompleted:
-		return sm.onTaskStatusCompleted(ctx, logger, job)
+		return sm.updateJobOnTaskStatusCompleted(ctx, logger, job)
 
 	default:
 		logger.Warn().Msg("task obtained status that Flamenco did not expect")
@@ -156,8 +156,8 @@ func (sm *StateMachine) jobStatusIfAThenB(
 	return sm.JobStatusChange(ctx, job, thenStatus, reason)
 }
 
-// onTaskStatusCanceled conditionally escalates the cancellation of a task to cancel the job.
-func (sm *StateMachine) onTaskStatusCanceled(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
+// updateJobOnTaskStatusCanceled conditionally escalates the cancellation of a task to cancel the job.
+func (sm *StateMachine) updateJobOnTaskStatusCanceled(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
 	// If no more tasks can run, cancel the job.
 	numRunnable, _, err := sm.persist.CountTasksOfJobInStatus(ctx, job,
 		api.TaskStatusActive, api.TaskStatusQueued, api.TaskStatusSoftFailed)
@@ -173,8 +173,8 @@ func (sm *StateMachine) onTaskStatusCanceled(ctx context.Context, logger zerolog
 	return nil
 }
 
-// onTaskStatusFailed conditionally escalates the failure of a task to fail the entire job.
-func (sm *StateMachine) onTaskStatusFailed(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
+// updateJobOnTaskStatusFailed conditionally escalates the failure of a task to fail the entire job.
+func (sm *StateMachine) updateJobOnTaskStatusFailed(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
 	// Count the number of failed tasks. If it is over the threshold, fail the job.
 	numFailed, numTotal, err := sm.persist.CountTasksOfJobInStatus(ctx, job, api.TaskStatusFailed)
 	if err != nil {
@@ -198,8 +198,8 @@ func (sm *StateMachine) onTaskStatusFailed(ctx context.Context, logger zerolog.L
 		"task failed, but not enough to fail the job")
 }
 
-// onTaskStatusCompleted conditionally escalates the completion of a task to complete the entire job.
-func (sm *StateMachine) onTaskStatusCompleted(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
+// updateJobOnTaskStatusCompleted conditionally escalates the completion of a task to complete the entire job.
+func (sm *StateMachine) updateJobOnTaskStatusCompleted(ctx context.Context, logger zerolog.Logger, job *persistence.Job) error {
 	numComplete, numTotal, err := sm.persist.CountTasksOfJobInStatus(ctx, job, api.TaskStatusCompleted)
 	if err != nil {
 		return err
