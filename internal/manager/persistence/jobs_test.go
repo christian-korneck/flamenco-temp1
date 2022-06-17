@@ -272,7 +272,7 @@ func TestAddWorkerToTaskFailedList(t *testing.T) {
 
 	worker1 := createWorker(ctx, t, db)
 
-	// Create another working, using the 1st as template:
+	// Create another worker, using the 1st as template:
 	newWorker := *worker1
 	newWorker.ID = 0
 	newWorker.UUID = "89ed2b02-b51b-4cd4-b44a-4a1c8d01db85"
