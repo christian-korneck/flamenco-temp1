@@ -181,9 +181,90 @@ func TestSetJobStatus_happy(t *testing.T) {
 	mf.persistence.EXPECT().FetchJob(ctx, jobID).Return(&dbJob, nil)
 	mf.stateMachine.EXPECT().JobStatusChange(ctx, &dbJob, statusUpdate.Status, "someone pushed a button")
 
+	// Going to Cancel Requested should NOT clear the failure list.
+
 	// Do the call.
 	echoCtx := mf.prepareMockedJSONRequest(statusUpdate)
 	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
+	assert.NoError(t, err)
+
+	assertResponseEmpty(t, echoCtx)
+}
+
+func TestSetJobStatusFailedToRequeueing(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobID := "18a9b096-d77e-438c-9be2-74397038298b"
+	statusUpdate := api.JobStatusChange{
+		Status: api.JobStatusRequeueing,
+		Reason: "someone pushed a button",
+	}
+	dbJob := persistence.Job{
+		UUID:     jobID,
+		Name:     "test job",
+		Status:   api.JobStatusFailed,
+		Settings: persistence.StringInterfaceMap{},
+		Metadata: persistence.StringStringMap{},
+	}
+
+	// Set up expectations.
+	echoCtx := mf.prepareMockedJSONRequest(statusUpdate)
+	ctx := echoCtx.Request().Context()
+	mf.persistence.EXPECT().FetchJob(ctx, jobID).Return(&dbJob, nil)
+	mf.stateMachine.EXPECT().JobStatusChange(ctx, &dbJob, statusUpdate.Status, "someone pushed a button")
+	mf.persistence.EXPECT().ClearFailureListOfJob(ctx, &dbJob)
+
+	// Do the call.
+	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
+	assert.NoError(t, err)
+
+	assertResponseEmpty(t, echoCtx)
+}
+
+func TestSetTaskStatusQueued(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobID := "18a9b096-d77e-438c-9be2-74397038298b"
+	taskID := "22a2e6e6-13a3-40e7-befd-d4ec8d97049d"
+	statusUpdate := api.TaskStatusChange{
+		Status: api.TaskStatusQueued,
+		Reason: "someone pushed a button",
+	}
+	dbJob := persistence.Job{
+		Model:    persistence.Model{ID: 47},
+		UUID:     jobID,
+		Name:     "test job",
+		Status:   api.JobStatusFailed,
+		Settings: persistence.StringInterfaceMap{},
+		Metadata: persistence.StringStringMap{},
+	}
+	dbTask := persistence.Task{
+		UUID:   taskID,
+		Name:   "test task",
+		Status: api.TaskStatusFailed,
+		Job:    &dbJob,
+		JobID:  dbJob.ID,
+	}
+
+	// Set up expectations.
+	echoCtx := mf.prepareMockedJSONRequest(statusUpdate)
+	ctx := echoCtx.Request().Context()
+	mf.persistence.EXPECT().FetchTask(ctx, taskID).Return(&dbTask, nil)
+	mf.stateMachine.EXPECT().TaskStatusChange(ctx, &dbTask, statusUpdate.Status)
+	mf.persistence.EXPECT().ClearFailureListOfTask(ctx, &dbTask)
+
+	updatedTask := dbTask
+	updatedTask.Activity = "someone pushed a button"
+	mf.persistence.EXPECT().SaveTaskActivity(ctx, &updatedTask)
+
+	// Do the call.
+	err := mf.flamenco.SetTaskStatus(echoCtx, taskID)
 	assert.NoError(t, err)
 
 	assertResponseEmpty(t, echoCtx)

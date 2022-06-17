@@ -55,6 +55,34 @@ func (mr *MockPersistenceServiceMockRecorder) AddWorkerToTaskFailedList(arg0, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorkerToTaskFailedList", reflect.TypeOf((*MockPersistenceService)(nil).AddWorkerToTaskFailedList), arg0, arg1, arg2)
 }
 
+// ClearFailureListOfJob mocks base method.
+func (m *MockPersistenceService) ClearFailureListOfJob(arg0 context.Context, arg1 *persistence.Job) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearFailureListOfJob", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearFailureListOfJob indicates an expected call of ClearFailureListOfJob.
+func (mr *MockPersistenceServiceMockRecorder) ClearFailureListOfJob(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearFailureListOfJob", reflect.TypeOf((*MockPersistenceService)(nil).ClearFailureListOfJob), arg0, arg1)
+}
+
+// ClearFailureListOfTask mocks base method.
+func (m *MockPersistenceService) ClearFailureListOfTask(arg0 context.Context, arg1 *persistence.Task) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearFailureListOfTask", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearFailureListOfTask indicates an expected call of ClearFailureListOfTask.
+func (mr *MockPersistenceServiceMockRecorder) ClearFailureListOfTask(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearFailureListOfTask", reflect.TypeOf((*MockPersistenceService)(nil).ClearFailureListOfTask), arg0, arg1)
+}
+
 // CreateWorker mocks base method.
 func (m *MockPersistenceService) CreateWorker(arg0 context.Context, arg1 *persistence.Worker) error {
 	m.ctrl.T.Helper()

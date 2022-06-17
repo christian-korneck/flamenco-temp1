@@ -4,6 +4,8 @@ package persistence
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -11,6 +13,7 @@ import (
 	"golang.org/x/net/context"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -304,6 +307,78 @@ func TestAddWorkerToTaskFailedList(t *testing.T) {
 	assert.Zero(t, num)
 }
 
+func TestClearFailureListOfTask(t *testing.T) {
+	ctx, close, db, _, authoredJob := jobTasksTestFixtures(t)
+	defer close()
+
+	task1, _ := db.FetchTask(ctx, authoredJob.Tasks[1].UUID)
+	task2, _ := db.FetchTask(ctx, authoredJob.Tasks[2].UUID)
+
+	worker1 := createWorker(ctx, t, db)
+
+	// Create another worker, using the 1st as template:
+	newWorker := *worker1
+	newWorker.ID = 0
+	newWorker.UUID = "89ed2b02-b51b-4cd4-b44a-4a1c8d01db85"
+	newWorker.Name = "Worker 2"
+	assert.NoError(t, db.SaveWorker(ctx, &newWorker))
+	worker2, err := db.FetchWorker(ctx, newWorker.UUID)
+	assert.NoError(t, err)
+
+	// Store some failures for different tasks.
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1, worker1)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1, worker2)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task2, worker1)
+
+	// Clearing should just update this one task.
+	assert.NoError(t, db.ClearFailureListOfTask(ctx, task1))
+	var failures = []TaskFailure{}
+	tx := db.gormDB.Model(&TaskFailure{}).Scan(&failures)
+	assert.NoError(t, tx.Error)
+	if assert.Len(t, failures, 1) {
+		assert.Equal(t, task2.ID, failures[0].TaskID)
+		assert.Equal(t, worker1.ID, failures[0].WorkerID)
+	}
+}
+
+func TestClearFailureListOfJob(t *testing.T) {
+	ctx, close, db, dbJob1, authoredJob1 := jobTasksTestFixtures(t)
+	defer close()
+
+	// Construct a cloned version of the job.
+	authoredJob2 := duplicateJobAndTasks(authoredJob1)
+	persistAuthoredJob(t, ctx, db, authoredJob2)
+
+	task1_1, _ := db.FetchTask(ctx, authoredJob1.Tasks[1].UUID)
+	task1_2, _ := db.FetchTask(ctx, authoredJob1.Tasks[2].UUID)
+	task2_1, _ := db.FetchTask(ctx, authoredJob2.Tasks[1].UUID)
+
+	worker1 := createWorker(ctx, t, db)
+	worker2 := createWorkerFrom(ctx, t, db, *worker1)
+
+	// Store some failures for different tasks and jobs
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1_1, worker1)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1_1, worker2)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task1_2, worker1)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task2_1, worker1)
+	_, _ = db.AddWorkerToTaskFailedList(ctx, task2_1, worker2)
+
+	// Sanity check: there should be 5 failures registered now.
+	assert.Equal(t, 5, countTaskFailures(db))
+
+	// Clearing should be limited to the given job.
+	assert.NoError(t, db.ClearFailureListOfJob(ctx, dbJob1))
+	var failures = []TaskFailure{}
+	tx := db.gormDB.Model(&TaskFailure{}).Scan(&failures)
+	assert.NoError(t, tx.Error)
+	if assert.Len(t, failures, 2) {
+		assert.Equal(t, task2_1.ID, failures[0].TaskID)
+		assert.Equal(t, worker1.ID, failures[0].WorkerID)
+		assert.Equal(t, task2_1.ID, failures[1].TaskID)
+		assert.Equal(t, worker2.ID, failures[1].WorkerID)
+	}
+}
+
 func createTestAuthoredJobWithTasks() job_compilers.AuthoredJob {
 	task1 := job_compilers.AuthoredTask{
 		Name: "render-1-3",
@@ -384,6 +459,43 @@ func persistAuthoredJob(t *testing.T, ctx context.Context, db *DB, authoredJob j
 	return dbJob
 }
 
+// duplicateJobAndTasks constructs a copy of the given job and its tasks, ensuring new UUIDs.
+// Does NOT copy settings, metadata, or commands. Just for testing with more than one job in the database.
+func duplicateJobAndTasks(job job_compilers.AuthoredJob) job_compilers.AuthoredJob {
+	// The function call already made a new AuthoredJob copy.
+	// This function just needs to make the tasks are duplicated, make UUIDs
+	// unique, and ensure that task pointers are pointing to the copy.
+
+	// Duplicate task arrays.
+	tasks := job.Tasks
+	job.Tasks = []job_compilers.AuthoredTask{}
+	job.Tasks = append(job.Tasks, tasks...)
+
+	// Construct a mapping from old UUID to pointer-to-new-task
+	taskPtrs := map[string]*job_compilers.AuthoredTask{}
+	for idx := range job.Tasks {
+		taskPtrs[job.Tasks[idx].UUID] = &job.Tasks[idx]
+	}
+
+	// Go over all task dependencies, as those are stored as pointers, and update them.
+	for taskIdx := range job.Tasks {
+		newDeps := make([]*job_compilers.AuthoredTask, len(job.Tasks[taskIdx].Dependencies))
+		for depIdxs, oldTaskPtr := range job.Tasks[taskIdx].Dependencies {
+			depUUID := oldTaskPtr.UUID
+			newDeps[depIdxs] = taskPtrs[depUUID]
+		}
+		job.Tasks[taskIdx].Dependencies = newDeps
+	}
+
+	// Assign new UUIDs to the job & tasks.
+	job.JobID = uuid.New()
+	for idx := range job.Tasks {
+		job.Tasks[idx].UUID = uuid.New()
+	}
+
+	return job
+}
+
 func jobTasksTestFixtures(t *testing.T) (context.Context, context.CancelFunc, *DB, *Job, job_compilers.AuthoredJob) {
 	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
 
@@ -419,4 +531,36 @@ func createWorker(ctx context.Context, t *testing.T, db *DB) *Worker {
 	}
 
 	return fetchedWorker
+}
+
+// createWorkerFrom duplicates the given worker, ensuring new UUIDs.
+func createWorkerFrom(ctx context.Context, t *testing.T, db *DB, worker Worker) *Worker {
+	worker.ID = 0
+	worker.UUID = uuid.New()
+	worker.Name += " (copy)"
+
+	err := db.SaveWorker(ctx, &worker)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	dbWorker, err := db.FetchWorker(ctx, worker.UUID)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	return dbWorker
+}
+
+func countTaskFailures(db *DB) int {
+	var numFailures int64
+	tx := db.gormDB.Model(&TaskFailure{}).Count(&numFailures)
+	if tx.Error != nil {
+		panic(tx.Error)
+	}
+
+	if numFailures > math.MaxInt {
+		panic(fmt.Sprintf("too many failures: %v", numFailures))
+	}
+	return int(numFailures)
 }

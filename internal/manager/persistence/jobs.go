@@ -459,3 +459,26 @@ func (db *DB) AddWorkerToTaskFailedList(ctx context.Context, t *Task, w *Worker)
 	}
 	return int(numFailed64), tx.Error
 }
+
+// ClearFailureListOfTask clears the list of workers that failed this task.
+func (db *DB) ClearFailureListOfTask(ctx context.Context, t *Task) error {
+	tx := db.gormDB.WithContext(ctx).
+		Where("task_id = ?", t.ID).
+		Delete(&TaskFailure{})
+	return tx.Error
+}
+
+// ClearFailureListOfJob en-mass, for all tasks of this job, clears the list of
+// workers that failed those tasks.
+func (db *DB) ClearFailureListOfJob(ctx context.Context, j *Job) error {
+
+	// SQLite doesn't support JOIN in DELETE queries, so use a sub-query instead.
+	jobTasksQuery := db.gormDB.Model(&Task{}).
+		Select("id").
+		Where("job_id = ?", j.ID)
+
+	tx := db.gormDB.WithContext(ctx).
+		Where("task_id in (?)", jobTasksQuery).
+		Delete(&TaskFailure{})
+	return tx.Error
+}

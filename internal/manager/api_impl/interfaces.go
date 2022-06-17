@@ -47,6 +47,10 @@ type PersistenceService interface {
 	// If no task is available, (nil, nil) is returned, as this is not an error situation.
 	ScheduleTask(ctx context.Context, w *persistence.Worker) (*persistence.Task, error)
 	AddWorkerToTaskFailedList(context.Context, *persistence.Task, *persistence.Worker) (numFailed int, err error)
+	// ClearFailureListOfTask clears the list of workers that failed this task.
+	ClearFailureListOfTask(context.Context, *persistence.Task) error
+	// ClearFailureListOfJob en-mass, for all tasks of this job, clears the list of workers that failed those tasks.
+	ClearFailureListOfJob(context.Context, *persistence.Job) error
 
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)

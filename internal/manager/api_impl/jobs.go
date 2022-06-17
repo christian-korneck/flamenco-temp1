@@ -131,6 +131,18 @@ func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 		logger.Error().Err(err).Msg("error changing job status")
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing job status")
 	}
+
+	// Only in this function, i.e. only when changing the job from the web
+	// interface, does requeueing the job mean it should clear the failure list.
+	// This is why this is implemented here, and not in the Task State Machine.
+	switch statusChange.Status {
+	case api.JobStatusRequeueing:
+		if err := f.persist.ClearFailureListOfJob(ctx, dbJob); err != nil {
+			logger.Error().Err(err).Msg("error clearing failure list")
+			return sendAPIError(e, http.StatusInternalServerError, "unexpected error clearing the job's tasks' failure list")
+		}
+	}
+
 	return e.NoContent(http.StatusNoContent)
 }
 
@@ -177,6 +189,18 @@ func (f *Flamenco) SetTaskStatus(e echo.Context, taskID string) error {
 		logger.Error().Err(err).Msg("error changing task status")
 		return sendAPIError(e, http.StatusInternalServerError, "unexpected error changing task status")
 	}
+
+	// Only in this function, i.e. only when changing the task from the web
+	// interface, does requeueing the task mean it should clear the failure list.
+	// This is why this is implemented here, and not in the Task State Machine.
+	switch statusChange.Status {
+	case api.TaskStatusQueued:
+		if err := f.persist.ClearFailureListOfTask(ctx, dbTask); err != nil {
+			logger.Error().Err(err).Msg("error clearing failure list")
+			return sendAPIError(e, http.StatusInternalServerError, "unexpected error clearing the task's failure list")
+		}
+	}
+
 	return e.NoContent(http.StatusNoContent)
 }
 
