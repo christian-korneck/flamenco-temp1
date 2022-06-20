@@ -42,6 +42,8 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task.UUID,
 		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
 
+	mf.stateMachine.EXPECT().TaskStatusChange(gomock.Any(), &task, api.TaskStatusActive)
+
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
 
