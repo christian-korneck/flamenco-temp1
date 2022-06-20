@@ -22,7 +22,11 @@ func (s *Service) loadScripts() error {
 		return err
 	}
 
+	// Assign the new set of compilers in a thread-safe way.
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.compilers = compilers
+
 	return nil
 }
 

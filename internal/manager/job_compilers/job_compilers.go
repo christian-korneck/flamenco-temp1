@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/dop251/goja"
@@ -26,6 +27,9 @@ type Service struct {
 	compilers   map[string]Compiler // Mapping from job type name to the job compiler of that type.
 	registry    *require.Registry   // Goja module registry.
 	timeService TimeService
+
+	// mutex protects 'compilers' from race conditions.
+	mutex *sync.Mutex
 }
 
 type Compiler struct {
@@ -52,6 +56,7 @@ func Load(ts TimeService) (*Service, error) {
 	service := Service{
 		compilers:   map[string]Compiler{},
 		timeService: ts,
+		mutex:       new(sync.Mutex),
 	}
 
 	if err := service.loadScripts(); err != nil {
@@ -128,6 +133,11 @@ func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJo
 //  ListJobTypes returns the list of available job types.
 func (s *Service) ListJobTypes() api.AvailableJobTypes {
 	jobTypes := make([]api.AvailableJobType, 0)
+
+	// Protect access to s.compilers.
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	for typeName := range s.compilers {
 		compiler, err := s.compilerForJobType(typeName)
 		if err != nil {
