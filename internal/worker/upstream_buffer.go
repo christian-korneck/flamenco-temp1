@@ -77,6 +77,10 @@ func (ub *UpstreamBufferDB) OpenDB(dbCtx context.Context, databaseFilename strin
 		return fmt.Errorf("accessing %s: %w", databaseFilename, err)
 	}
 
+	if _, err := db.ExecContext(dbCtx, "PRAGMA foreign_keys = 1"); err != nil {
+		return fmt.Errorf("enabling foreign keys: %w", err)
+	}
+
 	ub.db = db
 
 	if err := ub.prepareDatabase(dbCtx); err != nil {
