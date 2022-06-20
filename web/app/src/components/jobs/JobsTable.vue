@@ -77,6 +77,8 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
+      layout: "fitData",
+      layoutColumnsOnNewData: true,
       height: "720px", // Must be set in order for the virtual DOM to function correctly.
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active job is tracked by click events, not row selection.
@@ -129,17 +131,18 @@ export default {
       // jobUpdate, and leave the rest as-is.
       if (this.tabulator.initialized) {
         this.tabulator.updateData([jobUpdate])
-          .then(this.sortData);
+          .then(this.sortData)
+          .then(() => { this.tabulator.redraw(); }) // Resize columns based on new data.
       }
       this._refreshAvailableStatuses();
     },
     processNewJob(jobUpdate) {
       if (this.tabulator.initialized) {
-        this.tabulator.updateData([jobUpdate])
-          .then(this.sortData);
+        this.tabulator.addData([jobUpdate])
+          .then(this.sortData)
+          .then(() => { this.tabulator.redraw(); }) // Resize columns based on new data.
       }
-      this.tabulator.addData([jobUpdate])
-        .then(this.sortData);
+
       this._refreshAvailableStatuses();
     },
 

@@ -79,6 +79,8 @@ export default {
       initialSort: [
         { column: "updated", dir: "desc" },
       ],
+      layout: "fitData",
+      layoutColumnsOnNewData: true,
       height: "100%", // Must be set in order for the virtual DOM to function correctly.
       maxHeight: "100%",
       data: [], // Will be filled via a Flamenco API request.
@@ -131,10 +133,11 @@ export default {
       }
 
       const jobsApi = new API.JobsApi(apiClient);
-      jobsApi.fetchJobTasks(this.jobID).then(this.onTasksFetched, function (error) {
-        // TODO: error handling.
-        console.error(error);
-      });
+      jobsApi.fetchJobTasks(this.jobID)
+        .then(this.onTasksFetched, function (error) {
+          // TODO: error handling.
+          console.error(error);
+        })
     },
     onTasksFetched(data) {
       // "Down-cast" to TaskUpdate to only get those fields, just for debugging things:
@@ -149,7 +152,8 @@ export default {
       // taskUpdate, and leave the rest as-is.
       if (this.tabulator.initialized) {
         this.tabulator.updateData([taskUpdate])
-          .then(this.sortData);
+          .then(this.sortData)
+          .then(() => { this.tabulator.redraw(); }) // Resize columns based on new data.
       }
       this._refreshAvailableStatuses();
     },

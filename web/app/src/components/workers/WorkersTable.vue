@@ -67,6 +67,8 @@ export default {
       initialSort: [
         { column: "name", dir: "asc" },
       ],
+      layout: "fitData",
+      layoutColumnsOnNewData: true,
       height: "360px", // Must be set in order for the virtual DOM to function correctly.
       data: [], // Will be filled via a Flamenco API request.
       selectable: false, // The active worker is tracked by click events, not row selection.
@@ -135,6 +137,7 @@ export default {
       }
       promise
         .then(this.sortData)
+        .then(() => { this.tabulator.redraw(); }) // Resize columns based on new data.
         .then(this.refreshAvailableStatuses);
 
       // TODO: this should also resize the columns, as the status column can
