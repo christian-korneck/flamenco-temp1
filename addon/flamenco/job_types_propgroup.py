@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Callable, Optional, Any, Union
 
 import bpy
 
+from . import job_types
+
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -124,7 +126,7 @@ class JobTypePropertyGroup:
         setting value. Otherwise the default is used.
         """
         for setting in self.job_type.settings:
-            if setting.get("visible", True):
+            if job_types.setting_is_visible(setting):
                 # Skip those settings that will be visible in the GUI.
                 continue
 

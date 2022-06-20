@@ -13,6 +13,7 @@ _log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from flamenco.manager import ApiClient as _ApiClient
     from flamenco.manager.models import (
+        AvailableJobSetting as _AvailableJobSetting,
         AvailableJobType as _AvailableJobType,
         AvailableJobTypes as _AvailableJobTypes,
         SubmittedJob as _SubmittedJob,
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
     )
 else:
     _ApiClient = object
+    _AvailableJobSetting = object
     _AvailableJobType = object
     _AvailableJobTypes = object
     _JobSettings = object
@@ -55,6 +57,15 @@ def fetch_available_job_types(api_client: _ApiClient, scene: bpy.types.Scene) ->
     scene.flamenco_available_job_types_json = json.dumps(response.to_dict())
 
     _store_available_job_types(response)
+
+
+def setting_is_visible(setting: _AvailableJobSetting) -> bool:
+    try:
+        visibility = setting.visible
+    except AttributeError:
+        # The default is 'visible'.
+        return True
+    return str(visibility) in {"visible", "submission"}
 
 
 def _store_available_job_types(available_job_types: _AvailableJobTypes) -> None:
