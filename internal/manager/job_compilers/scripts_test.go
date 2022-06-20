@@ -25,6 +25,7 @@ func TestLoadScriptsFrom_on_disk_js(t *testing.T) {
 	expectKeys := map[string]bool{
 		"echo-and-sleep":        true,
 		"simple-blender-render": true,
+		// Should NOT contain an entry for 'empty.js'.
 	}
 	assert.Equal(t, expectKeys, keys(s.compilers))
 }

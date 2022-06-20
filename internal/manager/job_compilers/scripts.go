@@ -49,6 +49,14 @@ func (s *Service) loadScriptsFrom(filesystem fs.FS) error {
 			continue
 		}
 
+		if len(script_bytes) < 8 {
+			log.Debug().
+				Str("script", filename).
+				Int("fileSizeBytes", len(script_bytes)).
+				Msg("ignoring tiny JS file, it is unlikely to be a job compiler script")
+			continue
+		}
+
 		program, err := goja.Compile(filename, string(script_bytes), true)
 		if err != nil {
 			log.Error().Err(err).Str("filename", filename).Msg("failed to compile script")
