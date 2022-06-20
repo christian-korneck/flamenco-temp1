@@ -8,26 +8,23 @@ import (
 )
 
 func TestLoadScriptsFrom_skip_nonjs(t *testing.T) {
-	s := Service{}
-
 	thisDirFS := os.DirFS(".")
-	assert.NoError(t, s.loadScriptsFrom(thisDirFS), "input without JS files should not cause errors")
-	assert.Empty(t, s.compilers)
+	compilers, err := loadScriptsFrom(thisDirFS)
+	assert.NoError(t, err, "input without JS files should not cause errors")
+	assert.Empty(t, compilers)
 }
 
 func TestLoadScriptsFrom_on_disk_js(t *testing.T) {
-	s := Service{
-		compilers: map[string]Compiler{},
-	}
-
 	scriptsFS := os.DirFS("scripts-for-unittest")
-	assert.NoError(t, s.loadScriptsFrom(scriptsFS))
+	compilers, err := loadScriptsFrom(scriptsFS)
+
+	assert.NoError(t, err)
 	expectKeys := map[string]bool{
 		"echo-and-sleep":        true,
 		"simple-blender-render": true,
 		// Should NOT contain an entry for 'empty.js'.
 	}
-	assert.Equal(t, expectKeys, keys(s.compilers))
+	assert.Equal(t, expectKeys, keys(compilers))
 }
 
 // keys returns the set of keys of the mapping.

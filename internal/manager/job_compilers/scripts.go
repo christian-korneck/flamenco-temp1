@@ -26,16 +26,24 @@ func (s *Service) loadScripts() error {
 		return fmt.Errorf("failed to find embedded 'scripts' directory: %w", err)
 	}
 
-	return s.loadScriptsFrom(scriptsSubFS)
+	compilers, err := loadScriptsFrom(scriptsSubFS)
+	if err != nil {
+		return err
+	}
+
+	s.compilers = compilers
+	return nil
 }
 
 // loadScriptsFrom iterates over all given directory entries, compiles the
 // files, and stores the result into `s.compilers`.
-func (s *Service) loadScriptsFrom(filesystem fs.FS) error {
+func loadScriptsFrom(filesystem fs.FS) (map[string]Compiler, error) {
 	dirEntries, err := fs.ReadDir(filesystem, ".")
 	if err != nil {
-		return fmt.Errorf("failed to find scripts in %v: %w", filesystem, err)
+		return nil, fmt.Errorf("failed to find scripts in %v: %w", filesystem, err)
 	}
+
+	compilers := map[string]Compiler{}
 
 	for _, dirEntry := range dirEntries {
 		filename := dirEntry.Name()
@@ -43,7 +51,7 @@ func (s *Service) loadScriptsFrom(filesystem fs.FS) error {
 			continue
 		}
 
-		script_bytes, err := s.loadScriptBytes(filesystem, filename)
+		script_bytes, err := loadScriptBytes(filesystem, filename)
 		if err != nil {
 			log.Error().Err(err).Str("filename", filename).Msg("failed to read script")
 			continue
@@ -64,7 +72,7 @@ func (s *Service) loadScriptsFrom(filesystem fs.FS) error {
 		}
 
 		jobTypeName := filenameToJobType(filename)
-		s.compilers[jobTypeName] = Compiler{
+		compilers[jobTypeName] = Compiler{
 			jobType:  jobTypeName,
 			program:  program,
 			filename: filename,
@@ -76,10 +84,10 @@ func (s *Service) loadScriptsFrom(filesystem fs.FS) error {
 			Msg("loaded script")
 	}
 
-	return nil
+	return compilers, nil
 }
 
-func (s *Service) loadScriptBytes(filesystem fs.FS, path string) ([]byte, error) {
+func loadScriptBytes(filesystem fs.FS, path string) ([]byte, error) {
 	file, err := filesystem.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open embedded script: %w", err)
@@ -93,7 +101,7 @@ func filenameToJobType(filename string) string {
 	return strings.ReplaceAll(stem, "_", "-")
 }
 
-func (s *Service) newGojaVM() *goja.Runtime {
+func newGojaVM(registry *require.Registry) *goja.Runtime {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.UncapFieldNameMapper())
 
@@ -111,7 +119,7 @@ func (s *Service) newGojaVM() *goja.Runtime {
 	mustSet("formatTimestampLocal", jsFormatTimestampLocal)
 
 	// Pre-import some useful modules.
-	s.registry.Enable(vm)
+	registry.Enable(vm)
 	mustSet("author", require.Require(vm, "author"))
 	mustSet("path", require.Require(vm, "path"))
 	mustSet("process", require.Require(vm, "process"))
@@ -127,7 +135,7 @@ func (s *Service) compilerForJobType(jobTypeName string) (*VM, error) {
 		return nil, ErrJobTypeUnknown
 	}
 
-	vm := s.newGojaVM()
+	vm := newGojaVM(s.registry)
 	if _, err := vm.RunProgram(program.program); err != nil {
 		return nil, err
 	}

@@ -59,7 +59,9 @@ func Load(ts TimeService) (*Service, error) {
 	}
 
 	staticFileLoader := func(path string) ([]byte, error) {
-		content, err := compiler.loadScriptBytes(scriptsFS, path)
+		// TODO: this should try different filesystems, once we allow loading from
+		// disk as well.
+		content, err := loadScriptBytes(scriptsFS, path)
 		if err != nil {
 			// The 'require' module uses this to try different variations of the path
 			// in order to find it (without .js, with .js, etc.), so don't log any of
