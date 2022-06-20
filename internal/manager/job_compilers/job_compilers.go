@@ -59,7 +59,7 @@ func Load(ts TimeService) (*Service, error) {
 	}
 
 	staticFileLoader := func(path string) ([]byte, error) {
-		content, err := compiler.loadScriptBytes(path)
+		content, err := compiler.loadScriptBytes(scriptsFS, path)
 		if err != nil {
 			// The 'require' module uses this to try different variations of the path
 			// in order to find it (without .js, with .js, etc.), so don't log any of

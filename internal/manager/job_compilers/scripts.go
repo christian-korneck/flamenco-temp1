@@ -6,6 +6,7 @@ import (
 	"embed"
 	"fmt"
 	"io"
+	"io/fs"
 	"path"
 	"strings"
 
@@ -17,19 +18,32 @@ import (
 //go:embed scripts
 var scriptsFS embed.FS
 
+// loadScripts iterates over all JavaScript files, compiles them, and stores the
+// result into `s.compilers`.
 func (s *Service) loadScripts() error {
-	scripts, err := scriptsFS.ReadDir("scripts")
+	scriptsSubFS, err := fs.Sub(scriptsFS, "scripts")
 	if err != nil {
-		return fmt.Errorf("failed to find scripts: %w", err)
+		return fmt.Errorf("failed to find embedded 'scripts' directory: %w", err)
 	}
 
-	for _, script := range scripts {
-		if !strings.HasSuffix(script.Name(), ".js") {
+	return s.loadScriptsFrom(scriptsSubFS)
+}
+
+// loadScriptsFrom iterates over all given directory entries, compiles the
+// files, and stores the result into `s.compilers`.
+func (s *Service) loadScriptsFrom(filesystem fs.FS) error {
+	dirEntries, err := fs.ReadDir(filesystem, ".")
+	if err != nil {
+		return fmt.Errorf("failed to find scripts in %v: %w", filesystem, err)
+	}
+
+	for _, dirEntry := range dirEntries {
+		filename := dirEntry.Name()
+		if !strings.HasSuffix(filename, ".js") {
 			continue
 		}
-		filename := path.Join("scripts", script.Name())
 
-		script_bytes, err := s.loadScriptBytes(filename)
+		script_bytes, err := s.loadScriptBytes(filesystem, filename)
 		if err != nil {
 			log.Error().Err(err).Str("filename", filename).Msg("failed to read script")
 			continue
@@ -41,21 +55,24 @@ func (s *Service) loadScripts() error {
 			continue
 		}
 
-		jobTypeName := filenameToJobType(script.Name())
+		jobTypeName := filenameToJobType(filename)
 		s.compilers[jobTypeName] = Compiler{
 			jobType:  jobTypeName,
 			program:  program,
-			filename: script.Name(),
+			filename: filename,
 		}
 
-		log.Debug().Str("script", script.Name()).Str("jobType", jobTypeName).Msg("loaded script")
+		log.Debug().
+			Str("script", filename).
+			Str("jobType", jobTypeName).
+			Msg("loaded script")
 	}
 
 	return nil
 }
 
-func (s *Service) loadScriptBytes(path string) ([]byte, error) {
-	file, err := scriptsFS.Open(path)
+func (s *Service) loadScriptBytes(filesystem fs.FS, path string) ([]byte, error) {
+	file, err := filesystem.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open embedded script: %w", err)
 	}
