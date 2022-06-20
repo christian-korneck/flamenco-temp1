@@ -424,7 +424,7 @@ func corsOrigins(urls []url.URL) []string {
 		url.Host = fmt.Sprintf("%s:%d", url.Hostname(), developmentWebInterfacePort)
 		origins[i] = url.String()
 	}
-	log.Debug().Str("origins", strings.Join(origins, " ")).Msg("accepted CORS origins")
+	log.Debug().Str("origins", strings.Join(origins, " ")).Msg("acceptable CORS origins")
 	return origins
 }
 
