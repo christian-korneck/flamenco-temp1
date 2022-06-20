@@ -155,6 +155,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
 
         self.log.info("All files uploaded succesfully")
         checkout_result = self._request_checkout(shaman_file_specs)
+        assert checkout_result is not None
 
         # Update our checkout path to match the one received from the Manager.
         self.checkout_path = checkout_result.checkout_path
