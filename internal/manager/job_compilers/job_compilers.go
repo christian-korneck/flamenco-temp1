@@ -49,12 +49,12 @@ type TimeService interface {
 
 // Load returns a job compiler service with all JS files loaded.
 func Load(ts TimeService) (*Service, error) {
-	compiler := Service{
+	service := Service{
 		compilers:   map[string]Compiler{},
 		timeService: ts,
 	}
 
-	if err := compiler.loadScripts(); err != nil {
+	if err := service.loadScripts(); err != nil {
 		return nil, err
 	}
 
@@ -69,12 +69,12 @@ func Load(ts TimeService) (*Service, error) {
 		return content, nil
 	}
 
-	compiler.registry = require.NewRegistry(require.WithLoader(staticFileLoader))
-	compiler.registry.RegisterNativeModule("author", AuthorModule)
-	compiler.registry.RegisterNativeModule("path", PathModule)
-	compiler.registry.RegisterNativeModule("process", ProcessModule)
+	service.registry = require.NewRegistry(require.WithLoader(staticFileLoader))
+	service.registry.RegisterNativeModule("author", AuthorModule)
+	service.registry.RegisterNativeModule("path", PathModule)
+	service.registry.RegisterNativeModule("process", ProcessModule)
 
-	return &compiler, nil
+	return &service, nil
 }
 
 func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJob, error) {
