@@ -311,6 +311,12 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error appending to task log: %v", err)
 	}
 
+	// Move the task to 'active' status so that it won't be assigned to another
+	// worker. This also enables the task timeout monitoring.
+	if err := f.stateMachine.TaskStatusChange(ctx, dbTask, api.TaskStatusActive); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "internal error marking task as active: %v", err)
+	}
+
 	// Start timeout measurement as soon as the Worker gets the task assigned.
 	if err := f.workerPingedTask(ctx, logger, dbTask); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error updating task for timeout calculation: %v", err)
