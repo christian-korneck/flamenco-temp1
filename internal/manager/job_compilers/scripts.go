@@ -3,7 +3,6 @@ package job_compilers
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
-	"embed"
 	"fmt"
 	"io"
 	"io/fs"
@@ -15,18 +14,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-//go:embed scripts
-var scriptsFS embed.FS
-
 // loadScripts iterates over all JavaScript files, compiles them, and stores the
 // result into `s.compilers`.
 func (s *Service) loadScripts() error {
-	scriptsSubFS, err := fs.Sub(scriptsFS, "scripts")
-	if err != nil {
-		return fmt.Errorf("failed to find embedded 'scripts' directory: %w", err)
-	}
-
-	compilers, err := loadScriptsFrom(scriptsSubFS)
+	compilers, err := loadScriptsFrom(getEmbeddedScriptFS())
 	if err != nil {
 		return err
 	}
