@@ -25,6 +25,7 @@ const JOB_TYPE = {
     settings: [
         { key: "message", type: "string", required: true },
         { key: "sleep_duration_seconds", type: "int32", default: 1 },
+        { key: "sleep_repeats", type: "int32", default: 1 },
     ]
 };
 
@@ -34,11 +35,12 @@ function compileJob(job) {
 
     const echoTask = author.Task("echo", "misc");
     echoTask.addCommand(author.Command("echo", {message: settings.message}));
-
-    const sleepTask = author.Task("sleep", "misc")
-    sleepTask.addCommand(author.Command("sleep", {duration_in_seconds: settings.sleep_duration_seconds}))
-    sleepTask.addDependency(echoTask); // Ensure sleeping happens after echo, and not at the same time.
-
     job.addTask(echoTask);
-    job.addTask(sleepTask);
+
+    for (let repeat=0; repeat < settings.sleep_repeats; repeat++) {
+      const sleepTask = author.Task("sleep", "misc")
+      sleepTask.addCommand(author.Command("sleep", {duration_in_seconds: settings.sleep_duration_seconds}))
+      sleepTask.addDependency(echoTask); // Ensure sleeping happens after echo, and not at the same time.
+      job.addTask(sleepTask);
+    }
 }
