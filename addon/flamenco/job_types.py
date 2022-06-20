@@ -20,10 +20,10 @@ if TYPE_CHECKING:
     )
 else:
     _ApiClient = object
-    _AvailableJobTypes = object
     _AvailableJobType = object
-    _SubmittedJob = object
+    _AvailableJobTypes = object
     _JobSettings = object
+    _SubmittedJob = object
 
 _available_job_types: Optional[list[_AvailableJobType]] = None
 
