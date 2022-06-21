@@ -289,6 +289,33 @@ func TestPreviouslyFailed(t *testing.T) {
 	assert.Equal(t, att2.Name, task.Name, "the second task should have been chosen")
 }
 
+func TestBlocklisted(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, schedulerTestTimeout)
+	defer cancel()
+
+	w := linuxWorker(t, db)
+
+	att1 := authorTestTask("1 blocked task", "blender")
+	att2 := authorTestTask("2 expected task", "ffmpeg")
+	atj := authorTestJob(
+		"1295757b-e668-4c49-8b89-f73db8270e42",
+		"simple-blender-render",
+		att1, att2)
+	job := constructTestJob(ctx, t, db, atj)
+
+	// Mimick that this worker was already blocked for 'blender' tasks of this job.
+	err := db.AddWorkerToJobBlocklist(ctx, job, &w, "blender")
+	assert.NoError(t, err)
+
+	// This should assign the 2nd task.
+	task, err := db.ScheduleTask(ctx, &w)
+	assert.NoError(t, err)
+	if task == nil {
+		t.Fatal("task is nil")
+	}
+	assert.Equal(t, att2.Name, task.Name, "the second task should have been chosen")
+}
+
 // To test: blocklists
 
 // To test: variable replacement
