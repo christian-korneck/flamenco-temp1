@@ -61,7 +61,7 @@ Note that list is **not** in any specific order.
 
 - [x] Let Manager write to task log when it's assigned to a worker.
 - [ ] Worker sleep schedule
-- [ ] Loading of job compiler scripts from disk
+- [x] Loading of job compiler scripts from disk
 - [ ] CLI option to write built-in job compiler scripts to disk
 - [ ] Per-job last rendered image
 - [ ] Support pausing jobs.

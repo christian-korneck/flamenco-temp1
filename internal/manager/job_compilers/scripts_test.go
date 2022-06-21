@@ -31,7 +31,8 @@ func TestLoadScriptsFrom_on_disk_js(t *testing.T) {
 }
 
 func TestLoadScriptsFrom_embedded(t *testing.T) {
-	compilers, err := loadScriptsFrom(getEmbeddedScriptFS())
+	initEmbeddedFS()
+	compilers, err := loadScriptsFrom(embeddedScriptsFS)
 
 	assert.NoError(t, err)
 	expectKeys := map[string]bool{
@@ -43,10 +44,10 @@ func TestLoadScriptsFrom_embedded(t *testing.T) {
 
 func BenchmarkLoadScripts_fromEmbedded(b *testing.B) {
 	zerolog.SetGlobalLevel(zerolog.Disabled)
+	initEmbeddedFS()
 
-	embeddedFS := getEmbeddedScriptFS()
 	for i := 0; i < b.N; i++ {
-		compilers, err := loadScriptsFrom(embeddedFS)
+		compilers, err := loadScriptsFrom(embeddedScriptsFS)
 		assert.NoError(b, err)
 		assert.NotEmpty(b, compilers)
 	}

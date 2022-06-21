@@ -17,9 +17,33 @@ import (
 // loadScripts iterates over all JavaScript files, compiles them, and stores the
 // result into `s.compilers`.
 func (s *Service) loadScripts() error {
-	compilers, err := loadScriptsFrom(getEmbeddedScriptFS())
-	if err != nil {
-		return err
+	compilers := map[string]Compiler{}
+
+	// Collect all job compilers.
+	for _, fs := range getAvailableFilesystems() {
+		compilersfromFS, err := loadScriptsFrom(fs)
+		if err != nil {
+			log.Error().Err(err).Interface("fs", fs).Msg("job compiler: error loading scripts")
+			continue
+		}
+		if len(compilersfromFS) == 0 {
+			continue
+		}
+
+		log.Debug().Interface("fs", fs).
+			Int("numScripts", len(compilersfromFS)).
+			Msg("job compiler: found job compiler scripts")
+
+		// Merge the returned compilers into the big map, skipping ones that were
+		// already there.
+		for name := range compilersfromFS {
+			_, found := compilers[name]
+			if found {
+				continue
+			}
+
+			compilers[name] = compilersfromFS[name]
+		}
 	}
 
 	// Assign the new set of compilers in a thread-safe way.
@@ -30,8 +54,8 @@ func (s *Service) loadScripts() error {
 	return nil
 }
 
-// loadScriptsFrom iterates over all given directory entries, compiles the
-// files, and stores the result into `s.compilers`.
+// loadScriptsFrom iterates over files in the root of the given filesystem,
+// compiles the files, and returns the "name -> compiler" mapping.
 func loadScriptsFrom(filesystem fs.FS) (map[string]Compiler, error) {
 	dirEntries, err := fs.ReadDir(filesystem, ".")
 	if err != nil {
@@ -41,12 +65,16 @@ func loadScriptsFrom(filesystem fs.FS) (map[string]Compiler, error) {
 	compilers := map[string]Compiler{}
 
 	for _, dirEntry := range dirEntries {
+		if !dirEntry.Type().IsRegular() {
+			continue
+		}
+
 		filename := dirEntry.Name()
 		if !strings.HasSuffix(filename, ".js") {
 			continue
 		}
 
-		script_bytes, err := loadScriptBytes(filesystem, filename)
+		script_bytes, err := loadFileFromFS(filesystem, filename)
 		if err != nil {
 			log.Error().Err(err).Str("filename", filename).Msg("failed to read script")
 			continue
@@ -76,16 +104,16 @@ func loadScriptsFrom(filesystem fs.FS) (map[string]Compiler, error) {
 		log.Debug().
 			Str("script", filename).
 			Str("jobType", jobTypeName).
-			Msg("loaded script")
+			Msg("job compiler: loaded script")
 	}
 
 	return compilers, nil
 }
 
-func loadScriptBytes(filesystem fs.FS, path string) ([]byte, error) {
+func loadFileFromFS(filesystem fs.FS, path string) ([]byte, error) {
 	file, err := filesystem.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open embedded script: %w", err)
+		return nil, fmt.Errorf("failed to open file %s on filesystem %s: %w", path, filesystem, err)
 	}
 	return io.ReadAll(file)
 }
