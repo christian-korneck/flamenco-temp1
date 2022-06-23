@@ -249,6 +249,61 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/worker/task/{task_id}/output-produced:
+    summary: Workers send thumbnails/previews of their last-produced output here.
+    post:
+      operationId: taskOutputProduced
+      summary: >
+        Store the most recently rendered frame here. Note that it is up to the
+        Worker to ensure this is in a format that's digestable by the Manager.
+        Currently only PNG and JPEG support is planned.
+      security: [{ worker_auth: [] }]
+      tags: [worker]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        description: Contents of the file
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          image/png: { schema: { type: string, format: binary } }
+      responses:
+        "202":
+          description: The file was accepted for processing.
+        "411":
+          description: Length required; the client did not send a Content-Length header.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: Payload too large.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "415":
+          description: Unsupported Media Type, the image format cannot be processed by the Manager.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: The client is sending too many frames, and should throttle itself.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   # Worker Management
   /api/worker-mgt/workers:
     summary: Obtain list of Workers known to the Manager.
