@@ -75,3 +75,32 @@ func ToNative(path string) string {
 		panic(fmt.Sprintf("this platform has an unknown path separator: %q", filepath.Separator))
 	}
 }
+
+func validDriveLetter(r rune) bool {
+	return ('A' <= r && r <= 'Z') || ('a' <= r && r <= 'z')
+}
+
+// IsRoot returns whether the given path is a root path or not.
+// Paths "/", "C:", "C:\", and "C:/" are considered root, for all latin drive
+// letters A-Z.
+//
+// NOTE: this does NOT resolve symlinks or `..` entries.
+func IsRoot(path string) bool {
+	switch {
+	case path == "":
+		return false
+	case path == "/":
+		return true
+	// From here on, it can only be a DOS root, so must have a drive letter and a colon.
+	case len(path) < 2, len(path) > 3:
+		return false
+	case path[1] != ':':
+		return false
+	// C:\ and C:/ are both considered roots.
+	case len(path) == 3 && path[2] != '/' && path[2] != '\\':
+		return false
+	}
+
+	runes := []rune(path)
+	return validDriveLetter(runes[0])
+}

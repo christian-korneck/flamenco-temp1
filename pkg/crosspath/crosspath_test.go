@@ -169,3 +169,34 @@ func TestToNative_unsupported(t *testing.T) {
 	t.Fatalf("ToNative not supported on this platform %q with path separator %q",
 		runtime.GOOS, filepath.Separator)
 }
+
+func TestIsRoot(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{"empty", "", false},
+
+		{"UNIX", "/", true},
+		{"Drive only", "C:", true},
+		{"Drive and slash", "C:/", true},
+		{"Drive and backslash", `C:\`, true},
+
+		{"backslash", `\`, false},
+		{"just letters", "just letters", false},
+		{"subdir of root", "/subdir", false},
+		{"subdir of drive", "C:\\subdir", false},
+
+		{"indirectly root", "/subdir/..", false},
+		{"UNC notation", `\\NAS\Share\`, false},
+		{"Slashed UNC notation", `//NAS/Share/`, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsRoot(tt.path); got != tt.want {
+				t.Errorf("IsRoot() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
