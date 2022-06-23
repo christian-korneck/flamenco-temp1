@@ -158,6 +158,10 @@ func (s *Storage) RotateFile(logger zerolog.Logger, jobID, taskID string) {
 }
 
 // filepath returns the file path suitable to write a log file.
+// Note that this intentionally shares the behaviour of `pathForJob()` in
+// `internal/manager/local_storage/local_storage.go`; it is intended that the
+// file handling code in this source file is migrated to use the `local_storage`
+// package at some point.
 func (s *Storage) filepath(jobID, taskID string) string {
 	var dirpath string
 	if jobID == "" {

@@ -77,6 +77,7 @@ Note that list is **not** in any specific order.
 - [ ] User/Job Submission API authentication
 - [ ] Auto-removal of old Workers
 - [ ] Ensure "task state machine" can run in a single database transaction.
+- [ ] Refactor `internal/manager/task_logs` so that it uses `internal/manager/local_storage`.
 
 ## Worker
 
