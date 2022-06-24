@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/pkg/api"
@@ -66,4 +67,20 @@ func TestCmdBlenderCliArgsInExeParameter(t *testing.T) {
 
 	err := ce.cmdBlenderRender(context.Background(), zerolog.Nop(), taskID, cmd)
 	assert.Equal(t, ErrNoExecCmd, err, "nil *exec.Cmd should result in ErrNoExecCmd")
+}
+
+func TestProcessLineBlender(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	ce, mocks := testCommandExecutor(t, mockCtrl)
+	taskID := "c194ea21-1fda-46f6-bc9a-34bd302cfb19"
+
+	// This shouldn't call anything on the mocks.
+	ce.processLineBlender(ctx, log.Logger, taskID, "starting Blender")
+
+	// This should be recognised as produced output.
+	mocks.listener.EXPECT().OutputProduced(ctx, taskID, "/path/to/file.exr")
+	ce.processLineBlender(ctx, log.Logger, taskID, "Saved: '/path/to/file.exr'")
 }

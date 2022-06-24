@@ -106,8 +106,7 @@ func (l *Listener) LogProduced(ctx context.Context, taskID string, logLines ...s
 
 // OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
 func (l *Listener) OutputProduced(ctx context.Context, taskID string, outputLocation string) error {
-	// TODO: implement
-	return nil
+	return fmt.Errorf("Listener.OutputProduced(%q, %q): not implemented yet", taskID, outputLocation)
 }
 
 func (l *Listener) sendTaskUpdate(ctx context.Context, taskID string, update api.TaskUpdateJSONRequestBody) error {

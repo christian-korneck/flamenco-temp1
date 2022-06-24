@@ -11,6 +11,7 @@ import (
 	"io"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
@@ -22,6 +23,8 @@ import (
 // The buffer size used to read stdout/stderr output from Blender.
 // Effectively this determines the maximum line length that can be handled.
 const StdoutBufferSize = 40 * 1024
+
+var regexpFileSaved = regexp.MustCompile("Saved: '(.*)'")
 
 type BlenderParameters struct {
 	exe        string   // Expansion of `{blender}`: executable path + its CLI parameters defined by the Manager.
@@ -75,6 +78,8 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		}
 
 		logger.Debug().Msg(line)
+		ce.processLineBlender(ctx, logger, taskID, line)
+
 		if err := logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", blenderPID, line)); err != nil {
 			return fmt.Errorf("appending log entry to log chunker: %w", err)
 		}
@@ -187,4 +192,23 @@ func cmdBlenderRenderParams(logger zerolog.Logger, cmd api.Command) (BlenderPara
 	}
 
 	return parameters, nil
+}
+
+func (ce *CommandExecutor) processLineBlender(ctx context.Context, logger zerolog.Logger, taskID string, line string) {
+	// TODO: check for "Warning: Unable to open" and other indicators of missing
+	// files. Flamenco v2 updated the task.Activity field for such situations.
+
+	match := regexpFileSaved.FindStringSubmatch(line)
+	if len(match) < 2 {
+		return
+	}
+	filename := match[1]
+
+	logger = logger.With().Str("outputFile", filename).Logger()
+	logger.Info().Msg("output produced")
+
+	err := ce.listener.OutputProduced(ctx, taskID, filename)
+	if err != nil {
+		logger.Warn().Err(err).Msg("error submitting produced output to listener")
+	}
 }
