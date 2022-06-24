@@ -144,7 +144,7 @@ func TestTaskUpdateFailed(t *testing.T) {
 		requestWorkerStore(echoCtx, &worker)
 		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echoCtx)
+		assertResponseNoContent(t, echoCtx)
 	}
 
 	{
@@ -160,7 +160,7 @@ func TestTaskUpdateFailed(t *testing.T) {
 		requestWorkerStore(echoCtx, &worker)
 		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echoCtx)
+		assertResponseNoContent(t, echoCtx)
 	}
 }
 
@@ -244,7 +244,7 @@ func TestBlockingAfterFailure(t *testing.T) {
 		requestWorkerStore(echoCtx, &worker)
 		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echoCtx)
+		assertResponseNoContent(t, echoCtx)
 	}
 
 	{
@@ -275,7 +275,7 @@ func TestBlockingAfterFailure(t *testing.T) {
 		requestWorkerStore(echoCtx, &worker)
 		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echoCtx)
+		assertResponseNoContent(t, echoCtx)
 	}
 
 	{
@@ -310,6 +310,6 @@ func TestBlockingAfterFailure(t *testing.T) {
 		requestWorkerStore(echoCtx, &worker)
 		err := mf.flamenco.TaskUpdate(echoCtx, taskID)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echoCtx)
+		assertResponseNoContent(t, echoCtx)
 	}
 }

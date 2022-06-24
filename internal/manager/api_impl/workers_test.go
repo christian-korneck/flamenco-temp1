@@ -78,7 +78,7 @@ func TestTaskScheduleNoTaskAvailable(t *testing.T) {
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echo)
+	assertResponseNoContent(t, echo)
 }
 
 func TestTaskScheduleNonActiveStatus(t *testing.T) {
@@ -260,7 +260,7 @@ func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
 	requestWorkerStore(echo, &worker)
 	err := mf.flamenco.SignOff(echo)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echo)
+	assertResponseNoContent(t, echo)
 }
 
 func TestWorkerStateChanged(t *testing.T) {
@@ -295,7 +295,7 @@ func TestWorkerStateChanged(t *testing.T) {
 	requestWorkerStore(echo, &worker)
 	err := mf.flamenco.WorkerStateChanged(echo)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echo)
+	assertResponseNoContent(t, echo)
 }
 
 func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
@@ -338,7 +338,7 @@ func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
 		requestWorkerStore(echo, &worker)
 		err := mf.flamenco.WorkerStateChanged(echo)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echo)
+		assertResponseNoContent(t, echo)
 	}
 
 	// Do another status change, which does meet the requested state.
@@ -368,7 +368,7 @@ func TestWorkerStateChangedAfterChangeRequest(t *testing.T) {
 		requestWorkerStore(echo, &worker)
 		err := mf.flamenco.WorkerStateChanged(echo)
 		assert.NoError(t, err)
-		assertResponseEmpty(t, echo)
+		assertResponseNoContent(t, echo)
 	}
 }
 

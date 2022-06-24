@@ -133,8 +133,8 @@ func assertResponseAPIError(t *testing.T, echoCtx echo.Context, expectStatusCode
 	})
 }
 
-// assertResponseEmpty asserts the response is an empty 204 No Content response.
-func assertResponseEmpty(t *testing.T, echoCtx echo.Context) {
+// assertResponseNoContent asserts the response has no body and the given
+func assertResponseNoContent(t *testing.T, echoCtx echo.Context) {
 	resp := getRecordedResponseRecorder(echoCtx)
 	assert.Equal(t, http.StatusNoContent, resp.Code, "Unexpected status: %v", resp.Result().Status)
 	assert.Zero(t, resp.Body.Len(), "HTTP 204 No Content should have no content, got %v", resp.Body.String())

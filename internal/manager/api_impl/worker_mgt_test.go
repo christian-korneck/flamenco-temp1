@@ -159,7 +159,7 @@ func TestRequestWorkerStatusChange(t *testing.T) {
 	})
 	err := mf.flamenco.RequestWorkerStatusChange(echo, workerUUID)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echo)
+	assertResponseNoContent(t, echo)
 }
 
 func TestRequestWorkerStatusChangeRevert(t *testing.T) {
@@ -203,5 +203,5 @@ func TestRequestWorkerStatusChangeRevert(t *testing.T) {
 	})
 	err := mf.flamenco.RequestWorkerStatusChange(echo, workerUUID)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echo)
+	assertResponseNoContent(t, echo)
 }

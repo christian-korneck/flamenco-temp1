@@ -188,7 +188,7 @@ func TestSetJobStatus_happy(t *testing.T) {
 	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
 	assert.NoError(t, err)
 
-	assertResponseEmpty(t, echoCtx)
+	assertResponseNoContent(t, echoCtx)
 }
 
 func TestSetJobStatusFailedToRequeueing(t *testing.T) {
@@ -221,7 +221,7 @@ func TestSetJobStatusFailedToRequeueing(t *testing.T) {
 	err := mf.flamenco.SetJobStatus(echoCtx, jobID)
 	assert.NoError(t, err)
 
-	assertResponseEmpty(t, echoCtx)
+	assertResponseNoContent(t, echoCtx)
 }
 
 func TestSetTaskStatusQueued(t *testing.T) {
@@ -267,7 +267,7 @@ func TestSetTaskStatusQueued(t *testing.T) {
 	err := mf.flamenco.SetTaskStatus(echoCtx, taskID)
 	assert.NoError(t, err)
 
-	assertResponseEmpty(t, echoCtx)
+	assertResponseNoContent(t, echoCtx)
 }
 
 func TestFetchTaskLogTail(t *testing.T) {
@@ -300,7 +300,7 @@ func TestFetchTaskLogTail(t *testing.T) {
 	echoCtx := mf.prepareMockedRequest(nil)
 	err := mf.flamenco.FetchTaskLogTail(echoCtx, taskID)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echoCtx)
+	assertResponseNoContent(t, echoCtx)
 
 	// Check that a 204 No Content is also returned when the task log file on disk exists, but is empty.
 	mf.persistence.EXPECT().FetchTask(gomock.Any(), taskID).Return(&dbTask, nil)
@@ -310,5 +310,5 @@ func TestFetchTaskLogTail(t *testing.T) {
 	echoCtx = mf.prepareMockedRequest(nil)
 	err = mf.flamenco.FetchTaskLogTail(echoCtx, taskID)
 	assert.NoError(t, err)
-	assertResponseEmpty(t, echoCtx)
+	assertResponseNoContent(t, echoCtx)
 }
