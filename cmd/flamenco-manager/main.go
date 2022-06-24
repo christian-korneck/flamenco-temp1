@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/benbjohnson/clock"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mattn/go-colorable"
@@ -258,6 +259,7 @@ func buildWebService(
 	}
 	validator := api_impl.SwaggerValidator(swagger, persist)
 	e.Use(validator)
+	registerOAPIBodyDecoders()
 
 	// Register routes.
 	api.RegisterHandlers(e, flamenco)
@@ -443,4 +445,11 @@ func randomDelayMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return err
 	}
+}
+
+func registerOAPIBodyDecoders() {
+	// Register "decoders" so that binary data other than
+	// "application/octet-stream" can be handled by our OpenAPI library.
+	openapi3filter.RegisterBodyDecoder("image/jpeg", openapi3filter.FileBodyDecoder)
+	openapi3filter.RegisterBodyDecoder("image/png", openapi3filter.FileBodyDecoder)
 }
