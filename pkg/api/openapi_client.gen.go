@@ -177,6 +177,9 @@ type ClientInterface interface {
 	// MayWorkerRun request
 	MayWorkerRun(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// TaskOutputProduced request with any body
+	TaskOutputProducedWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ShamanCheckout request with any body
 	ShamanCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -568,6 +571,18 @@ func (c *Client) TaskUpdate(ctx context.Context, taskId string, body TaskUpdateJ
 
 func (c *Client) MayWorkerRun(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMayWorkerRunRequest(c.Server, taskId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TaskOutputProducedWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTaskOutputProducedRequestWithBody(c.Server, taskId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1465,6 +1480,42 @@ func NewMayWorkerRunRequest(server string, taskId string) (*http.Request, error)
 	return req, nil
 }
 
+// NewTaskOutputProducedRequestWithBody generates requests for TaskOutputProduced with any type of body
+func NewTaskOutputProducedRequestWithBody(server string, taskId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/worker/task/%s/output-produced", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewShamanCheckoutRequest calls the generic ShamanCheckout builder with application/json body
 func NewShamanCheckoutRequest(server string, body ShamanCheckoutJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1780,6 +1831,9 @@ type ClientWithResponsesInterface interface {
 
 	// MayWorkerRun request
 	MayWorkerRunWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*MayWorkerRunResponse, error)
+
+	// TaskOutputProduced request with any body
+	TaskOutputProducedWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TaskOutputProducedResponse, error)
 
 	// ShamanCheckout request with any body
 	ShamanCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ShamanCheckoutResponse, error)
@@ -2314,6 +2368,32 @@ func (r MayWorkerRunResponse) StatusCode() int {
 	return 0
 }
 
+type TaskOutputProducedResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON411      *Error
+	JSON413      *Error
+	JSON415      *Error
+	JSON429      *Error
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r TaskOutputProducedResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TaskOutputProducedResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ShamanCheckoutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2684,6 +2764,15 @@ func (c *ClientWithResponses) MayWorkerRunWithResponse(ctx context.Context, task
 		return nil, err
 	}
 	return ParseMayWorkerRunResponse(rsp)
+}
+
+// TaskOutputProducedWithBodyWithResponse request with arbitrary body returning *TaskOutputProducedResponse
+func (c *ClientWithResponses) TaskOutputProducedWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TaskOutputProducedResponse, error) {
+	rsp, err := c.TaskOutputProducedWithBody(ctx, taskId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTaskOutputProducedResponse(rsp)
 }
 
 // ShamanCheckoutWithBodyWithResponse request with arbitrary body returning *ShamanCheckoutResponse
@@ -3393,6 +3482,60 @@ func ParseMayWorkerRunResponse(rsp *http.Response) (*MayWorkerRunResponse, error
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTaskOutputProducedResponse parses an HTTP response from a TaskOutputProducedWithResponse call
+func ParseTaskOutputProducedResponse(rsp *http.Response) (*TaskOutputProducedResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TaskOutputProducedResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 411:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON411 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 413:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON413 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 415:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON415 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error

@@ -259,6 +259,58 @@ export default class WorkerApi {
 
 
     /**
+     * Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that's digestable by the Manager. Currently only PNG and JPEG support is planned. 
+     * @param {String} taskId 
+     * @param {File} body Contents of the file
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
+     */
+    taskOutputProducedWithHttpInfo(taskId, body) {
+      let postBody = body;
+      // verify the required parameter 'taskId' is set
+      if (taskId === undefined || taskId === null) {
+        throw new Error("Missing the required parameter 'taskId' when calling taskOutputProduced");
+      }
+      // verify the required parameter 'body' is set
+      if (body === undefined || body === null) {
+        throw new Error("Missing the required parameter 'body' when calling taskOutputProduced");
+      }
+
+      let pathParams = {
+        'task_id': taskId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = ['worker_auth'];
+      let contentTypes = ['image/jpeg', 'image/png'];
+      let accepts = ['application/json'];
+      let returnType = null;
+      return this.apiClient.callApi(
+        '/api/worker/task/{task_id}/output-produced', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that's digestable by the Manager. Currently only PNG and JPEG support is planned. 
+     * @param {String} taskId 
+     * @param {File} body Contents of the file
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}
+     */
+    taskOutputProduced(taskId, body) {
+      return this.taskOutputProducedWithHttpInfo(taskId, body)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
      * Update the task, typically to indicate progress, completion, or failure.
      * @param {String} taskId 
      * @param {module:model/TaskUpdate} taskUpdate Task update information

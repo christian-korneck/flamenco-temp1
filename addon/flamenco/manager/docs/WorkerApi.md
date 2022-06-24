@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**schedule_task**](WorkerApi.md#schedule_task) | **POST** /api/worker/task | Obtain a new task to execute
 [**sign_off**](WorkerApi.md#sign_off) | **POST** /api/worker/sign-off | Mark the worker as offline
 [**sign_on**](WorkerApi.md#sign_on) | **POST** /api/worker/sign-on | Authenticate &amp; sign in the worker.
+[**task_output_produced**](WorkerApi.md#task_output_produced) | **POST** /api/worker/task/{task_id}/output-produced | Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that&#39;s digestable by the Manager. Currently only PNG and JPEG support is planned. 
 [**task_update**](WorkerApi.md#task_update) | **POST** /api/worker/task/{task_id} | Update the task, typically to indicate progress, completion, or failure.
 [**worker_state**](WorkerApi.md#worker_state) | **GET** /api/worker/state | 
 [**worker_state_changed**](WorkerApi.md#worker_state_changed) | **POST** /api/worker/state-changed | Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
@@ -398,6 +399,88 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | normal response |  -  |
+**0** | unexpected error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **task_output_produced**
+> task_output_produced(task_id, body)
+
+Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that's digestable by the Manager. Currently only PNG and JPEG support is planned. 
+
+### Example
+
+* Basic Authentication (worker_auth):
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import worker_api
+from flamenco.manager.model.error import Error
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure HTTP basic authorization: worker_auth
+configuration = flamenco.manager.Configuration(
+    username = 'YOUR_USERNAME',
+    password = 'YOUR_PASSWORD'
+)
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = worker_api.WorkerApi(api_client)
+    task_id = "task_id_example" # str | 
+    body = open('/path/to/file', 'rb') # file_type | Contents of the file
+
+    # example passing only required values which don't have defaults set
+    try:
+        # Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that's digestable by the Manager. Currently only PNG and JPEG support is planned. 
+        api_instance.task_output_produced(task_id, body)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling WorkerApi->task_output_produced: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **task_id** | **str**|  |
+ **body** | **file_type**| Contents of the file |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[worker_auth](../README.md#worker_auth)
+
+### HTTP request headers
+
+ - **Content-Type**: image/jpeg, image/png
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**202** | The file was accepted for processing. |  -  |
+**411** | Length required; the client did not send a Content-Length header. |  -  |
+**413** | Payload too large. |  -  |
+**415** | Unsupported Media Type, the image format cannot be processed by the Manager. |  -  |
+**429** | The client is sending too many frames, and should throttle itself. |  -  |
 **0** | unexpected error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

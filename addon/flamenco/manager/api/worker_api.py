@@ -285,6 +285,65 @@ class WorkerApi(object):
             },
             api_client=api_client
         )
+        self.task_output_produced_endpoint = _Endpoint(
+            settings={
+                'response_type': None,
+                'auth': [
+                    'worker_auth'
+                ],
+                'endpoint_path': '/api/worker/task/{task_id}/output-produced',
+                'operation_id': 'task_output_produced',
+                'http_method': 'POST',
+                'servers': None,
+            },
+            params_map={
+                'all': [
+                    'task_id',
+                    'body',
+                ],
+                'required': [
+                    'task_id',
+                    'body',
+                ],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
+            },
+            root_map={
+                'validations': {
+                },
+                'allowed_values': {
+                },
+                'openapi_types': {
+                    'task_id':
+                        (str,),
+                    'body':
+                        (file_type,),
+                },
+                'attribute_map': {
+                    'task_id': 'task_id',
+                },
+                'location_map': {
+                    'task_id': 'path',
+                    'body': 'body',
+                },
+                'collection_format_map': {
+                }
+            },
+            headers_map={
+                'accept': [
+                    'application/json'
+                ],
+                'content_type': [
+                    'image/jpeg',
+                    'image/png'
+                ]
+            },
+            api_client=api_client
+        )
         self.task_update_endpoint = _Endpoint(
             settings={
                 'response_type': None,
@@ -814,6 +873,87 @@ class WorkerApi(object):
         kwargs['worker_sign_on'] = \
             worker_sign_on
         return self.sign_on_endpoint.call_with_http_info(**kwargs)
+
+    def task_output_produced(
+        self,
+        task_id,
+        body,
+        **kwargs
+    ):
+        """Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that's digestable by the Manager. Currently only PNG and JPEG support is planned.   # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.task_output_produced(task_id, body, async_req=True)
+        >>> result = thread.get()
+
+        Args:
+            task_id (str):
+            body (file_type): Contents of the file
+
+        Keyword Args:
+            _return_http_data_only (bool): response data without head status
+                code and headers. Default is True.
+            _preload_content (bool): if False, the urllib3.HTTPResponse object
+                will be returned without reading/decoding response data.
+                Default is True.
+            _request_timeout (int/float/tuple): timeout setting for this request. If
+                one number provided, it will be total request timeout. It can also
+                be a pair (tuple) of (connection, read) timeouts.
+                Default is None.
+            _check_input_type (bool): specifies if type checking
+                should be done one the data sent to the server.
+                Default is True.
+            _check_return_type (bool): specifies if type checking
+                should be done one the data received from the server.
+                Default is True.
+            _spec_property_naming (bool): True if the variable names in the input data
+                are serialized names, as specified in the OpenAPI document.
+                False if the variable names in the input data
+                are pythonic names, e.g. snake case (default)
+            _content_type (str/None): force body content-type.
+                Default is None and content-type will be predicted by allowed
+                content-types and body.
+            _host_index (int/None): specifies the index of the server
+                that we want to use.
+                Default is read from the configuration.
+            async_req (bool): execute request asynchronously
+
+        Returns:
+            None
+                If the method is called asynchronously, returns the request
+                thread.
+        """
+        kwargs['async_req'] = kwargs.get(
+            'async_req', False
+        )
+        kwargs['_return_http_data_only'] = kwargs.get(
+            '_return_http_data_only', True
+        )
+        kwargs['_preload_content'] = kwargs.get(
+            '_preload_content', True
+        )
+        kwargs['_request_timeout'] = kwargs.get(
+            '_request_timeout', None
+        )
+        kwargs['_check_input_type'] = kwargs.get(
+            '_check_input_type', True
+        )
+        kwargs['_check_return_type'] = kwargs.get(
+            '_check_return_type', True
+        )
+        kwargs['_spec_property_naming'] = kwargs.get(
+            '_spec_property_naming', False
+        )
+        kwargs['_content_type'] = kwargs.get(
+            '_content_type')
+        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs['task_id'] = \
+            task_id
+        kwargs['body'] = \
+            body
+        return self.task_output_produced_endpoint.call_with_http_info(**kwargs)
 
     def task_update(
         self,

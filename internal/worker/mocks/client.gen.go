@@ -696,6 +696,26 @@ func (mr *MockFlamencoClientMockRecorder) SubmitJobWithResponse(arg0, arg1 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitJobWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SubmitJobWithResponse), varargs...)
 }
 
+// TaskOutputProducedWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) TaskOutputProducedWithBodyWithResponse(arg0 context.Context, arg1, arg2 string, arg3 io.Reader, arg4 ...api.RequestEditorFn) (*api.TaskOutputProducedResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	for _, a := range arg4 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TaskOutputProducedWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.TaskOutputProducedResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TaskOutputProducedWithBodyWithResponse indicates an expected call of TaskOutputProducedWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) TaskOutputProducedWithBodyWithResponse(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TaskOutputProducedWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).TaskOutputProducedWithBodyWithResponse), varargs...)
+}
+
 // TaskUpdateWithBodyWithResponse mocks base method.
 func (m *MockFlamencoClient) TaskUpdateWithBodyWithResponse(arg0 context.Context, arg1, arg2 string, arg3 io.Reader, arg4 ...api.RequestEditorFn) (*api.TaskUpdateResponse, error) {
 	m.ctrl.T.Helper()
