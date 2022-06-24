@@ -32,6 +32,7 @@ type mockedFlamenco struct {
 	stateMachine *mocks.MockTaskStateMachine
 	shaman       *mocks.MockShaman
 	clock        *clock.Mock
+	lastRender   *mocks.MockLastRendered
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
@@ -42,6 +43,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	cs := mocks.NewMockConfigService(mockCtrl)
 	sm := mocks.NewMockTaskStateMachine(mockCtrl)
 	sha := mocks.NewMockShaman(mockCtrl)
+	lr := mocks.NewMockLastRendered(mockCtrl)
 
 	clock := clock.NewMock()
 	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T11:14:41+02:00")
@@ -50,7 +52,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	}
 	clock.Set(mockedNow)
 
-	f := NewFlamenco(jc, ps, cb, ls, cs, sm, sha, clock)
+	f := NewFlamenco(jc, ps, cb, ls, cs, sm, sha, clock, lr)
 
 	return mockedFlamenco{
 		flamenco:     f,
@@ -61,6 +63,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 		config:       cs,
 		stateMachine: sm,
 		clock:        clock,
+		lastRender:   lr,
 	}
 }
 
@@ -126,7 +129,11 @@ func assertResponseJSON(t *testing.T, echoCtx echo.Context, expectStatusCode int
 	assert.JSONEq(t, string(expectJSON), string(actualJSON))
 }
 
-func assertResponseAPIError(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectMessage string) {
+func assertResponseAPIError(t *testing.T, echoCtx echo.Context, expectStatusCode int, expectMessage string, fmtArgs ...interface{}) {
+	if len(fmtArgs) > 0 {
+		expectMessage = fmt.Sprintf(expectMessage, fmtArgs...)
+	}
+
 	assertResponseJSON(t, echoCtx, expectStatusCode, api.Error{
 		Code:    int32(expectStatusCode),
 		Message: expectMessage,
@@ -138,6 +145,13 @@ func assertResponseNoContent(t *testing.T, echoCtx echo.Context) {
 	resp := getRecordedResponseRecorder(echoCtx)
 	assert.Equal(t, http.StatusNoContent, resp.Code, "Unexpected status: %v", resp.Result().Status)
 	assert.Zero(t, resp.Body.Len(), "HTTP 204 No Content should have no content, got %v", resp.Body.String())
+}
+
+// assertResponseNoBody asserts the response has no body and the given status.
+func assertResponseNoBody(t *testing.T, echoCtx echo.Context, expectStatus int) {
+	resp := getRecordedResponseRecorder(echoCtx)
+	assert.Equal(t, expectStatus, resp.Code, "Unexpected status: %v", resp.Result().Status)
+	assert.Zero(t, resp.Body.Len(), "HTTP response have no content, got %v", resp.Body.String())
 }
 
 func testWorker() persistence.Worker {

@@ -15,6 +15,7 @@ import (
 
 	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
 	"git.blender.org/flamenco/internal/manager/webupdates"
@@ -23,7 +24,7 @@ import (
 )
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman,LastRendered
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -112,6 +113,14 @@ type LogStorage interface {
 	WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error
 	RotateFile(logger zerolog.Logger, jobID, taskID string)
 	Tail(jobID, taskID string) (string, error)
+}
+
+// LastRendered processes the "last rendered" images.
+type LastRendered interface {
+	// QueueImage queues an image for processing. Returns
+	// `last_rendered.ErrQueueFull` if there is no more space in the queue for
+	// new images.
+	QueueImage(payload last_rendered.Payload) error
 }
 
 type ConfigService interface {

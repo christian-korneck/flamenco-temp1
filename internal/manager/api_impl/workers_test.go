@@ -3,7 +3,9 @@ package api_impl
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"testing"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
+	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 )
@@ -454,4 +457,104 @@ func TestMayWorkerRun(t *testing.T) {
 			StatusChangeRequested: true,
 		})
 	}
+}
+
+func TestTaskOutputProduced(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	prepareRequest := func(body io.Reader) echo.Context {
+		echo := mf.prepareMockedRequest(body)
+		requestWorkerStore(echo, &worker)
+		return echo
+	}
+
+	job := persistence.Job{
+		UUID: "583a7d59-887a-4c6c-b3e4-a753018f71b0",
+	}
+	task := persistence.Task{
+		UUID:   "4107c7aa-e86d-4244-858b-6c4fce2af503",
+		Job:    &job,
+		Status: api.TaskStatusActive,
+	}
+
+	// Mock body to use in the request.
+	bodyBytes := []byte("JPEG file contents")
+
+	// Test: unhappy, missing Content-Length header.
+	{
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
+
+		echo := prepareRequest(nil)
+		err := mf.flamenco.TaskOutputProduced(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseAPIError(t, echo, http.StatusLengthRequired, "Content-Length header required")
+	}
+
+	// Test: unhappy, too large Content-Length header.
+	{
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
+
+		bodyBytes := bytes.Repeat([]byte("x"), int(last_rendered.MaxImageSizeBytes+1))
+		if int64(len(bodyBytes)) != last_rendered.MaxImageSizeBytes+1 {
+			panic("cannot generate enough bytes")
+		}
+
+		echo := prepareRequest(bytes.NewReader(bodyBytes))
+		err := mf.flamenco.TaskOutputProduced(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseAPIError(t, echo, http.StatusRequestEntityTooLarge,
+			"image too large; should be max %v bytes", last_rendered.MaxImageSizeBytes)
+	}
+
+	// Test: unhappy, wrong mime type
+	{
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
+		mf.persistence.EXPECT().FetchTask(gomock.Any(), task.UUID).Return(&task, nil)
+
+		echo := prepareRequest(bytes.NewReader(bodyBytes))
+		echo.Request().Header.Set("Content-Type", "image/openexr")
+		mf.lastRender.EXPECT().QueueImage(gomock.Any()).Return(last_rendered.ErrMimeTypeUnsupported)
+
+		err := mf.flamenco.TaskOutputProduced(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseAPIError(t, echo, http.StatusUnsupportedMediaType, `unsupported mime type "image/openexr"`)
+	}
+
+	// Test: unhappy, queue full
+	{
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
+		mf.persistence.EXPECT().FetchTask(gomock.Any(), task.UUID).Return(&task, nil)
+
+		echo := prepareRequest(bytes.NewReader(bodyBytes))
+		mf.lastRender.EXPECT().QueueImage(gomock.Any()).Return(last_rendered.ErrQueueFull)
+
+		err := mf.flamenco.TaskOutputProduced(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseAPIError(t, echo, http.StatusTooManyRequests, "image processing queue is full")
+	}
+
+	// Test: happy
+	{
+		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
+		mf.persistence.EXPECT().FetchTask(gomock.Any(), task.UUID).Return(&task, nil)
+
+		echo := prepareRequest(bytes.NewReader(bodyBytes))
+		echo.Request().Header.Set("Content-Type", "image/jpeg")
+		expectPayload := last_rendered.Payload{
+			JobUUID:    job.UUID,
+			WorkerUUID: worker.UUID,
+			MimeType:   "image/jpeg",
+			Image:      bodyBytes,
+		}
+		mf.lastRender.EXPECT().QueueImage(expectPayload).Return(nil)
+
+		err := mf.flamenco.TaskOutputProduced(echo, task.UUID)
+		assert.NoError(t, err)
+		assertResponseNoBody(t, echo, http.StatusAccepted)
+	}
+
 }

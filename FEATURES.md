@@ -53,6 +53,7 @@ Note that list is **not** in any specific order.
   - [ ] Show blocklist in web interface, and allow removal of workers.
 - [x] Worker timeout monitoring
 - [ ] Last rendered image display
+  - [ ] Expand the processing queue from a single channel to a queue per job, so that a spammy job doesn't starve the other jobs from queueing images.
 
 - [ ] Web interface: Support actions on multiple selected things
   - [ ] Workers

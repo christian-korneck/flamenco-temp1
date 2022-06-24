@@ -32,6 +32,8 @@ import (
 	"git.blender.org/flamenco/internal/manager/api_impl"
 	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/manager/last_rendered"
+	"git.blender.org/flamenco/internal/manager/local_storage"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/swagger_ui"
 	"git.blender.org/flamenco/internal/manager/task_logs"
@@ -110,9 +112,15 @@ func main() {
 
 	timeService := clock.New()
 	webUpdater := webupdates.New()
+
+	// TODO: the local storage now is hard-coded to use the same sub-directory as the task log storage.
+	// This should be refactored so that the task logs storage uses the localStorage object as well.
+	localStorage := local_storage.NewNextToExe("task-logs")
 	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, timeService, webUpdater)
+
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater, logStorage)
-	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine, logStorage, webUpdater)
+	lastRender := last_rendered.New(localStorage)
+	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine, logStorage, webUpdater, lastRender)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
 
 	timeoutChecker := timeout_checker.New(
@@ -128,6 +136,13 @@ func main() {
 	// All main goroutines should sync with this waitgroup. Once the waitgroup is
 	// done, the main() function will return and the process will stop.
 	wg := new(sync.WaitGroup)
+
+	// Run the "last rendered image" processor.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		lastRender.Run(mainCtx)
+	}()
 
 	// Start the web server.
 	wg.Add(1)
@@ -171,6 +186,7 @@ func buildFlamencoAPI(
 	taskStateMachine *task_state_machine.StateMachine,
 	logStorage *task_logs.Storage,
 	webUpdater *webupdates.BiDirComms,
+	lastRender *last_rendered.LastRenderedProcessor,
 ) api.ServerInterface {
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
@@ -179,7 +195,7 @@ func buildFlamencoAPI(
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(
 		compiler, persist, webUpdater, logStorage, configService,
-		taskStateMachine, shamanServer, timeService)
+		taskStateMachine, shamanServer, timeService, lastRender)
 	return flamenco
 }
 

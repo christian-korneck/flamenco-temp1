@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
+	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
 	"git.blender.org/flamenco/internal/manager/webupdates"
@@ -345,6 +347,84 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	// Perform variable replacement before sending to the Worker.
 	customisedTask := replaceTaskVariables(f.config, apiTask, *worker)
 	return e.JSON(http.StatusOK, customisedTask)
+}
+
+func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
+	ctx := e.Request().Context()
+	filesize := e.Request().ContentLength
+	worker := requestWorkerOrPanic(e)
+	logger := requestLogger(e).With().
+		Str("task", taskID).
+		Int64("imageSizeBytes", filesize).
+		Logger()
+
+	err := f.workerSeen(ctx, logger, worker)
+	if err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "error updating 'last seen' timestamp of worker: %v", err)
+	}
+
+	// Check the file size:
+	switch {
+	case filesize <= 0:
+		logger.Warn().Msg("TaskOutputProduced: Worker did not sent Content-Length header")
+		return sendAPIError(e, http.StatusLengthRequired, "Content-Length header required")
+	case filesize > last_rendered.MaxImageSizeBytes:
+		logger.Warn().
+			Int64("imageSizeBytesMax", last_rendered.MaxImageSizeBytes).
+			Msg("TaskOutputProduced: Worker sent too large last-rendered image")
+		return sendAPIError(e, http.StatusRequestEntityTooLarge,
+			"image too large; should be max %v bytes", last_rendered.MaxImageSizeBytes)
+	}
+
+	// Fetch the task, to find its job UUID:
+	dbTask, err := f.persist.FetchTask(ctx, taskID)
+	switch {
+	case errors.Is(err, persistence.ErrTaskNotFound):
+		return e.JSON(http.StatusNotFound, "Task does not exist")
+	case err != nil:
+		logger.Error().Err(err).Msg("TaskOutputProduced: cannot fetch task")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task")
+	case dbTask == nil:
+		panic("task could not be fetched, but database gave no error either")
+	}
+
+	// Read the image bytes into memory.
+	imageBytes, err := io.ReadAll(e.Request().Body)
+	if err != nil {
+		logger.Warn().Err(err).Msg("TaskOutputProduced: error reading image from request")
+		return sendAPIError(e, http.StatusBadRequest, "error reading request body: %v", err)
+	}
+
+	// Create the "last rendered" payload.
+	payload := last_rendered.Payload{
+		JobUUID:    dbTask.Job.UUID,
+		WorkerUUID: worker.UUID,
+		MimeType:   e.Request().Header.Get("Content-Type"),
+		Image:      imageBytes,
+	}
+
+	// Queue the image for processing:
+	err = f.lastRender.QueueImage(payload)
+	if err != nil {
+		switch {
+		case errors.Is(err, last_rendered.ErrMimeTypeUnsupported):
+			logger.Warn().
+				Str("mimeType", payload.MimeType).
+				Msg("TaskOutputProduced: Worker sent unsupported mime type")
+			return sendAPIError(e, http.StatusUnsupportedMediaType, "unsupported mime type %q", payload.MimeType)
+		case errors.Is(err, last_rendered.ErrQueueFull):
+			logger.Info().
+				Msg("TaskOutputProduced: image processing queue is full, ignoring request")
+			return sendAPIError(e, http.StatusTooManyRequests, "image processing queue is full")
+		default:
+			logger.Error().Err(err).
+				Msg("TaskOutputProduced: error queueing image")
+			return sendAPIError(e, http.StatusInternalServerError, "error queueing image for processing: %v", err)
+		}
+	}
+
+	logger.Info().Msg("TaskOutputProduced: accepted last-rendered image for processing")
+	return e.NoContent(http.StatusAccepted)
 }
 
 func (f *Flamenco) workerPingedTask(
