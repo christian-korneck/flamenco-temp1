@@ -15,6 +15,7 @@ import (
 	_ "image/png"
 
 	"github.com/disintegration/imaging"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -55,6 +56,13 @@ func saveJPEG(targetpath string, img image.Image) error {
 		return fmt.Errorf("creating file: %w", err)
 	}
 
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Warn().Err(err).Str("filename", targetpath).Msg("last-rendered: error closing file")
+		}
+	}()
+
 	options := jpeg.Options{
 		Quality: thumbnailJPEGQuality,
 	}
@@ -63,10 +71,6 @@ func saveJPEG(targetpath string, img image.Image) error {
 		return fmt.Errorf("encoding as JPEG: %w", err)
 	}
 
-	err = file.Close()
-	if err != nil {
-		return fmt.Errorf("closing file: %w", err)
-	}
 	return nil
 }
 
