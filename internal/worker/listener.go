@@ -46,20 +46,17 @@ func NewListener(client FlamencoClient, buffer UpstreamBuffer) *Listener {
 }
 
 func (l *Listener) Run(ctx context.Context) {
-	keepRunning := true
-	for keepRunning {
+	defer l.doneWg.Done()
+	defer log.Debug().Msg("listener shutting down")
+
+	for {
 		select {
 		case <-ctx.Done():
-			keepRunning = false
-			continue
+			return
 		case <-time.After(10 * time.Second):
-			// This is just a dummy thing.
+			log.Trace().Msg("listener is still running")
 		}
-		log.Trace().Msg("listener is still running")
 	}
-
-	log.Debug().Msg("listener shutting down")
-	l.doneWg.Done()
 }
 
 func (l *Listener) Wait() {
