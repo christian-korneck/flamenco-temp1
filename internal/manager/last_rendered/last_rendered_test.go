@@ -95,6 +95,7 @@ func TestProcessImage(t *testing.T) {
 		if !assert.NoError(t, err, "thumbnail %s should be openable", spec.filename) {
 			return
 		}
+		defer file.Close()
 
 		img, format, err := image.Decode(file)
 		if !assert.NoErrorf(t, err, "thumbnail %s should be decodable", spec.filename) {
