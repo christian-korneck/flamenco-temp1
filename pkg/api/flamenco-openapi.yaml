@@ -517,6 +517,53 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/jobs/{job_id}/blocklist:
+    summary: Access blocklist of this job.
+    get:
+      operationId: fetchJobBlocklist
+      summary: Fetch the list of workers that are blocked from doing certain task types on this job.
+      tags: [jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Get tuples (worker, task type) that got blocked on this job.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobBlocklist" }
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: removeJobBlocklist
+      summary: Remove entries from a job blocklist.
+      tags: [jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        description: Tuples (worker, task type) to be removed from the blocklist.
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/JobBlocklist" }
+      responses:
+        "204":
+          description: Request accepted, entries have been removed.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/tasks/{task_id}:
     summary: Fetch a single task
     get:
@@ -1210,6 +1257,18 @@ components:
         task_type: { type: string }
         updated: { type: string, format: date-time }
       required: [id, name, status, priority, task_type, updated]
+
+    JobBlocklist:
+      description: "List of workers that are not allowed certain task types on a specific job."
+      type: array
+      items: { $ref: "#/components/schemas/JobBlocklistEntry" }
+
+    JobBlocklistEntry:
+      type: object
+      properties:
+        worker_id: { type: string, format: uuid }
+        task_type: { type: string }
+      required: [worker_id, task_type]
 
     JobStatusChange:
       type: object
