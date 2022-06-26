@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -24,9 +23,10 @@ var (
 
 // Listener listens to the result of task and command execution, and sends it to the Manager.
 type Listener struct {
-	doneWg *sync.WaitGroup
-	client FlamencoClient
-	buffer UpstreamBuffer
+	doneWg         *sync.WaitGroup
+	client         FlamencoClient
+	buffer         UpstreamBuffer
+	outputUploader *OutputUploader
 }
 
 // UpstreamBuffer can buffer up-stream task updates, in case the Manager cannot be reached.
@@ -37,9 +37,10 @@ type UpstreamBuffer interface {
 // NewListener creates a new Listener that will send updates to the API client.
 func NewListener(client FlamencoClient, buffer UpstreamBuffer) *Listener {
 	l := &Listener{
-		doneWg: new(sync.WaitGroup),
-		client: client,
-		buffer: buffer,
+		doneWg:         new(sync.WaitGroup),
+		client:         client,
+		buffer:         buffer,
+		outputUploader: NewOutputUploader(client),
 	}
 	l.doneWg.Add(1)
 	return l
@@ -49,14 +50,8 @@ func (l *Listener) Run(ctx context.Context) {
 	defer l.doneWg.Done()
 	defer log.Debug().Msg("listener shutting down")
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(10 * time.Second):
-			log.Trace().Msg("listener is still running")
-		}
-	}
+	log.Debug().Msg("listener starting up")
+	l.outputUploader.Run(ctx)
 }
 
 func (l *Listener) Wait() {
@@ -103,7 +98,8 @@ func (l *Listener) LogProduced(ctx context.Context, taskID string, logLines ...s
 
 // OutputProduced tells the Manager there has been some output (most commonly a rendered frame or video).
 func (l *Listener) OutputProduced(ctx context.Context, taskID string, outputLocation string) error {
-	return fmt.Errorf("Listener.OutputProduced(%q, %q): not implemented yet", taskID, outputLocation)
+	l.outputUploader.OutputProduced(taskID, outputLocation)
+	return nil
 }
 
 func (l *Listener) sendTaskUpdate(ctx context.Context, taskID string, update api.TaskUpdateJSONRequestBody) error {
