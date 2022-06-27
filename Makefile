@@ -25,7 +25,7 @@ with-deps:
 	go install github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) application
 
-application: flamenco-manager flamenco-worker webapp
+application: webapp flamenco-manager flamenco-worker
 
 flamenco-manager:
 	$(MAKE) webapp-static
@@ -33,6 +33,9 @@ flamenco-manager:
 
 flamenco-worker:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
+
+addon-packer: cmd/addon-packer/addon-packer.go
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/addon-packer
 
 flamenco-manager_race:
 	CGO_ENABLED=1 go build -race -o $@ -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
@@ -43,12 +46,13 @@ flamenco-worker_race:
 webapp:
 	yarn --cwd web/app install
 
-webapp-static:
+webapp-static: addon-packer
 	rm -rf web/static
 # When changing the base URL, also update the line
 # e.GET("/app/*", echo.WrapHandler(webAppHandler))
 # in `cmd/flamenco-manager/main.go`
 	yarn --cwd web/app build --outDir ../static --base=/app/
+	./addon-packer -filename web/static/flamenco-addon.zip
 	@echo "Web app has been installed into web/static"
 
 generate: generate-go generate-py generate-js
@@ -138,7 +142,7 @@ test:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race
+	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race addon-packer
 
 package: flamenco-manager flamenco-worker
 	mkdir -p dist
@@ -148,4 +152,4 @@ package: flamenco-manager flamenco-worker
 	rm -rf dist/flamenco
 
 
-.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp generate generate-go generate-py with-deps swagger-ui list-embedded test clean
+.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp webapp-static generate generate-go generate-py with-deps swagger-ui list-embedded test clean
