@@ -20,3 +20,4 @@ __pycache__
 .openapi-generator/
 
 web/manager-api/dist/
+web/static/

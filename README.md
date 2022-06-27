@@ -36,16 +36,15 @@ The web UI is built with Vue, Bootstrap, and Socket.IO for communication with th
 sudo snap install node --classic --channel=16
 ```
 
-This also gives you the Yarn package manager, which can be used to install web dependencies and build the frontend files.
+This also gives you the Yarn package manager, which can be used to install web dependencies and build the frontend files via:
 
 ```
-cd web/app
-yarn install
+make webapp
 ```
 
 Then run the frontend development server with:
 ```
-yarn run dev --host
+yarn --cwd web/app run dev --host
 ```
 
 The `--host` parameter is optional but recommended. The downside is that it
@@ -53,6 +52,9 @@ exposes the devserver to others on the network. The upside is that it makes it
 easier to detect configuration issues. The generated OpenAPI client defaults to
 using `localhost`, and if you're not testing on `localhost` this stands out
 more.
+
+The web interface is also "baked" into the `flamenco-manager` binary when using
+`make flamenco-manager`.
 
 
 ## Generating Code

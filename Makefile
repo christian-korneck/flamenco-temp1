@@ -28,6 +28,7 @@ with-deps:
 application: flamenco-manager flamenco-worker webapp
 
 flamenco-manager:
+	$(MAKE) webapp-static
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
 
 flamenco-worker:
@@ -41,6 +42,14 @@ flamenco-worker_race:
 
 webapp:
 	yarn --cwd web/app install
+
+webapp-static:
+	rm -rf web/static
+# When changing the base URL, also update the line
+# e.GET("/app/*", echo.WrapHandler(webAppHandler))
+# in `cmd/flamenco-manager/main.go`
+	yarn --cwd web/app build --outDir ../static --base=/app/
+	@echo "Web app has been installed into web/static"
 
 generate: generate-go generate-py generate-js
 

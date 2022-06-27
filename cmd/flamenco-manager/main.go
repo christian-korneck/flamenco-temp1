@@ -44,6 +44,7 @@ import (
 	"git.blender.org/flamenco/internal/upnp_ssdp"
 	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/shaman"
+	"git.blender.org/flamenco/web"
 )
 
 var cliArgs struct {
@@ -285,18 +286,27 @@ func buildWebService(
 		return c.JSON(http.StatusOK, swagger)
 	})
 
-	// Temporarily redirect the index page to the Swagger UI, so that at least you
-	// can see something.
-	e.GET("/", func(c echo.Context) error {
-		return c.Redirect(http.StatusTemporaryRedirect, "/api/swagger-ui/")
-	})
-
 	// Serve UPnP service descriptions.
 	if ssdp != nil {
 		e.GET(ssdp.DescriptionPath(), func(c echo.Context) error {
 			return c.XMLPretty(http.StatusOK, ssdp.Description(), "  ")
 		})
 	}
+
+	// Serve static files for the webapp on /app/.
+	webAppHandler, err := web.WebAppHandler()
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to set up HTTP server for embedded web app")
+	}
+	e.GET("/app/*", echo.WrapHandler(http.StripPrefix("/app", webAppHandler)))
+	e.GET("/app", func(c echo.Context) error {
+		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
+	})
+
+	// Redirect / to the webapp.
+	e.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
+	})
 
 	// Log available routes
 	routeLogger := log.Level(zerolog.TraceLevel)
