@@ -142,6 +142,21 @@ func (mr *MockPersistenceServiceMockRecorder) FetchJob(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchJob", reflect.TypeOf((*MockPersistenceService)(nil).FetchJob), arg0, arg1)
 }
 
+// FetchJobBlocklist mocks base method.
+func (m *MockPersistenceService) FetchJobBlocklist(arg0 context.Context, arg1 string) ([]persistence.JobBlock, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchJobBlocklist", arg0, arg1)
+	ret0, _ := ret[0].([]persistence.JobBlock)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchJobBlocklist indicates an expected call of FetchJobBlocklist.
+func (mr *MockPersistenceServiceMockRecorder) FetchJobBlocklist(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchJobBlocklist", reflect.TypeOf((*MockPersistenceService)(nil).FetchJobBlocklist), arg0, arg1)
+}
+
 // FetchTask mocks base method.
 func (m *MockPersistenceService) FetchTask(arg0 context.Context, arg1 string) (*persistence.Task, error) {
 	m.ctrl.T.Helper()
@@ -230,6 +245,20 @@ func (m *MockPersistenceService) QueryJobs(arg0 context.Context, arg1 api.JobsQu
 func (mr *MockPersistenceServiceMockRecorder) QueryJobs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryJobs", reflect.TypeOf((*MockPersistenceService)(nil).QueryJobs), arg0, arg1)
+}
+
+// RemoveFromJobBlocklist mocks base method.
+func (m *MockPersistenceService) RemoveFromJobBlocklist(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveFromJobBlocklist", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveFromJobBlocklist indicates an expected call of RemoveFromJobBlocklist.
+func (mr *MockPersistenceServiceMockRecorder) RemoveFromJobBlocklist(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFromJobBlocklist", reflect.TypeOf((*MockPersistenceService)(nil).RemoveFromJobBlocklist), arg0, arg1, arg2, arg3)
 }
 
 // SaveTask mocks base method.

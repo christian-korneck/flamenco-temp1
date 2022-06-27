@@ -243,6 +243,68 @@ func (f *Flamenco) FetchTaskLogTail(e echo.Context, taskID string) error {
 	return e.String(http.StatusOK, tail)
 }
 
+func (f *Flamenco) FetchJobBlocklist(e echo.Context, jobID string) error {
+	if !uuid.IsValid(jobID) {
+		return sendAPIError(e, http.StatusBadRequest, "job ID should be a UUID")
+	}
+
+	logger := requestLogger(e).With().Str("job", jobID).Logger()
+	ctx := e.Request().Context()
+
+	list, err := f.persist.FetchJobBlocklist(ctx, jobID)
+	if err != nil {
+		logger.Error().Err(err).Msg("error fetching job blocklist")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching job blocklist: %v", err)
+	}
+
+	apiList := api.JobBlocklist{}
+	for _, item := range list {
+		apiList = append(apiList, api.JobBlocklistEntry{
+			TaskType: item.TaskType,
+			WorkerId: item.Worker.UUID,
+		})
+	}
+
+	return e.JSON(http.StatusOK, apiList)
+}
+
+func (f *Flamenco) RemoveJobBlocklist(e echo.Context, jobID string) error {
+	if !uuid.IsValid(jobID) {
+		return sendAPIError(e, http.StatusBadRequest, "job ID should be a UUID")
+	}
+
+	logger := requestLogger(e).With().Str("job", jobID).Logger()
+	ctx := e.Request().Context()
+
+	var job api.RemoveJobBlocklistJSONRequestBody
+	if err := e.Bind(&job); err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	var lastErr error
+	for _, entry := range job {
+		sublogger := logger.With().
+			Str("worker", entry.WorkerId).
+			Str("taskType", entry.TaskType).
+			Logger()
+		err := f.persist.RemoveFromJobBlocklist(ctx, jobID, entry.WorkerId, entry.TaskType)
+		if err != nil {
+			sublogger.Error().Err(err).Msg("error removing entry from job blocklist")
+			lastErr = err
+			continue
+		}
+		sublogger.Info().Msg("removed entry from job blocklist")
+	}
+
+	if lastErr != nil {
+		return sendAPIError(e, http.StatusInternalServerError,
+			"error removing at least one entry from the blocklist: %v", lastErr)
+	}
+
+	return e.NoContent(http.StatusNoContent)
+}
+
 func jobDBtoAPI(dbJob *persistence.Job) api.Job {
 	apiJob := api.Job{
 		SubmittedJob: api.SubmittedJob{

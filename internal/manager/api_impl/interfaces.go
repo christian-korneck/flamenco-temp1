@@ -56,6 +56,9 @@ type PersistenceService interface {
 
 	// AddWorkerToJobBlocklist prevents this Worker of getting any task, of this type, on this job, from the task scheduler.
 	AddWorkerToJobBlocklist(ctx context.Context, job *persistence.Job, worker *persistence.Worker, taskType string) error
+	FetchJobBlocklist(ctx context.Context, jobUUID string) ([]persistence.JobBlock, error)
+	RemoveFromJobBlocklist(ctx context.Context, jobUUID, workerUUID, taskType string) error
+
 	// WorkersLeftToRun returns a set of worker UUIDs that can run tasks of the given type on the given job.
 	WorkersLeftToRun(ctx context.Context, job *persistence.Job, taskType string) (map[string]bool, error)
 	// CountTaskFailuresOfWorker returns the number of task failures of this worker, on this particular job and task type.

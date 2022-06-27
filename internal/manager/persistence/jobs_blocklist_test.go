@@ -42,6 +42,55 @@ func TestAddWorkerToJobBlocklist(t *testing.T) {
 	}
 }
 
+func TestFetchJobBlocklist(t *testing.T) {
+	ctx, close, db, job, _ := jobTasksTestFixtures(t)
+	defer close()
+
+	// Add a worker to the block list.
+	worker := createWorker(ctx, t, db)
+	err := db.AddWorkerToJobBlocklist(ctx, job, worker, "blender")
+	assert.NoError(t, err)
+
+	list, err := db.FetchJobBlocklist(ctx, job.UUID)
+	assert.NoError(t, err)
+
+	if assert.Len(t, list, 1) {
+		entry := list[0]
+		assert.Equal(t, entry.JobID, job.ID)
+		assert.Equal(t, entry.WorkerID, worker.ID)
+		assert.Equal(t, entry.TaskType, "blender")
+
+		assert.Nil(t, entry.Job, "should NOT fetch the entire job")
+		assert.NotNil(t, entry.Worker, "SHOULD fetch the entire worker")
+	}
+}
+
+func TestRemoveFromJobBlocklist(t *testing.T) {
+	ctx, close, db, job, _ := jobTasksTestFixtures(t)
+	defer close()
+
+	// Add a worker and some entries to the block list.
+	worker := createWorker(ctx, t, db)
+	err := db.AddWorkerToJobBlocklist(ctx, job, worker, "blender")
+	assert.NoError(t, err)
+	err = db.AddWorkerToJobBlocklist(ctx, job, worker, "ffmpeg")
+	assert.NoError(t, err)
+
+	// Remove an entry.
+	err = db.RemoveFromJobBlocklist(ctx, job.UUID, worker.UUID, "ffmpeg")
+	assert.NoError(t, err)
+
+	// Check that the other entry is still there.
+	list, err := db.FetchJobBlocklist(ctx, job.UUID)
+	assert.NoError(t, err)
+
+	if assert.Len(t, list, 1) {
+		entry := list[0]
+		assert.Equal(t, entry.JobID, job.ID)
+		assert.Equal(t, entry.WorkerID, worker.ID)
+		assert.Equal(t, entry.TaskType, "blender")
+	}
+}
 func TestWorkersLeftToRun(t *testing.T) {
 	ctx, close, db, job, _ := jobTasksTestFixtures(t)
 	defer close()

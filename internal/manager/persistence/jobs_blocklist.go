@@ -39,6 +39,48 @@ func (db *DB) AddWorkerToJobBlocklist(ctx context.Context, job *Job, worker *Wor
 	return tx.Error
 }
 
+func (db *DB) FetchJobBlocklist(ctx context.Context, jobUUID string) ([]JobBlock, error) {
+	entries := []JobBlock{}
+
+	tx := db.gormDB.WithContext(ctx).
+		Model(JobBlock{}).
+		Joins("inner join jobs on jobs.id = job_blocks.job_id").
+		Joins("Worker").
+		Where("jobs.uuid = ?", jobUUID).
+		Scan(&entries)
+	return entries, tx.Error
+}
+
+func (db *DB) RemoveFromJobBlocklist(ctx context.Context, jobUUID, workerUUID, taskType string) error {
+	// Find the job ID.
+	job := Job{}
+	tx := db.gormDB.WithContext(ctx).
+		Select("id").
+		Where("uuid = ?", jobUUID).
+		Find(&job)
+	if tx.Error != nil {
+		return jobError(tx.Error, "fetching job with uuid=%q", jobUUID)
+	}
+
+	// Find the worker ID.
+	worker := Worker{}
+	tx = db.gormDB.WithContext(ctx).
+		Select("id").
+		Where("uuid = ?", workerUUID).
+		Find(&worker)
+	if tx.Error != nil {
+		return workerError(tx.Error, "fetching worker with uuid=%q", workerUUID)
+	}
+
+	// Remove the blocklist entry.
+	tx = db.gormDB.WithContext(ctx).
+		Where("job_id = ?", job.ID).
+		Where("worker_id = ?", worker.ID).
+		Where("task_type = ?", taskType).
+		Delete(JobBlock{})
+	return tx.Error
+}
+
 // WorkersLeftToRun returns a set of worker UUIDs that can run tasks of the given type on the given job.
 //
 // NOTE: this does NOT consider the task failure list, which blocks individual
