@@ -36,6 +36,26 @@ func (m *MockFlamencoClient) EXPECT() *MockFlamencoClientMockRecorder {
 	return m.recorder
 }
 
+// FetchJobBlocklistWithResponse mocks base method.
+func (m *MockFlamencoClient) FetchJobBlocklistWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchJobBlocklistResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FetchJobBlocklistWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.FetchJobBlocklistResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchJobBlocklistWithResponse indicates an expected call of FetchJobBlocklistWithResponse.
+func (mr *MockFlamencoClientMockRecorder) FetchJobBlocklistWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchJobBlocklistWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchJobBlocklistWithResponse), varargs...)
+}
+
 // FetchJobTasksWithResponse mocks base method.
 func (m *MockFlamencoClient) FetchJobTasksWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchJobTasksResponse, error) {
 	m.ctrl.T.Helper()
@@ -334,6 +354,46 @@ func (mr *MockFlamencoClientMockRecorder) RegisterWorkerWithResponse(arg0, arg1 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterWorkerWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RegisterWorkerWithResponse), varargs...)
+}
+
+// RemoveJobBlocklistWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) RemoveJobBlocklistWithBodyWithResponse(arg0 context.Context, arg1, arg2 string, arg3 io.Reader, arg4 ...api.RequestEditorFn) (*api.RemoveJobBlocklistResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	for _, a := range arg4 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RemoveJobBlocklistWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.RemoveJobBlocklistResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveJobBlocklistWithBodyWithResponse indicates an expected call of RemoveJobBlocklistWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) RemoveJobBlocklistWithBodyWithResponse(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveJobBlocklistWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RemoveJobBlocklistWithBodyWithResponse), varargs...)
+}
+
+// RemoveJobBlocklistWithResponse mocks base method.
+func (m *MockFlamencoClient) RemoveJobBlocklistWithResponse(arg0 context.Context, arg1 string, arg2 api.RemoveJobBlocklistJSONRequestBody, arg3 ...api.RequestEditorFn) (*api.RemoveJobBlocklistResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RemoveJobBlocklistWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.RemoveJobBlocklistResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveJobBlocklistWithResponse indicates an expected call of RemoveJobBlocklistWithResponse.
+func (mr *MockFlamencoClientMockRecorder) RemoveJobBlocklistWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveJobBlocklistWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RemoveJobBlocklistWithResponse), varargs...)
 }
 
 // RequestWorkerStatusChangeWithBodyWithResponse mocks base method.

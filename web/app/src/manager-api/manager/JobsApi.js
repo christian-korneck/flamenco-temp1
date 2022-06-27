@@ -17,6 +17,7 @@ import AvailableJobType from '../model/AvailableJobType';
 import AvailableJobTypes from '../model/AvailableJobTypes';
 import Error from '../model/Error';
 import Job from '../model/Job';
+import JobBlocklistEntry from '../model/JobBlocklistEntry';
 import JobStatusChange from '../model/JobStatusChange';
 import JobTasksSummary from '../model/JobTasksSummary';
 import JobsQuery from '../model/JobsQuery';
@@ -85,6 +86,52 @@ export default class JobsApi {
      */
     fetchJob(jobId) {
       return this.fetchJobWithHttpInfo(jobId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Fetch the list of workers that are blocked from doing certain task types on this job.
+     * @param {String} jobId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link Array.<module:model/JobBlocklistEntry>} and HTTP response
+     */
+    fetchJobBlocklistWithHttpInfo(jobId) {
+      let postBody = null;
+      // verify the required parameter 'jobId' is set
+      if (jobId === undefined || jobId === null) {
+        throw new Error("Missing the required parameter 'jobId' when calling fetchJobBlocklist");
+      }
+
+      let pathParams = {
+        'job_id': jobId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = [JobBlocklistEntry];
+      return this.apiClient.callApi(
+        '/api/jobs/{job_id}/blocklist', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch the list of workers that are blocked from doing certain task types on this job.
+     * @param {String} jobId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link Array.<module:model/JobBlocklistEntry>}
+     */
+    fetchJobBlocklist(jobId) {
+      return this.fetchJobBlocklistWithHttpInfo(jobId)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -353,6 +400,57 @@ export default class JobsApi {
      */
     queryJobs(jobsQuery) {
       return this.queryJobsWithHttpInfo(jobsQuery)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Remove entries from a job blocklist.
+     * @param {String} jobId 
+     * @param {Object} opts Optional parameters
+     * @param {Array.<module:model/JobBlocklistEntry>} opts.jobBlocklistEntry Tuples (worker, task type) to be removed from the blocklist.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
+     */
+    removeJobBlocklistWithHttpInfo(jobId, opts) {
+      opts = opts || {};
+      let postBody = opts['jobBlocklistEntry'];
+      // verify the required parameter 'jobId' is set
+      if (jobId === undefined || jobId === null) {
+        throw new Error("Missing the required parameter 'jobId' when calling removeJobBlocklist");
+      }
+
+      let pathParams = {
+        'job_id': jobId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = null;
+      return this.apiClient.callApi(
+        '/api/jobs/{job_id}/blocklist', 'DELETE',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Remove entries from a job blocklist.
+     * @param {String} jobId 
+     * @param {Object} opts Optional parameters
+     * @param {Array.<module:model/JobBlocklistEntry>} opts.jobBlocklistEntry Tuples (worker, task type) to be removed from the blocklist.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}
+     */
+    removeJobBlocklist(jobId, opts) {
+      return this.removeJobBlocklistWithHttpInfo(jobId, opts)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

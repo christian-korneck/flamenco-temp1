@@ -25,6 +25,7 @@ import Error from './model/Error';
 import FlamencoVersion from './model/FlamencoVersion';
 import Job from './model/Job';
 import JobAllOf from './model/JobAllOf';
+import JobBlocklistEntry from './model/JobBlocklistEntry';
 import JobStatus from './model/JobStatus';
 import JobStatusChange from './model/JobStatusChange';
 import JobTasksSummary from './model/JobTasksSummary';
@@ -182,6 +183,12 @@ export {
      * @property {module:model/JobAllOf}
      */
     JobAllOf,
+
+    /**
+     * The JobBlocklistEntry model constructor.
+     * @property {module:model/JobBlocklistEntry}
+     */
+    JobBlocklistEntry,
 
     /**
      * The JobStatus model constructor.

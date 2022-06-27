@@ -241,6 +241,15 @@ type Job struct {
 	Updated time.Time `json:"updated"`
 }
 
+// List of workers that are not allowed certain task types on a specific job.
+type JobBlocklist []JobBlocklistEntry
+
+// JobBlocklistEntry defines model for JobBlocklistEntry.
+type JobBlocklistEntry struct {
+	TaskType string `json:"task_type"`
+	WorkerId string `json:"worker_id"`
+}
+
 // Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
 type JobMetadata struct {
 	AdditionalProperties map[string]string `json:"-"`
@@ -611,6 +620,9 @@ type SubmitJobJSONBody SubmittedJob
 // QueryJobsJSONBody defines parameters for QueryJobs.
 type QueryJobsJSONBody JobsQuery
 
+// RemoveJobBlocklistJSONBody defines parameters for RemoveJobBlocklist.
+type RemoveJobBlocklistJSONBody JobBlocklist
+
 // SetJobStatusJSONBody defines parameters for SetJobStatus.
 type SetJobStatusJSONBody JobStatusChange
 
@@ -652,6 +664,9 @@ type SubmitJobJSONRequestBody SubmitJobJSONBody
 
 // QueryJobsJSONRequestBody defines body for QueryJobs for application/json ContentType.
 type QueryJobsJSONRequestBody QueryJobsJSONBody
+
+// RemoveJobBlocklistJSONRequestBody defines body for RemoveJobBlocklist for application/json ContentType.
+type RemoveJobBlocklistJSONRequestBody RemoveJobBlocklistJSONBody
 
 // SetJobStatusJSONRequestBody defines body for SetJobStatus for application/json ContentType.
 type SetJobStatusJSONRequestBody SetJobStatusJSONBody

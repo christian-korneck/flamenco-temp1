@@ -112,6 +112,14 @@ type ClientInterface interface {
 	// FetchJob request
 	FetchJob(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RemoveJobBlocklist request with any body
+	RemoveJobBlocklistWithBody(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RemoveJobBlocklist(ctx context.Context, jobId string, body RemoveJobBlocklistJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// FetchJobBlocklist request
+	FetchJobBlocklist(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SetJobStatus request with any body
 	SetJobStatusWithBody(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -283,6 +291,42 @@ func (c *Client) GetJobTypes(ctx context.Context, reqEditors ...RequestEditorFn)
 
 func (c *Client) FetchJob(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchJobRequest(c.Server, jobId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RemoveJobBlocklistWithBody(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveJobBlocklistRequestWithBody(c.Server, jobId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RemoveJobBlocklist(ctx context.Context, jobId string, body RemoveJobBlocklistJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveJobBlocklistRequest(c.Server, jobId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchJobBlocklist(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchJobBlocklistRequest(c.Server, jobId)
 	if err != nil {
 		return nil, err
 	}
@@ -850,6 +894,87 @@ func NewFetchJobRequest(server string, jobId string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/api/jobs/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRemoveJobBlocklistRequest calls the generic RemoveJobBlocklist builder with application/json body
+func NewRemoveJobBlocklistRequest(server string, jobId string, body RemoveJobBlocklistJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRemoveJobBlocklistRequestWithBody(server, jobId, "application/json", bodyReader)
+}
+
+// NewRemoveJobBlocklistRequestWithBody generates requests for RemoveJobBlocklist with any type of body
+func NewRemoveJobBlocklistRequestWithBody(server string, jobId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "job_id", runtime.ParamLocationPath, jobId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/%s/blocklist", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewFetchJobBlocklistRequest generates requests for FetchJobBlocklist
+func NewFetchJobBlocklistRequest(server string, jobId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "job_id", runtime.ParamLocationPath, jobId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/%s/blocklist", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1767,6 +1892,14 @@ type ClientWithResponsesInterface interface {
 	// FetchJob request
 	FetchJobWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobResponse, error)
 
+	// RemoveJobBlocklist request with any body
+	RemoveJobBlocklistWithBodyWithResponse(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RemoveJobBlocklistResponse, error)
+
+	RemoveJobBlocklistWithResponse(ctx context.Context, jobId string, body RemoveJobBlocklistJSONRequestBody, reqEditors ...RequestEditorFn) (*RemoveJobBlocklistResponse, error)
+
+	// FetchJobBlocklist request
+	FetchJobBlocklistWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobBlocklistResponse, error)
+
 	// SetJobStatus request with any body
 	SetJobStatusWithBodyWithResponse(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetJobStatusResponse, error)
 
@@ -1980,6 +2113,51 @@ func (r FetchJobResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchJobResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RemoveJobBlocklistResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r RemoveJobBlocklistResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RemoveJobBlocklistResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchJobBlocklistResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *JobBlocklist
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchJobBlocklistResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchJobBlocklistResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2557,6 +2735,32 @@ func (c *ClientWithResponses) FetchJobWithResponse(ctx context.Context, jobId st
 	return ParseFetchJobResponse(rsp)
 }
 
+// RemoveJobBlocklistWithBodyWithResponse request with arbitrary body returning *RemoveJobBlocklistResponse
+func (c *ClientWithResponses) RemoveJobBlocklistWithBodyWithResponse(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RemoveJobBlocklistResponse, error) {
+	rsp, err := c.RemoveJobBlocklistWithBody(ctx, jobId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveJobBlocklistResponse(rsp)
+}
+
+func (c *ClientWithResponses) RemoveJobBlocklistWithResponse(ctx context.Context, jobId string, body RemoveJobBlocklistJSONRequestBody, reqEditors ...RequestEditorFn) (*RemoveJobBlocklistResponse, error) {
+	rsp, err := c.RemoveJobBlocklist(ctx, jobId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveJobBlocklistResponse(rsp)
+}
+
+// FetchJobBlocklistWithResponse request returning *FetchJobBlocklistResponse
+func (c *ClientWithResponses) FetchJobBlocklistWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobBlocklistResponse, error) {
+	rsp, err := c.FetchJobBlocklist(ctx, jobId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchJobBlocklistResponse(rsp)
+}
+
 // SetJobStatusWithBodyWithResponse request with arbitrary body returning *SetJobStatusResponse
 func (c *ClientWithResponses) SetJobStatusWithBodyWithResponse(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetJobStatusResponse, error) {
 	rsp, err := c.SetJobStatusWithBody(ctx, jobId, contentType, body, reqEditors...)
@@ -2991,6 +3195,65 @@ func ParseFetchJobResponse(rsp *http.Response) (*FetchJobResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRemoveJobBlocklistResponse parses an HTTP response from a RemoveJobBlocklistWithResponse call
+func ParseRemoveJobBlocklistResponse(rsp *http.Response) (*RemoveJobBlocklistResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RemoveJobBlocklistResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchJobBlocklistResponse parses an HTTP response from a FetchJobBlocklistWithResponse call
+func ParseFetchJobBlocklistResponse(rsp *http.Response) (*FetchJobBlocklistResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchJobBlocklistResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest JobBlocklist
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
