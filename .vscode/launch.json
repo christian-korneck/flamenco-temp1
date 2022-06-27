@@ -19,14 +19,6 @@
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/flamenco-worker/main.go",
       "cwd": "${workspaceFolder}"
-    },
-    {
-      "name": "SocketIO test",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceFolder}/cmd/socketio-test/main.go",
-      "cwd": "${workspaceFolder}"
     }
   ]
 }
