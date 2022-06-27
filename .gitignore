@@ -22,3 +22,4 @@ __pycache__
 
 web/manager-api/dist/
 web/static/
+/dist/

@@ -144,12 +144,15 @@ clean:
 	@go clean -i -x
 	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race addon-packer
 
-package: flamenco-manager flamenco-worker
+package: flamenco-manager flamenco-worker addon-packer
+	rm -rf dist-build
+	mkdir -p dist-build
+	cp -a flamenco-manager flamenco-worker dist-build/
+	cp -a web/static/flamenco-addon.zip dist-build/
+	cp -a README.md LICENSE dist-build/
+	cd dist-build; zip -r -9 flamenco-${VERSION}.zip *
 	mkdir -p dist
-	rsync -a flamenco-manager flamenco-worker dist/
-	rsync -a addon/flamenco dist/ --exclude __pycache__ --exclude '*.pyc' --prune-empty-dirs --exclude .mypy_cache --exclude manager/docs  --delete --delete-excluded
-	cd dist; zip -r -9 flamenco-${VERSION}-addon.zip flamenco
-	rm -rf dist/flamenco
-
+	mv dist-build/flamenco-${VERSION}.zip dist
+	rm -rf dist-build
 
 .PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp webapp-static generate generate-go generate-py with-deps swagger-ui list-embedded test clean
