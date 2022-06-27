@@ -17,6 +17,7 @@
     <api-spinner />
     <span class="app-version">
       version: {{ flamencoVersion }}
+      | <a href="/api/swagger-ui/">API</a>
     </span>
   </header>
   <router-view></router-view>

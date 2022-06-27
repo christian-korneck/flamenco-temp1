@@ -303,6 +303,9 @@ func buildWebService(
 		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
 	})
 
+	// Serve the Blender add-on. It's contained in the static files of the webapp.
+	e.GET("/flamenco-addon.zip", echo.WrapHandler(webAppHandler))
+
 	// Redirect / to the webapp.
 	e.GET("/", func(c echo.Context) error {
 		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
