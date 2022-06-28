@@ -23,6 +23,8 @@
 package filestore
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -154,7 +156,7 @@ func (s *Store) MoveToStored(checksum string, filesize int64, uploadedFilePath s
 func (s *Store) removeFile(filePath string) error {
 	err := os.Remove(filePath)
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, fs.ErrNotExist) {
 			log.Debug().Err(err).Msg("shaman: unable to delete file; ignoring")
 		}
 	}

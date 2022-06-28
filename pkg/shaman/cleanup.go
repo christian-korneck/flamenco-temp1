@@ -23,6 +23,8 @@
 package shaman
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"time"
@@ -199,7 +201,7 @@ func (s *Server) gcFilterLinkedFiles(checkoutPath string, oldFiles mtimeMap, log
 		}
 		linkTarget, err := filepath.EvalSymlinks(path)
 		if err != nil {
-			if os.IsNotExist(err) {
+			if errors.Is(err, fs.ErrNotExist) {
 				return nil
 			}
 
@@ -229,7 +231,7 @@ func (s *Server) gcDeleteOldFiles(doDryRun bool, oldFiles mtimeMap, logger zerol
 		pathLogger := logger.With().Str("path", path).Logger()
 
 		if stat, err := os.Stat(path); err != nil {
-			if !os.IsNotExist(err) {
+			if !errors.Is(err, fs.ErrNotExist) {
 				pathLogger.Warn().Err(err).Msg("unable to stat to-be-deleted file")
 			}
 		} else if stat.ModTime().After(lastSeenModTime) {

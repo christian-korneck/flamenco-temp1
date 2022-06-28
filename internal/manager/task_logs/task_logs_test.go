@@ -3,7 +3,9 @@ package task_logs
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -78,7 +80,7 @@ func TestLogRotation(t *testing.T) {
 	assert.Equal(t, "Ovo je priča\n", string(contents))
 
 	_, err = os.Stat(filename)
-	assert.True(t, os.IsNotExist(err))
+	assert.True(t, errors.Is(err, fs.ErrNotExist))
 }
 
 func TestLogTail(t *testing.T) {

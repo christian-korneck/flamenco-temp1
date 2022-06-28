@@ -6,7 +6,9 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -99,7 +101,7 @@ func (ce *CommandExecutor) moveAndLog(ctx context.Context, taskID, cmdName, src,
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	return !os.IsNotExist(err)
+	return !errors.Is(err, fs.ErrNotExist)
 }
 
 // timestampedPath returns the path with its modification time appended to the name.

@@ -71,7 +71,7 @@ func (fcw *FileConfigWrangler) WorkerConfig() (WorkerConfig, error) {
 	err := fcw.loadConfig(configFilename, &wc)
 
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, fs.ErrNotExist) {
 			return wc, err
 		}
 

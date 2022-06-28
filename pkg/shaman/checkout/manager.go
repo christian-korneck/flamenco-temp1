@@ -25,6 +25,7 @@ package checkout
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -124,7 +125,7 @@ func (m *Manager) PrepareCheckout(checkoutPath string) (ResolvedCheckoutInfo, er
 			Str("checkoutPath", checkoutPath).
 			Logger()
 
-		if stat, err := os.Stat(checkoutPaths.absolutePath); !os.IsNotExist(err) {
+		if stat, err := os.Stat(checkoutPaths.absolutePath); !errors.Is(err, fs.ErrNotExist) {
 			if err == nil {
 				// No error stat'ing this path, indicating it's an existing checkout.
 				lastErr = ErrCheckoutAlreadyExists
@@ -202,7 +203,7 @@ func (m *Manager) SymlinkToCheckout(blobPath, checkoutPath, symlinkRelativePath 
 	if err == nil {
 		return err
 	}
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, fs.ErrNotExist) {
 		logger.Error().Err(err).Msg("shaman: unable to create symlink")
 		return err
 	}

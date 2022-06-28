@@ -7,8 +7,10 @@ package worker
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -253,7 +255,7 @@ func createIndexFile(inputGlob string, frameRate float64) ([]string, func(), err
 
 	cleanup := func() {
 		err := os.Remove(indexFilename)
-		if err != nil && !os.IsNotExist(err) {
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			log.Warn().
 				Err(err).
 				Str("filename", indexFilename).

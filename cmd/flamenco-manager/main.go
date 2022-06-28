@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"math/rand"
 	"net"
 	"net/http"
@@ -77,7 +78,7 @@ func main() {
 	// Load configuration.
 	configService := config.NewService()
 	err := configService.Load()
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		log.Error().Err(err).Msg("loading configuration")
 	}
 

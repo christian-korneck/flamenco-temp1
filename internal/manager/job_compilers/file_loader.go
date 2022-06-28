@@ -4,6 +4,7 @@ package job_compilers
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -64,13 +65,13 @@ func getAvailableFilesystems() []fs.FS {
 func loadFileFromAnyFS(path string) ([]byte, error) {
 	filesystems := getAvailableFilesystems()
 
-	for _, fs := range filesystems {
-		file, err := fs.Open(path)
-		if os.IsNotExist(err) {
+	for _, filesystem := range filesystems {
+		file, err := filesystem.Open(path)
+		if errors.Is(err, fs.ErrNotExist) {
 			continue
 		}
 		if err != nil {
-			return nil, fmt.Errorf("failed to open file %s on filesystem %s: %w", path, fs, err)
+			return nil, fmt.Errorf("failed to open file %s on filesystem %s: %w", path, filesystem, err)
 		}
 		return io.ReadAll(file)
 	}
@@ -137,7 +138,7 @@ func findOnDiskScriptsNextTo(exename string) (string, bool) {
 	logger.Trace().Msg("job compiler: finding on-disk scripts")
 
 	stat, err := os.Stat(scriptsDir)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return scriptsDir, false
 	}
 	if err != nil {

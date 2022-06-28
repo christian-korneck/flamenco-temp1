@@ -23,6 +23,8 @@
 package shaman
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -171,7 +173,7 @@ func TestGCComponents(t *testing.T) {
 	assert.FileExists(t, absPaths["6001.blob"], "file should exist after GC")
 	assert.FileExists(t, absPaths["781.blob"], "file should exist after GC")
 	_, err = os.Stat(absPaths["7488.blob"])
-	assert.True(t, os.IsNotExist(err), "file %s should NOT exist after GC", absPaths["7488.blob"])
+	assert.True(t, errors.Is(err, fs.ErrNotExist), "file %s should NOT exist after GC", absPaths["7488.blob"])
 }
 
 // Test of the high-level GCStorage() function.
@@ -215,9 +217,9 @@ func TestGarbageCollect(t *testing.T) {
 	assert.FileExists(t, absPaths["7488.blob"], "file should exist after dry-run GC")
 	server.GCStorage(false)
 	_, err = os.Stat(absPaths["6001.blob"])
-	assert.True(t, os.IsNotExist(err), "file %s should NOT exist after GC", absPaths["6001.blob"])
+	assert.True(t, errors.Is(err, fs.ErrNotExist), "file %s should NOT exist after GC", absPaths["6001.blob"])
 	_, err = os.Stat(absPaths["7488.blob"])
-	assert.True(t, os.IsNotExist(err), "file %s should NOT exist after GC", absPaths["7488.blob"])
+	assert.True(t, errors.Is(err, fs.ErrNotExist), "file %s should NOT exist after GC", absPaths["7488.blob"])
 
 	// Used files should still exist.
 	assert.FileExists(t, absPaths["781.blob"])

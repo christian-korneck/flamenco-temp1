@@ -3,6 +3,8 @@ package task_logs
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"errors"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -112,7 +114,7 @@ func TestMultipleFilesWithHoles(t *testing.T) {
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	return !os.IsNotExist(err)
+	return !errors.Is(err, fs.ErrNotExist)
 }
 
 func fileTouch(filename string) {

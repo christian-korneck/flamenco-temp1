@@ -28,7 +28,7 @@ func FindBlender() (string, error) {
 	blenderPath := filepath.Join(dir, "blender.exe")
 	_, err = os.Stat(blenderPath)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return "", fmt.Errorf("blender-launcher found at %s but not its blender.exe", exe)
 		}
 		return "", fmt.Errorf("investigating %s: %w", blenderPath, err)

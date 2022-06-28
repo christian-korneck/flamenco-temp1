@@ -3,6 +3,8 @@ package task_logs
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -44,7 +46,7 @@ func rotateLogFile(logger zerolog.Logger, logpath string) error {
 	// Don't do anything if the file doesn't exist yet.
 	_, err := os.Stat(logpath)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			logger.Debug().Msg("log file does not exist, no need to rotate")
 			return nil
 		}

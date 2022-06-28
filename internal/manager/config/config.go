@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -193,7 +194,7 @@ func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		var evt *zerolog.Event
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			evt = log.Debug()
 		} else {
 			evt = log.Warn().Err(err)
