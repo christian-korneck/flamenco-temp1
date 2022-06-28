@@ -67,6 +67,8 @@ Note that list is **not** in any specific order.
   - [ ] Jobs
   - [ ] Tasks
 
+- [ ] Add a version to the API URLs, so like `/api/v3/blabla`, to aid in later upgrades.
+
 - [ ] Worker sleep schedule
 - [ ] CLI option to write built-in job compiler scripts to disk
 - [ ] Support pausing jobs.
