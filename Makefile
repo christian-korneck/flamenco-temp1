@@ -53,7 +53,7 @@ webapp-static: addon-packer
 # in `cmd/flamenco-manager/main.go`
 	yarn --cwd web/app build --outDir ../static --base=/app/
 # yarn --cwd web/app build --outDir ../static --base=/app/ --minify false
-	./addon-packer -filename web/static/flamenco-addon.zip
+	./addon-packer -filename web/static/flamenco3-addon.zip
 	@echo "Web app has been installed into web/static"
 
 generate: generate-go generate-py generate-js
@@ -149,7 +149,7 @@ package: flamenco-manager flamenco-worker addon-packer
 	rm -rf dist-build
 	mkdir -p dist-build
 	cp -a flamenco-manager flamenco-worker dist-build/
-	cp -a web/static/flamenco-addon.zip dist-build/
+	cp -a web/static/flamenco3-addon.zip dist-build/
 	cp -a README.md LICENSE dist-build/
 	cd dist-build; zip -r -9 flamenco-${VERSION}.zip *
 	mkdir -p dist

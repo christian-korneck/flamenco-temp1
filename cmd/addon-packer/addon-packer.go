@@ -145,7 +145,7 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.quiet, "quiet", false, "Only log warning-level and worse.")
 	flag.BoolVar(&cliArgs.debug, "debug", false, "Enable debug-level logging.")
 	flag.BoolVar(&cliArgs.trace, "trace", false, "Enable trace-level logging.")
-	flag.StringVar(&cliArgs.filename, "filename", "web/static/flamenco-addon.zip", "Filename to save the add-on to.")
+	flag.StringVar(&cliArgs.filename, "filename", "web/static/flamenco3-addon.zip", "Filename to save the add-on to.")
 	flag.Parse()
 }
 
