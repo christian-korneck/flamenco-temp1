@@ -93,7 +93,7 @@ Note that list is **not** in any specific order.
 - [x] Implement `move-directory` command.
 - [x] Refactor CLI-running code by analyzing the current Blender and FFmpeg commands.
 - [x] Re-queueing of task at shutdown of the main context (i.e. when pressing Ctrl+C). Since the context is closed, everything shuts down, but then it's too late to cleanly communicate to the Manager that the current task should be requeued.
-- [ ] CLI option to override configured manager URL.
+- [x] CLI option to override configured manager URL.
 - [ ] Filesystem readability/writability tests
   - [ ] Add check per task-type
   - [ ] Allow workers to request blocklisting for certain job, with "reason" string.
@@ -101,6 +101,7 @@ Note that list is **not** in any specific order.
 - [ ] Remove `doneChan` field from `Worker` struct, and the handling of it. Its intended use overlaps with the global context.
 - [ ] Change default location for writing files (sqlite database, credentials file) from "current working directory" to a platform-specific location in the user's home directory (`~/.local/flamenco3/worker` on Linux, `%APPDATA%\Blender Foundation\Flamenco3` on Windows, etc.).
 - [ ] Allow merging config files (load global from current working directory, merge with local from dir mentioned above).
+- [ ] Keep retrying to register at Manager. Currently registration failure is a fatal error; it should be retried just like sign-on failures.
 
 ## Both
 
