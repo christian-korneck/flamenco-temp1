@@ -2,6 +2,8 @@
   <h2 class="column-title">Job Details</h2>
 
   <template v-if="hasJobData">
+    <last-rendered-image :jobID="jobData.id" />
+
     <dl>
       <dt class="field-id">ID</dt>
       <dd :title="jobData.id">{{ jobData.id }}</dd>
@@ -54,6 +56,7 @@
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
+import LastRenderedImage from '@/components/jobs/LastRenderedImage.vue'
 
 export default {
   props: [
@@ -62,6 +65,9 @@ export default {
   emits: [
     "reshuffled", // Emitted when the size of this component may have changed. Used to resize other components in response.
   ],
+  components: {
+    LastRenderedImage,
+  },
   data() {
     return {
       datetime: datetime, // So that the template can access it.
