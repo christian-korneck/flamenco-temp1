@@ -120,6 +120,9 @@ type ClientInterface interface {
 	// FetchJobBlocklist request
 	FetchJobBlocklist(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchJobLastRenderedInfo request
+	FetchJobLastRenderedInfo(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SetJobStatus request with any body
 	SetJobStatusWithBody(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -327,6 +330,18 @@ func (c *Client) RemoveJobBlocklist(ctx context.Context, jobId string, body Remo
 
 func (c *Client) FetchJobBlocklist(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchJobBlocklistRequest(c.Server, jobId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchJobLastRenderedInfo(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchJobLastRenderedInfoRequest(c.Server, jobId)
 	if err != nil {
 		return nil, err
 	}
@@ -975,6 +990,40 @@ func NewFetchJobBlocklistRequest(server string, jobId string) (*http.Request, er
 	}
 
 	operationPath := fmt.Sprintf("/api/jobs/%s/blocklist", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewFetchJobLastRenderedInfoRequest generates requests for FetchJobLastRenderedInfo
+func NewFetchJobLastRenderedInfoRequest(server string, jobId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "job_id", runtime.ParamLocationPath, jobId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/jobs/%s/last-rendered", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1900,6 +1949,9 @@ type ClientWithResponsesInterface interface {
 	// FetchJobBlocklist request
 	FetchJobBlocklistWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobBlocklistResponse, error)
 
+	// FetchJobLastRenderedInfo request
+	FetchJobLastRenderedInfoWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobLastRenderedInfoResponse, error)
+
 	// SetJobStatus request with any body
 	SetJobStatusWithBodyWithResponse(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetJobStatusResponse, error)
 
@@ -2158,6 +2210,28 @@ func (r FetchJobBlocklistResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchJobBlocklistResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchJobLastRenderedInfoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *JobLastRenderedImageInfo
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchJobLastRenderedInfoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchJobLastRenderedInfoResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2761,6 +2835,15 @@ func (c *ClientWithResponses) FetchJobBlocklistWithResponse(ctx context.Context,
 	return ParseFetchJobBlocklistResponse(rsp)
 }
 
+// FetchJobLastRenderedInfoWithResponse request returning *FetchJobLastRenderedInfoResponse
+func (c *ClientWithResponses) FetchJobLastRenderedInfoWithResponse(ctx context.Context, jobId string, reqEditors ...RequestEditorFn) (*FetchJobLastRenderedInfoResponse, error) {
+	rsp, err := c.FetchJobLastRenderedInfo(ctx, jobId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchJobLastRenderedInfoResponse(rsp)
+}
+
 // SetJobStatusWithBodyWithResponse request with arbitrary body returning *SetJobStatusResponse
 func (c *ClientWithResponses) SetJobStatusWithBodyWithResponse(ctx context.Context, jobId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetJobStatusResponse, error) {
 	rsp, err := c.SetJobStatusWithBody(ctx, jobId, contentType, body, reqEditors...)
@@ -3254,6 +3337,32 @@ func ParseFetchJobBlocklistResponse(rsp *http.Response) (*FetchJobBlocklistRespo
 			return nil, err
 		}
 		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchJobLastRenderedInfoResponse parses an HTTP response from a FetchJobLastRenderedInfoWithResponse call
+func ParseFetchJobLastRenderedInfoResponse(rsp *http.Response) (*FetchJobLastRenderedInfoResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchJobLastRenderedInfoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest JobLastRenderedImageInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

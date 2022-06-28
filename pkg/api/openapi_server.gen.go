@@ -37,6 +37,9 @@ type ServerInterface interface {
 	// Fetch the list of workers that are blocked from doing certain task types on this job.
 	// (GET /api/jobs/{job_id}/blocklist)
 	FetchJobBlocklist(ctx echo.Context, jobId string) error
+	// Get the URL that serves the last-rendered images of this job.
+	// (GET /api/jobs/{job_id}/last-rendered)
+	FetchJobLastRenderedInfo(ctx echo.Context, jobId string) error
 
 	// (POST /api/jobs/{job_id}/setstatus)
 	SetJobStatus(ctx echo.Context, jobId string) error
@@ -208,6 +211,22 @@ func (w *ServerInterfaceWrapper) FetchJobBlocklist(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.FetchJobBlocklist(ctx, jobId)
+	return err
+}
+
+// FetchJobLastRenderedInfo converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchJobLastRenderedInfo(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "job_id" -------------
+	var jobId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "job_id", runtime.ParamLocationPath, ctx.Param("job_id"), &jobId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter job_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FetchJobLastRenderedInfo(ctx, jobId)
 	return err
 }
 
@@ -596,6 +615,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/jobs/:job_id", wrapper.FetchJob)
 	router.DELETE(baseURL+"/api/jobs/:job_id/blocklist", wrapper.RemoveJobBlocklist)
 	router.GET(baseURL+"/api/jobs/:job_id/blocklist", wrapper.FetchJobBlocklist)
+	router.GET(baseURL+"/api/jobs/:job_id/last-rendered", wrapper.FetchJobLastRenderedInfo)
 	router.POST(baseURL+"/api/jobs/:job_id/setstatus", wrapper.SetJobStatus)
 	router.GET(baseURL+"/api/jobs/:job_id/tasks", wrapper.FetchJobTasks)
 	router.GET(baseURL+"/api/tasks/:task_id", wrapper.FetchTask)

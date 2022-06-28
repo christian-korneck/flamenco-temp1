@@ -250,6 +250,12 @@ type JobBlocklistEntry struct {
 	WorkerId string `json:"worker_id"`
 }
 
+// Enough information for a client to piece together different strings to form a host-relative URL to the last-rendered image. To construct the URL, concatenate "{base}/{one of the suffixes}".
+type JobLastRenderedImageInfo struct {
+	Base     string   `json:"base"`
+	Suffixes []string `json:"suffixes"`
+}
+
 // Arbitrary metadata strings. More complex structures can be modeled by using `a.b.c` notation for the key.
 type JobMetadata struct {
 	AdditionalProperties map[string]string `json:"-"`

@@ -18,6 +18,7 @@ import AvailableJobTypes from '../model/AvailableJobTypes';
 import Error from '../model/Error';
 import Job from '../model/Job';
 import JobBlocklistEntry from '../model/JobBlocklistEntry';
+import JobLastRenderedImageInfo from '../model/JobLastRenderedImageInfo';
 import JobStatusChange from '../model/JobStatusChange';
 import JobTasksSummary from '../model/JobTasksSummary';
 import JobsQuery from '../model/JobsQuery';
@@ -132,6 +133,52 @@ export default class JobsApi {
      */
     fetchJobBlocklist(jobId) {
       return this.fetchJobBlocklistWithHttpInfo(jobId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Get the URL that serves the last-rendered images of this job.
+     * @param {String} jobId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/JobLastRenderedImageInfo} and HTTP response
+     */
+    fetchJobLastRenderedInfoWithHttpInfo(jobId) {
+      let postBody = null;
+      // verify the required parameter 'jobId' is set
+      if (jobId === undefined || jobId === null) {
+        throw new Error("Missing the required parameter 'jobId' when calling fetchJobLastRenderedInfo");
+      }
+
+      let pathParams = {
+        'job_id': jobId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = JobLastRenderedImageInfo;
+      return this.apiClient.callApi(
+        '/api/jobs/{job_id}/last-rendered', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Get the URL that serves the last-rendered images of this job.
+     * @param {String} jobId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/JobLastRenderedImageInfo}
+     */
+    fetchJobLastRenderedInfo(jobId) {
+      return this.fetchJobLastRenderedInfoWithHttpInfo(jobId)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
