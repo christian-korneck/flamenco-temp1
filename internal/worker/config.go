@@ -125,10 +125,8 @@ func (fcw *FileConfigWrangler) SaveCredentials(creds WorkerCredentials) error {
 
 // SetManagerURL overwrites the Manager URL in the cached configuration.
 // This is an in-memory change only, and will not be written to the config file.
-// Returns a new copy of the WorkerConfig with the Manager URL updated.
-func (fcw *FileConfigWrangler) SetManagerURL(managerURL string) WorkerConfig {
+func (fcw *FileConfigWrangler) SetManagerURL(managerURL string) {
 	fcw.wc.ManagerURL = managerURL
-	return *fcw.wc
 }
 
 // DefaultConfig returns a fairly sane default configuration.
