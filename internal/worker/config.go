@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/url"
 	"os"
 	"strings"
@@ -71,11 +72,14 @@ func (fcw *FileConfigWrangler) WorkerConfig() (WorkerConfig, error) {
 	err := fcw.loadConfig(configFilename, &wc)
 
 	if err != nil {
-		if !errors.Is(err, fs.ErrNotExist) {
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
+			// The config file not existing is fine; just use the defaults.
+		case errors.Is(err, io.EOF):
+			// The config file exists but is empty; treat as non-existent.
+		default:
 			return wc, err
 		}
-
-		// The config file not existing is fine; just use the defaults.
 	}
 
 	fcw.wc = &wc
