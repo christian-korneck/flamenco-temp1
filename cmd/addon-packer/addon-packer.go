@@ -59,9 +59,9 @@ func main() {
 		return flate.NewWriter(out, flate.BestCompression)
 	})
 
-	// CD to the addon/flamenco dir.
-	if err := os.Chdir("addon/flamenco"); err != nil {
-		log.Fatal().Err(err).Msg("unable to cd to addon/flamenco")
+	// CD to the addon dir to get the relative paths nice.
+	if err := os.Chdir("addon"); err != nil {
+		log.Fatal().Err(err).Msg("unable to cd to addon")
 	}
 
 	basePath, err := os.Getwd()
@@ -88,7 +88,7 @@ func main() {
 			switch {
 			case filepath.Base(path) == "__pycache__":
 				return fs.SkipDir
-			case relpath == filepath.Join("manager", "docs"):
+			case relpath == filepath.Join("flamenco", "manager", "docs"):
 				return fs.SkipDir
 			case strings.HasPrefix(filepath.Base(path), "."):
 				// Skip directories like .mypy_cache, etc.
@@ -123,7 +123,7 @@ func main() {
 
 	logger.Debug().Str("cwd", basePath).Msg("walking directory")
 
-	if err := filepath.WalkDir(basePath, addToZip); err != nil {
+	if err := filepath.WalkDir(filepath.Join(basePath, "flamenco"), addToZip); err != nil {
 		logger.Fatal().Err(err).Msg("error filling ZIP file")
 	}
 
