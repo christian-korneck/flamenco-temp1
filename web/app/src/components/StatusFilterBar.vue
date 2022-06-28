@@ -23,7 +23,7 @@ const visibleStatuses = computed(() => {
       :data-status="status"
       :class="{active: activeStatuses.indexOf(status) >= 0}"
       @click="emit('click', status)"
-      v-html="indicator(status, this.classPrefix)"
+      v-html="indicator(status, classPrefix)"
     ></li>
   </ul>
 </template>
