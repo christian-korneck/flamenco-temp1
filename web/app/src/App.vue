@@ -9,9 +9,6 @@
         <li>
           <router-link :to="{ name: 'workers' }">Workers</router-link>
         </li>
-        <li>
-          <router-link :to="{ name: 'settings' }">Settings</router-link>
-        </li>
       </ul>
     </nav>
     <api-spinner />
