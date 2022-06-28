@@ -464,6 +464,24 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Job" }
 
+  /api/jobs/{job_id}/last-rendered:
+    summary: Obtain info about the last-rendered images for this job.
+    get:
+      operationId: fetchJobLastRenderedInfo
+      summary: Get the URL that serves the last-rendered images of this job.
+      tags: [jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Normal response.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobLastRenderedImageInfo" }
+
   /api/jobs/{job_id}/setstatus:
     summary: Request a status change for the given job.
     post:
@@ -1257,6 +1275,19 @@ components:
         task_type: { type: string }
         updated: { type: string, format: date-time }
       required: [id, name, status, priority, task_type, updated]
+
+    JobLastRenderedImageInfo:
+      description: >
+        Enough information for a client to piece together different strings to
+        form a host-relative URL to the last-rendered image. To construct the
+        URL, concatenate "{base}/{one of the suffixes}".
+      type: object
+      properties:
+        "base": { type: string, format: url }
+        "suffixes":
+          type: array
+          items: { type: string }
+      required: [base, suffixes]
 
     JobBlocklist:
       description: "List of workers that are not allowed certain task types on a specific job."
