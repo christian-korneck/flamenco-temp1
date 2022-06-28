@@ -225,11 +225,12 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         prefs = preferences.get(context)
         if prefs.is_shaman_enabled:
-            blendfile_on_farm = self._bat_pack_shaman(context, blendfile)
+            # self.blendfile_on_farm will be set when BAT created the checkout,
+            # see _on_bat_pack_msg() below.
+            self.blendfile_on_farm = None
+            self._bat_pack_shaman(context, blendfile)
         else:
-            blendfile_on_farm = self._bat_pack_filesystem(context, blendfile)
-
-        self.blendfile_on_farm = blendfile_on_farm
+            self.blendfile_on_farm = self._bat_pack_filesystem(context, blendfile)
 
         context.window_manager.modal_handler_add(self)
         wm = context.window_manager
@@ -279,7 +280,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
     def _bat_pack_shaman(
         self, context: bpy.types.Context, blendfile: Path
-    ) -> PurePosixPath:
+    ) -> None:
         """Use the Manager's Shaman API to submit the BAT pack.
 
         :return: the filesystem path of the blend file, for in the render job definition.
@@ -308,14 +309,22 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             ),
         )
 
-        # Having Shaman enabled on the Manager automatically creates a variable
-        # "jobs" that will resolve to the checkout directory.
-        return PurePosixPath("{jobs}") / checkout_root / blendfile.name
+        # We cannot assume the blendfile location is known until the Shaman
+        # checkout has actually been created.
 
     def _on_bat_pack_msg(self, context: bpy.types.Context, msg: _Message) -> set[str]:
         from .bat import interface as bat_interface
 
         if isinstance(msg, bat_interface.MsgDone):
+            if self.blendfile_on_farm is None:
+                # Adjust the blendfile to match the Shaman checkout path. Shaman
+                # may have checked out at a different location than we
+                # requested.
+                #
+                # Having Shaman enabled on the Manager automatically creates a
+                # variable "jobs" that will resolve to the checkout directory.
+                self.blendfile_on_farm = PurePosixPath("{jobs}") / msg.output_path
+
             self._submit_job(context)
             return self._quit(context)
 
