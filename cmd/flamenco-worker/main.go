@@ -76,7 +76,19 @@ func main() {
 		return
 	}
 
+	// Load configuration, and override things from the CLI arguments if necessary.
 	configWrangler := worker.NewConfigWrangler()
+	if cliArgs.managerURL != nil {
+		url := cliArgs.managerURL.String()
+		log.Info().Str("manager", url).Msg("using Manager URL from commandline")
+
+		// Before the config can be overridden, it has to be loaded.
+		if _, err := configWrangler.WorkerConfig(); err != nil {
+			log.Fatal().Err(err).Msg("error loading worker configuration")
+		}
+
+		configWrangler.SetManagerURL(url)
+	}
 
 	// Give the auto-discovery some time to find a Manager.
 	discoverTimeout := 10 * time.Minute
@@ -179,7 +191,7 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.trace, "trace", false, "Enable trace-level logging.")
 
 	// TODO: make this override whatever was stored in the configuration file.
-	// flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
+	flag.StringVar(&cliArgs.manager, "manager", "", "URL of the Flamenco Manager.")
 	flag.BoolVar(&cliArgs.register, "register", false, "(Re-)register at the Manager.")
 	flag.BoolVar(&cliArgs.findManager, "find-manager", false, "Autodiscover a Manager, then quit.")
 
