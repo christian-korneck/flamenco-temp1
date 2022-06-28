@@ -52,6 +52,7 @@ webapp-static: addon-packer
 # e.GET("/app/*", echo.WrapHandler(webAppHandler))
 # in `cmd/flamenco-manager/main.go`
 	yarn --cwd web/app build --outDir ../static --base=/app/
+# yarn --cwd web/app build --outDir ../static --base=/app/ --minify false
 	./addon-packer -filename web/static/flamenco-addon.zip
 	@echo "Web app has been installed into web/static"
 
