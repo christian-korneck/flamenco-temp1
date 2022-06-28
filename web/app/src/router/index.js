@@ -20,11 +20,6 @@ const router = createRouter({
       component: () => import('../views/WorkersView.vue'),
       props: true,
     },
-    {
-      path: '/settings',
-      name: 'settings',
-      component: () => import('../views/SettingsView.vue')
-    },
   ],
 })
 
