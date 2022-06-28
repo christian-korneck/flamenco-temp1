@@ -1,6 +1,8 @@
 
 let url = new URL(window.location.href);
-url.port = "8080";
+// Uncomment this when the web interface is running on a different port than the
+// API, for example when using the Vite devserver. Set the API port here.
+// url.port = "8080";
 url.pathname = "/";
 const flamencoAPIURL = url.href;
 
