@@ -122,8 +122,9 @@ func main() {
 
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater, logStorage)
 	lastRender := last_rendered.New(localStorage)
-	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine, logStorage, webUpdater, lastRender)
-	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls)
+	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine,
+		logStorage, webUpdater, lastRender, localStorage)
+	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls, localStorage)
 
 	timeoutChecker := timeout_checker.New(
 		configService.Get().TaskTimeout,
@@ -189,6 +190,7 @@ func buildFlamencoAPI(
 	logStorage *task_logs.Storage,
 	webUpdater *webupdates.BiDirComms,
 	lastRender *last_rendered.LastRenderedProcessor,
+	localStorage local_storage.StorageInfo,
 ) api.ServerInterface {
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
@@ -197,7 +199,8 @@ func buildFlamencoAPI(
 	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(
 		compiler, persist, webUpdater, logStorage, configService,
-		taskStateMachine, shamanServer, timeService, lastRender)
+		taskStateMachine, shamanServer, timeService, lastRender,
+		localStorage)
 	return flamenco
 }
 
@@ -207,6 +210,7 @@ func buildWebService(
 	ssdp *upnp_ssdp.Server,
 	webUpdater *webupdates.BiDirComms,
 	ownURLs []url.URL,
+	localStorage local_storage.StorageInfo,
 ) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
@@ -309,6 +313,13 @@ func buildWebService(
 	// The favicons are also in the static files of the webapp.
 	e.GET("/favicon.png", echo.WrapHandler(webAppHandler))
 	e.GET("/favicon.ico", echo.WrapHandler(webAppHandler))
+
+	// Serve job-specific files (last-rendered image, task logs) directly from disk.
+	log.Info().
+		Str("onDisk", localStorage.Root()).
+		Str("url", api_impl.JobFilesURLPrefix).
+		Msg("serving job-specific files directly from disk")
+	e.Static(api_impl.JobFilesURLPrefix, localStorage.Root())
 
 	// Redirect / to the webapp.
 	e.GET("/", func(c echo.Context) error {

@@ -28,10 +28,10 @@ var (
 	// thumbnails specifies the thumbnail sizes. For efficiency, they should be
 	// listed from large to small, as each thumbnail is the input for the next
 	// one.
-	thumbnails = []thumbspec{
+	thumbnails = []Thumbspec{
 		{"last-rendered.jpg", 1920, 1080},
 		{"last-rendered-small.jpg", 600, 338},
-		{"last-rendered-tiny.jpg", 48, 28},
+		{"last-rendered-tiny.jpg", 200, 112},
 	}
 )
 
@@ -60,11 +60,11 @@ type Payload struct {
 	Image      []byte
 }
 
-// thumbspec specifies a thumbnail size & filename.
-type thumbspec struct {
-	filename  string
-	maxWidth  int
-	maxHeight int
+// Thumbspec specifies a thumbnail size & filename.
+type Thumbspec struct {
+	Filename  string
+	MaxWidth  int
+	MaxHeight int
 }
 
 func New(storage Storage) *LastRenderedProcessor {
@@ -112,13 +112,27 @@ func (lrp *LastRenderedProcessor) QueueImage(payload Payload) error {
 	}
 }
 
+// PathForJob returns the base path for this job's last-rendered images.
+func (lrp *LastRenderedProcessor) PathForJob(jobUUID string) string {
+	return lrp.storage.ForJob(jobUUID)
+}
+
+// ThumbSpecs returns the thumbnail specifications.
+func (lrp *LastRenderedProcessor) ThumbSpecs() []Thumbspec {
+	// Return a copy so modification of the returned slice won't affect the global
+	// `thumbnails` variable.
+	copied := make([]Thumbspec, len(thumbnails))
+	copy(copied, thumbnails)
+	return copied
+}
+
 // processImage down-scales the image to a few thumbnails for presentation in
 // the web interface, and stores those in a job-specific directory.
 //
 // Because this is intended as internal queue-processing function, errors are
 // logged but not returned.
 func (lrp *LastRenderedProcessor) processImage(payload Payload) {
-	jobDir := lrp.storage.ForJob(payload.JobUUID)
+	jobDir := lrp.PathForJob(payload.JobUUID)
 
 	logger := log.With().Str("jobDir", jobDir).Logger()
 	logger = payload.sublogger(logger)
@@ -137,7 +151,7 @@ func (lrp *LastRenderedProcessor) processImage(payload Payload) {
 
 		image = downscaleImage(spec, image)
 
-		imgpath := filepath.Join(jobDir, spec.filename)
+		imgpath := filepath.Join(jobDir, spec.Filename)
 		if err := saveJPEG(imgpath, image); err != nil {
 			thumbLogger.Error().Err(err).Msg("last-rendered: error saving thumbnail")
 			break
@@ -158,10 +172,10 @@ func (p Payload) sublogger(logger zerolog.Logger) zerolog.Logger {
 		Logger()
 }
 
-func (spec thumbspec) sublogger(logger zerolog.Logger) zerolog.Logger {
+func (spec Thumbspec) sublogger(logger zerolog.Logger) zerolog.Logger {
 	return logger.With().
-		Int("width", spec.maxWidth).
-		Int("height", spec.maxHeight).
-		Str("filename", spec.filename).
+		Int("width", spec.MaxWidth).
+		Int("height", spec.MaxHeight).
+		Str("filename", spec.Filename).
 		Logger()
 }

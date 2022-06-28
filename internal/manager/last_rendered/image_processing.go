@@ -74,10 +74,10 @@ func saveJPEG(targetpath string, img image.Image) error {
 	return nil
 }
 
-func downscaleImage(spec thumbspec, img image.Image) image.Image {
+func downscaleImage(spec Thumbspec, img image.Image) image.Image {
 	// Fill out the entire frame, cropping the image if necessary:
 	// return imaging.Fill(img, spec.maxWidth, spec.maxHeight, imaging.Center, imaging.Lanczos)
 
 	// Fit the image to the frame, potentially resulting in either a narrower or lower image:
-	return imaging.Fit(img, spec.maxWidth, spec.maxHeight, imaging.Lanczos)
+	return imaging.Fit(img, spec.MaxWidth, spec.MaxHeight, imaging.Lanczos)
 }

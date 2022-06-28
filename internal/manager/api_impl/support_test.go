@@ -33,17 +33,19 @@ type mockedFlamenco struct {
 	shaman       *mocks.MockShaman
 	clock        *clock.Mock
 	lastRender   *mocks.MockLastRendered
+	localStorage *mocks.MockLocalStorage
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	jc := mocks.NewMockJobCompiler(mockCtrl)
 	ps := mocks.NewMockPersistenceService(mockCtrl)
 	cb := mocks.NewMockChangeBroadcaster(mockCtrl)
-	ls := mocks.NewMockLogStorage(mockCtrl)
+	logStore := mocks.NewMockLogStorage(mockCtrl)
 	cs := mocks.NewMockConfigService(mockCtrl)
 	sm := mocks.NewMockTaskStateMachine(mockCtrl)
 	sha := mocks.NewMockShaman(mockCtrl)
 	lr := mocks.NewMockLastRendered(mockCtrl)
+	localStore := mocks.NewMockLocalStorage(mockCtrl)
 
 	clock := clock.NewMock()
 	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T11:14:41+02:00")
@@ -52,14 +54,14 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	}
 	clock.Set(mockedNow)
 
-	f := NewFlamenco(jc, ps, cb, ls, cs, sm, sha, clock, lr)
+	f := NewFlamenco(jc, ps, cb, logStore, cs, sm, sha, clock, lr, localStore)
 
 	return mockedFlamenco{
 		flamenco:     f,
 		jobCompiler:  jc,
 		persistence:  ps,
 		broadcaster:  cb,
-		logStorage:   ls,
+		logStorage:   logStore,
 		config:       cs,
 		stateMachine: sm,
 		clock:        clock,

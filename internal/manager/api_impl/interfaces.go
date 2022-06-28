@@ -24,7 +24,7 @@ import (
 )
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman,LastRendered
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman,LastRendered,LocalStorage
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -124,6 +124,19 @@ type LastRendered interface {
 	// `last_rendered.ErrQueueFull` if there is no more space in the queue for
 	// new images.
 	QueueImage(payload last_rendered.Payload) error
+
+	// PathForJob returns the base path for this job's last-rendered images.
+	PathForJob(jobUUID string) string
+
+	// ThumbSpecs returns the thumbnail specifications.
+	ThumbSpecs() []last_rendered.Thumbspec
+}
+
+// LocalStorage handles the storage organisation of local files like the last-rendered images.
+type LocalStorage interface {
+	// RelPath tries to make the given path relative to the local storage root.
+	// Assumes `path` is already an absolute path.
+	RelPath(path string) (string, error)
 }
 
 type ConfigService interface {

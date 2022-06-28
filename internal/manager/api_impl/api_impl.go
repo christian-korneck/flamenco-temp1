@@ -24,6 +24,7 @@ type Flamenco struct {
 	shaman       Shaman
 	clock        TimeService
 	lastRender   LastRendered
+	localStorage LocalStorage
 
 	// The task scheduler can be locked to prevent multiple Workers from getting
 	// the same task. It is also used for certain other queries, like
@@ -38,23 +39,25 @@ func NewFlamenco(
 	jc JobCompiler,
 	jps PersistenceService,
 	b ChangeBroadcaster,
-	ls LogStorage,
+	logStorage LogStorage,
 	cs ConfigService,
 	sm TaskStateMachine,
 	sha Shaman,
 	ts TimeService,
 	lr LastRendered,
+	localStorage LocalStorage,
 ) *Flamenco {
 	return &Flamenco{
 		jobCompiler:  jc,
 		persist:      jps,
 		broadcaster:  b,
-		logStorage:   ls,
+		logStorage:   logStorage,
 		config:       cs,
 		stateMachine: sm,
 		shaman:       sha,
 		clock:        ts,
 		lastRender:   lr,
+		localStorage: localStorage,
 	}
 }
 

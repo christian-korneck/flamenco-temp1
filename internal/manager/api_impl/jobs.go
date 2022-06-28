@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/labstack/echo/v4"
 
@@ -16,6 +17,11 @@ import (
 	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
 )
+
+// JobFilesURLPrefix is the URL prefix that the Flamenco API expects to serve
+// the job-specific local files, i.e. the ones that are managed by
+// `local_storage.StorageInfo`.
+const JobFilesURLPrefix = "/job-files"
 
 func (f *Flamenco) GetJobTypes(e echo.Context) error {
 	logger := requestLogger(e)
@@ -303,6 +309,36 @@ func (f *Flamenco) RemoveJobBlocklist(e echo.Context, jobID string) error {
 	}
 
 	return e.NoContent(http.StatusNoContent)
+}
+
+func (f *Flamenco) FetchJobLastRenderedInfo(e echo.Context, jobID string) error {
+	if !uuid.IsValid(jobID) {
+		return sendAPIError(e, http.StatusBadRequest, "job ID should be a UUID")
+	}
+
+	logger := requestLogger(e)
+
+	basePath := f.lastRender.PathForJob(jobID)
+	relPath, err := f.localStorage.RelPath(basePath)
+	if err != nil {
+		logger.Error().
+			Str("job", jobID).
+			Str("renderPath", basePath).
+			Err(err).
+			Msg("last-rendered path for this job is outside the local storage")
+		return sendAPIError(e, http.StatusInternalServerError, "error finding job storage path: %v", err)
+	}
+
+	suffixes := []string{}
+	for _, spec := range f.lastRender.ThumbSpecs() {
+		suffixes = append(suffixes, spec.Filename)
+	}
+
+	info := api.JobLastRenderedImageInfo{
+		Base:     path.Join(JobFilesURLPrefix, relPath),
+		Suffixes: suffixes,
+	}
+	return e.JSON(http.StatusOK, info)
 }
 
 func jobDBtoAPI(dbJob *persistence.Job) api.Job {

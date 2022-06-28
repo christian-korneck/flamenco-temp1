@@ -27,9 +27,14 @@ func NewNextToExe(subdir string) StorageInfo {
 	}
 }
 
-// ForJob returns the directory path for storing job-related files.
+// Root returns the root path of the storage.
+func (si StorageInfo) Root() string {
+	return si.rootPath
+}
+
+// ForJob returns the absolute directory path for storing job-related files.
 func (si StorageInfo) ForJob(jobUUID string) string {
-	return filepath.Join(si.rootPath, pathForJob(jobUUID))
+	return filepath.Join(si.rootPath, relPathForJob(jobUUID))
 }
 
 // Erase removes the entire storage directory from disk.
@@ -59,10 +64,16 @@ func (si StorageInfo) MustErase() {
 	}
 }
 
+// RelPath tries to make the given path relative to the local storage root.
+// Assumes `path` is already an absolute path.
+func (si StorageInfo) RelPath(path string) (string, error) {
+	return filepath.Rel(si.rootPath, path)
+}
+
 // Returns a sub-directory suitable for files of this job.
 // Note that this is intentionally in sync with the `filepath()` function in
 // `internal/manager/task_logs/task_logs.go`.
-func pathForJob(jobUUID string) string {
+func relPathForJob(jobUUID string) string {
 	if jobUUID == "" {
 		return "jobless"
 	}

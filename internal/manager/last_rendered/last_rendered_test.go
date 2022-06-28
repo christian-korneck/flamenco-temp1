@@ -89,22 +89,22 @@ func TestProcessImage(t *testing.T) {
 	assert.Equal(t, callbackCount, 1, "the 'done' callback should be called exactly once")
 
 	// Check the sizes, they should match the thumbspec.
-	assertImageSize := func(spec thumbspec) {
-		path := filepath.Join(jobdir, spec.filename)
+	assertImageSize := func(spec Thumbspec) {
+		path := filepath.Join(jobdir, spec.Filename)
 		file, err := os.Open(path)
-		if !assert.NoError(t, err, "thumbnail %s should be openable", spec.filename) {
+		if !assert.NoError(t, err, "thumbnail %s should be openable", spec.Filename) {
 			return
 		}
 		defer file.Close()
 
 		img, format, err := image.Decode(file)
-		if !assert.NoErrorf(t, err, "thumbnail %s should be decodable", spec.filename) {
+		if !assert.NoErrorf(t, err, "thumbnail %s should be decodable", spec.Filename) {
 			return
 		}
 
-		assert.Equalf(t, "jpeg", format, "thumbnail %s not written in the expected format", spec.filename)
-		assert.LessOrEqualf(t, img.Bounds().Dx(), spec.maxWidth, "thumbnail %s has wrong width", spec.filename)
-		assert.LessOrEqualf(t, img.Bounds().Dy(), spec.maxHeight, "thumbnail %s has wrong height", spec.filename)
+		assert.Equalf(t, "jpeg", format, "thumbnail %s not written in the expected format", spec.Filename)
+		assert.LessOrEqualf(t, img.Bounds().Dx(), spec.MaxWidth, "thumbnail %s has wrong width", spec.Filename)
+		assert.LessOrEqualf(t, img.Bounds().Dy(), spec.MaxHeight, "thumbnail %s has wrong height", spec.Filename)
 	}
 
 	for _, spec := range thumbnails {
