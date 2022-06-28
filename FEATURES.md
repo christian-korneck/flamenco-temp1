@@ -52,7 +52,14 @@ Note that list is **not** in any specific order.
   - [x] Keep track of a blocklist as `(worker ID, job ID, task type)` tuple in the database.
   - [ ] Show blocklist in web interface, and allow removal of workers.
 - [x] Worker timeout monitoring
+- [x] Loading of job compiler scripts from disk
+- [x] Let Manager write to task log when it's assigned to a worker.
 - [ ] Last rendered image display
+  - [x] Per-job last rendered image
+  - [x] Worker: Detect when Blender outputs an image, and send it as JPEG to the Manager
+  - [x] Manager: API endpoint for receiving images, and thumbnailing them.
+  - [ ] SocketIO notifications that a job's last-rendered image has been updated.
+  - [ ] API endpoint for getting the last-rendered image of a job.
   - [ ] Expand the processing queue from a single channel to a queue per job, so that a spammy job doesn't starve the other jobs from queueing images.
 
 - [ ] Web interface: Support actions on multiple selected things
@@ -60,25 +67,20 @@ Note that list is **not** in any specific order.
   - [ ] Jobs
   - [ ] Tasks
 
-- [x] Let Manager write to task log when it's assigned to a worker.
 - [ ] Worker sleep schedule
-- [x] Loading of job compiler scripts from disk
 - [ ] CLI option to write built-in job compiler scripts to disk
-- [ ] Per-job last rendered image
 - [ ] Support pausing jobs.
+- [ ] Support deleting jobs, including task logs, last-rendered images, etc.
+- [ ] Support archiving jobs. Basically storing the job & task database entries as JSON, then ZIPping the whole lot before removing from the database & filesystem.
 - [ ] Shaman/Job settings: Distinction between "can be auto-deleted" jobs and "must be kept around" jobs.
-- [ ] Job archival/deletion / task cleanup
-- [ ] Caching of job compilers. Currently every operation (including "fetch job
-  type info", which is done by the web interface whenever job details are shown)
-  will just parse the JS from disk again. It'll be better to only do this when
-  the file on disk changed.
-- [x] Remove the current index and replace it with a redirect to `/jobs`
+- [ ] Caching of job compilers. Currently every operation (including "fetch job type info", which is done by the web interface whenever job details are shown) will just parse the JS from disk again. It'll be better to only do this when the file on disk changed.
 - [ ] API: only allow valid job & task status changes. Currently any change is allowed by the API.
 - [ ] Frontend authentication
 - [ ] User/Job Submission API authentication
 - [ ] Auto-removal of old Workers
 - [ ] Ensure "task state machine" can run in a single database transaction.
 - [ ] Refactor `internal/manager/task_logs` so that it uses `internal/manager/local_storage`.
+- [ ] Web interface: fetch the Flamenco Manager version on SocketIO reconnect.
 
 ## Worker
 
@@ -97,6 +99,8 @@ Note that list is **not** in any specific order.
   - [ ] Allow workers to request blocklisting for certain job, with "reason" string.
 - [ ] POSIX signal handling (sleep/wake up)
 - [ ] Remove `doneChan` field from `Worker` struct, and the handling of it. Its intended use overlaps with the global context.
+- [ ] Change default location for writing files (sqlite database, credentials file) from "current working directory" to a platform-specific location in the user's home directory (`~/.local/flamenco3/worker` on Linux, `%APPDATA%\Blender Foundation\Flamenco3` on Windows, etc.).
+- [ ] Allow merging config files (load global from current working directory, merge with local from dir mentioned above).
 
 ## Both
 
