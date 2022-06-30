@@ -481,6 +481,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/JobLastRenderedImageInfo" }
+        "204":
+          description: This job doesn't have any last-rendered image.
 
   /api/jobs/{job_id}/setstatus:
     summary: Request a status change for the given job.
