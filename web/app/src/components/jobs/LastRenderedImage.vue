@@ -92,4 +92,11 @@ defineExpose({
 .lastRendered.nothingRenderedYet {
   outline: thin dotted var(--color-text-hint);
 }
+
+.lastRendered img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 </style>
