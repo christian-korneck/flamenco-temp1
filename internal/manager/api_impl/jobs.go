@@ -10,6 +10,7 @@ import (
 	"path"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -317,16 +318,25 @@ func (f *Flamenco) FetchJobLastRenderedInfo(e echo.Context, jobID string) error 
 	}
 
 	logger := requestLogger(e)
-
-	basePath := f.lastRender.PathForJob(jobID)
-	relPath, err := f.localStorage.RelPath(basePath)
+	info, err := f.lastRenderedInfoForJob(logger, jobID)
 	if err != nil {
 		logger.Error().
 			Str("job", jobID).
-			Str("renderPath", basePath).
 			Err(err).
-			Msg("last-rendered path for this job is outside the local storage")
-		return sendAPIError(e, http.StatusInternalServerError, "error finding job storage path: %v", err)
+			Msg("error getting last-rendered info")
+		return sendAPIError(e, http.StatusInternalServerError, "error finding last-rendered info: %v", err)
+	}
+
+	return e.JSON(http.StatusOK, info)
+}
+
+func (f *Flamenco) lastRenderedInfoForJob(logger zerolog.Logger, jobUUID string) (*api.JobLastRenderedImageInfo, error) {
+	basePath := f.lastRender.PathForJob(jobUUID)
+	relPath, err := f.localStorage.RelPath(basePath)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"last-rendered path for job %s is %q, which is outside local storage root: %w",
+			jobUUID, basePath, err)
 	}
 
 	suffixes := []string{}
@@ -338,7 +348,7 @@ func (f *Flamenco) FetchJobLastRenderedInfo(e echo.Context, jobID string) error 
 		Base:     path.Join(JobFilesURLPrefix, relPath),
 		Suffixes: suffixes,
 	}
-	return e.JSON(http.StatusOK, info)
+	return &info, nil
 }
 
 func jobDBtoAPI(dbJob *persistence.Job) api.Job {

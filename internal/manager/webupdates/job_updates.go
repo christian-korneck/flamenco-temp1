@@ -42,6 +42,15 @@ func NewTaskUpdate(task *persistence.Task) api.SocketIOTaskUpdate {
 	return taskUpdate
 }
 
+// NewLastRenderedUpdate returns a partial SocketIOLastRenderedUpdate struct.
+// The `Thumbnail` field still needs to be filled in, but that requires
+// information from the `api_impl.Flamenco` service.
+func NewLastRenderedUpdate(jobUUID string) api.SocketIOLastRenderedUpdate {
+	return api.SocketIOLastRenderedUpdate{
+		JobId: jobUUID,
+	}
+}
+
 // NewTaskLogUpdate returns a SocketIOTaskLogUpdate for the given task.
 func NewTaskLogUpdate(taskUUID string, logchunk string) api.SocketIOTaskLogUpdate {
 	return api.SocketIOTaskLogUpdate{
@@ -74,6 +83,13 @@ func (b *BiDirComms) BroadcastTaskUpdate(taskUpdate api.SocketIOTaskUpdate) {
 	log.Debug().Interface("taskUpdate", taskUpdate).Msg("socketIO: broadcasting task update")
 	room := roomForJob(taskUpdate.JobId)
 	b.BroadcastTo(room, SIOEventTaskUpdate, taskUpdate)
+}
+
+// BroadcastLastRenderedImage sends the 'last-rendered' update to clients.
+func (b *BiDirComms) BroadcastLastRenderedImage(update api.SocketIOLastRenderedUpdate) {
+	log.Debug().Interface("lastRenderedUpdate", update).Msg("socketIO: broadcasting last-rendered image update")
+	room := roomForJob(update.JobId)
+	b.BroadcastTo(room, SIOEventLastRenderedUpdate, update)
 }
 
 // BroadcastTaskLogUpdate sends the task log chunk to clients.

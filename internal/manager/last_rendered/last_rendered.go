@@ -48,8 +48,6 @@ type LastRenderedProcessor struct {
 	// TODO: expand this queue to be per job, so that one spammy job doesn't block
 	// the queue for other jobs.
 	queue chan Payload
-
-	processingDonecallback func(jobUUID string)
 }
 
 // Payload contains the actual image to process.
@@ -58,6 +56,9 @@ type Payload struct {
 	WorkerUUID string // Just for logging.
 	MimeType   string
 	Image      []byte
+
+	// Callback is called when the image processing is finished.
+	Callback func()
 }
 
 // Thumbspec specifies a thumbnail size & filename.
@@ -72,14 +73,6 @@ func New(storage Storage) *LastRenderedProcessor {
 		storage: storage,
 		queue:   make(chan Payload, queueSize),
 	}
-}
-
-// SetCallback registers a 'done' callback, which will be called after the job
-// received a new last-rendered image.
-// There is only one such callback, so calling this will overwrite the
-// previously-set callback function. Pass `nil` to un-set.
-func (lrp *LastRenderedProcessor) SetCallback(processingDonecallback func(jobUUID string)) {
-	lrp.processingDonecallback = processingDonecallback
 }
 
 // Run is the main loop for the processing of images. It will keep running until
@@ -159,8 +152,8 @@ func (lrp *LastRenderedProcessor) processImage(payload Payload) {
 	}
 
 	// Call the callback, if provided.
-	if lrp.processingDonecallback != nil {
-		lrp.processingDonecallback(payload.JobUUID)
+	if payload.Callback != nil {
+		payload.Callback()
 	}
 }
 

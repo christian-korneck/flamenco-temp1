@@ -16,14 +16,9 @@ func TestNew(t *testing.T) {
 	storage := local_storage.NewNextToExe("lrp")
 	defer storage.MustErase()
 
-	callback := func(string) {}
 	lrp := New(storage)
 	assert.Equal(t, lrp.storage, storage)
 	assert.NotNil(t, lrp.queue)
-	assert.Nil(t, lrp.processingDonecallback)
-
-	lrp.SetCallback(callback)
-	assert.NotNil(t, lrp.processingDonecallback)
 }
 
 func TestQueueImage(t *testing.T) {
@@ -68,10 +63,9 @@ func TestProcessImage(t *testing.T) {
 	lrp := New(storage)
 
 	callbackCount := 0
-	lrp.SetCallback(func(callbackJobID string) {
-		assert.Equal(t, jobID, callbackJobID)
+	payload.Callback = func() {
 		callbackCount++
-	})
+	}
 
 	// Sanity check: the thumbnails shouldn't exist yet.
 	jobdir := storage.ForJob(jobID)

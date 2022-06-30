@@ -28,13 +28,14 @@ const (
 
 const (
 	// Predefined SocketIO event types.
-	SIOEventChatMessageRcv  SocketIOEventType = "/chat"         // clients send chat messages here
-	SIOEventChatMessageSend SocketIOEventType = "/message"      // chat messages are broadcasted here
-	SIOEventJobUpdate       SocketIOEventType = "/jobs"         // sends api.SocketIOJobUpdate
-	SIOEventTaskUpdate      SocketIOEventType = "/task"         // sends api.SocketIOTaskUpdate
-	SIOEventTaskLogUpdate   SocketIOEventType = "/tasklog"      // sends api.SocketIOTaskLogUpdate
-	SIOEventWorkerUpdate    SocketIOEventType = "/workers"      // sends api.SocketIOWorkerUpdate
-	SIOEventSubscription    SocketIOEventType = "/subscription" // clients send api.SocketIOSubscription
+	SIOEventChatMessageRcv     SocketIOEventType = "/chat"          // clients send chat messages here
+	SIOEventChatMessageSend    SocketIOEventType = "/message"       // chat messages are broadcasted here
+	SIOEventJobUpdate          SocketIOEventType = "/jobs"          // sends api.SocketIOJobUpdate
+	SIOEventLastRenderedUpdate SocketIOEventType = "/last-rendered" // sends api.SocketIOLastRenderedUpdate
+	SIOEventTaskUpdate         SocketIOEventType = "/task"          // sends api.SocketIOTaskUpdate
+	SIOEventTaskLogUpdate      SocketIOEventType = "/tasklog"       // sends api.SocketIOTaskLogUpdate
+	SIOEventWorkerUpdate       SocketIOEventType = "/workers"       // sends api.SocketIOWorkerUpdate
+	SIOEventSubscription       SocketIOEventType = "/subscription"  // clients send api.SocketIOSubscription
 )
 
 func (b *BiDirComms) BroadcastTo(room SocketIORoomName, eventType SocketIOEventType, payload interface{}) {

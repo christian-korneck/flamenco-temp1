@@ -412,6 +412,18 @@ func (m *MockChangeBroadcaster) EXPECT() *MockChangeBroadcasterMockRecorder {
 	return m.recorder
 }
 
+// BroadcastLastRenderedImage mocks base method.
+func (m *MockChangeBroadcaster) BroadcastLastRenderedImage(arg0 api.SocketIOLastRenderedUpdate) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "BroadcastLastRenderedImage", arg0)
+}
+
+// BroadcastLastRenderedImage indicates an expected call of BroadcastLastRenderedImage.
+func (mr *MockChangeBroadcasterMockRecorder) BroadcastLastRenderedImage(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BroadcastLastRenderedImage", reflect.TypeOf((*MockChangeBroadcaster)(nil).BroadcastLastRenderedImage), arg0)
+}
+
 // BroadcastNewJob mocks base method.
 func (m *MockChangeBroadcaster) BroadcastNewJob(arg0 api.SocketIOJobUpdate) {
 	m.ctrl.T.Helper()

@@ -484,6 +484,13 @@ func TestTaskOutputProduced(t *testing.T) {
 	// Mock body to use in the request.
 	bodyBytes := []byte("JPEG file contents")
 
+	mf.lastRender.EXPECT().ThumbSpecs().Return([]last_rendered.Thumbspec{
+		{Filename: "big'un.jpg", MaxWidth: 1920, MaxHeight: 1080},
+		{Filename: "tiny.jpg", MaxWidth: 320, MaxHeight: 240},
+	}).AnyTimes()
+	mf.lastRender.EXPECT().PathForJob(job.UUID).Return("/path/to/job").AnyTimes()
+	mf.localStorage.EXPECT().RelPath("/path/to/job").Return("relative/path/to/job", nil).AnyTimes()
+
 	// Test: unhappy, missing Content-Length header.
 	{
 		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
@@ -550,11 +557,33 @@ func TestTaskOutputProduced(t *testing.T) {
 			MimeType:   "image/jpeg",
 			Image:      bodyBytes,
 		}
-		mf.lastRender.EXPECT().QueueImage(expectPayload).Return(nil)
+		var actualPayload *last_rendered.Payload
+		mf.lastRender.EXPECT().QueueImage(gomock.Any()).DoAndReturn(func(payload last_rendered.Payload) error {
+			actualPayload = &payload
+			return nil
+		})
 
 		err := mf.flamenco.TaskOutputProduced(echo, task.UUID)
 		assert.NoError(t, err)
 		assertResponseNoBody(t, echo, http.StatusAccepted)
+
+		if assert.NotNil(t, actualPayload) {
+			// Calling the callback function is normally done by the last-rendered image processor.
+			// It should result in a SocketIO broadcast.
+			expectBroadcast := api.SocketIOLastRenderedUpdate{
+				JobId: job.UUID,
+				Thumbnail: api.JobLastRenderedImageInfo{
+					Base:     "/job-files/relative/path/to/job",
+					Suffixes: []string{"big'un.jpg", "tiny.jpg"},
+				},
+			}
+			mf.broadcaster.EXPECT().BroadcastLastRenderedImage(expectBroadcast)
+			actualPayload.Callback()
+
+			// Compare the parameter to `QueueImage()` in a way that ignores the callback function.
+			actualPayload.Callback = nil
+			assert.Equal(t, expectPayload, *actualPayload)
+		}
 	}
 
 }

@@ -66,6 +66,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 		stateMachine: sm,
 		clock:        clock,
 		lastRender:   lr,
+		localStorage: localStore,
 	}
 }
 

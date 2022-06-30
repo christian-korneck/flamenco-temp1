@@ -396,11 +396,24 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 	}
 
 	// Create the "last rendered" payload.
+	jobUUID := dbTask.Job.UUID
+	thumbnailInfo, err := f.lastRenderedInfoForJob(logger, jobUUID)
+	if err != nil {
+		logger.Error().Err(err).Msg("TaskOutputProduced: error getting last-rendered thumbnail info for job")
+		return sendAPIError(e, http.StatusInternalServerError, "error getting last-rendered thumbnail info for job: %v", err)
+	}
 	payload := last_rendered.Payload{
-		JobUUID:    dbTask.Job.UUID,
+		JobUUID:    jobUUID,
 		WorkerUUID: worker.UUID,
 		MimeType:   e.Request().Header.Get("Content-Type"),
 		Image:      imageBytes,
+
+		Callback: func() {
+			// Broadcast when the processing is done.
+			update := webupdates.NewLastRenderedUpdate(jobUUID)
+			update.Thumbnail = *thumbnailInfo
+			f.broadcaster.BroadcastLastRenderedImage(update)
+		},
 	}
 
 	// Queue the image for processing:
