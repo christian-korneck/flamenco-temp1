@@ -21,8 +21,8 @@ curl -v -X 'POST' \
     "frames": "1-60",
     "image_file_extension": ".png",
     "images_or_video": "images",
-    "render_output_path": "/render/_flamenco/tests/renders/sybren/Demo for Peoples/######",
-    "render_output_root": "/render/_flamenco/tests/renders/sybren/",
+    "render_output_path": "/tmp/flamenco/Demo for Peoples/######",
+    "render_output_root": "/tmp/flamenco/",
     "video_container_format": "MPEG1"
   },
   "priority": 50
