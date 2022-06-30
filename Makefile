@@ -14,6 +14,13 @@ BUILD_FLAGS = -ldflags="${LDFLAGS}"
 PY_API_PKG_NAME=flamenco.manager
 JS_API_PKG_NAME=manager
 
+# The directory that will contain the built webapp files, and some other files
+# that will be served as static files by the Flamenco Manager web server.
+#
+# WARNING: THIS IS USED IN `rm -rf ${WEB_STATIC}`, DO NOT MAKE EMPTY OR SET TO
+# ANY ABSOLUTE PATH.
+WEB_STATIC=web/static
+
 # Prevent any dependency that requires a C compiler, i.e. only work with pure-Go libraries.
 export CGO_ENABLED=0
 
@@ -47,14 +54,14 @@ webapp:
 	yarn --cwd web/app install
 
 webapp-static: addon-packer
-	rm -rf web/static
+	$(MAKE) clean-webapp-static
 # When changing the base URL, also update the line
 # e.GET("/app/*", echo.WrapHandler(webAppHandler))
 # in `cmd/flamenco-manager/main.go`
 	yarn --cwd web/app build --outDir ../static --base=/app/
 # yarn --cwd web/app build --outDir ../static --base=/app/ --minify false
-	./addon-packer -filename web/static/flamenco3-addon.zip
-	@echo "Web app has been installed into web/static"
+	./addon-packer -filename ${WEB_STATIC}/flamenco3-addon.zip
+	@echo "Web app has been installed into ${WEB_STATIC}"
 
 generate: generate-go generate-py generate-js
 
@@ -139,11 +146,22 @@ swagger-ui:
 	@echo 'Now update pkg/api/static/swagger-ui/index.html to have url: "/api/openapi3.json",'
 
 test:
+# Ensure the web-static directory exists, so that `web/web_app.go` can embed something.
+	mkdir -p ${WEB_STATIC}
 	go test -p 1 -short ${PKG_LIST}
 
 clean:
 	@go clean -i -x
 	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race addon-packer
+	$(MAKE) clean-webapp-static
+
+clean-webapp-static:
+# Start with `./` to avoid horrors when WEB_STATIC is absolute (like / or /home/yourname).
+	rm -rf ./${WEB_STATIC}
+# Make sure there is at least something to embed by Go, or it may cause some errors.
+	mkdir -p ./${WEB_STATIC}
+	touch ${WEB_STATIC}/emptyfile
+
 
 package: flamenco-manager flamenco-worker addon-packer
 	rm -rf dist-build
@@ -156,4 +174,4 @@ package: flamenco-manager flamenco-worker addon-packer
 	mv dist-build/flamenco-${VERSION}.zip dist
 	rm -rf dist-build
 
-.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp webapp-static generate generate-go generate-py with-deps swagger-ui list-embedded test clean
+.PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp webapp-static generate generate-go generate-py with-deps swagger-ui list-embedded test clean clean-webapp-static
