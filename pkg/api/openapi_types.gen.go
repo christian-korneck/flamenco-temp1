@@ -421,6 +421,14 @@ type SocketIOJobUpdate struct {
 	Updated time.Time `json:"updated"`
 }
 
+// Indicator that the last-rendered image of this job was updated.
+type SocketIOLastRenderedUpdate struct {
+	JobId string `json:"job_id"`
+
+	// Enough information for a client to piece together different strings to form a host-relative URL to the last-rendered image. To construct the URL, concatenate "{base}/{one of the suffixes}".
+	Thumbnail JobLastRenderedImageInfo `json:"thumbnail"`
+}
+
 // Send by SocketIO clients as `/subscription` event type, to manage their subscription to job updates. Clients always get job updates, but for task updates or task logs they need to explicitly subscribe. For simplicity, clients can only subscribe to one job (to get task updates for that job) and one task's log at a time.
 type SocketIOSubscription struct {
 	Op SocketIOSubscriptionOperation `json:"op"`

@@ -45,6 +45,7 @@ import ShamanRequirementsRequest from './model/ShamanRequirementsRequest';
 import ShamanRequirementsResponse from './model/ShamanRequirementsResponse';
 import ShamanSingleFileStatus from './model/ShamanSingleFileStatus';
 import SocketIOJobUpdate from './model/SocketIOJobUpdate';
+import SocketIOLastRenderedUpdate from './model/SocketIOLastRenderedUpdate';
 import SocketIOSubscription from './model/SocketIOSubscription';
 import SocketIOSubscriptionOperation from './model/SocketIOSubscriptionOperation';
 import SocketIOSubscriptionType from './model/SocketIOSubscriptionType';
@@ -304,6 +305,12 @@ export {
      * @property {module:model/SocketIOJobUpdate}
      */
     SocketIOJobUpdate,
+
+    /**
+     * The SocketIOLastRenderedUpdate model constructor.
+     * @property {module:model/SocketIOLastRenderedUpdate}
+     */
+    SocketIOLastRenderedUpdate,
 
     /**
      * The SocketIOSubscription model constructor.

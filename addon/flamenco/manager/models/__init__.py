@@ -44,6 +44,7 @@ from flamenco.manager.model.shaman_requirements_request import ShamanRequirement
 from flamenco.manager.model.shaman_requirements_response import ShamanRequirementsResponse
 from flamenco.manager.model.shaman_single_file_status import ShamanSingleFileStatus
 from flamenco.manager.model.socket_io_job_update import SocketIOJobUpdate
+from flamenco.manager.model.socket_io_last_rendered_update import SocketIOLastRenderedUpdate
 from flamenco.manager.model.socket_io_subscription import SocketIOSubscription
 from flamenco.manager.model.socket_io_subscription_operation import SocketIOSubscriptionOperation
 from flamenco.manager.model.socket_io_subscription_type import SocketIOSubscriptionType
