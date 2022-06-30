@@ -2,7 +2,7 @@
   <h2 class="column-title">Job Details</h2>
 
   <template v-if="hasJobData">
-    <last-rendered-image :jobID="jobData.id" />
+    <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" />
 
     <dl>
       <dt class="field-id">ID</dt>
@@ -112,6 +112,13 @@ export default {
     },
   },
   methods: {
+    /**
+     * @param {API.SocketIOLastRenderedUpdate} lastRenderedUpdate
+     */
+    refreshLastRenderedImage(lastRenderedUpdate) {
+      this.$refs.lastRenderedImage.refreshLastRenderedImage(lastRenderedUpdate);
+    },
+
     _refreshJobSettings(newJobData) {
       if (objectEmpty(newJobData)) {
         this._clearJobSettings();

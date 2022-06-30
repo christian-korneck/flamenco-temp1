@@ -3,7 +3,7 @@
     <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
   <div class="col col-2" id="col-job-details">
-    <job-details :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
+    <job-details ref="jobDetails" :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
     <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
   <div class="col col-3">
@@ -16,6 +16,7 @@
   <update-listener ref="updateListener"  mainSubscription="allJobs"
     :subscribedJobID="jobID" :subscribedTaskID="taskID"
     @jobUpdate="onSioJobUpdate" @taskUpdate="onSioTaskUpdate" @taskLogUpdate="onSioTaskLogUpdate"
+    @lastRenderedUpdate="onSioLastRenderedUpdate"
     @message="onChatMessage"
     @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
 </template>
@@ -152,6 +153,15 @@ export default {
      */
     onSioTaskLogUpdate(taskLogUpdate) {
       this.taskLog.addTaskLogUpdate(taskLogUpdate);
+    },
+
+    /**
+     * Event handler for SocketIO "last-rendered" updates.
+     * @param {API.SocketIOLastRenderedUpdate} lastRenderedUpdate
+     */
+    onSioLastRenderedUpdate(lastRenderedUpdate) {
+      console.log('lastRenderedUpdate:', lastRenderedUpdate);
+      this.$refs.jobDetails.refreshLastRenderedImage(lastRenderedUpdate);
     },
 
     /**
