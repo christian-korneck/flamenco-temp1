@@ -1,11 +1,15 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { api } from '@/urls';
 import { JobsApi, JobLastRenderedImageInfo, SocketIOLastRenderedUpdate } from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 
 const props = defineProps(['jobID']);
 const imageURL = ref('');
+const cssClasses = reactive({
+  lastRendered: true,
+  nothingRenderedYet: true,
+})
 
 const jobsApi = new JobsApi(apiClient);
 
@@ -22,6 +26,14 @@ function fetchImageURL(jobID) {
  * @param {JobLastRenderedImageInfo} thumbnailInfo
  */
 function setImageURL(thumbnailInfo) {
+  if (thumbnailInfo == null) {
+    // This indicates that there is no last-rendered image.
+    // Default to a hard-coded 'nothing to be seen here, move along' image.
+    imageURL.value = "/nothing-rendered-yet.svg";
+    cssClasses.nothingRenderedYet = true;
+    return;
+  }
+
   // Set the image URL to something appropriate.
   for (let suffix of thumbnailInfo.suffixes) {
     if (!suffix.includes("-tiny")) continue;
@@ -32,6 +44,7 @@ function setImageURL(thumbnailInfo) {
     imageURL.value = url.toString();
     break;
   }
+  cssClasses.nothingRenderedYet = false;
 }
 
 /**
@@ -64,7 +77,7 @@ defineExpose({
 </script>
 
 <template>
-  <div v-if="imageURL != ''" class="lastRendered">
+  <div v-if="imageURL != ''" :class="cssClasses">
     <img :src="imageURL" alt="Last-rendered image for this job">
   </div>
 </template>
@@ -74,5 +87,9 @@ defineExpose({
   width: 200px;
   height: 112px;
   float: right;
+}
+
+.lastRendered.nothingRenderedYet {
+  outline: thin dotted var(--color-text-hint);
 }
 </style>

@@ -5,6 +5,8 @@ package last_rendered
 import (
 	"context"
 	"errors"
+	"io/fs"
+	"os"
 	"path/filepath"
 
 	"github.com/rs/zerolog"
@@ -108,6 +110,26 @@ func (lrp *LastRenderedProcessor) QueueImage(payload Payload) error {
 // PathForJob returns the base path for this job's last-rendered images.
 func (lrp *LastRenderedProcessor) PathForJob(jobUUID string) string {
 	return lrp.storage.ForJob(jobUUID)
+}
+
+// JobHasImage returns true only if the job actually has a last-rendered image.
+// Only the lowest-resolution image is tested for. Since images are processed in
+// order, existence of the last one should imply existence of all of them.
+func (lrp *LastRenderedProcessor) JobHasImage(jobUUID string) bool {
+	dirPath := lrp.PathForJob(jobUUID)
+	filename := thumbnails[len(thumbnails)-1].Filename
+	path := filepath.Join(dirPath, filename)
+
+	_, err := os.Stat(path)
+	switch {
+	case err == nil:
+		return true
+	case errors.Is(err, fs.ErrNotExist):
+		return false
+	default:
+		log.Warn().Err(err).Str("path", path).Msg("last-rendered: unexpected error checking file for existence")
+		return false
+	}
 }
 
 // ThumbSpecs returns the thumbnail specifications.

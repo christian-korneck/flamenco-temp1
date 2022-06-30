@@ -131,6 +131,9 @@ type LastRendered interface {
 
 	// ThumbSpecs returns the thumbnail specifications.
 	ThumbSpecs() []last_rendered.Thumbspec
+
+	// JobHasImage returns true only if the job actually has a last-rendered image.
+	JobHasImage(jobUUID string) bool
 }
 
 // LocalStorage handles the storage organisation of local files like the last-rendered images.

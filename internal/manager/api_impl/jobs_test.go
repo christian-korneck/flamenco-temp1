@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"git.blender.org/flamenco/internal/manager/job_compilers"
+	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/golang/mock/gomock"
@@ -311,4 +312,44 @@ func TestFetchTaskLogTail(t *testing.T) {
 	err = mf.flamenco.FetchTaskLogTail(echoCtx, taskID)
 	assert.NoError(t, err)
 	assertResponseNoContent(t, echoCtx)
+}
+
+func TestFetchJobLastRenderedInfo(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobID := "18a9b096-d77e-438c-9be2-74397038298b"
+
+	{
+		// Last-rendered image has been processed.
+		mf.lastRender.EXPECT().JobHasImage(jobID).Return(true)
+		mf.lastRender.EXPECT().PathForJob(jobID).Return("/absolute/path/to/local/job/dir")
+		mf.localStorage.EXPECT().RelPath("/absolute/path/to/local/job/dir").Return("relative/path", nil)
+		mf.lastRender.EXPECT().ThumbSpecs().Return([]last_rendered.Thumbspec{
+			{Filename: "das grosses potaat.jpg"},
+			{Filename: "invisibru.jpg"},
+		})
+
+		echoCtx := mf.prepareMockedRequest(nil)
+		err := mf.flamenco.FetchJobLastRenderedInfo(echoCtx, jobID)
+		assert.NoError(t, err)
+
+		expectBody := api.JobLastRenderedImageInfo{
+			Base:     "/job-files/relative/path",
+			Suffixes: []string{"das grosses potaat.jpg", "invisibru.jpg"},
+		}
+		assertResponseJSON(t, echoCtx, http.StatusOK, expectBody)
+	}
+
+	{
+		// No last-rendered image exists.
+		mf.lastRender.EXPECT().JobHasImage(jobID).Return(false)
+
+		echoCtx := mf.prepareMockedRequest(nil)
+		err := mf.flamenco.FetchJobLastRenderedInfo(echoCtx, jobID)
+		assert.NoError(t, err)
+		assertResponseNoContent(t, echoCtx)
+	}
 }

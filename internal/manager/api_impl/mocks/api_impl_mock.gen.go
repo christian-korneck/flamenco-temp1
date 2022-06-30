@@ -867,6 +867,20 @@ func (m *MockLastRendered) EXPECT() *MockLastRenderedMockRecorder {
 	return m.recorder
 }
 
+// JobHasImage mocks base method.
+func (m *MockLastRendered) JobHasImage(arg0 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "JobHasImage", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// JobHasImage indicates an expected call of JobHasImage.
+func (mr *MockLastRenderedMockRecorder) JobHasImage(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobHasImage", reflect.TypeOf((*MockLastRendered)(nil).JobHasImage), arg0)
+}
+
 // PathForJob mocks base method.
 func (m *MockLastRendered) PathForJob(arg0 string) string {
 	m.ctrl.T.Helper()

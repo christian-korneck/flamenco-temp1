@@ -317,6 +317,10 @@ func (f *Flamenco) FetchJobLastRenderedInfo(e echo.Context, jobID string) error 
 		return sendAPIError(e, http.StatusBadRequest, "job ID should be a UUID")
 	}
 
+	if !f.lastRender.JobHasImage(jobID) {
+		return e.NoContent(http.StatusNoContent)
+	}
+
 	logger := requestLogger(e)
 	info, err := f.lastRenderedInfoForJob(logger, jobID)
 	if err != nil {
