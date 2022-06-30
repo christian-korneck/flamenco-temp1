@@ -1529,6 +1529,14 @@ components:
           description: Chunk of the task log. May contain multiple lines of text.
       required: [task_id, log]
 
+    SocketIOLastRenderedUpdate:
+      type: object
+      description: Indicator that the last-rendered image of this job was updated.
+      properties:
+        "job_id": { type: string, format: uuid }
+        "thumbnail": { $ref: "#/components/schemas/JobLastRenderedImageInfo" }
+      required: [job_id, task_id, thumbnail]
+
     SocketIOWorkerUpdate:
       type: object
       description: >
