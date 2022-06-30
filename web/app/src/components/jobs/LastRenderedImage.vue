@@ -38,6 +38,9 @@ function setImageURL(thumbnailInfo) {
   for (let suffix of thumbnailInfo.suffixes) {
     if (!suffix.includes("-tiny")) continue;
 
+    // This uses the API URL to construct the image URL, as the image comes from
+    // Flamenco Manager, and not from any development server that might be
+    // serving the webapp.
     let url = new URL(api());
     url.pathname = thumbnailInfo.base + "/" + suffix
     url.search = new Date().getTime(); // This forces the image to be reloaded.
