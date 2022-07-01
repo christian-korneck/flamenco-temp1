@@ -484,6 +484,21 @@ paths:
         "204":
           description: This job doesn't have any last-rendered image.
 
+  /api/jobs/last-rendered:
+    summary: Obtain info about the global last-rendered image.
+    get:
+      operationId: fetchGlobalLastRenderedInfo
+      summary: Get the URL that serves the last-rendered images.
+      tags: [jobs]
+      responses:
+        "200":
+          description: Normal response.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobLastRenderedImageInfo" }
+        "204":
+          description: This job doesn't have any last-rendered image.
+
   /api/jobs/{job_id}/setstatus:
     summary: Request a status change for the given job.
     post:
@@ -1583,7 +1598,7 @@ components:
 
     SocketIOSubscriptionType:
       type: string
-      enum: [allJobs, allWorkers, job, tasklog]
+      enum: [allJobs, allWorkers, job, tasklog, allLastRendered]
       description: What kind of thing to subscribe to / unsubscribe from.
 
     # Worker Management
