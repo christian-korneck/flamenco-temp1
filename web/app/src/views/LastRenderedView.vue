@@ -44,19 +44,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.last-rendered {
-  max-height: 100%;
-}
-
-.global-last-rendered {
-  grid-column-start: col-1;
-  grid-column-end: col-3;
-
-  /* FIXME: the positioning of the image & sizing of the container DIV doesn't
-  work well yet. */
-  height: 100%;
-}
-
-</style>

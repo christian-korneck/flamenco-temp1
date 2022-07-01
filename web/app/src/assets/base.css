@@ -474,3 +474,24 @@ span.state-transition-arrow {
 span.state-transition-arrow.lazy {
   color: var(--color-text-muted);
 }
+
+
+
+.job-details-column .last-rendered {
+  width: 200px;
+  height: 112px;
+  float: right;
+}
+
+.global-last-rendered {
+  grid-column-start: col-1;
+  grid-column-end: col-3;
+
+  /* FIXME: the positioning of the image & sizing of the container DIV doesn't
+  work well yet. */
+  height: 100%;
+}
+
+.global-last-rendered .last-rendered {
+  max-height: 100%;
+}

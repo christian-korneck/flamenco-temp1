@@ -2,7 +2,7 @@
   <div class="col col-1">
     <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
-  <div class="col col-2" id="col-job-details">
+  <div class="col col-2 job-details-column" id="col-job-details">
     <job-details ref="jobDetails" :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
     <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
@@ -246,11 +246,5 @@ export default {
 <style scoped>
 .isFetching {
   opacity: 50%;
-}
-
-.last-rendered {
-  width: 200px;
-  height: 112px;
-  float: right;
 }
 </style>
