@@ -6,7 +6,8 @@ const JOB_TYPE = {
         // Settings for artists to determine:
         { key: "frames", type: "string", required: true, eval: "f'{C.scene.frame_start}-{C.scene.frame_end}'",
           description: "Frame range to render. Examples: '47', '1-30', '3, 5-10, 47-327'" },
-        { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task" },
+        { key: "chunk_size", type: "int32", default: 1, description: "Number of frames to render in one Blender render task",
+          visible: "submission" },
 
         // render_output_root + add_path_components determine the value of render_output_path.
         { key: "render_output_root", type: "string", subtype: "dir_path", required: true, visible: "submission",
@@ -19,7 +20,7 @@ const JOB_TYPE = {
 
         // Automatically evaluated settings:
         { key: "blender_cmd", type: "string", default: "{blender}", visible: "hidden" },
-        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: "hidden" },
+        { key: "blendfile", type: "string", required: true, description: "Path of the Blend file to render", visible: "web" },
         { key: "fps", type: "float", eval: "C.scene.render.fps / C.scene.render.fps_base", visible: "hidden" },
         {
             key: "images_or_video",
