@@ -21,7 +21,7 @@ const (
 	// new requests to process.
 	queueSize = 3
 
-	thumbnailJPEGQuality = 80
+	thumbnailJPEGQuality = 85
 )
 
 var (

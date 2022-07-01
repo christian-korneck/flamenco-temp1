@@ -17,7 +17,7 @@ import (
 	"git.blender.org/flamenco/pkg/last_in_one_out_queue"
 )
 
-const thumbnailJPEGQuality = 80
+const thumbnailJPEGQuality = 85
 
 // OutputUploader sends (downscaled versions of) rendered images to Flamenco
 // Manager. Only one image is sent at a time. A queue of a single image is kept,
