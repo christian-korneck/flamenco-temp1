@@ -48,6 +48,45 @@ export default class JobsApi {
 
 
     /**
+     * Get the URL that serves the last-rendered images.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/JobLastRenderedImageInfo} and HTTP response
+     */
+    fetchGlobalLastRenderedInfoWithHttpInfo() {
+      let postBody = null;
+
+      let pathParams = {
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = JobLastRenderedImageInfo;
+      return this.apiClient.callApi(
+        '/api/jobs/last-rendered', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Get the URL that serves the last-rendered images.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/JobLastRenderedImageInfo}
+     */
+    fetchGlobalLastRenderedInfo() {
+      return this.fetchGlobalLastRenderedInfoWithHttpInfo()
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
      * Fetch info about the job.
      * @param {String} jobId 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/Job} and HTTP response

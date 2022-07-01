@@ -36,6 +36,26 @@ func (m *MockFlamencoClient) EXPECT() *MockFlamencoClientMockRecorder {
 	return m.recorder
 }
 
+// FetchGlobalLastRenderedInfoWithResponse mocks base method.
+func (m *MockFlamencoClient) FetchGlobalLastRenderedInfoWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.FetchGlobalLastRenderedInfoResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FetchGlobalLastRenderedInfoWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.FetchGlobalLastRenderedInfoResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchGlobalLastRenderedInfoWithResponse indicates an expected call of FetchGlobalLastRenderedInfoWithResponse.
+func (mr *MockFlamencoClientMockRecorder) FetchGlobalLastRenderedInfoWithResponse(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchGlobalLastRenderedInfoWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchGlobalLastRenderedInfoWithResponse), varargs...)
+}
+
 // FetchJobBlocklistWithResponse mocks base method.
 func (m *MockFlamencoClient) FetchJobBlocklistWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchJobBlocklistResponse, error) {
 	m.ctrl.T.Helper()

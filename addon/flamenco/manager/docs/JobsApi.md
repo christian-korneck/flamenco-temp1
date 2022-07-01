@@ -4,6 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**fetch_global_last_rendered_info**](JobsApi.md#fetch_global_last_rendered_info) | **GET** /api/jobs/last-rendered | Get the URL that serves the last-rendered images.
 [**fetch_job**](JobsApi.md#fetch_job) | **GET** /api/jobs/{job_id} | Fetch info about the job.
 [**fetch_job_blocklist**](JobsApi.md#fetch_job_blocklist) | **GET** /api/jobs/{job_id}/blocklist | Fetch the list of workers that are blocked from doing certain task types on this job.
 [**fetch_job_last_rendered_info**](JobsApi.md#fetch_job_last_rendered_info) | **GET** /api/jobs/{job_id}/last-rendered | Get the URL that serves the last-rendered images of this job.
@@ -18,6 +19,68 @@ Method | HTTP request | Description
 [**set_task_status**](JobsApi.md#set_task_status) | **POST** /api/tasks/{task_id}/setstatus | 
 [**submit_job**](JobsApi.md#submit_job) | **POST** /api/jobs | Submit a new job for Flamenco Manager to execute.
 
+
+# **fetch_global_last_rendered_info**
+> JobLastRenderedImageInfo fetch_global_last_rendered_info()
+
+Get the URL that serves the last-rendered images.
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import jobs_api
+from flamenco.manager.model.job_last_rendered_image_info import JobLastRenderedImageInfo
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = jobs_api.JobsApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # Get the URL that serves the last-rendered images.
+        api_response = api_instance.fetch_global_last_rendered_info()
+        pprint(api_response)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling JobsApi->fetch_global_last_rendered_info: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**JobLastRenderedImageInfo**](JobLastRenderedImageInfo.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Normal response. |  -  |
+**204** | This job doesn&#39;t have any last-rendered image. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **fetch_job**
 > Job fetch_job(job_id)

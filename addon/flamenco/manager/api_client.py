@@ -76,7 +76,7 @@ class ApiClient(object):
             self.default_headers[header_name] = header_value
         self.cookie = cookie
         # Set default User-Agent.
-        self.user_agent = 'Flamenco/cca81558 (Blender add-on)'
+        self.user_agent = 'Flamenco/60f3f548 (Blender add-on)'
 
     def __enter__(self):
         return self
@@ -774,10 +774,10 @@ class Endpoint(object):
         Example:
 
         api_instance = JobsApi()
-        api_instance.fetch_job  # this is an instance of the class Endpoint
-        api_instance.fetch_job()  # this invokes api_instance.fetch_job.__call__()
+        api_instance.fetch_global_last_rendered_info  # this is an instance of the class Endpoint
+        api_instance.fetch_global_last_rendered_info()  # this invokes api_instance.fetch_global_last_rendered_info.__call__()
         which then invokes the callable functions stored in that endpoint at
-        api_instance.fetch_job.callable or self.callable in this class
+        api_instance.fetch_global_last_rendered_info.callable or self.callable in this class
 
         """
         return self.callable(self, *args, **kwargs)

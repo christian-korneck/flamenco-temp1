@@ -93,6 +93,8 @@ const (
 const (
 	SocketIOSubscriptionTypeAllJobs SocketIOSubscriptionType = "allJobs"
 
+	SocketIOSubscriptionTypeAllLastRendered SocketIOSubscriptionType = "allLastRendered"
+
 	SocketIOSubscriptionTypeAllWorkers SocketIOSubscriptionType = "allWorkers"
 
 	SocketIOSubscriptionTypeJob SocketIOSubscriptionType = "job"
