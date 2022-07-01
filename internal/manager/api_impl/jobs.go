@@ -334,6 +334,23 @@ func (f *Flamenco) FetchJobLastRenderedInfo(e echo.Context, jobID string) error 
 	return e.JSON(http.StatusOK, info)
 }
 
+func (f *Flamenco) FetchGlobalLastRenderedInfo(e echo.Context) error {
+	ctx := e.Request().Context()
+	logger := requestLogger(e)
+
+	jobUUID, err := f.persist.GetLastRenderedJobUUID(ctx)
+	if err != nil {
+		logger.Error().Err(err).Msg("error getting job UUID with last-rendered image")
+		return sendAPIError(e, http.StatusInternalServerError, "error finding global last-rendered info: %v", err)
+	}
+
+	if jobUUID == "" {
+		return e.NoContent(http.StatusNoContent)
+	}
+
+	return f.FetchJobLastRenderedInfo(e, jobUUID)
+}
+
 func (f *Flamenco) lastRenderedInfoForJob(logger zerolog.Logger, jobUUID string) (*api.JobLastRenderedImageInfo, error) {
 	basePath := f.lastRender.PathForJob(jobUUID)
 	relPath, err := f.localStorage.RelPath(basePath)

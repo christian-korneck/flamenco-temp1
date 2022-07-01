@@ -2,7 +2,7 @@
   <h2 class="column-title">Job Details</h2>
 
   <template v-if="hasJobData">
-    <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" />
+    <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" thumbnailSuffix="-tiny" />
 
     <dl>
       <dt class="field-id">ID</dt>

@@ -24,6 +24,11 @@ const (
 	SocketIORoomChat    SocketIORoomName = "Chat"    // For chat messages.
 	SocketIORoomJobs    SocketIORoomName = "Jobs"    // For job updates.
 	SocketIORoomWorkers SocketIORoomName = "Workers" // For worker updates.
+
+	// For updates about ALL last-rendered images. Normally these are sent to a
+	// room specific to a particular job, but for the global "last rendered image"
+	// all updates are sent here too.
+	SocketIORoomLastRendered SocketIORoomName = "Last-Rendered"
 )
 
 const (
@@ -67,6 +72,8 @@ func (b *BiDirComms) handleRoomSubscription(c *gosocketio.Channel, subs api.Sock
 		sioRoom = SocketIORoomJobs
 	case api.SocketIOSubscriptionTypeAllWorkers:
 		sioRoom = SocketIORoomWorkers
+	case api.SocketIOSubscriptionTypeAllLastRendered:
+		sioRoom = SocketIORoomLastRendered
 	case api.SocketIOSubscriptionTypeJob:
 		if subs.Uuid == nil {
 			logger.Warn().Msg("socketIO: trying to (un)subscribe to job without UUID")

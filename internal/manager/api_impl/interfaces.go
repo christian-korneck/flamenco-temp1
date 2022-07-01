@@ -67,6 +67,11 @@ type PersistenceService interface {
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
 	QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*persistence.Task, error)
+
+	// SetLastRendered sets this job as the one with the most recent rendered image.
+	SetLastRendered(ctx context.Context, j *persistence.Job) error
+	// GetLastRendered returns the UUID of the job with the most recent rendered image.
+	GetLastRenderedJobUUID(ctx context.Context) (string, error)
 }
 
 var _ PersistenceService = (*persistence.DB)(nil)

@@ -160,7 +160,6 @@ export default {
      * @param {API.SocketIOLastRenderedUpdate} lastRenderedUpdate
      */
     onSioLastRenderedUpdate(lastRenderedUpdate) {
-      console.log('lastRenderedUpdate:', lastRenderedUpdate);
       this.$refs.jobDetails.refreshLastRenderedImage(lastRenderedUpdate);
     },
 
@@ -247,5 +246,11 @@ export default {
 <style scoped>
 .isFetching {
   opacity: 50%;
+}
+
+.last-rendered {
+  width: 200px;
+  height: 112px;
+  float: right;
 }
 </style>

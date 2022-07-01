@@ -548,6 +548,8 @@ func TestTaskOutputProduced(t *testing.T) {
 	{
 		mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
 		mf.persistence.EXPECT().FetchTask(gomock.Any(), task.UUID).Return(&task, nil)
+		// Don't expect persistence.SetLastRendered(...) quite yet. That should be
+		// called after the image processing is done.
 
 		echo := prepareRequest(bytes.NewReader(bodyBytes))
 		echo.Request().Header.Set("Content-Type", "image/jpeg")
@@ -568,8 +570,9 @@ func TestTaskOutputProduced(t *testing.T) {
 		assertResponseNoBody(t, echo, http.StatusAccepted)
 
 		if assert.NotNil(t, actualPayload) {
-			// Calling the callback function is normally done by the last-rendered image processor.
-			// It should result in a SocketIO broadcast.
+			ctx := context.Background()
+			mf.persistence.EXPECT().SetLastRendered(ctx, &job)
+
 			expectBroadcast := api.SocketIOLastRenderedUpdate{
 				JobId: job.UUID,
 				Thumbnail: api.JobLastRenderedImageInfo{
@@ -578,7 +581,9 @@ func TestTaskOutputProduced(t *testing.T) {
 				},
 			}
 			mf.broadcaster.EXPECT().BroadcastLastRenderedImage(expectBroadcast)
-			actualPayload.Callback()
+
+			// Calling the callback function is normally done by the last-rendered image processor.
+			actualPayload.Callback(ctx)
 
 			// Compare the parameter to `QueueImage()` in a way that ignores the callback function.
 			actualPayload.Callback = nil

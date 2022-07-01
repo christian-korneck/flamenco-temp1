@@ -20,6 +20,11 @@ const router = createRouter({
       component: () => import('../views/WorkersView.vue'),
       props: true,
     },
+    {
+      path: '/last-rendered',
+      name: 'last-rendered',
+      component: () => import('../views/LastRenderedView.vue'),
+    },
   ],
 })
 

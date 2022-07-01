@@ -408,7 +408,10 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 		MimeType:   e.Request().Header.Get("Content-Type"),
 		Image:      imageBytes,
 
-		Callback: func() {
+		Callback: func(ctx context.Context) {
+			// Store this job as the last one to get a rendered image.
+			f.persist.SetLastRendered(ctx, dbTask.Job)
+
 			// Broadcast when the processing is done.
 			update := webupdates.NewLastRenderedUpdate(jobUUID)
 			update.Thumbnail = *thumbnailInfo

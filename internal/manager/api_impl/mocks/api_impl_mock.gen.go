@@ -217,6 +217,21 @@ func (mr *MockPersistenceServiceMockRecorder) FetchWorkers(arg0 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorkers", reflect.TypeOf((*MockPersistenceService)(nil).FetchWorkers), arg0)
 }
 
+// GetLastRenderedJobUUID mocks base method.
+func (m *MockPersistenceService) GetLastRenderedJobUUID(arg0 context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLastRenderedJobUUID", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLastRenderedJobUUID indicates an expected call of GetLastRenderedJobUUID.
+func (mr *MockPersistenceServiceMockRecorder) GetLastRenderedJobUUID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastRenderedJobUUID", reflect.TypeOf((*MockPersistenceService)(nil).GetLastRenderedJobUUID), arg0)
+}
+
 // QueryJobTaskSummaries mocks base method.
 func (m *MockPersistenceService) QueryJobTaskSummaries(arg0 context.Context, arg1 string) ([]*persistence.Task, error) {
 	m.ctrl.T.Helper()
@@ -330,6 +345,20 @@ func (m *MockPersistenceService) ScheduleTask(arg0 context.Context, arg1 *persis
 func (mr *MockPersistenceServiceMockRecorder) ScheduleTask(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScheduleTask", reflect.TypeOf((*MockPersistenceService)(nil).ScheduleTask), arg0, arg1)
+}
+
+// SetLastRendered mocks base method.
+func (m *MockPersistenceService) SetLastRendered(arg0 context.Context, arg1 *persistence.Job) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLastRendered", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetLastRendered indicates an expected call of SetLastRendered.
+func (mr *MockPersistenceServiceMockRecorder) SetLastRendered(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLastRendered", reflect.TypeOf((*MockPersistenceService)(nil).SetLastRendered), arg0, arg1)
 }
 
 // StoreAuthoredJob mocks base method.

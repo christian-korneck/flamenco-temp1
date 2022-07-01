@@ -3,6 +3,7 @@ package last_rendered
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"context"
 	"image"
 	"os"
 	"path/filepath"
@@ -63,7 +64,7 @@ func TestProcessImage(t *testing.T) {
 	lrp := New(storage)
 
 	callbackCount := 0
-	payload.Callback = func() {
+	payload.Callback = func(context.Context) {
 		callbackCount++
 	}
 
@@ -73,7 +74,7 @@ func TestProcessImage(t *testing.T) {
 	assert.NoFileExists(t, filepath.Join(jobdir, "last-rendered-small.jpg"))
 	assert.NoFileExists(t, filepath.Join(jobdir, "last-rendered-tiny.jpg"))
 
-	lrp.processImage(payload)
+	lrp.processImage(context.Background(), payload)
 
 	// The files should exist now.
 	assert.FileExists(t, filepath.Join(jobdir, "last-rendered.jpg"))

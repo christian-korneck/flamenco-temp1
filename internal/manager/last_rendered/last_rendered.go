@@ -60,7 +60,7 @@ type Payload struct {
 	Image      []byte
 
 	// Callback is called when the image processing is finished.
-	Callback func()
+	Callback func(ctx context.Context)
 }
 
 // Thumbspec specifies a thumbnail size & filename.
@@ -88,7 +88,7 @@ func (lrp *LastRenderedProcessor) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case payload := <-lrp.queue:
-			lrp.processImage(payload)
+			lrp.processImage(ctx, payload)
 		}
 	}
 }
@@ -146,7 +146,7 @@ func (lrp *LastRenderedProcessor) ThumbSpecs() []Thumbspec {
 //
 // Because this is intended as internal queue-processing function, errors are
 // logged but not returned.
-func (lrp *LastRenderedProcessor) processImage(payload Payload) {
+func (lrp *LastRenderedProcessor) processImage(ctx context.Context, payload Payload) {
 	jobDir := lrp.PathForJob(payload.JobUUID)
 
 	logger := log.With().Str("jobDir", jobDir).Logger()
@@ -175,7 +175,7 @@ func (lrp *LastRenderedProcessor) processImage(payload Payload) {
 
 	// Call the callback, if provided.
 	if payload.Callback != nil {
-		payload.Callback()
+		payload.Callback(ctx)
 	}
 }
 

@@ -90,6 +90,9 @@ func (b *BiDirComms) BroadcastLastRenderedImage(update api.SocketIOLastRenderedU
 	log.Debug().Interface("lastRenderedUpdate", update).Msg("socketIO: broadcasting last-rendered image update")
 	room := roomForJob(update.JobId)
 	b.BroadcastTo(room, SIOEventLastRenderedUpdate, update)
+
+	// TODO: throttle these via a last-in-one-out queue (see `pkg/last_in_one_out_queue`).
+	b.BroadcastTo(SocketIORoomLastRendered, SIOEventLastRenderedUpdate, update)
 }
 
 // BroadcastTaskLogUpdate sends the task log chunk to clients.

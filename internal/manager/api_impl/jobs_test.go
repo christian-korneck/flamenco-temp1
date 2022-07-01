@@ -353,3 +353,45 @@ func TestFetchJobLastRenderedInfo(t *testing.T) {
 		assertResponseNoContent(t, echoCtx)
 	}
 }
+
+func TestFetchGlobalLastRenderedInfo(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	jobUUID := "18a9b096-d77e-438c-9be2-74397038298b"
+
+	{
+		// No last-rendered image exists yet.
+		mf.persistence.EXPECT().GetLastRenderedJobUUID(gomock.Any()).Return("", nil)
+
+		echoCtx := mf.prepareMockedRequest(nil)
+		err := mf.flamenco.FetchGlobalLastRenderedInfo(echoCtx)
+		assert.NoError(t, err)
+		assertResponseNoContent(t, echoCtx)
+	}
+
+	{
+		// Last-rendered image has been processed.
+		mf.persistence.EXPECT().GetLastRenderedJobUUID(gomock.Any()).Return(jobUUID, nil)
+		mf.lastRender.EXPECT().JobHasImage(jobUUID).Return(true)
+		mf.lastRender.EXPECT().PathForJob(jobUUID).Return("/absolute/path/to/local/job/dir")
+		mf.localStorage.EXPECT().RelPath("/absolute/path/to/local/job/dir").Return("relative/path", nil)
+		mf.lastRender.EXPECT().ThumbSpecs().Return([]last_rendered.Thumbspec{
+			{Filename: "das grosses potaat.jpg"},
+			{Filename: "invisibru.jpg"},
+		})
+
+		echoCtx := mf.prepareMockedRequest(nil)
+		err := mf.flamenco.FetchGlobalLastRenderedInfo(echoCtx)
+		assert.NoError(t, err)
+
+		expectBody := api.JobLastRenderedImageInfo{
+			Base:     "/job-files/relative/path",
+			Suffixes: []string{"das grosses potaat.jpg", "invisibru.jpg"},
+		}
+		assertResponseJSON(t, echoCtx, http.StatusOK, expectBody)
+	}
+
+}

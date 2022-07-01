@@ -10,6 +10,7 @@ func (db *DB) migrate() error {
 	err := db.gormDB.AutoMigrate(
 		&Job{},
 		&JobBlock{},
+		&LastRendered{},
 		&Task{},
 		&TaskFailure{},
 		&Worker{},
