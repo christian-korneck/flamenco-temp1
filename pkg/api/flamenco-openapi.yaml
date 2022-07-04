@@ -1568,6 +1568,10 @@ components:
           type: string
           format: date-time
           description: Timestamp of last update
+        "last_seen":
+          type: string
+          format: date-time
+          description: Last time this worker was seen by the Manager.
         "status": { $ref: "#/components/schemas/WorkerStatus" }
         "previous_status": { $ref: "#/components/schemas/WorkerStatus" }
         "status_change":
@@ -1626,10 +1630,10 @@ components:
         #   type: string
         #   format: uuid
         #   description: The worker's current/last-worked-on task.
-        # "last_seen":
-        #   type: string
-        #   format: date-time
-        #   description: Last time this worker was seen by the Manager.
+        "last_seen":
+          type: string
+          format: date-time
+          description: Last time this worker was seen by the Manager.
         "version":
           type: string
           description: Version of Flamenco this Worker is running
