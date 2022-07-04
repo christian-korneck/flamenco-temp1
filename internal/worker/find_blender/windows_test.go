@@ -4,10 +4,13 @@
 package find_blender
 
 import (
+	"flag"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var withBlender = flag.Bool("withBlender", false, "run test that requires Blender to be installed")
 
 // TestFindBlender is a "weak" test, which actually accepts both happy and unhappy flows.
 // It would be too fragile to always require a file association to be set up with Blender.
@@ -15,6 +18,10 @@ func TestFindBlender(t *testing.T) {
 	exe, err := FindBlender()
 	if err != nil {
 		assert.Empty(t, exe)
+
+		if *withBlender {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		return
 	}
 	assert.NotEmpty(t, exe)
