@@ -71,7 +71,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = MayKeepRunning;
       return this.apiClient.callApi(
-        '/api/worker/task/{task_id}/may-i-run', 'GET',
+        '/api/v3/worker/task/{task_id}/may-i-run', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -116,7 +116,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = RegisteredWorker;
       return this.apiClient.callApi(
-        '/api/worker/register-worker', 'POST',
+        '/api/v3/worker/register-worker', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -156,7 +156,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = AssignedTask;
       return this.apiClient.callApi(
-        '/api/worker/task', 'POST',
+        '/api/v3/worker/task', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -195,7 +195,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/worker/sign-off', 'POST',
+        '/api/v3/worker/sign-off', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -239,7 +239,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = WorkerStateChange;
       return this.apiClient.callApi(
-        '/api/worker/sign-on', 'POST',
+        '/api/v3/worker/sign-on', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -290,7 +290,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/worker/task/{task_id}/output-produced', 'POST',
+        '/api/v3/worker/task/{task_id}/output-produced', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -342,7 +342,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/worker/task/{task_id}', 'POST',
+        '/api/v3/worker/task/{task_id}', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -382,7 +382,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = WorkerStateChange;
       return this.apiClient.callApi(
-        '/api/worker/state', 'GET',
+        '/api/v3/worker/state', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -425,7 +425,7 @@ export default class WorkerApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/worker/state-changed', 'POST',
+        '/api/v3/worker/state-changed', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );

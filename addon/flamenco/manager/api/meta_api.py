@@ -40,7 +40,7 @@ class MetaApi(object):
             settings={
                 'response_type': (ManagerConfiguration,),
                 'auth': [],
-                'endpoint_path': '/api/configuration',
+                'endpoint_path': '/api/v3/configuration',
                 'operation_id': 'get_configuration',
                 'http_method': 'GET',
                 'servers': None,
@@ -82,7 +82,7 @@ class MetaApi(object):
             settings={
                 'response_type': (FlamencoVersion,),
                 'auth': [],
-                'endpoint_path': '/api/version',
+                'endpoint_path': '/api/v3/version',
                 'operation_id': 'get_version',
                 'http_method': 'GET',
                 'servers': None,

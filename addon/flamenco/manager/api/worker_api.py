@@ -50,7 +50,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/task/{task_id}/may-i-run',
+                'endpoint_path': '/api/v3/worker/task/{task_id}/may-i-run',
                 'operation_id': 'may_worker_run',
                 'http_method': 'GET',
                 'servers': None,
@@ -99,7 +99,7 @@ class WorkerApi(object):
             settings={
                 'response_type': (RegisteredWorker,),
                 'auth': [],
-                'endpoint_path': '/api/worker/register-worker',
+                'endpoint_path': '/api/v3/worker/register-worker',
                 'operation_id': 'register_worker',
                 'http_method': 'POST',
                 'servers': None,
@@ -151,7 +151,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/task',
+                'endpoint_path': '/api/v3/worker/task',
                 'operation_id': 'schedule_task',
                 'http_method': 'POST',
                 'servers': None,
@@ -195,7 +195,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/sign-off',
+                'endpoint_path': '/api/v3/worker/sign-off',
                 'operation_id': 'sign_off',
                 'http_method': 'POST',
                 'servers': None,
@@ -239,7 +239,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/sign-on',
+                'endpoint_path': '/api/v3/worker/sign-on',
                 'operation_id': 'sign_on',
                 'http_method': 'POST',
                 'servers': None,
@@ -291,7 +291,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/task/{task_id}/output-produced',
+                'endpoint_path': '/api/v3/worker/task/{task_id}/output-produced',
                 'operation_id': 'task_output_produced',
                 'http_method': 'POST',
                 'servers': None,
@@ -350,7 +350,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/task/{task_id}',
+                'endpoint_path': '/api/v3/worker/task/{task_id}',
                 'operation_id': 'task_update',
                 'http_method': 'POST',
                 'servers': None,
@@ -408,7 +408,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/state',
+                'endpoint_path': '/api/v3/worker/state',
                 'operation_id': 'worker_state',
                 'http_method': 'GET',
                 'servers': None,
@@ -452,7 +452,7 @@ class WorkerApi(object):
                 'auth': [
                     'worker_auth'
                 ],
-                'endpoint_path': '/api/worker/state-changed',
+                'endpoint_path': '/api/v3/worker/state-changed',
                 'operation_id': 'worker_state_changed',
                 'http_method': 'POST',
                 'servers': None,

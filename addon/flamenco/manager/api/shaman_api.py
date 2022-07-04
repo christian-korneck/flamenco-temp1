@@ -44,7 +44,7 @@ class ShamanApi(object):
             settings={
                 'response_type': (ShamanCheckoutResult,),
                 'auth': [],
-                'endpoint_path': '/shaman/checkout/create',
+                'endpoint_path': '/api/v3/shaman/checkout/create',
                 'operation_id': 'shaman_checkout',
                 'http_method': 'POST',
                 'servers': None,
@@ -94,7 +94,7 @@ class ShamanApi(object):
             settings={
                 'response_type': (ShamanRequirementsResponse,),
                 'auth': [],
-                'endpoint_path': '/shaman/checkout/requirements',
+                'endpoint_path': '/api/v3/shaman/checkout/requirements',
                 'operation_id': 'shaman_checkout_requirements',
                 'http_method': 'POST',
                 'servers': None,
@@ -144,7 +144,7 @@ class ShamanApi(object):
             settings={
                 'response_type': None,
                 'auth': [],
-                'endpoint_path': '/shaman/files/{checksum}/{filesize}',
+                'endpoint_path': '/api/v3/shaman/files/{checksum}/{filesize}',
                 'operation_id': 'shaman_file_store',
                 'http_method': 'POST',
                 'servers': None,
@@ -216,7 +216,7 @@ class ShamanApi(object):
             settings={
                 'response_type': (ShamanSingleFileStatus,),
                 'auth': [],
-                'endpoint_path': '/shaman/files/{checksum}/{filesize}',
+                'endpoint_path': '/api/v3/shaman/files/{checksum}/{filesize}',
                 'operation_id': 'shaman_file_store_check',
                 'http_method': 'GET',
                 'servers': None,

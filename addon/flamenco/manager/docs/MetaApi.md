@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**get_configuration**](MetaApi.md#get_configuration) | **GET** /api/configuration | Get the configuration of this Manager.
-[**get_version**](MetaApi.md#get_version) | **GET** /api/version | Get the Flamenco version of this Manager
+[**get_configuration**](MetaApi.md#get_configuration) | **GET** /api/v3/configuration | Get the configuration of this Manager.
+[**get_version**](MetaApi.md#get_version) | **GET** /api/v3/version | Get the Flamenco version of this Manager
 
 
 # **get_configuration**

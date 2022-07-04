@@ -68,7 +68,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = JobLastRenderedImageInfo;
       return this.apiClient.callApi(
-        '/api/jobs/last-rendered', 'GET',
+        '/api/v3/jobs/last-rendered', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -113,7 +113,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = Job;
       return this.apiClient.callApi(
-        '/api/jobs/{job_id}', 'GET',
+        '/api/v3/jobs/{job_id}', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -159,7 +159,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = [JobBlocklistEntry];
       return this.apiClient.callApi(
-        '/api/jobs/{job_id}/blocklist', 'GET',
+        '/api/v3/jobs/{job_id}/blocklist', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -205,7 +205,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = JobLastRenderedImageInfo;
       return this.apiClient.callApi(
-        '/api/jobs/{job_id}/last-rendered', 'GET',
+        '/api/v3/jobs/{job_id}/last-rendered', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -251,7 +251,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = JobTasksSummary;
       return this.apiClient.callApi(
-        '/api/jobs/{job_id}/tasks', 'GET',
+        '/api/v3/jobs/{job_id}/tasks', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -297,7 +297,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = Task;
       return this.apiClient.callApi(
-        '/api/tasks/{task_id}', 'GET',
+        '/api/v3/tasks/{task_id}', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -343,7 +343,7 @@ export default class JobsApi {
       let accepts = ['text/plain', 'application/json'];
       let returnType = 'String';
       return this.apiClient.callApi(
-        '/api/tasks/{task_id}/logtail', 'GET',
+        '/api/v3/tasks/{task_id}/logtail', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -389,7 +389,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = AvailableJobType;
       return this.apiClient.callApi(
-        '/api/jobs/type/{typeName}', 'GET',
+        '/api/v3/jobs/type/{typeName}', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -429,7 +429,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = AvailableJobTypes;
       return this.apiClient.callApi(
-        '/api/jobs/types', 'GET',
+        '/api/v3/jobs/types', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -473,7 +473,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = JobsQueryResult;
       return this.apiClient.callApi(
-        '/api/jobs/query', 'POST',
+        '/api/v3/jobs/query', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -522,7 +522,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/jobs/{job_id}/blocklist', 'DELETE',
+        '/api/v3/jobs/{job_id}/blocklist', 'DELETE',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -574,7 +574,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/jobs/{job_id}/setstatus', 'POST',
+        '/api/v3/jobs/{job_id}/setstatus', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -624,7 +624,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/tasks/{task_id}/setstatus', 'POST',
+        '/api/v3/tasks/{task_id}/setstatus', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -669,7 +669,7 @@ export default class JobsApi {
       let accepts = ['application/json'];
       let returnType = Job;
       return this.apiClient.callApi(
-        '/api/jobs', 'POST',
+        '/api/v3/jobs', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );

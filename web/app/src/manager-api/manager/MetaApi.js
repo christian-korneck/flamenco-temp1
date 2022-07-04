@@ -57,7 +57,7 @@ export default class MetaApi {
       let accepts = ['application/json'];
       let returnType = ManagerConfiguration;
       return this.apiClient.callApi(
-        '/api/configuration', 'GET',
+        '/api/v3/configuration', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -96,7 +96,7 @@ export default class MetaApi {
       let accepts = ['application/json'];
       let returnType = FlamencoVersion;
       return this.apiClient.callApi(
-        '/api/version', 'GET',
+        '/api/v3/version', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );

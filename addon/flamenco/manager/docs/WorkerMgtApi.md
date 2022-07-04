@@ -4,9 +4,9 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**fetch_worker**](WorkerMgtApi.md#fetch_worker) | **GET** /api/worker-mgt/workers/{worker_id} | Fetch info about the worker.
-[**fetch_workers**](WorkerMgtApi.md#fetch_workers) | **GET** /api/worker-mgt/workers | Get list of workers.
-[**request_worker_status_change**](WorkerMgtApi.md#request_worker_status_change) | **POST** /api/worker-mgt/workers/{worker_id}/setstatus | 
+[**fetch_worker**](WorkerMgtApi.md#fetch_worker) | **GET** /api/v3/worker-mgt/workers/{worker_id} | Fetch info about the worker.
+[**fetch_workers**](WorkerMgtApi.md#fetch_workers) | **GET** /api/v3/worker-mgt/workers | Get list of workers.
+[**request_worker_status_change**](WorkerMgtApi.md#request_worker_status_change) | **POST** /api/v3/worker-mgt/workers/{worker_id}/setstatus | 
 
 
 # **fetch_worker**

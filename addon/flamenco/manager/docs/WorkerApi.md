@@ -4,15 +4,15 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**may_worker_run**](WorkerApi.md#may_worker_run) | **GET** /api/worker/task/{task_id}/may-i-run | The response indicates whether the worker is allowed to run / keep running the task. Optionally contains a queued worker status change. 
-[**register_worker**](WorkerApi.md#register_worker) | **POST** /api/worker/register-worker | Register a new worker
-[**schedule_task**](WorkerApi.md#schedule_task) | **POST** /api/worker/task | Obtain a new task to execute
-[**sign_off**](WorkerApi.md#sign_off) | **POST** /api/worker/sign-off | Mark the worker as offline
-[**sign_on**](WorkerApi.md#sign_on) | **POST** /api/worker/sign-on | Authenticate &amp; sign in the worker.
-[**task_output_produced**](WorkerApi.md#task_output_produced) | **POST** /api/worker/task/{task_id}/output-produced | Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that&#39;s digestable by the Manager. Currently only PNG and JPEG support is planned. 
-[**task_update**](WorkerApi.md#task_update) | **POST** /api/worker/task/{task_id} | Update the task, typically to indicate progress, completion, or failure.
-[**worker_state**](WorkerApi.md#worker_state) | **GET** /api/worker/state | 
-[**worker_state_changed**](WorkerApi.md#worker_state_changed) | **POST** /api/worker/state-changed | Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
+[**may_worker_run**](WorkerApi.md#may_worker_run) | **GET** /api/v3/worker/task/{task_id}/may-i-run | The response indicates whether the worker is allowed to run / keep running the task. Optionally contains a queued worker status change. 
+[**register_worker**](WorkerApi.md#register_worker) | **POST** /api/v3/worker/register-worker | Register a new worker
+[**schedule_task**](WorkerApi.md#schedule_task) | **POST** /api/v3/worker/task | Obtain a new task to execute
+[**sign_off**](WorkerApi.md#sign_off) | **POST** /api/v3/worker/sign-off | Mark the worker as offline
+[**sign_on**](WorkerApi.md#sign_on) | **POST** /api/v3/worker/sign-on | Authenticate &amp; sign in the worker.
+[**task_output_produced**](WorkerApi.md#task_output_produced) | **POST** /api/v3/worker/task/{task_id}/output-produced | Store the most recently rendered frame here. Note that it is up to the Worker to ensure this is in a format that&#39;s digestable by the Manager. Currently only PNG and JPEG support is planned. 
+[**task_update**](WorkerApi.md#task_update) | **POST** /api/v3/worker/task/{task_id} | Update the task, typically to indicate progress, completion, or failure.
+[**worker_state**](WorkerApi.md#worker_state) | **GET** /api/v3/worker/state | 
+[**worker_state_changed**](WorkerApi.md#worker_state_changed) | **POST** /api/v3/worker/state-changed | Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
 
 
 # **may_worker_run**

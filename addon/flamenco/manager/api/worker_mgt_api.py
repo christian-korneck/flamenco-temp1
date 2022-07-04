@@ -42,7 +42,7 @@ class WorkerMgtApi(object):
             settings={
                 'response_type': (Worker,),
                 'auth': [],
-                'endpoint_path': '/api/worker-mgt/workers/{worker_id}',
+                'endpoint_path': '/api/v3/worker-mgt/workers/{worker_id}',
                 'operation_id': 'fetch_worker',
                 'http_method': 'GET',
                 'servers': None,
@@ -91,7 +91,7 @@ class WorkerMgtApi(object):
             settings={
                 'response_type': (WorkerList,),
                 'auth': [],
-                'endpoint_path': '/api/worker-mgt/workers',
+                'endpoint_path': '/api/v3/worker-mgt/workers',
                 'operation_id': 'fetch_workers',
                 'http_method': 'GET',
                 'servers': None,
@@ -133,7 +133,7 @@ class WorkerMgtApi(object):
             settings={
                 'response_type': None,
                 'auth': [],
-                'endpoint_path': '/api/worker-mgt/workers/{worker_id}/setstatus',
+                'endpoint_path': '/api/v3/worker-mgt/workers/{worker_id}/setstatus',
                 'operation_id': 'request_worker_status_change',
                 'http_method': 'POST',
                 'servers': None,

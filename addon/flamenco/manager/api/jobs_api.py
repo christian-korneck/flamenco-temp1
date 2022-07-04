@@ -51,7 +51,7 @@ class JobsApi(object):
             settings={
                 'response_type': (JobLastRenderedImageInfo,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/last-rendered',
+                'endpoint_path': '/api/v3/jobs/last-rendered',
                 'operation_id': 'fetch_global_last_rendered_info',
                 'http_method': 'GET',
                 'servers': None,
@@ -93,7 +93,7 @@ class JobsApi(object):
             settings={
                 'response_type': (Job,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/{job_id}',
+                'endpoint_path': '/api/v3/jobs/{job_id}',
                 'operation_id': 'fetch_job',
                 'http_method': 'GET',
                 'servers': None,
@@ -142,7 +142,7 @@ class JobsApi(object):
             settings={
                 'response_type': (JobBlocklist,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/{job_id}/blocklist',
+                'endpoint_path': '/api/v3/jobs/{job_id}/blocklist',
                 'operation_id': 'fetch_job_blocklist',
                 'http_method': 'GET',
                 'servers': None,
@@ -191,7 +191,7 @@ class JobsApi(object):
             settings={
                 'response_type': (JobLastRenderedImageInfo,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/{job_id}/last-rendered',
+                'endpoint_path': '/api/v3/jobs/{job_id}/last-rendered',
                 'operation_id': 'fetch_job_last_rendered_info',
                 'http_method': 'GET',
                 'servers': None,
@@ -240,7 +240,7 @@ class JobsApi(object):
             settings={
                 'response_type': (JobTasksSummary,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/{job_id}/tasks',
+                'endpoint_path': '/api/v3/jobs/{job_id}/tasks',
                 'operation_id': 'fetch_job_tasks',
                 'http_method': 'GET',
                 'servers': None,
@@ -289,7 +289,7 @@ class JobsApi(object):
             settings={
                 'response_type': (Task,),
                 'auth': [],
-                'endpoint_path': '/api/tasks/{task_id}',
+                'endpoint_path': '/api/v3/tasks/{task_id}',
                 'operation_id': 'fetch_task',
                 'http_method': 'GET',
                 'servers': None,
@@ -338,7 +338,7 @@ class JobsApi(object):
             settings={
                 'response_type': (str,),
                 'auth': [],
-                'endpoint_path': '/api/tasks/{task_id}/logtail',
+                'endpoint_path': '/api/v3/tasks/{task_id}/logtail',
                 'operation_id': 'fetch_task_log_tail',
                 'http_method': 'GET',
                 'servers': None,
@@ -388,7 +388,7 @@ class JobsApi(object):
             settings={
                 'response_type': (AvailableJobType,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/type/{typeName}',
+                'endpoint_path': '/api/v3/jobs/type/{typeName}',
                 'operation_id': 'get_job_type',
                 'http_method': 'GET',
                 'servers': None,
@@ -437,7 +437,7 @@ class JobsApi(object):
             settings={
                 'response_type': (AvailableJobTypes,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/types',
+                'endpoint_path': '/api/v3/jobs/types',
                 'operation_id': 'get_job_types',
                 'http_method': 'GET',
                 'servers': None,
@@ -479,7 +479,7 @@ class JobsApi(object):
             settings={
                 'response_type': (JobsQueryResult,),
                 'auth': [],
-                'endpoint_path': '/api/jobs/query',
+                'endpoint_path': '/api/v3/jobs/query',
                 'operation_id': 'query_jobs',
                 'http_method': 'POST',
                 'servers': None,
@@ -529,7 +529,7 @@ class JobsApi(object):
             settings={
                 'response_type': None,
                 'auth': [],
-                'endpoint_path': '/api/jobs/{job_id}/blocklist',
+                'endpoint_path': '/api/v3/jobs/{job_id}/blocklist',
                 'operation_id': 'remove_job_blocklist',
                 'http_method': 'DELETE',
                 'servers': None,
@@ -584,7 +584,7 @@ class JobsApi(object):
             settings={
                 'response_type': None,
                 'auth': [],
-                'endpoint_path': '/api/jobs/{job_id}/setstatus',
+                'endpoint_path': '/api/v3/jobs/{job_id}/setstatus',
                 'operation_id': 'set_job_status',
                 'http_method': 'POST',
                 'servers': None,
@@ -640,7 +640,7 @@ class JobsApi(object):
             settings={
                 'response_type': None,
                 'auth': [],
-                'endpoint_path': '/api/tasks/{task_id}/setstatus',
+                'endpoint_path': '/api/v3/tasks/{task_id}/setstatus',
                 'operation_id': 'set_task_status',
                 'http_method': 'POST',
                 'servers': None,
@@ -696,7 +696,7 @@ class JobsApi(object):
             settings={
                 'response_type': (Job,),
                 'auth': [],
-                'endpoint_path': '/api/jobs',
+                'endpoint_path': '/api/v3/jobs',
                 'operation_id': 'submit_job',
                 'http_method': 'POST',
                 'servers': None,

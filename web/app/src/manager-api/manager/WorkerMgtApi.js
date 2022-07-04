@@ -65,7 +65,7 @@ export default class WorkerMgtApi {
       let accepts = ['application/json'];
       let returnType = Worker;
       return this.apiClient.callApi(
-        '/api/worker-mgt/workers/{worker_id}', 'GET',
+        '/api/v3/worker-mgt/workers/{worker_id}', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -105,7 +105,7 @@ export default class WorkerMgtApi {
       let accepts = ['application/json'];
       let returnType = WorkerList;
       return this.apiClient.callApi(
-        '/api/worker-mgt/workers', 'GET',
+        '/api/v3/worker-mgt/workers', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -154,7 +154,7 @@ export default class WorkerMgtApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/worker-mgt/workers/{worker_id}/setstatus', 'POST',
+        '/api/v3/worker-mgt/workers/{worker_id}/setstatus', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );

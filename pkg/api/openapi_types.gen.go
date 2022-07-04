@@ -642,6 +642,21 @@ type RemoveJobBlocklistJSONBody JobBlocklist
 // SetJobStatusJSONBody defines parameters for SetJobStatus.
 type SetJobStatusJSONBody JobStatusChange
 
+// ShamanCheckoutJSONBody defines parameters for ShamanCheckout.
+type ShamanCheckoutJSONBody ShamanCheckout
+
+// ShamanCheckoutRequirementsJSONBody defines parameters for ShamanCheckoutRequirements.
+type ShamanCheckoutRequirementsJSONBody ShamanRequirementsRequest
+
+// ShamanFileStoreParams defines parameters for ShamanFileStore.
+type ShamanFileStoreParams struct {
+	// The client indicates that it can defer uploading this file. The "208" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file.
+	XShamanCanDeferUpload *bool `json:"X-Shaman-Can-Defer-Upload,omitempty"`
+
+	// The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging.
+	XShamanOriginalFilename *string `json:"X-Shaman-Original-Filename,omitempty"`
+}
+
 // SetTaskStatusJSONBody defines parameters for SetTaskStatus.
 type SetTaskStatusJSONBody TaskStatusChange
 
@@ -660,21 +675,6 @@ type WorkerStateChangedJSONBody WorkerStateChanged
 // TaskUpdateJSONBody defines parameters for TaskUpdate.
 type TaskUpdateJSONBody TaskUpdate
 
-// ShamanCheckoutJSONBody defines parameters for ShamanCheckout.
-type ShamanCheckoutJSONBody ShamanCheckout
-
-// ShamanCheckoutRequirementsJSONBody defines parameters for ShamanCheckoutRequirements.
-type ShamanCheckoutRequirementsJSONBody ShamanRequirementsRequest
-
-// ShamanFileStoreParams defines parameters for ShamanFileStore.
-type ShamanFileStoreParams struct {
-	// The client indicates that it can defer uploading this file. The "208" response will not only be returned when the file is already fully known to the Shaman server, but also when someone else is currently uploading this file.
-	XShamanCanDeferUpload *bool `json:"X-Shaman-Can-Defer-Upload,omitempty"`
-
-	// The original filename. If sent along with the request, it will be included in the server logs, which can aid in debugging.
-	XShamanOriginalFilename *string `json:"X-Shaman-Original-Filename,omitempty"`
-}
-
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody
 
@@ -686,6 +686,12 @@ type RemoveJobBlocklistJSONRequestBody RemoveJobBlocklistJSONBody
 
 // SetJobStatusJSONRequestBody defines body for SetJobStatus for application/json ContentType.
 type SetJobStatusJSONRequestBody SetJobStatusJSONBody
+
+// ShamanCheckoutJSONRequestBody defines body for ShamanCheckout for application/json ContentType.
+type ShamanCheckoutJSONRequestBody ShamanCheckoutJSONBody
+
+// ShamanCheckoutRequirementsJSONRequestBody defines body for ShamanCheckoutRequirements for application/json ContentType.
+type ShamanCheckoutRequirementsJSONRequestBody ShamanCheckoutRequirementsJSONBody
 
 // SetTaskStatusJSONRequestBody defines body for SetTaskStatus for application/json ContentType.
 type SetTaskStatusJSONRequestBody SetTaskStatusJSONBody
@@ -704,12 +710,6 @@ type WorkerStateChangedJSONRequestBody WorkerStateChangedJSONBody
 
 // TaskUpdateJSONRequestBody defines body for TaskUpdate for application/json ContentType.
 type TaskUpdateJSONRequestBody TaskUpdateJSONBody
-
-// ShamanCheckoutJSONRequestBody defines body for ShamanCheckout for application/json ContentType.
-type ShamanCheckoutJSONRequestBody ShamanCheckoutJSONBody
-
-// ShamanCheckoutRequirementsJSONRequestBody defines body for ShamanCheckoutRequirements for application/json ContentType.
-type ShamanCheckoutRequirementsJSONRequestBody ShamanCheckoutRequirementsJSONBody
 
 // Getter for additional properties for JobMetadata. Returns the specified
 // element and whether it was found

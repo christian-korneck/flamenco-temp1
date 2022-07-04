@@ -4,20 +4,20 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**fetch_global_last_rendered_info**](JobsApi.md#fetch_global_last_rendered_info) | **GET** /api/jobs/last-rendered | Get the URL that serves the last-rendered images.
-[**fetch_job**](JobsApi.md#fetch_job) | **GET** /api/jobs/{job_id} | Fetch info about the job.
-[**fetch_job_blocklist**](JobsApi.md#fetch_job_blocklist) | **GET** /api/jobs/{job_id}/blocklist | Fetch the list of workers that are blocked from doing certain task types on this job.
-[**fetch_job_last_rendered_info**](JobsApi.md#fetch_job_last_rendered_info) | **GET** /api/jobs/{job_id}/last-rendered | Get the URL that serves the last-rendered images of this job.
-[**fetch_job_tasks**](JobsApi.md#fetch_job_tasks) | **GET** /api/jobs/{job_id}/tasks | Fetch a summary of all tasks of the given job.
-[**fetch_task**](JobsApi.md#fetch_task) | **GET** /api/tasks/{task_id} | Fetch a single task.
-[**fetch_task_log_tail**](JobsApi.md#fetch_task_log_tail) | **GET** /api/tasks/{task_id}/logtail | Fetch the last few lines of the task&#39;s log.
-[**get_job_type**](JobsApi.md#get_job_type) | **GET** /api/jobs/type/{typeName} | Get single job type and its parameters.
-[**get_job_types**](JobsApi.md#get_job_types) | **GET** /api/jobs/types | Get list of job types and their parameters.
-[**query_jobs**](JobsApi.md#query_jobs) | **POST** /api/jobs/query | Fetch list of jobs.
-[**remove_job_blocklist**](JobsApi.md#remove_job_blocklist) | **DELETE** /api/jobs/{job_id}/blocklist | Remove entries from a job blocklist.
-[**set_job_status**](JobsApi.md#set_job_status) | **POST** /api/jobs/{job_id}/setstatus | 
-[**set_task_status**](JobsApi.md#set_task_status) | **POST** /api/tasks/{task_id}/setstatus | 
-[**submit_job**](JobsApi.md#submit_job) | **POST** /api/jobs | Submit a new job for Flamenco Manager to execute.
+[**fetch_global_last_rendered_info**](JobsApi.md#fetch_global_last_rendered_info) | **GET** /api/v3/jobs/last-rendered | Get the URL that serves the last-rendered images.
+[**fetch_job**](JobsApi.md#fetch_job) | **GET** /api/v3/jobs/{job_id} | Fetch info about the job.
+[**fetch_job_blocklist**](JobsApi.md#fetch_job_blocklist) | **GET** /api/v3/jobs/{job_id}/blocklist | Fetch the list of workers that are blocked from doing certain task types on this job.
+[**fetch_job_last_rendered_info**](JobsApi.md#fetch_job_last_rendered_info) | **GET** /api/v3/jobs/{job_id}/last-rendered | Get the URL that serves the last-rendered images of this job.
+[**fetch_job_tasks**](JobsApi.md#fetch_job_tasks) | **GET** /api/v3/jobs/{job_id}/tasks | Fetch a summary of all tasks of the given job.
+[**fetch_task**](JobsApi.md#fetch_task) | **GET** /api/v3/tasks/{task_id} | Fetch a single task.
+[**fetch_task_log_tail**](JobsApi.md#fetch_task_log_tail) | **GET** /api/v3/tasks/{task_id}/logtail | Fetch the last few lines of the task&#39;s log.
+[**get_job_type**](JobsApi.md#get_job_type) | **GET** /api/v3/jobs/type/{typeName} | Get single job type and its parameters.
+[**get_job_types**](JobsApi.md#get_job_types) | **GET** /api/v3/jobs/types | Get list of job types and their parameters.
+[**query_jobs**](JobsApi.md#query_jobs) | **POST** /api/v3/jobs/query | Fetch list of jobs.
+[**remove_job_blocklist**](JobsApi.md#remove_job_blocklist) | **DELETE** /api/v3/jobs/{job_id}/blocklist | Remove entries from a job blocklist.
+[**set_job_status**](JobsApi.md#set_job_status) | **POST** /api/v3/jobs/{job_id}/setstatus | 
+[**set_task_status**](JobsApi.md#set_task_status) | **POST** /api/v3/tasks/{task_id}/setstatus | 
+[**submit_job**](JobsApi.md#submit_job) | **POST** /api/v3/jobs | Submit a new job for Flamenco Manager to execute.
 
 
 # **fetch_global_last_rendered_info**

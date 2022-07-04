@@ -66,7 +66,7 @@ export default class ShamanApi {
       let accepts = ['application/json'];
       let returnType = ShamanCheckoutResult;
       return this.apiClient.callApi(
-        '/shaman/checkout/create', 'POST',
+        '/api/v3/shaman/checkout/create', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -111,7 +111,7 @@ export default class ShamanApi {
       let accepts = ['application/json'];
       let returnType = ShamanRequirementsResponse;
       return this.apiClient.callApi(
-        '/shaman/checkout/requirements', 'POST',
+        '/api/v3/shaman/checkout/requirements', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -174,7 +174,7 @@ export default class ShamanApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/shaman/files/{checksum}/{filesize}', 'POST',
+        '/api/v3/shaman/files/{checksum}/{filesize}', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -231,7 +231,7 @@ export default class ShamanApi {
       let accepts = ['application/json'];
       let returnType = ShamanSingleFileStatus;
       return this.apiClient.callApi(
-        '/shaman/files/{checksum}/{filesize}', 'GET',
+        '/api/v3/shaman/files/{checksum}/{filesize}', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
