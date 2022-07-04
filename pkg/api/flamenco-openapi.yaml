@@ -684,7 +684,7 @@ paths:
 
   ## Shaman
 
-  /shaman/checkout/requirements:
+  /api/shaman/checkout/requirements:
     summary: Allows a client to check which files are available on the server, and which ones are still unknown.
     post:
       operationId: shamanCheckoutRequirements
@@ -711,7 +711,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /shaman/checkout/create:
+  /api/shaman/checkout/create:
     summary: Symlink a set of files into the checkout area.
     post:
       operationId: shamanCheckout
@@ -750,7 +750,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /shaman/files/{checksum}/{filesize}:
+  /api/shaman/files/{checksum}/{filesize}:
     summary: Upload files to the Shaman server.
     get:
       operationId: shamanFileStoreCheck
