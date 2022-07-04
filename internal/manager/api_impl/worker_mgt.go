@@ -122,6 +122,11 @@ func workerSummary(w persistence.Worker) api.WorkerSummary {
 			IsLazy: w.LazyStatusRequest,
 		}
 	}
+
+	if !w.LastSeenAt.IsZero() {
+		summary.LastSeen = &w.LastSeenAt
+	}
+
 	return summary
 }
 

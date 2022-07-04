@@ -28,6 +28,10 @@ func NewWorkerUpdate(worker *persistence.Worker) api.SocketIOWorkerUpdate {
 		}
 	}
 
+	if !worker.LastSeenAt.IsZero() {
+		workerUpdate.LastSeen = &worker.LastSeenAt
+	}
+
 	return workerUpdate
 }
 
