@@ -14,7 +14,7 @@ servers:
 paths:
   ## Meta
 
-  /api/version:
+  /api/v3/version:
     summary: Clients can use this to check this is actually a Flamenco server.
     get:
       summary: Get the Flamenco version of this Manager
@@ -28,7 +28,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/FlamencoVersion"
 
-  /api/configuration:
+  /api/v3/configuration:
     summary: Endpoint for getting configuration of Flamenco Manager.
     get:
       summary: Get the configuration of this Manager.
@@ -43,7 +43,7 @@ paths:
 
   ## Worker
 
-  /api/worker/register-worker:
+  /api/v3/worker/register-worker:
     summary: Registration of new workers
     post:
       summary: Register a new worker
@@ -70,7 +70,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/sign-on:
+  /api/v3/worker/sign-on:
     summary: Called by Workers to let the Manager know they're ready to work, and to update their metadata.
     post:
       summary: Authenticate & sign in the worker.
@@ -98,7 +98,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/sign-off:
+  /api/v3/worker/sign-off:
     summary: Called by Workers to let the Manager know they're going offline.
     post:
       summary: Mark the worker as offline
@@ -115,7 +115,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/state:
+  /api/v3/worker/state:
     summary: Called by Workers to check whether there is any state change requested.
     get:
       operationId: workerState
@@ -137,7 +137,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/state-changed:
+  /api/v3/worker/state-changed:
     summary: Called by Workers to let the Manager know they've changed status.
     post:
       summary: Worker changed state. This could be as acknowledgement of a Manager-requested state change, or in response to worker-local signals.
@@ -161,7 +161,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/task:
+  /api/v3/worker/task:
     summary: Task scheduler endpoint.
     post:
       operationId: scheduleTask
@@ -190,7 +190,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkerStateChange"
 
-  /api/worker/task/{task_id}:
+  /api/v3/worker/task/{task_id}:
     summary: Workers send info about task progression here.
     post:
       operationId: taskUpdate
@@ -221,7 +221,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/task/{task_id}/may-i-run:
+  /api/v3/worker/task/{task_id}/may-i-run:
     summary: Workers check whether they're allowed to keep running this task.
     get:
       operationId: mayWorkerRun
@@ -249,7 +249,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/worker/task/{task_id}/output-produced:
+  /api/v3/worker/task/{task_id}/output-produced:
     summary: Workers send thumbnails/previews of their last-produced output here.
     post:
       operationId: taskOutputProduced
@@ -305,7 +305,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   # Worker Management
-  /api/worker-mgt/workers:
+  /api/v3/worker-mgt/workers:
     summary: Obtain list of Workers known to the Manager.
     get:
       operationId: fetchWorkers
@@ -318,7 +318,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/WorkerList" }
 
-  /api/worker-mgt/workers/{worker_id}:
+  /api/v3/worker-mgt/workers/{worker_id}:
     summary: Get detailed worker info.
     get:
       operationId: fetchWorker
@@ -336,7 +336,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Worker" }
 
-  /api/worker-mgt/workers/{worker_id}/setstatus:
+  /api/v3/worker-mgt/workers/{worker_id}/setstatus:
     summary: Request a status change for the given worker.
     post:
       operationId: requestWorkerStatusChange
@@ -365,7 +365,7 @@ paths:
 
   ## Jobs
 
-  /api/jobs/types:
+  /api/v3/jobs/types:
     summary: Available Flamenco job types.
     get:
       operationId: getJobTypes
@@ -378,7 +378,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/AvailableJobTypes" }
 
-  /api/jobs/type/{typeName}:
+  /api/v3/jobs/type/{typeName}:
     summary: Info about a specific job type.
     get:
       operationId: getJobType
@@ -396,7 +396,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/AvailableJobType" }
 
-  /api/jobs:
+  /api/v3/jobs:
     summary: Job submission endpoint.
     post:
       operationId: submitJob
@@ -421,7 +421,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
-  /api/jobs/query:
+  /api/v3/jobs/query:
     summary: Obtain jobs with filtering and sorting.
     post:
       operationId: queryJobs
@@ -446,7 +446,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
-  /api/jobs/{job_id}:
+  /api/v3/jobs/{job_id}:
     summary: Job info and management
     get:
       operationId: fetchJob
@@ -464,7 +464,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Job" }
 
-  /api/jobs/{job_id}/last-rendered:
+  /api/v3/jobs/{job_id}/last-rendered:
     summary: Obtain info about the last-rendered images for this job.
     get:
       operationId: fetchJobLastRenderedInfo
@@ -484,7 +484,7 @@ paths:
         "204":
           description: This job doesn't have any last-rendered image.
 
-  /api/jobs/last-rendered:
+  /api/v3/jobs/last-rendered:
     summary: Obtain info about the global last-rendered image.
     get:
       operationId: fetchGlobalLastRenderedInfo
@@ -499,7 +499,7 @@ paths:
         "204":
           description: This job doesn't have any last-rendered image.
 
-  /api/jobs/{job_id}/setstatus:
+  /api/v3/jobs/{job_id}/setstatus:
     summary: Request a status change for the given job.
     post:
       operationId: setJobStatus
@@ -528,7 +528,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/jobs/{job_id}/tasks:
+  /api/v3/jobs/{job_id}/tasks:
     summary: Access tasks of this job.
     get:
       operationId: fetchJobTasks
@@ -552,7 +552,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/jobs/{job_id}/blocklist:
+  /api/v3/jobs/{job_id}/blocklist:
     summary: Access blocklist of this job.
     get:
       operationId: fetchJobBlocklist
@@ -599,7 +599,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/tasks/{task_id}:
+  /api/v3/tasks/{task_id}:
     summary: Fetch a single task
     get:
       operationId: fetchTask
@@ -623,7 +623,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/tasks/{task_id}/logtail:
+  /api/v3/tasks/{task_id}/logtail:
     summary: Fetch the task's last few log lines.
     get:
       operationId: fetchTaskLogTail
@@ -650,11 +650,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/tasks/{task_id}/setstatus:
+  /api/v3/tasks/{task_id}/setstatus:
     summary: >
       Request a status change for the given task. This may have effect on the
       job status as well. This endpoint is meant for humans managing tasks via
-      the web interface. Workers post to `/api/worker/task/{task_id}` instead.
+      the web interface. Workers post to `/api/v3/worker/task/{task_id}` instead.
     post:
       operationId: setTaskStatus
       tags: [jobs]
@@ -684,7 +684,7 @@ paths:
 
   ## Shaman
 
-  /api/shaman/checkout/requirements:
+  /api/v3/shaman/checkout/requirements:
     summary: Allows a client to check which files are available on the server, and which ones are still unknown.
     post:
       operationId: shamanCheckoutRequirements
@@ -711,7 +711,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/shaman/checkout/create:
+  /api/v3/shaman/checkout/create:
     summary: Symlink a set of files into the checkout area.
     post:
       operationId: shamanCheckout
@@ -750,7 +750,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/shaman/files/{checksum}/{filesize}:
+  /api/v3/shaman/files/{checksum}/{filesize}:
     summary: Upload files to the Shaman server.
     get:
       operationId: shamanFileStoreCheck
