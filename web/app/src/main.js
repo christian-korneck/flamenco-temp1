@@ -17,7 +17,7 @@ window.objectEmpty = (o) => !o || Object.entries(o).length == 0;
 // Do a full refresh once per hour. This is just to make sure that long-lived
 // displays (like the TV in the hallway at Blender HQ) pick up on HTML/JS/CSS
 // changes eventually.
-window.setTimeout(window.location.reload, 3600 * 1000);
+window.setTimeout(() => {window.location.reload(); }, 3600 * 1000);
 
 const app = createApp(App)
 const pinia = createPinia()
