@@ -12,7 +12,7 @@
     }
   ],
   "scripts": {
-    "dev": "vite --port 8081 --base /app/",
+    "dev": "vite --port 8081 --base /app/v3/",
     "build": "vite build",
     "preview": "vite preview --port 5050",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"

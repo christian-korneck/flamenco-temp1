@@ -53,7 +53,7 @@ function setImageURL(thumbnailInfo) {
   if (thumbnailInfo == null) {
     // This indicates that there is no last-rendered image.
     // Default to a hard-coded 'nothing to be seen here, move along' image.
-    imageURL.value = "/app/nothing-rendered-yet.svg";
+    imageURL.value = "/app/v3/nothing-rendered-yet.svg";
     cssClasses['nothing-rendered-yet'] = true;
     console.log("LastRenderedImage.vue: setting image URL to:", imageURL.value);
     return;
