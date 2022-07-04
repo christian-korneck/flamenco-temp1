@@ -101,6 +101,7 @@ class Worker(ModelComposed):
             'platform': (str,),  # noqa: E501
             'supported_task_types': ([str],),  # noqa: E501
             'status_change': (WorkerStatusChangeRequest,),  # noqa: E501
+            'last_seen': (datetime,),  # noqa: E501
         }
 
     @cached_property
@@ -117,6 +118,7 @@ class Worker(ModelComposed):
         'platform': 'platform',  # noqa: E501
         'supported_task_types': 'supported_task_types',  # noqa: E501
         'status_change': 'status_change',  # noqa: E501
+        'last_seen': 'last_seen',  # noqa: E501
     }
 
     read_only_vars = {
@@ -166,6 +168,7 @@ class Worker(ModelComposed):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
+            last_seen (datetime): Last time this worker was seen by the Manager.. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -273,6 +276,7 @@ class Worker(ModelComposed):
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
             status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
+            last_seen (datetime): Last time this worker was seen by the Manager.. [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

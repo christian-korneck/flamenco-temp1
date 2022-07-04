@@ -479,6 +479,9 @@ type SocketIOWorkerUpdate struct {
 	// UUID of the Worker
 	Id string `json:"id"`
 
+	// Last time this worker was seen by the Manager.
+	LastSeen *time.Time `json:"last_seen,omitempty"`
+
 	// Name of the worker
 	Name           string        `json:"name"`
 	PreviousStatus *WorkerStatus `json:"previous_status,omitempty"`
@@ -619,9 +622,12 @@ type WorkerStatusChangeRequest struct {
 
 // Basic information about a Worker.
 type WorkerSummary struct {
-	Id     string       `json:"id"`
-	Name   string       `json:"name"`
-	Status WorkerStatus `json:"status"`
+	Id string `json:"id"`
+
+	// Last time this worker was seen by the Manager.
+	LastSeen *time.Time   `json:"last_seen,omitempty"`
+	Name     string       `json:"name"`
+	Status   WorkerStatus `json:"status"`
 
 	// Request for a Worker to change its status to `status`.
 	StatusChange *WorkerStatusChangeRequest `json:"status_change,omitempty"`

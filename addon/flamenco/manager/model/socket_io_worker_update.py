@@ -94,6 +94,7 @@ class SocketIOWorkerUpdate(ModelNormal):
             'updated': (datetime,),  # noqa: E501
             'status': (WorkerStatus,),  # noqa: E501
             'version': (str,),  # noqa: E501
+            'last_seen': (datetime,),  # noqa: E501
             'previous_status': (WorkerStatus,),  # noqa: E501
             'status_change': (WorkerStatusChangeRequest,),  # noqa: E501
         }
@@ -109,6 +110,7 @@ class SocketIOWorkerUpdate(ModelNormal):
         'updated': 'updated',  # noqa: E501
         'status': 'status',  # noqa: E501
         'version': 'version',  # noqa: E501
+        'last_seen': 'last_seen',  # noqa: E501
         'previous_status': 'previous_status',  # noqa: E501
         'status_change': 'status_change',  # noqa: E501
     }
@@ -161,6 +163,7 @@ class SocketIOWorkerUpdate(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            last_seen (datetime): Last time this worker was seen by the Manager.. [optional]  # noqa: E501
             previous_status (WorkerStatus): [optional]  # noqa: E501
             status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
         """
@@ -256,6 +259,7 @@ class SocketIOWorkerUpdate(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            last_seen (datetime): Last time this worker was seen by the Manager.. [optional]  # noqa: E501
             previous_status (WorkerStatus): [optional]  # noqa: E501
             status_change (WorkerStatusChangeRequest): [optional]  # noqa: E501
         """

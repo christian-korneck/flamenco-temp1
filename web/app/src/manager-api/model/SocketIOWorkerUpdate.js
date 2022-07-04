@@ -69,6 +69,9 @@ class SocketIOWorkerUpdate {
             if (data.hasOwnProperty('updated')) {
                 obj['updated'] = ApiClient.convertToType(data['updated'], 'Date');
             }
+            if (data.hasOwnProperty('last_seen')) {
+                obj['last_seen'] = ApiClient.convertToType(data['last_seen'], 'Date');
+            }
             if (data.hasOwnProperty('status')) {
                 obj['status'] = WorkerStatus.constructFromObject(data['status']);
             }
@@ -105,6 +108,12 @@ SocketIOWorkerUpdate.prototype['name'] = undefined;
  * @member {Date} updated
  */
 SocketIOWorkerUpdate.prototype['updated'] = undefined;
+
+/**
+ * Last time this worker was seen by the Manager.
+ * @member {Date} last_seen
+ */
+SocketIOWorkerUpdate.prototype['last_seen'] = undefined;
 
 /**
  * @member {module:model/WorkerStatus} status

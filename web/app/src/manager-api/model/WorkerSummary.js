@@ -70,6 +70,9 @@ class WorkerSummary {
             if (data.hasOwnProperty('status_change')) {
                 obj['status_change'] = WorkerStatusChangeRequest.constructFromObject(data['status_change']);
             }
+            if (data.hasOwnProperty('last_seen')) {
+                obj['last_seen'] = ApiClient.convertToType(data['last_seen'], 'Date');
+            }
             if (data.hasOwnProperty('version')) {
                 obj['version'] = ApiClient.convertToType(data['version'], 'String');
             }
@@ -99,6 +102,12 @@ WorkerSummary.prototype['status'] = undefined;
  * @member {module:model/WorkerStatusChangeRequest} status_change
  */
 WorkerSummary.prototype['status_change'] = undefined;
+
+/**
+ * Last time this worker was seen by the Manager.
+ * @member {Date} last_seen
+ */
+WorkerSummary.prototype['last_seen'] = undefined;
 
 /**
  * Version of Flamenco this Worker is running

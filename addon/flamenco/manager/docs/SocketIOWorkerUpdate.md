@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **updated** | **datetime** | Timestamp of last update | 
 **status** | [**WorkerStatus**](WorkerStatus.md) |  | 
 **version** | **str** |  | 
+**last_seen** | **datetime** | Last time this worker was seen by the Manager. | [optional] 
 **previous_status** | [**WorkerStatus**](WorkerStatus.md) |  | [optional] 
 **status_change** | [**WorkerStatusChangeRequest**](WorkerStatusChangeRequest.md) |  | [optional] 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]
