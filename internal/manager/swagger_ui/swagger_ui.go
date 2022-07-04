@@ -12,6 +12,8 @@ import (
 //go:embed static
 var swaggerUI embed.FS
 
+const swaggerURL = "/api/v3/swagger-ui/"
+
 func RegisterSwaggerUIStaticFiles(router *echo.Echo) {
 	files, err := fs.Sub(swaggerUI, "static")
 	if err != nil {
@@ -19,5 +21,5 @@ func RegisterSwaggerUIStaticFiles(router *echo.Echo) {
 	}
 
 	httpHandler := http.FileServer(http.FS(files))
-	router.GET("/api/swagger-ui/*", echo.WrapHandler(http.StripPrefix("/api/swagger-ui/", httpHandler)))
+	router.GET(swaggerURL+"*", echo.WrapHandler(http.StripPrefix(swaggerURL, httpHandler)))
 }

@@ -105,7 +105,7 @@ project, which is unfortunate. However, this approach does have some advantages:
 
 ## Swagger UI
 
-Flamenco Manager has a SwaggerUI interface at http://localhost:8080/api/swagger-ui/
+Flamenco Manager has a SwaggerUI interface at http://localhost:8080/api/v3/swagger-ui/
 
 
 ## SocketIO

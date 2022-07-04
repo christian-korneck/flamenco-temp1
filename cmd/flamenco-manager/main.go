@@ -287,7 +287,7 @@ func buildWebService(
 	api.RegisterHandlers(e, flamenco)
 	webUpdater.RegisterHandlers(e)
 	swagger_ui.RegisterSwaggerUIStaticFiles(e)
-	e.GET("/api/openapi3.json", func(c echo.Context) error {
+	e.GET("/api/v3/openapi3.json", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, swagger)
 	})
 
