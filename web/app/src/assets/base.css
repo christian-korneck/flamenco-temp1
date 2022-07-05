@@ -15,6 +15,9 @@
 
   --color-border: #282828;
 
+  --color-button: #bbb;
+  --color-button-background: #555;
+
   --border-width: 2px;
   --border-radius: 4px;
 
@@ -247,10 +250,10 @@ footer {
 
 .btn {
   align-items: center;
-  background-color: var(--color-accent);
+  background-color: var(--color-button-background);
   border-radius: var(--border-radius);
-  border: var(--border-width) solid var(--color-accent);
-  color: var(--color-background);
+  border: var(--border-width) solid var(--color-button-background);
+  color: var(--color-button);
   cursor: pointer;
   display: inline-flex;
   font-size: var(--font-size-sm);
@@ -267,7 +270,7 @@ footer {
 
 .btn[disabled] {
   background-color: transparent;
-  border-color: var(--color-text-muted);
+  border-color: var(--color-button);
   color: var(--color-text-muted);
   opacity: .5;
   pointer-events: none;
