@@ -508,8 +508,7 @@
 }
 
 .tabulator-row.tabulator-selected {
-  background-color: var(--color-accent-background);
-  color: var(--color-accent-text);
+  background-color: var(--table-color-background-row-selected);
 }
 
 .tabulator-row.tabulator-selected:hover {
