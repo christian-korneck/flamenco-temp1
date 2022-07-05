@@ -217,6 +217,7 @@ dl dd {
   margin-left: var(--spacer-sm);
   padding-bottom: .133rem;
   transition: color var(--transition-speed-fast) ease-out;
+  word-break: break-word;
 }
 
 dl dd:hover {
