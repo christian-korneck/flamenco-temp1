@@ -10,7 +10,7 @@
       <dd>{{ taskData.name }}</dd>
 
       <dt class="field-status" title="Status">Status</dt>
-      <dd>{{ taskData.status }}</dd>
+      <dd class="field-status-label" :class="'status-' + taskData.status">{{ taskData.status }}</dd>
 
       <dt class="field-worker" title="Assigned To">Assigned To</dt>
       <dd><worker-link :worker="taskData.worker" /></dd>
@@ -90,5 +90,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.field-status-label {
+  color: var(--indicator-color);
+  font-weight: bold;
 }
 </style>

@@ -27,7 +27,7 @@
           <dd>{{ jobData.name }}</dd>
 
           <dt class="field-status" title="Status">Status</dt>
-          <dd>{{ jobData.status }}</dd>
+          <dd class="field-status-label" :class="'status-' + jobData.status">{{ jobData.status }}</dd>
 
           <dt class="field-type" title="Type">Type</dt>
           <dd>{{ jobType ? jobType.label : jobData.type }}</dd>
@@ -46,7 +46,6 @@
         </dl>
       </TabItem>
     </TabsWrapper>
-
   </template>
 
   <div v-else class="details-no-item-selected">
@@ -207,5 +206,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.field-status-label {
+  color: var(--indicator-color);
+  font-weight: bold;
 }
 </style>
