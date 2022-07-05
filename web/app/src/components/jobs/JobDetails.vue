@@ -2,7 +2,7 @@
   <template v-if="hasJobData">
     <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" thumbnailSuffix="-tiny" />
     <TabsWrapper>
-      <TabItem title="Settings">
+      <TabItem title="Job Settings">
         <dl v-if="hasSettings">
           <template v-for="value, key in settingsToDisplay">
             <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
@@ -18,7 +18,7 @@
           </template>
         </dl>
       </TabItem>
-      <TabItem title="Job Details">
+      <TabItem title="Details">
         <dl>
           <dt class="field-name" title="Name">Name</dt>
           <dd>{{ jobData.name }}</dd>
