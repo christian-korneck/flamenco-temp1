@@ -15,8 +15,11 @@
       <dt class="field-worker" title="Assigned To">Assigned To</dt>
       <dd><worker-link :worker="taskData.worker" /></dd>
 
-      <dt class="field-activity" title="Activity">Activity</dt>
-      <dd>{{ taskData.activity }}</dd>
+      <template v-if="taskData.failed_by_workers.length > 0">
+      <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
+      <dd v-for="worker in taskData.failed_by_workers">
+        <worker-link :worker="worker" />
+      </dd>
 
       <dt class="field-type" title="Type">Type</dt>
       <dd>{{ taskData.type }}</dd>
@@ -33,11 +36,8 @@
       <dt class="field-last-touched" title="Last Touched by Worker">Last Touched by Worker</dt>
       <dd>{{ datetime.relativeTime(taskData.last_touched) }}</dd>
 
-      <template v-if="taskData.failed_by_workers.length > 0">
-      <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
-      <dd v-for="worker in taskData.failed_by_workers">
-        <worker-link :worker="worker" />
-      </dd>
+      <dt class="field-activity" title="Activity">Activity</dt>
+      <dd>{{ taskData.activity }}</dd>
       </template>
     </dl>
 
