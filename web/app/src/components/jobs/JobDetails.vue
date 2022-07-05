@@ -5,28 +5,28 @@
     <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" thumbnailSuffix="-tiny" />
 
     <dl>
-      <dt class="field-id">ID</dt>
+      <dt class="field-id" title="ID">ID</dt>
       <dd :title="jobData.id">{{ jobData.id }}</dd>
 
-      <dt class="field-name">Name</dt>
+      <dt class="field-name" title="Name">Name</dt>
       <dd>{{ jobData.name }}</dd>
 
-      <dt class="field-status">Status</dt>
+      <dt class="field-status" title="Status">Status</dt>
       <dd>{{ jobData.status }}</dd>
 
-      <dt class="field-type">Type</dt>
+      <dt class="field-type" title="Type">Type</dt>
       <dd>{{ jobType ? jobType.label : jobData.type }}</dd>
 
-      <dt class="field-priority">Priority</dt>
+      <dt class="field-priority" title="Priority">Priority</dt>
       <dd>{{ jobData.priority }}</dd>
 
-      <dt class="field-created">Created</dt>
+      <dt class="field-created" title="Created">Created</dt>
       <dd>{{ datetime.relativeTime(jobData.created) }}</dd>
 
-      <dt class="field-updated">Updated</dt>
+      <dt class="field-updated" title="Updated">Updated</dt>
       <dd>{{ datetime.relativeTime(jobData.updated) }}</dd>
 
-      <dt class="field-activity">Activity</dt>
+      <dt class="field-activity" title="Activity">Activity</dt>
       <dd>{{ jobData.activity }}</dd>
     </dl>
 
