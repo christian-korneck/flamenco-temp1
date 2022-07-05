@@ -3,38 +3,38 @@
 
   <template v-if="hasTaskData">
     <dl>
-      <dt class="field-id">ID</dt>
+      <dt class="field-id" title="ID">ID</dt>
       <dd>{{ taskData.id }}</dd>
 
-      <dt class="field-name">Name</dt>
+      <dt class="field-name" title="Name">Name</dt>
       <dd>{{ taskData.name }}</dd>
 
-      <dt class="field-status">Status</dt>
+      <dt class="field-status" title="Status">Status</dt>
       <dd>{{ taskData.status }}</dd>
 
-      <dt class="field-worker">Assigned To</dt>
+      <dt class="field-worker" title="Assigned To">Assigned To</dt>
       <dd><worker-link :worker="taskData.worker" /></dd>
 
-      <dt class="field-activity">Activity</dt>
+      <dt class="field-activity" title="Activity">Activity</dt>
       <dd>{{ taskData.activity }}</dd>
 
-      <dt class="field-type">Type</dt>
+      <dt class="field-type" title="Type">Type</dt>
       <dd>{{ taskData.type }}</dd>
 
-      <dt class="field-priority">Priority</dt>
+      <dt class="field-priority" title="Priority">Priority</dt>
       <dd>{{ taskData.priority }}</dd>
 
-      <dt class="field-created">Created</dt>
+      <dt class="field-created" title="Created">Created</dt>
       <dd>{{ datetime.relativeTime(taskData.created) }}</dd>
 
-      <dt class="field-updated">Updated</dt>
+      <dt class="field-updated" title="Updated">Updated</dt>
       <dd>{{ datetime.relativeTime(taskData.updated) }}</dd>
 
-      <dt class="field-last-touched">Last Touched by Worker</dt>
+      <dt class="field-last-touched" title="Last Touched by Worker">Last Touched by Worker</dt>
       <dd>{{ datetime.relativeTime(taskData.last_touched) }}</dd>
 
       <template v-if="taskData.failed_by_workers.length > 0">
-      <dt class="field-failed-by-workers">Failed by Workers</dt>
+      <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
       <dd v-for="worker in taskData.failed_by_workers">
         <worker-link :worker="worker" />
       </dd>
