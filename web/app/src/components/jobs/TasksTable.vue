@@ -1,4 +1,5 @@
 <template>
+  <h3 class="sub-title">Tasks</h3>
   <task-actions-bar />
   <status-filter-bar
     :availableStatuses="availableStatuses"
