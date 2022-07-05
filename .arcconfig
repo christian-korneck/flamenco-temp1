@@ -1,0 +1,8 @@
+{
+  "project_id": "Flamenco",
+  "conduit_uri": "https://developer.blender.org/",
+  "phabricator.uri": "https://developer.blender.org/",
+  "git.default-relative-commit": "origin/main",
+  "arc.land.update.default": "rebase",
+  "arc.land.onto.default": "main"
+}
