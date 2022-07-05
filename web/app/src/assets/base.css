@@ -499,14 +499,6 @@ span.state-transition-arrow.lazy {
   color: var(--color-text-muted);
 }
 
-
-
-.job-details-column .last-rendered {
-  width: 200px;
-  height: 112px;
-  float: right;
-}
-
 .global-last-rendered {
   grid-column-start: col-1;
   grid-column-end: col-3;
