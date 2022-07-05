@@ -1,12 +1,12 @@
 <template>
+  <h2 class="column-title">Jobs</h2>
+  <job-actions-bar />
+  <status-filter-bar
+    :availableStatuses="availableStatuses"
+    :activeStatuses="shownStatuses"
+    @click="toggleStatusFilter"
+  />
   <div>
-    <h2 class="column-title">Jobs</h2>
-    <job-actions-bar />
-    <status-filter-bar
-      :availableStatuses="availableStatuses"
-      :activeStatuses="shownStatuses"
-      @click="toggleStatusFilter"
-    />
     <div class="job-list with-clickable-row" id="flamenco_job_list"></div>
   </div>
 </template>
@@ -86,11 +86,22 @@ export default {
     this.tabulator = new Tabulator('#flamenco_job_list', options);
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this._onTableBuilt);
+
+     window.addEventListener('resize', this.recalcTableHeight);
+  },
+  unmounted() {
+    window.removeEventListener('resize', this.recalcTableHeight);
   },
   watch: {
     activeJobID(newJobID, oldJobID) {
       this._reformatRow(oldJobID);
       this._reformatRow(newJobID);
+    },
+    availableStatuses() {
+      // Statuses changed, so the filter bar could have gone from "no statuses"
+      // to "any statuses" (or one row of filtering stuff to two, I don't know)
+      // and changed height.
+      this.$nextTick(this.recalcTableHeight);
     },
   },
   computed: {
@@ -125,6 +136,8 @@ export default {
       // data.jobs = data.jobs.map((j) => API.JobUpdate.constructFromObject(j));
       this.tabulator.setData(data.jobs);
       this._refreshAvailableStatuses();
+
+      this.recalcTableHeight();
     },
     processJobUpdate(jobUpdate) {
       // updateData() will only overwrite properties that are actually set on
@@ -182,6 +195,39 @@ export default {
       if (!row) return
       if (row.reformat) row.reformat();
       else if (row.reinitialize) row.reinitialize(true);
+    },
+
+    /**
+     * Recalculate the appropriate table height to fit in the column without making that scroll.
+     */
+    recalcTableHeight() {
+      if (!this.tabulator.initialized) {
+        // Sometimes this function is called too early, before the table was initialised.
+        // After the table is initialised it gets resized anyway, so this call can be ignored.
+        return;
+      }
+      const table = this.tabulator.element;
+      const tableContainer = table.parentElement;
+      const outerContainer = tableContainer.parentElement;
+      if (!outerContainer) {
+        // This can happen when the component was removed before the function is
+        // called. This is possible due to the use of Vue's `nextTick()`
+        // function.
+        return;
+      }
+
+      const availableHeight = outerContainer.clientHeight - 12; // TODO: figure out where the -12 comes from.
+
+      if (tableContainer.offsetParent != tableContainer.parentElement) {
+        // `offsetParent` is assumed to be the actual column in the 3-column
+        // view. To ensure this, it's given `position: relative` in the CSS
+        // styling.
+        console.warn("JobsTable.recalcTableHeight() only works when the offset parent is the real parent of the element.");
+        return;
+      }
+
+      const tableHeight = availableHeight - tableContainer.offsetTop;
+      this.tabulator.setHeight(tableHeight);
     },
   },
 };
