@@ -6,11 +6,10 @@
     :activeStatuses="shownStatuses"
     @click="toggleStatusFilter"
   />
-  <div class="tabulator-container">
+  <div>
     <div class="task-list with-clickable-row" id="flamenco_task_list"></div>
   </div>
 </template>
-
 
 <script lang="js">
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
