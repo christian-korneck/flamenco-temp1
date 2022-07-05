@@ -17,10 +17,10 @@ var defaultConfig = Conf{
 		ManagerName: "Flamenco Manager",
 		Listen:      ":8080",
 		// ListenHTTPS:   ":8433",
-		DatabaseDSN:   "flamenco-manager.sqlite",
-		TaskLogsPath:  "./task-logs",
-		SSDPDiscovery: true,
-		StoragePath:   "./flamenco-storage",
+		DatabaseDSN:             "flamenco-manager.sqlite",
+		SSDPDiscovery:           true,
+		LocalManagerStoragePath: "./flamenco-manager-storage",
+		SharedStoragePath:       "./flamenco-shared-storage",
 
 		Shaman: shaman_config.Config{
 			// Enable Shaman by default, except on Windows where symlinks are still tricky.

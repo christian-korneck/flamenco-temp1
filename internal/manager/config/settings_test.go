@@ -14,7 +14,7 @@ func TestDefaultSettings(t *testing.T) {
 
 	// The settings should contain the defaults, though.
 	assert.Equal(t, latestConfigVersion, config.Meta.Version)
-	assert.Equal(t, defaultConfig.TaskLogsPath, config.TaskLogsPath)
+	assert.Equal(t, defaultConfig.LocalManagerStoragePath, config.LocalManagerStoragePath)
 	assert.Equal(t, defaultConfig.DatabaseDSN, config.DatabaseDSN)
 
 	assert.Equal(t, false, config.Variables["ffmpeg"].IsTwoWay)
@@ -46,7 +46,7 @@ func TestVariableValidation(t *testing.T) {
 func TestStorageImplicitVariablesWithShaman(t *testing.T) {
 	c := DefaultConfig(func(c *Conf) {
 		// Having the Shaman enabled should create an implicit variable "{jobs}" at the Shaman checkout path.
-		c.StoragePath = "/path/to/shaman/storage"
+		c.SharedStoragePath = "/path/to/shaman/storage"
 		c.Shaman.Enabled = true
 
 		c.Variables["jobs"] = Variable{
@@ -72,7 +72,7 @@ func TestStorageImplicitVariablesWithShaman(t *testing.T) {
 func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
 	c := DefaultConfig(func(c *Conf) {
 		// Having the Shaman disabled should create an implicit variable "{jobs}" at the storage path.
-		c.StoragePath = "/path/to/shaman/storage"
+		c.SharedStoragePath = "/path/to/shaman/storage"
 		c.Shaman.Enabled = false
 
 		c.Variables["jobs"] = Variable{
@@ -92,5 +92,5 @@ func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
 		t.FailNow()
 	}
 	assert.False(t, c.implicitVariables["jobs"].IsTwoWay)
-	assert.Equal(t, c.StoragePath, c.implicitVariables["jobs"].Values[0].Value)
+	assert.Equal(t, c.SharedStoragePath, c.implicitVariables["jobs"].Values[0].Value)
 }

@@ -26,27 +26,22 @@ func TestLogWriting(t *testing.T) {
 	s, finish, mocks := taskLogsTestFixtures(t)
 	defer finish()
 
+	jobUUID := "25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c"
+	taskUUID := "20ff9d06-53ec-4019-9e2e-1774f05f170a"
+	jobDir := filepath.Join(mocks.temppath, "job-25c5", jobUUID)
+
 	// Expect broadcastst for each call to s.Write()
-	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(2)
+	numWriteCalls := 2
+	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(numWriteCalls)
+	mocks.localStorage.EXPECT().ForJob(jobUUID).Times(numWriteCalls).Return(jobDir)
 
-	err := s.Write(zerolog.Nop(),
-		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
-		"20ff9d06-53ec-4019-9e2e-1774f05f170a",
-		"Ovo je priča")
+	err := s.Write(zerolog.Nop(), jobUUID, taskUUID, "Ovo je priča")
 	assert.NoError(t, err)
 
-	err = s.Write(zerolog.Nop(),
-		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
-		"20ff9d06-53ec-4019-9e2e-1774f05f170a",
-		"Ima dvije linije")
+	err = s.Write(zerolog.Nop(), jobUUID, taskUUID, "Ima dvije linije")
 	assert.NoError(t, err)
 
-	filename := filepath.Join(
-		s.BasePath,
-		"job-25c5",
-		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
-		"task-20ff9d06-53ec-4019-9e2e-1774f05f170a.txt")
-
+	filename := filepath.Join(jobDir, "task-20ff9d06-53ec-4019-9e2e-1774f05f170a.txt")
 	contents, err := ioutil.ReadFile(filename)
 	assert.NoError(t, err, "the log file should exist")
 	assert.Equal(t, "Ovo je priča\nIma dvije linije\n", string(contents))
@@ -56,23 +51,19 @@ func TestLogRotation(t *testing.T) {
 	s, finish, mocks := taskLogsTestFixtures(t)
 	defer finish()
 
-	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any())
+	jobUUID := "25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c"
+	taskUUID := "20ff9d06-53ec-4019-9e2e-1774f05f170a"
+	jobDir := filepath.Join(mocks.temppath, "job-25c5", jobUUID)
 
-	err := s.Write(zerolog.Nop(),
-		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
-		"20ff9d06-53ec-4019-9e2e-1774f05f170a",
-		"Ovo je priča")
+	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any())
+	mocks.localStorage.EXPECT().ForJob(jobUUID).Return(jobDir).AnyTimes()
+
+	err := s.Write(zerolog.Nop(), jobUUID, taskUUID, "Ovo je priča")
 	assert.NoError(t, err)
 
-	s.RotateFile(zerolog.Nop(),
-		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
-		"20ff9d06-53ec-4019-9e2e-1774f05f170a")
+	s.RotateFile(zerolog.Nop(), jobUUID, taskUUID)
 
-	filename := filepath.Join(
-		s.BasePath,
-		"job-25c5",
-		"25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c",
-		"task-20ff9d06-53ec-4019-9e2e-1774f05f170a.txt")
+	filename := filepath.Join(jobDir, "task-20ff9d06-53ec-4019-9e2e-1774f05f170a.txt")
 	rotatedFilename := filename + ".1"
 
 	contents, err := ioutil.ReadFile(rotatedFilename)
@@ -89,9 +80,11 @@ func TestLogTail(t *testing.T) {
 
 	jobID := "25c5a51c-e0dd-44f7-9f87-74f3d1fbbd8c"
 	taskID := "20ff9d06-53ec-4019-9e2e-1774f05f170a"
+	jobDir := filepath.Join(mocks.temppath, "job-25c5", jobID)
 
 	// Expect broadcastst for each call to s.Write()
 	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(3)
+	mocks.localStorage.EXPECT().ForJob(jobID).Return(jobDir).AnyTimes()
 
 	contents, err := s.Tail(jobID, taskID)
 	assert.ErrorIs(t, err, os.ErrNotExist)
@@ -158,8 +151,10 @@ func TestLogWritingParallel(t *testing.T) {
 
 	jobID := "6d9a05a1-261e-4f6f-93b0-8c4f6b6d500d"
 	taskID := "d19888cc-c389-4a24-aebf-8458ababdb02"
+	jobDir := filepath.Join(mocks.temppath, "job-25c5", jobID)
 
 	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(numGoroutines)
+	mocks.localStorage.EXPECT().ForJob(jobID).Return(jobDir).AnyTimes()
 
 	for i := 0; i < numGoroutines; i++ {
 		// Write lines of 100 characters to the task log. Each goroutine writes a
@@ -197,16 +192,26 @@ func TestLogWritingParallel(t *testing.T) {
 }
 
 type TaskLogsMocks struct {
-	clock       *clock.Mock
-	broadcaster *mocks.MockChangeBroadcaster
+	temppath string
+
+	localStorage *mocks.MockLocalStorage
+	clock        *clock.Mock
+	broadcaster  *mocks.MockChangeBroadcaster
 }
 
 func taskLogsTestFixtures(t *testing.T) (*Storage, func(), *TaskLogsMocks) {
 	mockCtrl := gomock.NewController(t)
 
+	temppath, err := ioutil.TempDir("", "testlogs")
+	if err != nil {
+		panic(err)
+	}
+
 	mocks := &TaskLogsMocks{
-		clock:       clock.NewMock(),
-		broadcaster: mocks.NewMockChangeBroadcaster(mockCtrl),
+		temppath:     temppath,
+		localStorage: mocks.NewMockLocalStorage(mockCtrl),
+		clock:        clock.NewMock(),
+		broadcaster:  mocks.NewMockChangeBroadcaster(mockCtrl),
 	}
 
 	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T16:52:04+02:00")
@@ -215,17 +220,12 @@ func taskLogsTestFixtures(t *testing.T) (*Storage, func(), *TaskLogsMocks) {
 	}
 	mocks.clock.Set(mockedNow)
 
-	temppath, err := ioutil.TempDir("", "testlogs")
-	if err != nil {
-		panic(err)
-	}
-
 	// This should be called at the end of each unit test.
 	finish := func() {
 		os.RemoveAll(temppath)
 		mockCtrl.Finish()
 	}
 
-	sm := NewStorage(temppath, mocks.clock, mocks.broadcaster)
+	sm := NewStorage(mocks.localStorage, mocks.clock, mocks.broadcaster)
 	return sm, finish, mocks
 }

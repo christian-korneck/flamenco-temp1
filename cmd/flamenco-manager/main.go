@@ -115,10 +115,8 @@ func main() {
 	timeService := clock.New()
 	webUpdater := webupdates.New()
 
-	// TODO: the local storage now is hard-coded to use the same sub-directory as the task log storage.
-	// This should be refactored so that the task logs storage uses the localStorage object as well.
-	localStorage := local_storage.NewNextToExe("task-logs")
-	logStorage := task_logs.NewStorage(configService.Get().TaskLogsPath, timeService, webUpdater)
+	localStorage := local_storage.NewNextToExe(configService.Get().LocalManagerStoragePath)
+	logStorage := task_logs.NewStorage(localStorage, timeService, webUpdater)
 
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater, logStorage)
 	lastRender := last_rendered.New(localStorage)

@@ -66,16 +66,21 @@ type ConfMeta struct {
 type Base struct {
 	Meta ConfMeta `yaml:"_meta"`
 
-	ManagerName  string `yaml:"manager_name"`
-	DatabaseDSN  string `yaml:"database"`
-	TaskLogsPath string `yaml:"task_logs_path"`
-	Listen       string `yaml:"listen"`
+	ManagerName string `yaml:"manager_name"`
+	DatabaseDSN string `yaml:"database"`
+	Listen      string `yaml:"listen"`
 
 	SSDPDiscovery bool `yaml:"autodiscoverable"`
 
-	// Storage configuration:
-	StoragePath string               `yaml:"storage_path"`
-	Shaman      shaman_config.Config `yaml:"shaman"`
+	// LocalManagerStoragePath is where the Manager stores its files, like task
+	// logs, last-rendered images, etc.
+	LocalManagerStoragePath string `yaml:"local_manager_storage_path"`
+
+	// SharedStoragePath is where files shared between Manager and Workers go,
+	// like the blend files of a render job.
+	SharedStoragePath string `yaml:"shared_storage_path"`
+
+	Shaman shaman_config.Config `yaml:"shaman"`
 
 	TaskTimeout   time.Duration `yaml:"task_timeout"`
 	WorkerTimeout time.Duration `yaml:"worker_timeout"`
@@ -213,18 +218,18 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 }
 
 func (c *Conf) processStorage() {
-	storagePath, err := filepath.Abs(c.StoragePath)
+	storagePath, err := filepath.Abs(c.SharedStoragePath)
 	if err != nil {
 		log.Error().Err(err).
-			Str("storage_path", c.StoragePath).
+			Str("storage_path", c.SharedStoragePath).
 			Msg("unable to determine absolute storage path")
 	} else {
-		c.StoragePath = storagePath
+		c.SharedStoragePath = storagePath
 	}
 
 	// Shaman should use the Flamenco storage location.
 	if c.Shaman.Enabled {
-		c.Shaman.StoragePath = c.StoragePath
+		c.Shaman.StoragePath = c.SharedStoragePath
 	}
 }
 
@@ -236,7 +241,7 @@ func (c *Conf) EffectiveStoragePath() string {
 	if c.Shaman.Enabled {
 		jobStorage = c.Shaman.CheckoutPath()
 	} else {
-		jobStorage = c.StoragePath
+		jobStorage = c.SharedStoragePath
 	}
 
 	absPath, err := filepath.Abs(jobStorage)

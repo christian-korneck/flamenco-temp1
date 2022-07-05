@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/benbjohnson/clock"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -26,7 +24,7 @@ const (
 
 // Storage can write data to task logs, rotate logs, etc.
 type Storage struct {
-	BasePath string // Directory where task logs are stored.
+	localStorage LocalStorage
 
 	clock       clock.Clock
 	broadcaster ChangeBroadcaster
@@ -37,7 +35,12 @@ type Storage struct {
 }
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/task_logs ChangeBroadcaster
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/interfaces_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/task_logs LocalStorage,ChangeBroadcaster
+
+type LocalStorage interface {
+	// ForJob returns the absolute directory path for storing job-related files.
+	ForJob(jobUUID string) string
+}
 
 type ChangeBroadcaster interface {
 	// BroadcastTaskLogUpdate sends the task log update to SocketIO clients.
@@ -49,28 +52,16 @@ var _ ChangeBroadcaster = (*webupdates.BiDirComms)(nil)
 
 // NewStorage creates a new log storage rooted at `basePath`.
 func NewStorage(
-	basePath string,
+	localStorage LocalStorage,
 	clock clock.Clock,
 	broadcaster ChangeBroadcaster,
 ) *Storage {
-	if !filepath.IsAbs(basePath) {
-		absPath, err := filepath.Abs(basePath)
-		if err != nil {
-			log.Panic().Err(err).Str("path", basePath).Msg("cannot resolve relative path to task logs")
-		}
-		basePath = absPath
-	}
-
-	log.Info().
-		Str("path", basePath).
-		Msg("task logs")
-
 	return &Storage{
-		BasePath:    basePath,
-		clock:       clock,
-		broadcaster: broadcaster,
-		mutex:       new(sync.Mutex),
-		taskLocks:   make(map[string]*sync.Mutex),
+		localStorage: localStorage,
+		clock:        clock,
+		broadcaster:  broadcaster,
+		mutex:        new(sync.Mutex),
+		taskLocks:    make(map[string]*sync.Mutex),
 	}
 }
 
@@ -163,12 +154,7 @@ func (s *Storage) RotateFile(logger zerolog.Logger, jobID, taskID string) {
 // file handling code in this source file is migrated to use the `local_storage`
 // package at some point.
 func (s *Storage) filepath(jobID, taskID string) string {
-	var dirpath string
-	if jobID == "" {
-		dirpath = path.Join(s.BasePath, "jobless")
-	} else {
-		dirpath = path.Join(s.BasePath, "job-"+jobID[:4], jobID)
-	}
+	dirpath := s.localStorage.ForJob(jobID)
 	filename := fmt.Sprintf("task-%v.txt", taskID)
 	return path.Join(dirpath, filename)
 }
