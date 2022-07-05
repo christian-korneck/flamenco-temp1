@@ -8,7 +8,7 @@ const selectedTitle = ref(tabTitles.value[0]);
 provide("selectedTitle", selectedTitle);
 
 function updateTabTitle(title) {
-  this.selectedTitle = title;
+  selectedTitle.value = title;
   emit('clickedJobDetailsTab');
 }
 
