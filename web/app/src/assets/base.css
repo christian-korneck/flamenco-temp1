@@ -5,9 +5,12 @@
 
   --color-background: #111;
   --color-background-column: #202020;
-  --color-accent: hsl(226, 100%, 73%);
-  --color-accent-text: hsl(226 100% 84%);
-  --color-accent-background: hsl(226 18% 28%);
+
+  --color-accent-hue: 246;
+  --color-accent: hsl(var(--color-accent-hue), 40%, 65%);
+  --color-accent-text: hsl(var(--color-accent-hue) 100% 84%);
+  --color-accent-background: hsl(var(--color-accent-hue) 18% 28%);
+
   --color-text: #ddd;
   --color-text-highlight: #fff;
   --color-text-muted: #999;
@@ -28,8 +31,8 @@
 
   --table-color-background-row: #303030;
   --table-color-background-row-odd: #2b2b2b;
-  --table-color-background-row-selected: hsl(226, 44%, 36%);
-  --table-color-background-row-active: hsl(226, 54%, 43%);
+  --table-color-background-row-selected: hsl(var(--color-accent-hue), 16%, 30%);
+  --table-color-background-row-active: hsl(var(--color-accent-hue), 24%, 36%);
 
   --table-color-border: var(--color-border);
 
