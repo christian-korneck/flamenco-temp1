@@ -56,10 +56,10 @@ webapp:
 webapp-static: addon-packer
 	$(MAKE) clean-webapp-static
 # When changing the base URL, also update the line
-# e.GET("/app/v3/*", echo.WrapHandler(webAppHandler))
+# e.GET("/app/*", echo.WrapHandler(webAppHandler))
 # in `cmd/flamenco-manager/main.go`
-	yarn --cwd web/app build --outDir ../static --base=/app/v3/
-# yarn --cwd web/app build --outDir ../static --base=/app/v3/ --minify false
+	yarn --cwd web/app build --outDir ../static --base=/app/
+# yarn --cwd web/app build --outDir ../static --base=/app/ --minify false
 	./addon-packer -filename ${WEB_STATIC}/flamenco3-addon.zip
 	@echo "Web app has been installed into ${WEB_STATIC}"
 

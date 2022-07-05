@@ -298,12 +298,15 @@ func buildWebService(
 		})
 	}
 
-	// Serve static files for the webapp on /app/v3/.
+	// Serve static files for the webapp on /app/.
 	webAppHandler, err := web.WebAppHandler()
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to set up HTTP server for embedded web app")
 	}
-	e.GET("/app/v3/*", echo.WrapHandler(http.StripPrefix("/app/v3", webAppHandler)))
+	e.GET("/app/*", echo.WrapHandler(http.StripPrefix("/app", webAppHandler)))
+	e.GET("/app", func(c echo.Context) error {
+		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
+	})
 
 	// Serve the Blender add-on. It's contained in the static files of the webapp.
 	e.GET("/flamenco3-addon.zip", echo.WrapHandler(webAppHandler))
@@ -318,13 +321,10 @@ func buildWebService(
 		Msg("serving job-specific files directly from disk")
 	e.Static(api_impl.JobFilesURLPrefix, localStorage.Root())
 
-	// Redirect / and subsets of the webapp URL to the actual webapp URL.
-	redirectToWebapp := func(c echo.Context) error {
-		return c.Redirect(http.StatusTemporaryRedirect, "/app/v3/")
-	}
-	e.GET("/app/v3", redirectToWebapp)
-	e.GET("/app/", redirectToWebapp)
-	e.GET("/", redirectToWebapp)
+	// Redirect / to the webapp.
+	e.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
+	})
 
 	// Log available routes
 	routeLogger := log.Level(zerolog.TraceLevel)
