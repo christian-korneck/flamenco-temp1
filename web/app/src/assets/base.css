@@ -280,7 +280,7 @@ footer {
 
 .btn[disabled] {
   background-color: transparent;
-  border-color: var(--color-button);
+  border-color: var(--color-button-background);
   color: var(--color-text-muted);
   opacity: .5;
   pointer-events: none;
