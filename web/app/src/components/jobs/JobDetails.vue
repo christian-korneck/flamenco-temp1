@@ -1,7 +1,7 @@
 <template>
   <template v-if="hasJobData">
     <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" thumbnailSuffix="-tiny" />
-    <TabsWrapper>
+    <TabsWrapper @clicked-job-details-tab="$emit('reshuffled')">
       <TabItem title="Job Settings">
         <dl v-if="hasSettings">
           <template v-for="value, key in settingsToDisplay">
