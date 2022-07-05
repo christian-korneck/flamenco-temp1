@@ -10,19 +10,14 @@ const sockStatus = useSocketStatus();
 
 <style scoped>
 .socket-status {
-  font-size: 1rem;
-
-  min-width: 1.2em;
-  padding: 0.1em 1em;
-  border-radius: 0.5em;
-  text-align: center;
-  margin: 0 0.5em;
-
-  color: var(--color-connection-lost-text);
   background-color: var(--color-connection-lost-bg);
-  box-shadow: 0 0 1em var(--color-connection-lost-bg);
-  border: solid thin var(--color-connection-lost-text);
-
+  border-radius: 999em;
+  box-shadow: 0 0 1.33em var(--color-connection-lost-bg);
+  color: var(--color-connection-lost-text);
   cursor: help;
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  padding: var(--spacer-xs) var(--spacer);
+  text-align: center;
 }
 </style>
