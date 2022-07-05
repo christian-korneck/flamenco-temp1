@@ -328,23 +328,34 @@ footer {
   width: var(--indicator-size);
 }
 
-ul.status-filter-bar {
+.status-filter-bar {
   align-items: center;
   display: flex;
   list-style-type: none;
+  margin: 0;
   padding: 0;
-  margin: 0.3rem 0;
 }
-ul.status-filter-bar .status-filter-indicator {
-  margin: 2px;
-  opacity: 33%;
+
+.status-filter-indicator {
   cursor: pointer;
+  margin: .2rem;
 }
-ul.status-filter-bar .status-filter-indicator.active {
-  opacity: 100%;
+
+.status-filter-indicator .indicator {
+  --indicator-size: 10px;
+  transition: transform var(--transition-speed-fast) ease-in-out;
 }
-ul.status-filter-bar .status-filter-indicator .indicator {
-  --indicator-size: 15px;
+
+.status-filter-indicator .indicator:hover {
+  transform: scale(1.2)
+}
+
+.is-filtered .status-filter-indicator {
+  opacity: .33;
+}
+
+.status-filter-indicator.active {
+  opacity: 1.0;
 }
 
 .status-active {

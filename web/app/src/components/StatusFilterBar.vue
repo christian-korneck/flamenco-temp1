@@ -18,7 +18,8 @@ const visibleStatuses = computed(() => {
 </script>
 
 <template>
-  <ul class="status-filter-bar">
+  <ul class="status-filter-bar"
+    :class="{'is-filtered': activeStatuses.length > 0}">
     <li v-for="status in visibleStatuses" class="status-filter-indicator"
       :data-status="status"
       :class="{active: activeStatuses.indexOf(status) >= 0}"
