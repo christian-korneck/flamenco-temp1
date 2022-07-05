@@ -100,16 +100,31 @@ func TestReplacePathsUnknownOS(t *testing.T) {
 func TestReplaceJobsVariable(t *testing.T) {
 	worker := persistence.Worker{Platform: "linux"}
 
-	// Having the Shaman enabled should create an implicit variable "{jobs}".
-	conf := config.GetTestConfig(func(c *config.Conf) {
-		c.SharedStoragePath = "/path/to/flamenco-storage"
-		c.Shaman.Enabled = true
-	})
-
 	task := varreplTestTask()
-	task.Commands[2].Parameters["filepath"] = "{jobs}/path/in/shaman.blend"
+	task.Commands[2].Parameters["filepath"] = "{jobs}/path/in/storage.blend"
 
-	replacedTask := replaceTaskVariables(&conf, task, worker)
-	expectPath := path.Join(conf.Shaman.CheckoutPath(), "path/in/shaman.blend")
-	assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
+	// An implicit variable "{jobs}" should be created, regardless of whether
+	// Shaman is enabled or not.
+
+	{ // Test with Shaman enabled.
+		conf := config.GetTestConfig(func(c *config.Conf) {
+			c.SharedStoragePath = "/path/to/flamenco-storage"
+			c.Shaman.Enabled = true
+		})
+
+		replacedTask := replaceTaskVariables(&conf, task, worker)
+		expectPath := path.Join(conf.Shaman.CheckoutPath(), "path/in/storage.blend")
+		assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
+	}
+
+	{ // Test without Shaman.
+		conf := config.GetTestConfig(func(c *config.Conf) {
+			c.SharedStoragePath = "/path/to/flamenco-storage"
+			c.Shaman.Enabled = false
+		})
+
+		replacedTask := replaceTaskVariables(&conf, task, worker)
+		expectPath := "/path/to/flamenco-storage/jobs/path/in/storage.blend"
+		assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
+	}
 }

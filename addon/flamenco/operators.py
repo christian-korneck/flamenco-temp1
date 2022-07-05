@@ -321,8 +321,8 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
                 # may have checked out at a different location than we
                 # requested.
                 #
-                # Having Shaman enabled on the Manager automatically creates a
-                # variable "jobs" that will resolve to the checkout directory.
+                # Manager automatically creates a variable "jobs" that will
+                # resolve to the job storage directory.
                 self.blendfile_on_farm = PurePosixPath("{jobs}") / msg.output_path
 
             self._submit_job(context)
