@@ -9,6 +9,7 @@
 /flamenco-manager_race
 /flamenco-worker_race
 /addon-packer
+flamenco-manager.yaml
 flamenco-worker.yaml
 flamenco-worker-credentials.yaml
 node_modules/
