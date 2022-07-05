@@ -24,4 +24,5 @@ __pycache__
 
 web/manager-api/dist/
 web/static/
+web/flamenco-io-site/public/
 /dist/

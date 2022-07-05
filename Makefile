@@ -162,6 +162,15 @@ clean-webapp-static:
 	mkdir -p ./${WEB_STATIC}
 	touch ${WEB_STATIC}/emptyfile
 
+site:
+	rm -rf web/flamenco-io-site/public/
+	cd web/flamenco-io-site; hugo --baseURL https://www.flamenco.io/
+	rsync web/flamenco-io-site/public/ flamenco.io:flamenco.io/ \
+		-va \
+		--exclude v2/ \
+		--exclude .well-known/ \
+		--exclude .htaccess \
+		--delete-after
 
 package: flamenco-manager flamenco-worker addon-packer
 	rm -rf dist-build
