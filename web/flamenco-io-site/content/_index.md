@@ -1,14 +1,19 @@
 ---
-title: "Flamenco"
+title: "Flamenco 3"
 geekdocNav: false
 geekdocAlign: center
 geekdocAnchor: false
+geekdocBreadcrumb: false
 ---
 
-Take control of your computing infrastructure and get things done.
+Take control of your computing infrastructure and get things done.<br>
 Flamenco is used in production at Blender Institute.
 
+**Disclaimer:** this site describes Flamenco 3, which is still under heavy
+development. For information on its predecessor, see [Flamenco 2][F2].
+
 {{< button size="large" relref="usage/getting-started/" >}}Getting Started{{< /button >}}
+
 
 ## Feature overview
 
@@ -43,4 +48,6 @@ software. We use Go and SQLite, and host the sources on
 
 -------------------
 
-Looking for the old [Flamenco v2 documentation](/v2/)?
+Looking for the old [Flamenco v2 documentation][F2]?
+
+[F2]: /v2/
