@@ -41,6 +41,31 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ManagerConfiguration" }
 
+  /api/v3/configuration/variables/{audience}/{platform}:
+    summary: Endpoint for getting the variables from Flamenco Manager's configuration.
+    get:
+      summary: >
+        Get the variables of this Manager. Used by the Blender add-on to
+        recognise two-way variables, and for the web interface to do variable
+        replacement based on the browser's platform.
+      operationId: getVariables
+      tags: [meta]
+      parameters:
+        - name: audience
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/ManagerVariableAudience" }
+        - name: platform
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Normal response.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManagerVariables" }
+
   ## Worker
 
   /api/v3/worker/register-worker:
@@ -878,6 +903,30 @@ components:
           description: Whether the Shaman file transfer API is available.
           type: boolean
       required: [storageLocation, shamanEnabled]
+
+    ManagerVariables:
+      description: Mapping from variable name to its properties.
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/ManagerVariable"
+
+    ManagerVariable:
+      type: object
+      properties:
+        "value": { type: string }
+        "is_twoway":
+          type: boolean
+          description: >
+            One-way variables are the most common one, and are simple
+            replacement from `{name}` to their value, which happens when a Task
+            is given to a Worker. Two-way variables are also replaced when
+            submitting a job, where the platform-specific value is replaced by
+            `{name}`.
+      required: [name, is_twoway, value]
+
+    ManagerVariableAudience:
+      type: string
+      enum: [workers, users]
 
     WorkerRegistration:
       type: object
