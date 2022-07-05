@@ -306,13 +306,14 @@
 }
 
 .tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
-  color: #ccc;
-  display: inline-block;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 10px;
-  text-align: center;
-  white-space: normal;
+  align-items: center;
+  color: var(--color-text-hint);
+  cursor: default;
+  display: flex;
+  font-size: var(--font-size-sm);
+  grid-area: footer;
+  justify-content: center;
+  padding: var(--spacer-sm);
 }
 
 .tabulator .tabulator-tableholder .tabulator-table {

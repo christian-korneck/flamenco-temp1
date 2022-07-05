@@ -69,8 +69,8 @@
   --color-worker-status-testing: hsl(166 100% 46%);
   --color-worker-status-offline: var(--color-status-canceled);
 
-  --color-connection-lost-text: hsl(17, 65%, 65%);
-  --color-connection-lost-bg: hsl(17, 65%, 20%);
+  --color-connection-lost-text: hsl(0, 60%, 75%);
+  --color-connection-lost-bg: hsl(0, 80%, 40%);
 }
 
 html,
@@ -233,15 +233,14 @@ dl dd:empty {
   border-color: transparent;
 }
 
-footer {
+.window-footer {
   align-items: center;
+  background-color: var(--color-background-column);
   color: var(--color-text-muted);
   display: flex;
   font-size: var(--font-size-sm);
   grid-area: footer;
   padding: var(--spacer-sm);
-
-  background-color: var(--color-background-column);
 }
 
 .btn-bar {
@@ -442,55 +441,6 @@ footer {
 
 footer.window-footer {
   cursor: pointer;
-}
-
-section.footer-popup {
-  position: absolute;
-  bottom: var(--grid-gap);
-  left: var(--grid-gap);
-  right: var(--grid-gap);
-  height: 20vh;
-
-  z-index: 42;
-  padding: 0.2rem 0.5rem;
-
-  background-color: var(--color-background-column);
-  border-radius: 0.3rem;
-  border: thin solid var(--color-border);
-
-  box-shadow: 0 0 2rem black;
-}
-
-section.footer-popup header {
-  display: flex;
-}
-
-section.footer-popup header h3 {
-  margin: 0 auto 0 0;
-}
-
-section.footer-popup button.footer-tab {
-  border: none;
-  margin-right: 2rem;
-}
-section.footer-popup button.footer-tab.active-tab {
-  color: var(--color-accent-text);
-  background-color: var(--color-accent-background);
-}
-
-section.footer-popup .tabulator-tableholder {
-  /* Force a visible scroll bar, so that the notification history table always
-   * has the same available width. Without this, Tabulator won't properly act on
-   * the reduction in width when the scrollbar appears, and will show a
-   * horizontal scrollbar as well. */
-  overflow-y: scroll;
-}
-
-section.footer-popup .tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
-  font-size: var(--font-size);
-  font-weight: normal;
-  color: var(--color-text-hint);
-  user-select: none;
 }
 
 span.state-transition-arrow {
