@@ -63,8 +63,6 @@ type ConfMeta struct {
 }
 
 // Base contains those settings that are shared by all configuration versions.
-// Various settings are commented out, because they were brought in from
-// Flamenco 2 but not implemented yet.
 type Base struct {
 	Meta ConfMeta `yaml:"_meta"`
 
@@ -72,7 +70,6 @@ type Base struct {
 	DatabaseDSN  string `yaml:"database"`
 	TaskLogsPath string `yaml:"task_logs_path"`
 	Listen       string `yaml:"listen"`
-	// ListenHTTPS  string `yaml:"listen_https"`
 
 	SSDPDiscovery bool `yaml:"autodiscoverable"`
 
@@ -80,16 +77,8 @@ type Base struct {
 	StoragePath string               `yaml:"storage_path"`
 	Shaman      shaman_config.Config `yaml:"shaman"`
 
-	// TLS certificate management. TLSxxx has priority over ACME.
-	// TLSKey         string `yaml:"tlskey"`
-	// TLSCert        string `yaml:"tlscert"`
-	// ACMEDomainName string `yaml:"acme_domain_name"` // for the ACME Let's Encrypt client
-
 	TaskTimeout   time.Duration `yaml:"task_timeout"`
 	WorkerTimeout time.Duration `yaml:"worker_timeout"`
-
-	// WorkerCleanupMaxAge time.Duration `yaml:"worker_cleanup_max_age"`
-	// WorkerCleanupStatus []string      `yaml:"worker_cleanup_status"`
 
 	/* This many failures (on a given job+task type combination) will ban a worker
 	 * from that task type on that job. */
@@ -98,17 +87,6 @@ type Base struct {
 	// When this many workers have tried the task and failed, it will be hard-failed
 	// (even when there are workers left that could technically retry the task).
 	TaskFailAfterSoftFailCount int `yaml:"task_fail_after_softfail_count"`
-
-	// TestTasks TestTasks `yaml:"test_tasks"`
-
-	// Authentication settings.
-	// JWT                      jwtauth.Config `yaml:"user_authentication"`
-	// WorkerRegistrationSecret string `yaml:"worker_registration_secret"`
-
-	// Dynamic worker pools (Azure Batch, Google Compute, AWS, that sort).
-	// DynamicPoolPlatforms *dppoller.Config `yaml:"dynamic_pool_platforms,omitempty"`
-
-	// Websetup *WebsetupConf `yaml:"websetup,omitempty"`
 }
 
 // GarbageCollect contains the config options for the GC.
@@ -165,15 +143,6 @@ type VariableValue struct {
 	// The actual value of the variable for this audience+platform.
 	Value string `yaml:"value" json:"value"`
 }
-
-// WebsetupConf are settings used by the web setup mode.
-// type WebsetupConf struct {
-// 	// When true, the websetup will hide certain settings that are infrastructure-specific.
-// 	// For example, it hides MongoDB choice, port numbers, task log directory, all kind of
-// 	// hosting-specific things. This is used, for example, by the automated Azure deployment
-// 	// to avoid messing up settings that are specific to that particular installation.
-// 	HideInfraSettings bool `yaml:"hide_infra_settings"`
-// }
 
 // getConf parses flamenco-manager.yaml and returns its contents as a Conf object.
 func getConf() (Conf, error) {
@@ -239,10 +208,8 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 	c.addImplicitVariables()
 	c.ensureVariablesUnique()
 	c.constructVariableLookupTable()
-	c.parseURLs()
 	c.checkDatabase()
 	c.checkVariables()
-	c.checkTLS()
 }
 
 func (c *Conf) processStorage() {
@@ -535,50 +502,6 @@ func (c *Conf) Write(filename string) error {
 
 	log.Debug().Str("filename", filename).Msg("config file written")
 	return nil
-}
-
-// HasCustomTLS returns true if both the TLS certificate and key files are configured.
-func (c *Conf) HasCustomTLS() bool {
-	// return c.TLSCert != "" && c.TLSKey != ""
-	return false
-}
-
-// HasTLS returns true if either a custom certificate or ACME/Let's Encrypt is used.
-func (c *Conf) HasTLS() bool {
-	// return c.ACMEDomainName != "" || c.HasCustomTLS()
-	return false
-}
-
-func (c *Conf) checkTLS() {
-	// hasTLS := c.HasCustomTLS()
-
-	// if hasTLS && c.ListenHTTPS == "" {
-	// 	c.ListenHTTPS = c.Listen
-	// 	c.Listen = ""
-	// }
-
-	// if !hasTLS || c.ACMEDomainName == "" {
-	// 	return
-	// }
-
-	// log.Warn().
-	// 	Str("tlscert", c.TLSCert).
-	// 	Str("tlskey", c.TLSKey).
-	// 	Str("acme_domain_name", c.ACMEDomainName).
-	// 	Msg("ACME/Let's Encrypt will not be used because custom certificate is specified")
-	// c.ACMEDomainName = ""
-}
-
-func (c *Conf) parseURLs() {
-	// var err error
-	// if jwtURL, err := c.Flamenco.Parse(jwtPublicKeysRelativeURL); err != nil {
-	// 	log.WithFields(log.Fields{
-	// 		"url":        c.Flamenco.String(),
-	// 		log.ErrorKey: err,
-	// 	}).Error("unable to construct URL to get JWT public keys")
-	// } else {
-	// 	c.JWT.PublicKeysURL = jwtURL.String()
-	// }
 }
 
 // GetTestConfig returns the configuration for unit tests.
