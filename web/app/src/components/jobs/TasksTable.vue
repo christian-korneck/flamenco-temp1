@@ -1,11 +1,15 @@
 <template>
   <h3 class="sub-title">Tasks</h3>
-  <task-actions-bar />
-  <status-filter-bar
-    :availableStatuses="availableStatuses"
-    :activeStatuses="shownStatuses"
-    @click="toggleStatusFilter"
-  />
+  <div class="btn-bar-group">
+    <task-actions-bar />
+    <div class="align-right">
+      <status-filter-bar
+        :availableStatuses="availableStatuses"
+        :activeStatuses="shownStatuses"
+        @click="toggleStatusFilter"
+      />
+    </div>
+  </div>
   <div>
     <div class="task-list with-clickable-row" id="flamenco_task_list"></div>
   </div>

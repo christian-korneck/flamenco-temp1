@@ -248,6 +248,16 @@ footer {
   padding: var(--spacer-sm) 0;
 }
 
+.btn-bar .align-right,
+.btn-bar-group .align-right {
+  margin-left: auto;
+}
+
+.btn-bar-group {
+  align-items: center;
+  display: flex;
+}
+
 .btn {
   align-items: center;
   background-color: var(--color-button-background);

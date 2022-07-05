@@ -1,11 +1,15 @@
 <template>
   <h2 class="column-title">Jobs</h2>
-  <job-actions-bar />
-  <status-filter-bar
-    :availableStatuses="availableStatuses"
-    :activeStatuses="shownStatuses"
-    @click="toggleStatusFilter"
-  />
+  <div class="btn-bar-group">
+    <job-actions-bar />
+    <div class="align-right">
+      <status-filter-bar
+        :availableStatuses="availableStatuses"
+        :activeStatuses="shownStatuses"
+        @click="toggleStatusFilter"
+      />
+    </div>
+  </div>
   <div>
     <div class="job-list with-clickable-row" id="flamenco_job_list"></div>
   </div>
