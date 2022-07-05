@@ -1,7 +1,7 @@
 #!/bin/bash
 
 curl -v -X 'POST' \
-  'http://localhost:8080/api/jobs' \
+  'http://localhost:8080/api/v3/jobs' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
