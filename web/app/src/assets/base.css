@@ -186,8 +186,7 @@ h2.column-title {
   border-bottom: var(--border-width) solid var(--color-border);
   color: var(--color-text-hint);
   font-size: var(--font-size-base);
-  margin-bottom: var(--spacer-sm);
-  margin-top: 0;
+  margin: 0;
   padding-bottom: var(--spacer-xs);
 }
 
@@ -195,7 +194,7 @@ h3.sub-title {
   border-bottom: var(--border-width) solid var(--color-border);
   color: var(--color-text-hint);
   font-size: var(--font-size-base);
-  margin: var(--spacer) 0 var(--spacer-sm);
+  margin: var(--spacer) 0 0;
   padding: 0 0 var(--spacer-sm);
 }
 
