@@ -49,7 +49,7 @@ footer {
   bottom: var(--grid-gap);
   box-shadow: 0 0 5rem rgba(0, 0, 0, .66), 0 0 1.33rem rgba(0, 0, 0, .66);
   left: var(--grid-gap);
-  padding: var(--spacer-sm);
+  padding: var(--spacer-xs) var(--spacer-sm) var(--spacer-sm);
   position: fixed;
   right: var(--grid-gap);
 }
