@@ -1,50 +1,50 @@
 <template>
   <h2 class="column-title">Job Details</h2>
-
   <template v-if="hasJobData">
     <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" thumbnailSuffix="-tiny" />
+    <TabsWrapper>
+      <TabItem title="Settings">
+        <dl v-if="hasSettings">
+          <template v-for="value, key in settingsToDisplay">
+            <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
+            <dd>{{ value }}</dd>
+          </template>
+        </dl>
+      </TabItem>
+      <TabItem title="Metadata">
+        <dl v-if="hasMetadata">
+          <template v-for="value, key in jobData.metadata">
+            <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
+            <dd>{{ value }}</dd>
+          </template>
+        </dl>
+      </TabItem>
+      <TabItem title="Job Details">
+        <dl>
+          <dt class="field-name" title="Name">Name</dt>
+          <dd>{{ jobData.name }}</dd>
 
-    <dl>
-      <dt class="field-id" title="ID">ID</dt>
-      <dd :title="jobData.id">{{ jobData.id }}</dd>
+          <dt class="field-status" title="Status">Status</dt>
+          <dd>{{ jobData.status }}</dd>
 
-      <dt class="field-name" title="Name">Name</dt>
-      <dd>{{ jobData.name }}</dd>
+          <dt class="field-type" title="Type">Type</dt>
+          <dd>{{ jobType ? jobType.label : jobData.type }}</dd>
 
-      <dt class="field-status" title="Status">Status</dt>
-      <dd>{{ jobData.status }}</dd>
+          <dt class="field-priority" title="Priority">Priority</dt>
+          <dd>{{ jobData.priority }}</dd>
 
-      <dt class="field-type" title="Type">Type</dt>
-      <dd>{{ jobType ? jobType.label : jobData.type }}</dd>
+          <dt class="field-created" title="Created">Created</dt>
+          <dd>{{ datetime.relativeTime(jobData.created) }}</dd>
 
-      <dt class="field-priority" title="Priority">Priority</dt>
-      <dd>{{ jobData.priority }}</dd>
+          <dt class="field-updated" title="Updated">Updated</dt>
+          <dd>{{ datetime.relativeTime(jobData.updated) }}</dd>
 
-      <dt class="field-created" title="Created">Created</dt>
-      <dd>{{ datetime.relativeTime(jobData.created) }}</dd>
+          <dt class="field-activity" title="Activity">Activity</dt>
+          <dd>{{ jobData.activity }}</dd>
+        </dl>
+      </TabItem>
+    </TabsWrapper>
 
-      <dt class="field-updated" title="Updated">Updated</dt>
-      <dd>{{ datetime.relativeTime(jobData.updated) }}</dd>
-
-      <dt class="field-activity" title="Activity">Activity</dt>
-      <dd>{{ jobData.activity }}</dd>
-    </dl>
-
-    <h3 class="sub-title" v-if="hasMetadata">Meta-data</h3>
-    <dl>
-      <template v-for="value, key in jobData.metadata">
-        <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
-        <dd>{{ value }}</dd>
-      </template>
-    </dl>
-
-    <h3 class="sub-title" v-if="hasSettings">Settings</h3>
-    <dl>
-      <template v-for="value, key in settingsToDisplay">
-        <dt :class="`field-${key}`" :title="key">{{ key }}</dt>
-        <dd>{{ value }}</dd>
-      </template>
-    </dl>
   </template>
 
   <div v-else class="details-no-item-selected">
@@ -57,6 +57,8 @@ import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 import LastRenderedImage from '@/components/jobs/LastRenderedImage.vue'
+import TabItem from '@/components/TabItem.vue'
+import TabsWrapper from '@/components/TabsWrapper.vue'
 
 export default {
   props: [
@@ -67,6 +69,8 @@ export default {
   ],
   components: {
     LastRenderedImage,
+    TabItem,
+    TabsWrapper,
   },
   data() {
     return {
