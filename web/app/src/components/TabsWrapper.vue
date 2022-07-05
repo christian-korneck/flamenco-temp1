@@ -44,9 +44,13 @@ nav {
   user-select: none;
 }
 
-.tab-item:hover,
-.tab-item.active {
+.tab-item:hover {
   border-color: var(--color-text);
   color: var(--color-text);
+}
+
+.tab-item.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 </style>
