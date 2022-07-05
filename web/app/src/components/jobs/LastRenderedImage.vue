@@ -114,10 +114,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.last-rendered.nothing-rendered-yet {
-  outline: thin dotted var(--color-text-hint);
-}
-
 .last-rendered img {
   width: 100%;
   height: 100%;
