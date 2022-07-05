@@ -20,6 +20,9 @@
       </TabItem>
       <TabItem title="Details">
         <dl>
+          <dt class="field-name" title="ID">ID</dt>
+          <dd>{{ jobData.id }}</dd>
+
           <dt class="field-name" title="Name">Name</dt>
           <dd>{{ jobData.name }}</dd>
 
