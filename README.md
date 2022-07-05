@@ -5,11 +5,11 @@ Blender add-on sources are all combined in this one repository.
 
 ## Using Shaman on Windows
 
-The Shaman storage system uses *symbolic links*. On Windows the creation of symbolic links requires a change in security policy. Follow these steps:
+The Shaman storage system uses _symbolic links_. On Windows the creation of symbolic links requires a change in security policy. Follow these steps:
 
 1. Press Win+R, in the popup type `secpol.msc`. Then click OK.
-2. In the *Local Security Policy* window that opens, go to *Security Settings* > *Local Policies* > *User Rights Assignment*.
-3. In the list, find the *Create Symbolic Links* item.
+2. In the _Local Security Policy_ window that opens, go to _Security Settings_ > _Local Policies_ > _User Rights Assignment_.
+3. In the list, find the _Create Symbolic Links_ item.
 4. Double-click the item and add yourself (or the user running Flamenco Manager or the whole users group) to the list.
 5. Log out & back in again, or reboot the machine.
 
@@ -43,6 +43,7 @@ make webapp
 ```
 
 Then run the frontend development server with:
+
 ```
 yarn --cwd web/app run dev --host
 ```
@@ -114,18 +115,18 @@ Flamenco Manager has a SwaggerUI interface at http://localhost:8080/api/v3/swagg
 Flamenco Manager to the web frontend. Version 2 of the protocol was chosen,
 because that has a mature Go server implementation readily available.
 
-SocketIO messages have an *event name* and *room name*.
+SocketIO messages have an _event name_ and _room name_.
 
-- **Web interface clients** send messages to the server with just an *event
-  name*. These are received in handlers set up by
+- **Web interface clients** send messages to the server with just an _event
+  name_. These are received in handlers set up by
   `internal/manager/webupdates/webupdates.go`, function
   `registerSIOEventHandlers()`.
-- **Manager** typically sends to all clients in a specific *room*. Which client
+- **Manager** typically sends to all clients in a specific _room_. Which client
   has joined which room is determined by the Manager as well. By default every
   client joins the "job updates" and "chat" rooms. This is done in the
   `OnConnection` handler defined in `registerSIOEventHandlers()`.
 - Received messages (regardless of by whom) are handled based only on their
-  *event name*. The *room name* only determines *which* client receives those
+  _event name_. The _room name_ only determines _which_ client receives those
   messages.
 
 
@@ -144,15 +145,13 @@ in this process.
 
 The following table shows the meaning of the different task statuses:
 
-+---------------+---------+-----------+
-| Status        | Meaning | Next Status |
-+---------------+---------+-----------+
-| `queued`      | Ready to be worked on by a Worker | `active`, `canceled` |
-| `active`      | Assigned to a worker for execution | `completed`, `canceled`, `failed`, `soft-failed` |
-| `soft-failed` | Same as `queued`, but has been failed by a worker in an earlier execution | `completed`, `failed`, `canceled` |
-| `completed`   | Worker executed the task succesfully | `requeued` |
-| `paused`      | Not yet implemented | |
-+---------------+---------+-----------+
+| Status        | Meaning                                                                   | Next Status                                      |
+| ------------- | ------------------------------------------------------------------------- | ------------------------------------------------ |
+| `queued`      | Ready to be worked on by a Worker                                         | `active`, `canceled`                             |
+| `active`      | Assigned to a worker for execution                                        | `completed`, `canceled`, `failed`, `soft-failed` |
+| `soft-failed` | Same as `queued`, but has been failed by a worker in an earlier execution | `completed`, `failed`, `canceled`                |
+| `completed`   | Worker executed the task succesfully                                      | `requeued`                                       |
+| `paused`      | Not yet implemented                                                       |                                                  |
 
 ## License
 
