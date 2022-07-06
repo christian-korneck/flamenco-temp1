@@ -69,8 +69,8 @@
   --color-worker-status-testing: hsl(166 100% 46%);
   --color-worker-status-offline: var(--color-status-canceled);
 
-  --color-connection-lost-text: hsl(0, 60%, 75%);
-  --color-connection-lost-bg: hsl(0, 80%, 40%);
+  --color-connection-lost-text: hsl(0, 90%, 60%);
+  --color-connection-lost-bg: hsl(0, 50%, 20%);
 }
 
 html,

@@ -11,13 +11,11 @@ const sockStatus = useSocketStatus();
 <style scoped>
 .socket-status {
   background-color: var(--color-connection-lost-bg);
-  border-radius: 999em;
-  box-shadow: 0 0 1.33em var(--color-connection-lost-bg);
+  border-radius: var(--border-radius);
   color: var(--color-connection-lost-text);
   cursor: help;
   font-size: var(--font-size-sm);
-  font-weight: bold;
-  padding: var(--spacer-xs) var(--spacer);
+  padding: 2px var(--spacer-sm);
   text-align: center;
 }
 </style>
