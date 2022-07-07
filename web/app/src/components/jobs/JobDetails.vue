@@ -12,6 +12,9 @@
             <dd>{{ value }}</dd>
           </template>
         </dl>
+        <div v-else class="dl-no-data">
+          <span>This job has no settings.</span>
+        </div>
       </TabItem>
       <TabItem title="Metadata">
         <dl v-if="hasMetadata">
@@ -20,6 +23,9 @@
             <dd>{{ value }}</dd>
           </template>
         </dl>
+        <div v-else class="dl-no-data">
+          <span>This job has no metadata.</span>
+        </div>
       </TabItem>
       <TabItem title="Details">
         <dl>

@@ -1,5 +1,6 @@
 :root {
   --spacer: 1rem;
+  --spacer-lg: 1.33rem;
   --spacer-sm: .66rem;
   --spacer-xs: .33rem;
 
@@ -234,6 +235,15 @@ dl dd:hover {
 
 dl dd:empty {
   border-color: transparent;
+}
+
+.dl-no-data {
+  color: var(--color-text-hint);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  padding: var(--spacer-lg) var(--spacer);
+  text-align: center;
+  cursor: default;
 }
 
 .window-footer {
