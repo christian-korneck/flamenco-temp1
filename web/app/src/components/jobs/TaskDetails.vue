@@ -22,6 +22,7 @@
           <worker-link :worker="worker" />
         </div>
       </dd>
+      </template>
 
       <dt class="field-type" title="Type">Type</dt>
       <dd>{{ taskData.type }}</dd>
@@ -40,7 +41,6 @@
 
       <dt class="field-activity" title="Activity">Activity</dt>
       <dd>{{ taskData.activity }}</dd>
-      </template>
     </dl>
 
     <h3 class="sub-title">Commands</h3>
