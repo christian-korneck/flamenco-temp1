@@ -5,12 +5,12 @@
   <div class="col col-workers-details">
     <worker-details :workerData="workers.activeWorker" />
   </div>
-  <footer>
+  <footer class="window-footer">
     <notification-bar />
     <update-listener ref="updateListener" mainSubscription="allWorkers"
       @workerUpdate="onSIOWorkerUpdate"
       @sioReconnected="onSIOReconnected" @sioDisconnected="onSIODisconnected" />
-</footer>
+  </footer>
 </template>
 
 <style scoped>
