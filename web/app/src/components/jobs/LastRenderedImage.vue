@@ -119,4 +119,9 @@ defineExpose({
   max-width: 100%;
   object-fit: contain;
 }
+
+.nothing-rendered-yet img {
+  height: 100%;
+  width: 100%;
+}
 </style>
