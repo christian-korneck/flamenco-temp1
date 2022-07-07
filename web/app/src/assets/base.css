@@ -75,12 +75,12 @@
 
 html,
 body {
-  background-color: #111;
+  background-color: var(--color-background);
   color: var(--color-text);
   color-scheme: dark;
   font-family: var(--font-family-body);
   font-size: var(--font-size-base);
-  height: calc(100vh);
+  height: 100vh;
   margin: 0;
   padding: 0;
 }
