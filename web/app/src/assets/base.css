@@ -6,6 +6,7 @@
 
   --color-background: #111;
   --color-background-column: #202020;
+  --color-background-column-highlight: #282828;
 
   --color-accent-hue: 246;
   --color-accent: hsl(var(--color-accent-hue), 40%, 65%);
@@ -249,12 +250,29 @@ dl dd:empty {
 .app-footer {
   align-items: center;
   background-color: var(--color-background-column);
+  border-radius: var(--border-radius);
   color: var(--color-text-muted);
   cursor: pointer;
   display: flex;
   font-size: var(--font-size-sm);
   grid-area: footer;
   padding: var(--spacer-sm);
+  transition: background-color var(--transition-speed) ease-in-out;
+}
+
+.app-footer:hover {
+  background-color: var(--color-background-column-highlight);
+}
+
+.app-footer:hover .app-footer-expand {
+  margin-top: -5px;
+}
+
+.app-footer-expand {
+  position: relative;
+  stroke: var(--color-text-hint);
+  transform: scale(.8);
+  transition: stroke var(--transition-speed) ease-in-out, margin-top var(--transition-speed) ease-in-out;
 }
 
 .btn-bar {
