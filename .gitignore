@@ -13,8 +13,14 @@ flamenco-manager.yaml
 flamenco-worker.yaml
 flamenco-worker-credentials.yaml
 node_modules/
-task-logs/
-flamenco-storage/
+
+# Default storage locations:
+/flamenco-manager-storage/
+/flamenco-shared-storage/
+
+# Old default storage locations:
+/task-logs/
+/flamenco-storage/
 
 __pycache__
 *.pyc
