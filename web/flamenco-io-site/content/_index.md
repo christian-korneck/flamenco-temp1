@@ -1,49 +1,77 @@
 ---
-title: "Flamenco 3"
 geekdocNav: false
-geekdocAlign: center
+geekdocAlign: left
 geekdocAnchor: false
 geekdocBreadcrumb: false
 ---
 
+{{< columns >}}
+
+# Free & Open Source <br> Render Management
+
 Take control of your computing infrastructure and get things done.<br>
-Flamenco is used in production at Blender Institute.
+Flamenco is used in production at [Blender Studio](https://studio.blender.org).
 
 **Disclaimer:** this site describes Flamenco 3, which is still under heavy
-development. For information on its predecessor, see [Flamenco 2][F2].
+development. For information on its predecessor, see [Flamenco 2](/v2/).
 
 {{< button size="large" relref="usage/getting-started/" >}}Getting Started{{< /button >}}
+
+<--->
+
+![Flamenco Screenshot](/images/flamenco_screenshot_01.webp)
+
+{{</ columns >}}
 
 
 ## Feature overview
 
 {{< columns >}}
 
-### Free and Private
+### Free and Open Source
 
-Flamenco runs on your own hardware.<br>
+Released under GPL 3.0, every component of Flamenco is Free and Open Source
+software. Development is supported by the Blender project.
+
+<--->
+
+### Simple and Portable
+
+Flamenco consists of a few components and requires almost no configuration
+to be used in production.
+
+<--->
+
+### Easy Customization
+
+Designed to be customizable, Flamenco allows TDs to specify
+Job Types using the JavaScript language and seamlessly fit into the pipeline.
+
+{{< /columns >}}
+
+{{< columns >}}
+
+### Cross-platform and Self-hosted
+
+Flamenco runs on all major operating system, and is fully hosted on your own hardware.
 Your data is yours, and yours alone.
 
 <--->
 
-### Simple
+### Robust Technology
 
-Flamenco v3 is the simplest version of Flamenco so far, consisting of less
-components, and requiring less configuration, than any of its predecessors.
+The core of Flamenco is build using Go and SQLite. Check out the sources on
+[developer.blender.org](https://developer.blender.org/project/profile/58/).
 
 <--->
 
-### Easy customization
+### In Development
 
-The available job types, and how these are turned into concrete tasks for
-Workers, are all defined in JavaScript.<br>
-Designed to customise to your specific needs.
+Getting close to Beta release, Flamenco v3 is in active development at Blender
+Studio. Join [the chat](https://blender.chat/channel/flamenco) to see what's happening!
 
 {{< /columns >}}
 
-Released under GPL 3.0, every component of Flamenco is Free and Open Source
-software. We use Go and SQLite, and host the sources on
-[developer.blender.org](https://developer.blender.org/project/profile/58/)
 
 
 -------------------
