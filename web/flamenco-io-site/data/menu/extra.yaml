@@ -4,5 +4,5 @@ header:
     ref: /usage/getting-started
     external: false
   - name: Development
-    ref: /development
+    ref: /development/getting-started
     external: false
