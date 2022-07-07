@@ -482,8 +482,11 @@ span.state-transition-arrow.lazy {
 }
 
 .global-last-rendered {
-  grid-column-start: col-1;
+  align-items: center;
+  display: flex;
   grid-column-end: col-3;
+  grid-column-start: col-1;
+  justify-content: center;
 
   /* FIXME: the positioning of the image & sizing of the container DIV doesn't
   work well yet. */
@@ -492,4 +495,6 @@ span.state-transition-arrow.lazy {
 
 .global-last-rendered .last-rendered {
   max-height: 100%;
+  max-width: 100%;
+}
 }

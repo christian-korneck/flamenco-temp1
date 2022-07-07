@@ -114,13 +114,9 @@ defineExpose({
 </script>
 
 <style scoped>
-.last-rendered {
-  background-color: #2b2b2b;
-  border-radius: var(--border-radius);
-}
 .last-rendered img {
-  width: 100%;
-  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
 }
 </style>
