@@ -23,8 +23,10 @@ development. For information on its predecessor, see [Flamenco 2](/v2/).
 
 {{</ columns >}}
 
+&nbsp;<br>
+&nbsp;<br>
 
-## Feature overview
+## Features overview
 
 {{< columns >}}
 
