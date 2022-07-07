@@ -465,9 +465,9 @@ footer.window-footer {
 }
 
 span.state-transition-arrow {
+  display: inline-block;
   font-weight: bold;
-  font-size: 110%;
-  color: var(--color-accent);
+  transform: scale(1.4);
 }
 span.state-transition-arrow.lazy {
   color: var(--color-text-muted);
