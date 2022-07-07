@@ -503,7 +503,6 @@ span.state-transition-arrow.lazy {
   background-color: var(--color-background);
   border-radius: var(--border-radius);
   display: flex;
-  height: 0;
   justify-content: center;
   overflow: hidden;
   padding-top: 56.25%;
