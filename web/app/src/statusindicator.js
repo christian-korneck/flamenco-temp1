@@ -26,7 +26,7 @@ export function indicator(status, classNamePrefix) {
  */
 export function workerStatus(worker) {
   if (!worker.status_change) {
-    return `${worker.status}`;
+    return `<span class="worker-status-${worker.status}">${worker.status}</span>`;
   }
 
   let arrow;
@@ -36,5 +36,7 @@ export function workerStatus(worker) {
     arrow = `<span class='state-transition-arrow forced' title='forced status transition'>➜</span>`
   }
 
-  return `${worker.status} ${arrow} ${worker.status_change.status}`;
+  return `<span class="worker-status-${worker.status}">${worker.status}</span>
+          ${arrow}
+          <span class="worker-status-${worker.status_change.status}">${worker.status_change.status}</span>`;
 }

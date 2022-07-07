@@ -442,6 +442,11 @@ select {
   --indicator-color: var(--color-worker-status-offline);
 }
 
+[class^='worker-status'] {
+  color: var(--indicator-color);
+  font-weight: bold;
+}
+
 .status-archiving,
 .status-active,
 .status-queued,
