@@ -14,6 +14,7 @@ curl -X 'POST' \
   "priority": 3,
   "settings": {
     "sleep_duration_seconds": 20,
+    "sleep_repeats": 1,
     "message": "Blender is {blender}"
   },
   "type": "echo-sleep-test"
