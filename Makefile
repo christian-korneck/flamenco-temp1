@@ -30,6 +30,7 @@ all: application
 with-deps:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.0
 	go install github.com/golang/mock/mockgen@v1.6.0
+	go install github.com/gohugoio/hugo@v0.101.0
 	$(MAKE) application
 
 application: webapp flamenco-manager flamenco-worker
