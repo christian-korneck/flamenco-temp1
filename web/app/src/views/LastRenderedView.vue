@@ -6,7 +6,7 @@
         thumbnailSuffix="last-rendered.jpg" />
   </div>
 
-  <footer class="window-footer"><notification-bar /></footer>
+  <footer class="app-footer"><notification-bar /></footer>
 
   <update-listener ref="updateListener" mainSubscription="allLastRendered"
     @lastRenderedUpdate="onSioLastRenderedUpdate"

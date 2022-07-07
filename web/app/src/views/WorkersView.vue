@@ -5,7 +5,7 @@
   <div class="col col-workers-details">
     <worker-details :workerData="workers.activeWorker" />
   </div>
-  <footer class="window-footer">
+  <footer class="app-footer">
     <notification-bar />
     <update-listener ref="updateListener" mainSubscription="allWorkers"
       @workerUpdate="onSIOWorkerUpdate"

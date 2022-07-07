@@ -10,7 +10,9 @@
     <task-details :taskData="tasks.activeTask" />
   </div>
 
-  <footer class="window-footer" v-if="!showFooterPopup" @click="showFooterPopup = true"><notification-bar /></footer>
+  <footer class="app-footer" v-if="!showFooterPopup" @click="showFooterPopup = true">
+    <notification-bar />
+  </footer>
   <footer-popup v-if="showFooterPopup" ref="footerPopup" @clickClose="showFooterPopup = false" />
 
   <update-listener ref="updateListener"  mainSubscription="allJobs"

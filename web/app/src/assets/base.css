@@ -246,10 +246,11 @@ dl dd:empty {
   cursor: default;
 }
 
-.window-footer {
+.app-footer {
   align-items: center;
   background-color: var(--color-background-column);
   color: var(--color-text-muted);
+  cursor: pointer;
   display: flex;
   font-size: var(--font-size-sm);
   grid-area: footer;
@@ -476,10 +477,6 @@ select {
 .tabulator-row.tabulator-row-even.active-row {
   background-color: var(--table-color-background-row-active);
   font-weight: bold;
-}
-
-footer.window-footer {
-  cursor: pointer;
 }
 
 span.state-transition-arrow {
