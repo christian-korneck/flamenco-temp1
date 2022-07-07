@@ -1,7 +1,10 @@
 <template>
   <select v-model="selectedAction">
-      <option value="" selected><template v-if="!hasActiveWorker">Select a Worker</template><template v-else>Choose an Action</template></option>
-      <option v-for="(action, key) in WORKER_ACTIONS" :value="key">{{ action.label }}</option>
+    <option value="" selected>
+      <template v-if="!hasActiveWorker">Select a Worker</template>
+      <template v-else>Choose an action...</template>
+    </option>
+    <option v-for="(action, key) in WORKER_ACTIONS" :value="key">{{ action.label }}</option>
   </select>
   <button
       :disabled="!canPerformAction"

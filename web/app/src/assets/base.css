@@ -257,6 +257,27 @@ dl dd:empty {
 .btn-bar-group {
   align-items: center;
   display: flex;
+  padding: var(--spacer-sm) 0;
+}
+
+.btn-bar-group .btn-bar {
+  padding: 0;
+}
+
+.btn-bar-group select+.btn,
+.btn-bar-group .btn+select {
+  margin-left: var(--spacer-sm)
+}
+
+select {
+  background-color: var(--color-button-background);
+  border-radius: var(--border-radius);
+  /* border: none; */
+  border: calc(var(--border-width) / 2) solid var(--color-button-background);
+  display: inline-flex;
+  font-size: var(--font-size-sm);
+  justify-content: center;
+  padding: var(--spacer-xs) var(--spacer-sm);
 }
 
 .btn {

@@ -1,12 +1,19 @@
 <template>
   <h2 class="column-title">Workers</h2>
-  <worker-actions-bar />
-  <status-filter-bar
-    :availableStatuses="availableStatuses"
-    :activeStatuses="shownStatuses"
-    classPrefix="worker-"
-    @click="toggleStatusFilter"
-  />
+
+  <div class="btn-bar-group">
+    <worker-actions-bar />
+
+    <div class="align-right">
+      <status-filter-bar
+        :availableStatuses="availableStatuses"
+        :activeStatuses="shownStatuses"
+        classPrefix="worker-"
+        @click="toggleStatusFilter"
+      />
+    </div>
+  </div>
+
   <div>
     <div class="workers-list with-clickable-row" id="flamenco_workers_list"></div>
   </div>
