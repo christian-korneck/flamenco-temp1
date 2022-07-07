@@ -445,7 +445,13 @@ func installSignalHandler(cancelFunc context.CancelFunc) {
 func makeAutoDiscoverable(urls []url.URL) *upnp_ssdp.Server {
 	ssdp, err := upnp_ssdp.NewServer(log.Logger)
 	if err != nil {
-		log.Error().Err(err).Msg("error creating UPnP/SSDP server")
+		strUrls := make([]string, len(urls))
+		for idx := range urls {
+			strUrls[idx] = urls[idx].String()
+		}
+		log.Error().Strs("urls", strUrls).Msg("Unable to create UPnP/SSDP server. " +
+			"This means that Workers will not be able to automatically find this Manager. " +
+			"Run them with the `-manager URL` argument, picking a URL from this list.")
 		return nil
 	}
 
