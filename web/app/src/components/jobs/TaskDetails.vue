@@ -17,8 +17,10 @@
 
       <template v-if="taskData.failed_by_workers.length > 0">
       <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
-      <dd v-for="worker in taskData.failed_by_workers">
-        <worker-link :worker="worker" />
+      <dd>
+        <div v-for="worker in taskData.failed_by_workers">
+          <worker-link :worker="worker" />
+        </div>
       </dd>
 
       <dt class="field-type" title="Type">Type</dt>
