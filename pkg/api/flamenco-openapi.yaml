@@ -41,6 +41,49 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ManagerConfiguration" }
 
+  /api/v3/configuration/check/shared-storage:
+    summary: Validate a path for use as shared storage.
+    post:
+      summary: Validate a path for use as shared storage.
+      operationId: checkSharedStoragePath
+      tags: [meta]
+      requestBody:
+        description: Path to check
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PathCheckInput" }
+      responses:
+        "200":
+          description: Normal response, path check went fine.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PathCheckResult" }
+        default:
+          description: Something went wrong.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/v3/configuration/file:
+    summary: >
+      Access to the configuration file of Flamenco Manager. This is not schema'd
+      in OpenAPI, but follows the `internal/manager/config` package.
+    get:
+      summary: Retrieve the configuration of Flamenco Manager.
+      operationId: getConfigurationFile
+      tags: [meta]
+      responses:
+        "200":
+          description: Normal response.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+            application/yaml:
+              schema:
+                type: string
+
   /api/v3/configuration/variables/{audience}/{platform}:
     summary: Endpoint for getting the variables from Flamenco Manager's configuration.
     get:
@@ -902,7 +945,13 @@ components:
         "shamanEnabled":
           description: Whether the Shaman file transfer API is available.
           type: boolean
-      required: [storageLocation, shamanEnabled]
+        "isFirstRun":
+          description: >
+            Whether this is considered the first time the Manager runs. This is
+            determined by a few factors, like a non-existent configuration file
+            or certain settings being empty while they shouldn't be.
+          type: boolean
+      required: [storageLocation, shamanEnabled, isFirstRun]
 
     ManagerVariables:
       description: Mapping from variable name to its properties.
@@ -927,6 +976,26 @@ components:
     ManagerVariableAudience:
       type: string
       enum: [workers, users]
+
+    PathCheckInput:
+      type: object
+      properties:
+        "path": { type: string }
+      required: [path]
+
+    PathCheckResult:
+      type: object
+      properties:
+        "path":
+          description: The path that was checked.
+          type: string
+        "is_usable":
+          description: Whether the path is usable or not.
+          type: boolean
+        "cause":
+          description: Description of why this path is not usable.
+          type: string
+      required: [path, is_usable, cause]
 
     WorkerRegistration:
       type: object
