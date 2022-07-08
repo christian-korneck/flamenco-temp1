@@ -10,6 +10,7 @@ import (
 
 type VariableReplacer interface {
 	ExpandVariables(valueToExpand string, audience config.VariableAudience, platform config.VariablePlatform) string
+	ResolveVariables(audience config.VariableAudience, platform config.VariablePlatform) map[string]config.ResolvedVariable
 }
 
 // replaceTaskVariables performs variable replacement for worker tasks.

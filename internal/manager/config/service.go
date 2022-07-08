@@ -45,6 +45,9 @@ func (s *Service) Save() error {
 func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
 	return s.config.ExpandVariables(valueToExpand, audience, platform)
 }
+func (s *Service) ResolveVariables(audience VariableAudience, platform VariablePlatform) map[string]ResolvedVariable {
+	return s.config.ResolveVariables(audience, platform)
+}
 func (s *Service) EffectiveStoragePath() string {
 	return s.config.EffectiveStoragePath()
 }

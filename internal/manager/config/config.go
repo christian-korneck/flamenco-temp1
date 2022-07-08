@@ -149,6 +149,12 @@ type VariableValue struct {
 	Value string `yaml:"value" json:"value"`
 }
 
+// ResolvedVariable represents info about the variable, resolved for a specific platform & audience.
+type ResolvedVariable struct {
+	IsTwoWay bool
+	Value    string
+}
+
 // getConf parses flamenco-manager.yaml and returns its contents as a Conf object.
 func getConf() (Conf, error) {
 	return loadConf(configFilename)
@@ -381,21 +387,8 @@ func updateMap[K comparable, V any](target map[K]V, updateWith map[K]V) {
 
 // ExpandVariables converts "{variable name}" to the value that belongs to the given audience and platform.
 func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
-	platformsForAudience := c.VariablesLookup[audience]
-	if platformsForAudience == nil {
-		log.Warn().
-			Str("valueToExpand", valueToExpand).
-			Str("audience", string(audience)).
-			Str("platform", string(platform)).
-			Msg("no variables defined for this audience")
-		return valueToExpand
-	}
-
-	varsForPlatform := map[string]string{}
-	updateMap(varsForPlatform, platformsForAudience[VariablePlatformAll])
-	updateMap(varsForPlatform, platformsForAudience[platform])
-
-	if varsForPlatform == nil {
+	varsForPlatform := c.getVariables(audience, platform)
+	if len(varsForPlatform) == 0 {
 		log.Warn().
 			Str("valueToExpand", valueToExpand).
 			Str("audience", string(audience)).
@@ -410,7 +403,54 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 		valueToExpand = strings.Replace(valueToExpand, placeholder, varvalue, -1)
 	}
 
+	// TODO: this needs to go through multiple variable replacements, to make sure
+	// that, for example, the `{jobs}` variable gets the two-way variables applied
+	// as well.
+
 	return valueToExpand
+}
+
+// GetVariables returns the variable values for this (audience, platform) combination.
+// If no variables are found, just returns an empty map. If a value is defined
+// for both the "all" platform and specifically the given platform, the specific
+// platform definition wins.
+func (c *Conf) getVariables(audience VariableAudience, platform VariablePlatform) map[string]string {
+	platformsForAudience := c.VariablesLookup[audience]
+	if len(platformsForAudience) == 0 {
+		return make(map[string]string)
+	}
+
+	varsForPlatform := map[string]string{}
+	updateMap(varsForPlatform, platformsForAudience[VariablePlatformAll])
+	updateMap(varsForPlatform, platformsForAudience[platform])
+	return varsForPlatform
+}
+
+// ResolveVariables returns the variables for this (audience, platform) combination.
+// If no variables are found, just returns an empty map. If a value is defined
+// for both the "all" platform and specifically the given platform, the specific
+// platform definition wins.
+func (c *Conf) ResolveVariables(audience VariableAudience, platform VariablePlatform) map[string]ResolvedVariable {
+	varsForPlatform := c.getVariables(audience, platform)
+
+	resolvedVars := make(map[string]ResolvedVariable)
+	for name, value := range varsForPlatform {
+		resolvedVar := ResolvedVariable{Value: value}
+
+		// Find the 'IsTwoway' property by finding the actual foundVar, which can be
+		// defined in two places.
+		if foundVar, ok := c.Variables[name]; ok {
+			resolvedVar.IsTwoWay = foundVar.IsTwoWay
+		} else if foundVar, ok := c.implicitVariables[name]; ok {
+			resolvedVar.IsTwoWay = foundVar.IsTwoWay
+		} else {
+			log.Error().Str("variable", name).Msg("unable to find this variable, where did it come from?")
+		}
+
+		resolvedVars[name] = resolvedVar
+	}
+
+	return resolvedVars
 }
 
 // checkVariables performs some basic checks on variable definitions.

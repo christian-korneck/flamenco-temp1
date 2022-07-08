@@ -699,6 +699,20 @@ func (mr *MockConfigServiceMockRecorder) Get() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfigService)(nil).Get))
 }
 
+// ResolveVariables mocks base method.
+func (m *MockConfigService) ResolveVariables(arg0 config.VariableAudience, arg1 config.VariablePlatform) map[string]config.ResolvedVariable {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolveVariables", arg0, arg1)
+	ret0, _ := ret[0].(map[string]config.ResolvedVariable)
+	return ret0
+}
+
+// ResolveVariables indicates an expected call of ResolveVariables.
+func (mr *MockConfigServiceMockRecorder) ResolveVariables(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveVariables", reflect.TypeOf((*MockConfigService)(nil).ResolveVariables), arg0, arg1)
+}
+
 // MockTaskStateMachine is a mock of TaskStateMachine interface.
 type MockTaskStateMachine struct {
 	ctrl     *gomock.Controller
