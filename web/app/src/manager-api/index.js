@@ -33,6 +33,8 @@ import JobTasksSummary from './model/JobTasksSummary';
 import JobsQuery from './model/JobsQuery';
 import JobsQueryResult from './model/JobsQueryResult';
 import ManagerConfiguration from './model/ManagerConfiguration';
+import ManagerVariable from './model/ManagerVariable';
+import ManagerVariableAudience from './model/ManagerVariableAudience';
 import MayKeepRunning from './model/MayKeepRunning';
 import RegisteredWorker from './model/RegisteredWorker';
 import SecurityError from './model/SecurityError';
@@ -233,6 +235,18 @@ export {
      * @property {module:model/ManagerConfiguration}
      */
     ManagerConfiguration,
+
+    /**
+     * The ManagerVariable model constructor.
+     * @property {module:model/ManagerVariable}
+     */
+    ManagerVariable,
+
+    /**
+     * The ManagerVariableAudience model constructor.
+     * @property {module:model/ManagerVariableAudience}
+     */
+    ManagerVariableAudience,
 
     /**
      * The MayKeepRunning model constructor.

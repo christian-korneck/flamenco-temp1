@@ -16,6 +16,9 @@ type ServerInterface interface {
 	// Get the configuration of this Manager.
 	// (GET /api/v3/configuration)
 	GetConfiguration(ctx echo.Context) error
+	// Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser's platform.
+	// (GET /api/v3/configuration/variables/{audience}/{platform})
+	GetVariables(ctx echo.Context, audience ManagerVariableAudience, platform string) error
 	// Submit a new job for Flamenco Manager to execute.
 	// (POST /api/v3/jobs)
 	SubmitJob(ctx echo.Context) error
@@ -123,6 +126,30 @@ func (w *ServerInterfaceWrapper) GetConfiguration(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetConfiguration(ctx)
+	return err
+}
+
+// GetVariables converts echo context to params.
+func (w *ServerInterfaceWrapper) GetVariables(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "audience" -------------
+	var audience ManagerVariableAudience
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "audience", runtime.ParamLocationPath, ctx.Param("audience"), &audience)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter audience: %s", err))
+	}
+
+	// ------------- Path parameter "platform" -------------
+	var platform string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "platform", runtime.ParamLocationPath, ctx.Param("platform"), &platform)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter platform: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetVariables(ctx, audience, platform)
 	return err
 }
 
@@ -620,6 +647,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/api/v3/configuration", wrapper.GetConfiguration)
+	router.GET(baseURL+"/api/v3/configuration/variables/:audience/:platform", wrapper.GetVariables)
 	router.POST(baseURL+"/api/v3/jobs", wrapper.SubmitJob)
 	router.GET(baseURL+"/api/v3/jobs/last-rendered", wrapper.FetchGlobalLastRenderedInfo)
 	router.POST(baseURL+"/api/v3/jobs/query", wrapper.QueryJobs)

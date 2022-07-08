@@ -93,6 +93,9 @@ type ClientInterface interface {
 	// GetConfiguration request
 	GetConfiguration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetVariables request
+	GetVariables(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SubmitJob request with any body
 	SubmitJobWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -213,6 +216,18 @@ type ClientInterface interface {
 
 func (c *Client) GetConfiguration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetConfigurationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVariables(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVariablesRequest(c.Server, audience, platform)
 	if err != nil {
 		return nil, err
 	}
@@ -749,6 +764,47 @@ func NewGetConfigurationRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/api/v3/configuration")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetVariablesRequest generates requests for GetVariables
+func NewGetVariablesRequest(server string, audience ManagerVariableAudience, platform string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "audience", runtime.ParamLocationPath, audience)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "platform", runtime.ParamLocationPath, platform)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/configuration/variables/%s/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1964,6 +2020,9 @@ type ClientWithResponsesInterface interface {
 	// GetConfiguration request
 	GetConfigurationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetConfigurationResponse, error)
 
+	// GetVariables request
+	GetVariablesWithResponse(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*GetVariablesResponse, error)
+
 	// SubmitJob request with any body
 	SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error)
 
@@ -2098,6 +2157,28 @@ func (r GetConfigurationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetConfigurationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetVariablesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ManagerVariables
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVariablesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVariablesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2815,6 +2896,15 @@ func (c *ClientWithResponses) GetConfigurationWithResponse(ctx context.Context, 
 	return ParseGetConfigurationResponse(rsp)
 }
 
+// GetVariablesWithResponse request returning *GetVariablesResponse
+func (c *ClientWithResponses) GetVariablesWithResponse(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*GetVariablesResponse, error) {
+	rsp, err := c.GetVariables(ctx, audience, platform, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVariablesResponse(rsp)
+}
+
 // SubmitJobWithBodyWithResponse request with arbitrary body returning *SubmitJobResponse
 func (c *ClientWithResponses) SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error) {
 	rsp, err := c.SubmitJobWithBody(ctx, contentType, body, reqEditors...)
@@ -3206,6 +3296,32 @@ func ParseGetConfigurationResponse(rsp *http.Response) (*GetConfigurationRespons
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ManagerConfiguration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVariablesResponse parses an HTTP response from a GetVariablesWithResponse call
+func ParseGetVariablesResponse(rsp *http.Response) (*GetVariablesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVariablesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ManagerVariables
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -15,6 +15,8 @@
 import ApiClient from "../ApiClient";
 import FlamencoVersion from '../model/FlamencoVersion';
 import ManagerConfiguration from '../model/ManagerConfiguration';
+import ManagerVariable from '../model/ManagerVariable';
+import ManagerVariableAudience from '../model/ManagerVariableAudience';
 
 /**
 * Meta service.
@@ -69,6 +71,59 @@ export default class MetaApi {
      */
     getConfiguration() {
       return this.getConfigurationWithHttpInfo()
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser's platform. 
+     * @param {module:model/ManagerVariableAudience} audience 
+     * @param {String} platform 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link Object.<String, module:model/{String: ManagerVariable}>} and HTTP response
+     */
+    getVariablesWithHttpInfo(audience, platform) {
+      let postBody = null;
+      // verify the required parameter 'audience' is set
+      if (audience === undefined || audience === null) {
+        throw new Error("Missing the required parameter 'audience' when calling getVariables");
+      }
+      // verify the required parameter 'platform' is set
+      if (platform === undefined || platform === null) {
+        throw new Error("Missing the required parameter 'platform' when calling getVariables");
+      }
+
+      let pathParams = {
+        'audience': audience,
+        'platform': platform
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = {'String': ManagerVariable};
+      return this.apiClient.callApi(
+        '/api/v3/configuration/variables/{audience}/{platform}', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser's platform. 
+     * @param {module:model/ManagerVariableAudience} audience 
+     * @param {String} platform 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link Object.<String, module:model/{String: ManagerVariable}>}
+     */
+    getVariables(audience, platform) {
+      return this.getVariablesWithHttpInfo(audience, platform)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

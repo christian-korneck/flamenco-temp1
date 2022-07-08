@@ -73,6 +73,13 @@ const (
 	JobStatusUnderConstruction JobStatus = "under-construction"
 )
 
+// Defines values for ManagerVariableAudience.
+const (
+	ManagerVariableAudienceUsers ManagerVariableAudience = "users"
+
+	ManagerVariableAudienceWorkers ManagerVariableAudience = "workers"
+)
+
 // Defines values for ShamanFileStatus.
 const (
 	ShamanFileStatusStored ShamanFileStatus = "stored"
@@ -321,6 +328,21 @@ type ManagerConfiguration struct {
 
 	// Directory used for job file storage.
 	StorageLocation string `json:"storageLocation"`
+}
+
+// ManagerVariable defines model for ManagerVariable.
+type ManagerVariable struct {
+	// One-way variables are the most common one, and are simple replacement from `{name}` to their value, which happens when a Task is given to a Worker. Two-way variables are also replaced when submitting a job, where the platform-specific value is replaced by `{name}`.
+	IsTwoway bool   `json:"is_twoway"`
+	Value    string `json:"value"`
+}
+
+// ManagerVariableAudience defines model for ManagerVariableAudience.
+type ManagerVariableAudience string
+
+// Mapping from variable name to its properties.
+type ManagerVariables struct {
+	AdditionalProperties map[string]ManagerVariable `json:"-"`
 }
 
 // Indicates whether the worker may keep running the task.
@@ -917,6 +939,59 @@ func (a *JobsQuery_Settings) UnmarshalJSON(b []byte) error {
 
 // Override default JSON handling for JobsQuery_Settings to handle AdditionalProperties
 func (a JobsQuery_Settings) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for ManagerVariables. Returns the specified
+// element and whether it was found
+func (a ManagerVariables) Get(fieldName string) (value ManagerVariable, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ManagerVariables
+func (a *ManagerVariables) Set(fieldName string, value ManagerVariable) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]ManagerVariable)
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ManagerVariables to handle AdditionalProperties
+func (a *ManagerVariables) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]ManagerVariable)
+		for fieldName, fieldBuf := range object {
+			var fieldVal ManagerVariable
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ManagerVariables to handle AdditionalProperties
+func (a ManagerVariables) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
