@@ -11,6 +11,7 @@ import typing
 
 from .. import wheels
 
+blendfile = wheels.load_wheel("blender_asset_tracer.blendfile")
 pack = wheels.load_wheel("blender_asset_tracer.pack")
 progress = wheels.load_wheel("blender_asset_tracer.pack.progress")
 transfer = wheels.load_wheel("blender_asset_tracer.pack.transfer")
@@ -209,6 +210,11 @@ def copy(  # type: ignore
     with _packer_lock:
         if _running_packthread is not None:
             raise RuntimeError("other packing operation already in progress")
+
+    # Due to issues with library overrides and unsynced pointers, it's quite
+    # common for the Blender Animation Studio to get crashes of BAT. To avoid
+    # these, Strict Pointer Mode is disabled.
+    blendfile.set_strict_pointer_mode(False)
 
     if packer_kwargs is None:
         packer_kwargs = {}
