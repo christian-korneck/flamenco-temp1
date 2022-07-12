@@ -7,13 +7,7 @@ from collections import deque
 from pathlib import Path, PurePath, PurePosixPath
 from typing import TYPE_CHECKING, Optional, Any, Iterable, Iterator
 
-from .. import wheels
-from . import cache
-
-bat_pack = wheels.load_wheel("blender_asset_tracer.pack")
-bat_transfer = wheels.load_wheel("blender_asset_tracer.pack.transfer")
-bat_bpathlib = wheels.load_wheel("blender_asset_tracer.bpathlib")
-
+from . import cache, submodules
 
 if TYPE_CHECKING:
     from ..manager import ApiClient as _ApiClient
@@ -37,8 +31,8 @@ MAX_FAILED_PATHS = 8
 HashableShamanFileSpec = tuple[str, int, str]
 """Tuple of the 'sha', 'size', and 'path' fields of a ShamanFileSpec."""
 
-# Mypy doesn't understand that bat_pack.Packer exists.
-class Packer(bat_pack.Packer):  # type: ignore
+# Mypy doesn't understand that submodules.pack.Packer exists.
+class Packer(submodules.pack.Packer):  # type: ignore
     """Creates BAT Packs on a Shaman server."""
 
     def __init__(
@@ -60,8 +54,8 @@ class Packer(bat_pack.Packer):  # type: ignore
         self.api_client = api_client
         self.shaman_transferrer: Optional[Transferrer] = None
 
-    # Mypy doesn't understand that bat_transfer.FileTransferer exists.
-    def _create_file_transferer(self) -> bat_transfer.FileTransferer:  # type: ignore
+    # Mypy doesn't understand that submodules.transfer.FileTransferer exists.
+    def _create_file_transferer(self) -> submodules.transfer.FileTransferer:  # type: ignore
         self.shaman_transferrer = Transferrer(
             self.api_client, self.project, self.checkout_path
         )
@@ -90,7 +84,7 @@ class Packer(bat_pack.Packer):  # type: ignore
             self._check_aborted()
 
 
-class Transferrer(bat_transfer.FileTransferer):  # type: ignore
+class Transferrer(submodules.transfer.FileTransferer):  # type: ignore
     """Sends files to a Shaman server."""
 
     class AbortUpload(Exception):
@@ -213,7 +207,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
             try:
                 checksum = cache.compute_cached_checksum(src)
                 filesize = src.stat().st_size
-                relpath = str(bat_bpathlib.strip_root(dst))
+                relpath = str(submodules.bpathlib.strip_root(dst))
 
                 filespec = ShamanFileSpec(
                     sha=checksum,
@@ -223,7 +217,7 @@ class Transferrer(bat_transfer.FileTransferer):  # type: ignore
                 filespecs.append(filespec)
                 self._rel_to_local_path[relpath] = src
 
-                if act == bat_transfer.Action.MOVE:
+                if act == submodules.transfer.Action.MOVE:
                     self._delete_when_done.append(src)
             except Exception:
                 # We have to catch exceptions in a broad way, as this is running in

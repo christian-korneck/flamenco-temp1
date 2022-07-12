@@ -9,13 +9,7 @@ import queue
 import threading
 import typing
 
-from .. import wheels
-
-blendfile = wheels.load_wheel("blender_asset_tracer.blendfile")
-pack = wheels.load_wheel("blender_asset_tracer.pack")
-progress = wheels.load_wheel("blender_asset_tracer.pack.progress")
-transfer = wheels.load_wheel("blender_asset_tracer.pack.transfer")
-shaman = wheels.load_wheel("blender_asset_tracer.pack.shaman")
+from . import submodules
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +52,7 @@ class MsgDone(Message):
 
 
 # MyPy doesn't understand the way BAT subpackages are imported.
-class BatProgress(progress.Callback):  # type: ignore
+class BatProgress(submodules.progress.Callback):  # type: ignore
     """Report progress of BAT Packing to the given queue."""
 
     def __init__(self, queue: queue.SimpleQueue[Message]) -> None:
@@ -128,7 +122,7 @@ class PackThread(threading.Thread):
     queue: queue.SimpleQueue[Message]
 
     # MyPy doesn't understand the way BAT subpackages are imported.
-    def __init__(self, packer: pack.Packer) -> None:  # type: ignore
+    def __init__(self, packer: submodules.pack.Packer) -> None:  # type: ignore
         # Quitting Blender should abort the transfer (instead of hanging until
         # the transfer is done), hence daemon=True.
         super().__init__(daemon=True, name="PackThread")
@@ -197,7 +191,7 @@ def copy(  # type: ignore
     exclusion_filter: str,
     *,
     relative_only: bool,
-    packer_class=pack.Packer,
+    packer_class=submodules.pack.Packer,
     packer_kwargs: Optional[dict[Any, Any]] = None,
 ) -> PackThread:
     """Use BAT to copy the given file and dependencies to the target location.
@@ -214,7 +208,7 @@ def copy(  # type: ignore
     # Due to issues with library overrides and unsynced pointers, it's quite
     # common for the Blender Animation Studio to get crashes of BAT. To avoid
     # these, Strict Pointer Mode is disabled.
-    blendfile.set_strict_pointer_mode(False)
+    submodules.blendfile.set_strict_pointer_mode(False)
 
     if packer_kwargs is None:
         packer_kwargs = {}

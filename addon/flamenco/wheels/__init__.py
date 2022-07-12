@@ -13,50 +13,42 @@ from typing import Iterator
 _my_dir = Path(__file__).parent
 _log = logging.getLogger(__name__)
 
+def load_wheel(module_name: str, submodules: tuple[str]) -> list[ModuleType]:
+    """Loads modules from a wheel file 'module_name*.whl'.
 
-def load_wheel(module_name: str, fname_prefix: str = "") -> ModuleType:
-    """Loads a wheel from 'fname_prefix*.whl', unless the named module can be imported.
+    Loads `module_name`, and if submodules are given, loads
+    `module_name.submodule` for each of the submodules. This allows loading all
+    required modules from the same wheel in one session, ensuring that
+    inter-submodule references are correct.
 
-    This allows us to use system-installed packages before falling back to the shipped wheels.
-    This is useful for development, less so for deployment.
-
-    If `fname_prefix` is the empty string, it will use the module name.
+    Returns the loaded modules, so [module, submodule, submodule, ...].
     """
 
-    if not fname_prefix:
-        fname_prefix = _fname_prefix_from_module_name(module_name)
-
-    try:
-        module = importlib.import_module(module_name)
-    except ImportError as ex:
-        _log.debug("Unable to import %s directly, will try wheel: %s", module_name, ex)
-    else:
-        _log.debug(
-            "Was able to load %s from %s, no need to load wheel %s",
-            module_name,
-            module.__file__,
-            fname_prefix,
-        )
-        assert isinstance(module, ModuleType)
-        return module
-
+    fname_prefix = _fname_prefix_from_module_name(module_name)
     wheel = _wheel_filename(fname_prefix)
+
+    loaded_modules: list[ModuleType] = []
+    to_load = [module_name] + [f"{module_name}.{submodule}" for submodule in submodules]
 
     # Load the module from the wheel file. Keep a backup of sys.path so that it
     # can be restored later. This should ensure that future import statements
     # cannot find this wheel file, increasing the separation of dependencies of
     # this add-on from other add-ons.
     with _sys_path_mod_backup(wheel):
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError as ex:
-            raise ImportError(
-                "Unable to load %r from %s: %s" % (module_name, wheel, ex)
-            ) from None
+        for modname in to_load:
+            try:
+                module = importlib.import_module(modname)
+            except ImportError as ex:
+                raise ImportError(
+                    "Unable to load %r from %s: %s" % (modname, wheel, ex)
+                ) from None
+            assert isinstance(module, ModuleType)
+            loaded_modules.append(module)
+            _log.info("Loaded %s from %s", modname, module.__file__)
 
-    _log.debug("Loaded %s from %s", module_name, module.__file__)
-    assert isinstance(module, ModuleType)
-    return module
+    assert len(loaded_modules) == len(to_load), \
+        f"expecting to load {len(to_load)} modules, but only have {len(loaded_modules)}: {loaded_modules}"
+    return loaded_modules
 
 
 def load_wheel_global(module_name: str, fname_prefix: str = "") -> ModuleType:
