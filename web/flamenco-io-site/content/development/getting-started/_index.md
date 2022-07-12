@@ -41,6 +41,7 @@ If you install NodeJS in a different way, it may not be bundled with Yarn. In th
 ```
 sudo npm install --global yarn
 ```
+
 {{< /tab >}}
 {{< tab "Windows" >}}
 Install [Node v16 LTS](https://nodejs.org/en/download/) and then install Yarn via:
@@ -48,9 +49,33 @@ Install [Node v16 LTS](https://nodejs.org/en/download/) and then install Yarn vi
 ```
 npm install --global yarn
 ```
+
 {{< /tab >}}
 {{< tab "macOS" >}}
-This still needs documenting.
+**Option 1** (Native install)
+
+Install [Node v16 LTS](https://nodejs.org/en/download/) and then install Yarn via:
+
+```
+npm install --global yarn
+```
+
+<br />
+
+**Option 2** (Homebrew)
+
+Install Node 16 via homebrew:
+
+```
+brew install node@16
+```
+
+Then install yarn:
+
+```
+brew install yarn
+```
+
 {{< /tab >}}
 {{< /tabs >}}
 
