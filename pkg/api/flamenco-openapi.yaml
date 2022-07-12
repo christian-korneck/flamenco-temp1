@@ -64,6 +64,44 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+  /api/v3/configuration/check/blender:
+    summary: Find & validate a Blender executable.
+    get:
+      summary: Find one or more CLI commands for use as way to start Blender
+      operationId: findBlenderExePath
+      tags: [meta]
+      responses:
+        "200":
+          description: Found locations of Blender.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BlenderPathFindResult" }
+        default:
+          description: Something went wrong.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    post:
+      summary: Validate a CLI command for use as way to start Blender
+      operationId: checkBlenderExePath
+      tags: [meta]
+      requestBody:
+        description: Command or executable path to check
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PathCheckInput" }
+      responses:
+        "200":
+          description: Normal response, path check went fine.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BlenderPathCheckResult" }
+        default:
+          description: Something went wrong.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
   /api/v3/configuration/file:
     summary: >
       Access to the configuration file of Flamenco Manager. This is not schema'd
@@ -993,9 +1031,44 @@ components:
           description: Whether the path is usable or not.
           type: boolean
         "cause":
-          description: Description of why this path is not usable.
+          description: Description of why this path is (not) usable.
           type: string
       required: [path, is_usable, cause]
+
+    BlenderPathFindResult:
+      type: array
+      items:
+        $ref: "#/components/schemas/BlenderPathCheckResult"
+
+    BlenderPathCheckResult:
+      type: object
+      properties:
+        "input":
+          description: The input that was given to find this Blender.
+          type: string
+        "path":
+          description: The path that was found.
+          type: string
+        "source":
+          $ref: "#/components/schemas/BlenderPathSource"
+        "is_usable":
+          description: Whether the path is usable or not.
+          type: boolean
+        "cause":
+          description: Description of why this path is (not) usable.
+          type: string
+      required: [path, source, is_usable, cause]
+
+    BlenderPathSource:
+      type: string
+      enum:
+        # The reported path is the result of inspecting the association with .blend files.
+        # This is only checked when the input path is empty.
+        - file_association
+        # The input path was interpreted as simple command, and found on $PATH.
+        - path_envvar
+        # The input path was used as-is, as it points to an existing binary.
+        - input_path
 
     WorkerRegistration:
       type: object
