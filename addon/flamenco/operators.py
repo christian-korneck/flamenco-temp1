@@ -146,6 +146,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
     blendfile_on_farm: Optional[PurePosixPath] = None
     job_name: bpy.props.StringProperty(name="Job Name")  # type: ignore
     job: Optional[_SubmittedJob] = None
+    temp_blendfile: Optional[Path] = None
 
     timer: Optional[bpy.types.Timer] = None
     packthread: Optional[_PackThread] = None
@@ -207,6 +208,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             bpy.ops.wm.save_as_mainfile(
                 filepath=str(filepath), compress=True, copy=True
             )
+            self.temp_blendfile = filepath
         finally:
             # Restore the settings we changed, even after an exception.
             render.use_file_extension = old_use_file_extension
@@ -367,6 +369,11 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         Does neither check nor abort the BAT pack thread.
         """
+
+        if self.temp_blendfile is not None:
+            self.log.info("Removing temporary file %s", self.temp_blendfile)
+            self.temp_blendfile.unlink(missing_ok=True)
+
         if self.timer is not None:
             context.window_manager.event_timer_remove(self.timer)
             self.timer = None
