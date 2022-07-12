@@ -16,7 +16,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
 
-	"git.blender.org/flamenco/internal/worker/find_blender"
+	"git.blender.org/flamenco/internal/find_blender"
 	"git.blender.org/flamenco/pkg/api"
 )
 

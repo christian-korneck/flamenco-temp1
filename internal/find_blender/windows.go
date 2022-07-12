@@ -1,7 +1,8 @@
 //go:build windows
 
-// SPDX-License-Identifier: GPL-3.0-or-later
 package find_blender
+
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
 	"errors"
@@ -13,8 +14,8 @@ import (
 	"unsafe"
 )
 
-// FindBlender returns the full path of `blender.exe` associated with ".blend" files.
-func FindBlender() (string, error) {
+// findBlender returns the full path of `blender.exe` associated with ".blend" files.
+func findBlender() (string, error) {
 	exe, err := fileAssociation(".blend")
 	if err != nil {
 		return "", err

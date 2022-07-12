@@ -27,6 +27,10 @@
         {{ sharedStorageCheckResult.cause }}
       </p>
     </section>
+
+    <section>
+      <h2>Which Blender?</h2>
+    </section>
   </div>
 
   <footer class="app-footer">

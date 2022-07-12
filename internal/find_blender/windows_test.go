@@ -1,7 +1,8 @@
 //go:build windows
 
-// SPDX-License-Identifier: GPL-3.0-or-later
 package find_blender
+
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
 	"flag"
@@ -15,7 +16,7 @@ var withBlender = flag.Bool("withBlender", false, "run test that requires Blende
 // TestFindBlender is a "weak" test, which actually accepts both happy and unhappy flows.
 // It would be too fragile to always require a file association to be set up with Blender.
 func TestFindBlender(t *testing.T) {
-	exe, err := FindBlender()
+	exe, err := findBlender()
 	if err != nil {
 		assert.Empty(t, exe)
 
