@@ -32,3 +32,6 @@ web/manager-api/dist/
 web/static/
 web/flamenco-io-site/public/
 /dist/
+
+# IDE related stuff
+*.DS_Store
