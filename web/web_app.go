@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"mime"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
@@ -26,6 +27,12 @@ func WebAppHandler() (http.Handler, error) {
 	// Serve `index.html` from the root directory if the requested file cannot be
 	// found.
 	wrappedFS := WrapFS(fs, "index.html")
+
+	// Windows doesn't know this mime type. Web browsers won't load the webapp JS
+	// file when it's served as text/plain.
+	if err := mime.AddExtensionType(".js", "application/javascript"); err != nil {
+		return nil, fmt.Errorf("registering mime type for JavaScript files: %w", err)
+	}
 
 	return http.FileServer(http.FS(wrappedFS)), nil
 }
