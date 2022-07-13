@@ -3,7 +3,7 @@ package api_impl
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
-	"path"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +11,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
+	"git.blender.org/flamenco/pkg/crosspath"
 )
 
 func varreplTestTask() api.AssignedTask {
@@ -106,25 +107,33 @@ func TestReplaceJobsVariable(t *testing.T) {
 	// An implicit variable "{jobs}" should be created, regardless of whether
 	// Shaman is enabled or not.
 
+	var storagePath string
+	switch runtime.GOOS {
+	case "windows":
+		storagePath = `C:\path\to\flamenco-storage`
+	default:
+		storagePath = "/path/to/flamenco-storage"
+	}
+
 	{ // Test with Shaman enabled.
 		conf := config.GetTestConfig(func(c *config.Conf) {
-			c.SharedStoragePath = "/path/to/flamenco-storage"
+			c.SharedStoragePath = storagePath
 			c.Shaman.Enabled = true
 		})
 
 		replacedTask := replaceTaskVariables(&conf, task, worker)
-		expectPath := path.Join(conf.Shaman.CheckoutPath(), "path/in/storage.blend")
+		expectPath := crosspath.Join(crosspath.ToSlash(conf.Shaman.CheckoutPath()), "path/in/storage.blend")
 		assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
 	}
 
 	{ // Test without Shaman.
 		conf := config.GetTestConfig(func(c *config.Conf) {
-			c.SharedStoragePath = "/path/to/flamenco-storage"
+			c.SharedStoragePath = storagePath
 			c.Shaman.Enabled = false
 		})
 
 		replacedTask := replaceTaskVariables(&conf, task, worker)
-		expectPath := "/path/to/flamenco-storage/jobs/path/in/storage.blend"
+		expectPath := crosspath.Join(storagePath, "jobs", "path/in/storage.blend")
 		assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
 	}
 }

@@ -19,6 +19,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"git.blender.org/flamenco/internal/appinfo"
+	"git.blender.org/flamenco/pkg/crosspath"
 	shaman_config "git.blender.org/flamenco/pkg/shaman/config"
 )
 
@@ -271,7 +272,7 @@ func (c *Conf) addImplicitVariables() {
 			{
 				Audience: VariableAudienceAll,
 				Platform: VariablePlatformAll,
-				Value:    c.EffectiveStoragePath(),
+				Value:    crosspath.ToSlash(c.EffectiveStoragePath()),
 			},
 		},
 	}

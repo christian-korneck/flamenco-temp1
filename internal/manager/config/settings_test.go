@@ -5,6 +5,7 @@ package config
 import (
 	"testing"
 
+	"git.blender.org/flamenco/pkg/crosspath"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,7 +67,9 @@ func TestStorageImplicitVariablesWithShaman(t *testing.T) {
 		t.FailNow()
 	}
 	assert.False(t, c.implicitVariables["jobs"].IsTwoWay)
-	assert.Equal(t, c.Shaman.CheckoutPath(), c.implicitVariables["jobs"].Values[0].Value)
+	assert.Equal(t,
+		crosspath.ToSlash(c.Shaman.CheckoutPath()),
+		c.implicitVariables["jobs"].Values[0].Value)
 }
 
 func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
@@ -92,5 +95,7 @@ func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
 		t.FailNow()
 	}
 	assert.False(t, c.implicitVariables["jobs"].IsTwoWay)
-	assert.Equal(t, c.SharedStoragePath, c.implicitVariables["jobs"].Values[0].Value)
+	assert.Equal(t,
+		crosspath.ToSlash(c.SharedStoragePath),
+		c.implicitVariables["jobs"].Values[0].Value)
 }
