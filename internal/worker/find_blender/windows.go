@@ -72,7 +72,7 @@ func fileAssociation(extension string) (string, error) {
 	buf := make([]uint16, cchOut)
 	pszOut := unsafe.Pointer(&buf[0])
 
-	result1, _, err := syscall.SyscallN(
+	result1, _, errno := syscall.SyscallN(
 		assocQueryString,
 		uintptr(ASSOCF_INIT_DEFAULTTOSTAR), // [in]            ASSOCF   flags
 		uintptr(ASSOCSTR_EXECUTABLE),       // [in]            ASSOCSTR str
@@ -81,13 +81,8 @@ func fileAssociation(extension string) (string, error) {
 		uintptr(pszOut),                    // [out, optional] LPWSTR   pszOut
 		uintptr(unsafe.Pointer(&cchOut)),   // [in, out]       DWORD    *pcchOut
 	)
-	if err != nil {
-		// This can be a syscall.Errno with code 0, indicating things are actually fine.
-		if errno, ok := err.(syscall.Errno); ok && errno == 0 {
-			// So this is fine.
-		} else {
-			return "", fmt.Errorf("error calling AssocQueryStringW from shlwapi.dll: %w", err)
-		}
+	if errno != 0 {
+		return "", fmt.Errorf("error calling AssocQueryStringW from shlwapi.dll: %w", errno)
 	}
 	if result1 != 0 {
 		return "", fmt.Errorf("unknown result %d calling AssocQueryStringW from shlwapi.dll: %w", result1, err)
