@@ -61,9 +61,9 @@ var defaultConfig = Conf{
 		// The default commands assume that the executables are available on $PATH.
 		"blender": {
 			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "blender --factory-startup --background"},
-				VariableValue{Platform: "windows", Value: "blender.exe --factory-startup --background"},
-				VariableValue{Platform: "darwin", Value: "blender --factory-startup --background"},
+				VariableValue{Platform: "linux", Value: "blender --factory-startup -b -y"},
+				VariableValue{Platform: "windows", Value: "blender.exe --factory-startup -b -y"},
+				VariableValue{Platform: "darwin", Value: "blender --factory-startup -b -y"},
 			},
 		},
 		"ffmpeg": {
