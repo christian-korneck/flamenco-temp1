@@ -23,14 +23,15 @@ class BlenderPathCheckResult {
     /**
      * Constructs a new <code>BlenderPathCheckResult</code>.
      * @alias module:model/BlenderPathCheckResult
+     * @param input {String} The input that was given to find this Blender.
      * @param path {String} The path that was found.
      * @param source {module:model/BlenderPathSource} 
      * @param isUsable {Boolean} Whether the path is usable or not.
      * @param cause {String} Description of why this path is (not) usable.
      */
-    constructor(path, source, isUsable, cause) { 
+    constructor(input, path, source, isUsable, cause) { 
         
-        BlenderPathCheckResult.initialize(this, path, source, isUsable, cause);
+        BlenderPathCheckResult.initialize(this, input, path, source, isUsable, cause);
     }
 
     /**
@@ -38,7 +39,8 @@ class BlenderPathCheckResult {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, path, source, isUsable, cause) { 
+    static initialize(obj, input, path, source, isUsable, cause) { 
+        obj['input'] = input;
         obj['path'] = path;
         obj['source'] = source;
         obj['is_usable'] = isUsable;

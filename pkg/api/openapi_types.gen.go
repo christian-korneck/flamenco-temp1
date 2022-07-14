@@ -226,7 +226,7 @@ type BlenderPathCheckResult struct {
 	Cause string `json:"cause"`
 
 	// The input that was given to find this Blender.
-	Input *string `json:"input,omitempty"`
+	Input string `json:"input"`
 
 	// Whether the path is usable or not.
 	IsUsable bool `json:"is_usable"`
@@ -640,6 +640,14 @@ type TaskWorker struct {
 	Name    string `json:"name"`
 }
 
+// Configuration obtained from the First-Time Wizard.
+type WizardConfig struct {
+	BlenderExecutable BlenderPathCheckResult `json:"blenderExecutable"`
+
+	// Directory used for job file storage.
+	StorageLocation string `json:"storageLocation"`
+}
+
 // Worker defines model for Worker.
 type Worker struct {
 	// Embedded struct due to allOf(#/components/schemas/WorkerSummary)
@@ -715,6 +723,9 @@ type CheckBlenderExePathJSONBody PathCheckInput
 // CheckSharedStoragePathJSONBody defines parameters for CheckSharedStoragePath.
 type CheckSharedStoragePathJSONBody PathCheckInput
 
+// SaveWizardConfigJSONBody defines parameters for SaveWizardConfig.
+type SaveWizardConfigJSONBody WizardConfig
+
 // SubmitJobJSONBody defines parameters for SubmitJob.
 type SubmitJobJSONBody SubmittedJob
 
@@ -765,6 +776,9 @@ type CheckBlenderExePathJSONRequestBody CheckBlenderExePathJSONBody
 
 // CheckSharedStoragePathJSONRequestBody defines body for CheckSharedStoragePath for application/json ContentType.
 type CheckSharedStoragePathJSONRequestBody CheckSharedStoragePathJSONBody
+
+// SaveWizardConfigJSONRequestBody defines body for SaveWizardConfig for application/json ContentType.
+type SaveWizardConfigJSONRequestBody SaveWizardConfigJSONBody
 
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody

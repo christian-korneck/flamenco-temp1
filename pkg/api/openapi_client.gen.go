@@ -114,6 +114,11 @@ type ClientInterface interface {
 	// GetVariables request
 	GetVariables(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SaveWizardConfig request with any body
+	SaveWizardConfigWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SaveWizardConfig(ctx context.Context, body SaveWizardConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SubmitJob request with any body
 	SubmitJobWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -318,6 +323,30 @@ func (c *Client) GetConfigurationFile(ctx context.Context, reqEditors ...Request
 
 func (c *Client) GetVariables(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetVariablesRequest(c.Server, audience, platform)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SaveWizardConfigWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSaveWizardConfigRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SaveWizardConfig(ctx context.Context, body SaveWizardConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSaveWizardConfigRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1042,6 +1071,46 @@ func NewGetVariablesRequest(server string, audience ManagerVariableAudience, pla
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewSaveWizardConfigRequest calls the generic SaveWizardConfig builder with application/json body
+func NewSaveWizardConfigRequest(server string, body SaveWizardConfigJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSaveWizardConfigRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSaveWizardConfigRequestWithBody generates requests for SaveWizardConfig with any type of body
+func NewSaveWizardConfigRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/configuration/wizard")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2263,6 +2332,11 @@ type ClientWithResponsesInterface interface {
 	// GetVariables request
 	GetVariablesWithResponse(ctx context.Context, audience ManagerVariableAudience, platform string, reqEditors ...RequestEditorFn) (*GetVariablesResponse, error)
 
+	// SaveWizardConfig request with any body
+	SaveWizardConfigWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SaveWizardConfigResponse, error)
+
+	SaveWizardConfigWithResponse(ctx context.Context, body SaveWizardConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*SaveWizardConfigResponse, error)
+
 	// SubmitJob request with any body
 	SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error)
 
@@ -2513,6 +2587,28 @@ func (r GetVariablesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetVariablesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SaveWizardConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r SaveWizardConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SaveWizardConfigResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3291,6 +3387,23 @@ func (c *ClientWithResponses) GetVariablesWithResponse(ctx context.Context, audi
 	return ParseGetVariablesResponse(rsp)
 }
 
+// SaveWizardConfigWithBodyWithResponse request with arbitrary body returning *SaveWizardConfigResponse
+func (c *ClientWithResponses) SaveWizardConfigWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SaveWizardConfigResponse, error) {
+	rsp, err := c.SaveWizardConfigWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSaveWizardConfigResponse(rsp)
+}
+
+func (c *ClientWithResponses) SaveWizardConfigWithResponse(ctx context.Context, body SaveWizardConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*SaveWizardConfigResponse, error) {
+	rsp, err := c.SaveWizardConfig(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSaveWizardConfigResponse(rsp)
+}
+
 // SubmitJobWithBodyWithResponse request with arbitrary body returning *SubmitJobResponse
 func (c *ClientWithResponses) SubmitJobWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitJobResponse, error) {
 	rsp, err := c.SubmitJobWithBody(ctx, contentType, body, reqEditors...)
@@ -3846,6 +3959,32 @@ func ParseGetVariablesResponse(rsp *http.Response) (*GetVariablesResponse, error
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSaveWizardConfigResponse parses an HTTP response from a SaveWizardConfigWithResponse call
+func ParseSaveWizardConfigResponse(rsp *http.Response) (*SaveWizardConfigResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SaveWizardConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 

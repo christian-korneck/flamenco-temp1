@@ -66,6 +66,7 @@ from flamenco.manager.model.task_status_change import TaskStatusChange
 from flamenco.manager.model.task_summary import TaskSummary
 from flamenco.manager.model.task_update import TaskUpdate
 from flamenco.manager.model.task_worker import TaskWorker
+from flamenco.manager.model.wizard_config import WizardConfig
 from flamenco.manager.model.worker import Worker
 from flamenco.manager.model.worker_all_of import WorkerAllOf
 from flamenco.manager.model.worker_list import WorkerList
