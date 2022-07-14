@@ -5,6 +5,7 @@ package find_blender
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -39,7 +40,7 @@ func CheckBlender(ctx context.Context, exename string) (CheckBlenderResult, erro
 			return CheckBlender(ctx, "blender")
 		case err != nil:
 			// Some other error occurred, better to report it.
-			return CheckBlenderResult{}, err
+			return CheckBlenderResult{}, fmt.Errorf("error finding .blend file association: %w", err)
 		default:
 			// The full path was found, report the Blender version.
 			return getResultWithVersion(ctx, exename, fullPath, api.BlenderPathSourceFileAssociation)
