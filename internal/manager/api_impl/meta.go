@@ -292,6 +292,10 @@ func (f *Flamenco) SaveWizardConfig(e echo.Context) error {
 	}
 
 	logger.Info().Msg("first-time wizard: updating configuration")
+
+	// Request the shutdown in a goroutine, so that this one can continue sending the response.
+	go f.requestShutdown()
+
 	return e.NoContent(http.StatusNoContent)
 }
 

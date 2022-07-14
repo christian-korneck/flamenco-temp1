@@ -77,11 +77,30 @@ func main() {
 		return
 	}
 
-	// The main context determines the lifetime of the application. All
-	// long-running goroutines need to keep an eye on this, and stop their work
-	// once it closes.
-	mainCtx, mainCtxCancel := context.WithCancel(context.Background())
+	startFlamenco := true
+	for startFlamenco {
+		startFlamenco = runFlamencoManager()
 
+		// After the first run, the first-time wizard should not be forced any more.
+		// If the configuration is still incomplete it can still auto-trigger.
+		cliArgs.firstTimeWizard = false
+
+		if startFlamenco {
+			log.Info().
+				Str("version", appinfo.ApplicationVersion).
+				Str("os", runtime.GOOS).
+				Str("arch", runtime.GOARCH).
+				Msgf("restarting %v", appinfo.ApplicationName)
+		}
+	}
+
+	log.Info().Msg("stopping the Flamenco Manager process")
+}
+
+// runFlamencoManager starts the entire Flamenco Manager, and only returns after
+// it has been completely shut down.
+// Returns true if it should be restarted again.
+func runFlamencoManager() bool {
 	// Load configuration.
 	configService := config.NewService()
 	err := configService.Load()
@@ -106,7 +125,7 @@ func main() {
 			log.Error().Err(err).Msg("could not write configuration file")
 			os.Exit(1)
 		}
-		return
+		return false
 	}
 
 	// TODO: enable TLS via Let's Encrypt.
@@ -148,6 +167,11 @@ func main() {
 		configService.Get().TaskTimeout,
 		configService.Get().WorkerTimeout,
 		timeService, persist, taskStateMachine, logStorage, webUpdater)
+
+	// The main context determines the lifetime of the application. All
+	// long-running goroutines need to keep an eye on this, and stop their work
+	// once it closes.
+	mainCtx, mainCtxCancel := context.WithCancel(context.Background())
 
 	installSignalHandler(mainCtxCancel)
 
@@ -201,8 +225,16 @@ func main() {
 		go openWebbrowser(mainCtx, urls[0])
 	}
 
+	// Allow the Flamenco API itself trigger a shutdown as well.
+	log.Debug().Msg("waiting for a shutdown request from Flamenco")
+	doRestart := flamenco.WaitForShutdown(mainCtx)
+	log.Info().Bool("willRestart", doRestart).Msg("going to shut down the service")
+	mainCtxCancel()
+
 	wg.Wait()
-	log.Info().Msg("shutdown complete")
+	log.Info().Bool("willRestart", doRestart).Msg("Flamenco Manager service shut down")
+
+	return doRestart
 }
 
 func buildFlamencoAPI(
@@ -215,7 +247,7 @@ func buildFlamencoAPI(
 	webUpdater *webupdates.BiDirComms,
 	lastRender *last_rendered.LastRenderedProcessor,
 	localStorage local_storage.StorageInfo,
-) api.ServerInterface {
+) *api_impl.Flamenco {
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")

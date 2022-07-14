@@ -4,6 +4,7 @@ package api_impl
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -30,6 +31,10 @@ type Flamenco struct {
 	// the same task. It is also used for certain other queries, like
 	// `MayWorkerRun` to prevent similar race conditions.
 	taskSchedulerMutex sync.Mutex
+
+	// done is closed by Flamenco when it wants the application to shut down and
+	// restart itself from scratch.
+	done chan struct{}
 }
 
 var _ api.ServerInterface = (*Flamenco)(nil)
@@ -58,7 +63,27 @@ func NewFlamenco(
 		clock:        ts,
 		lastRender:   lr,
 		localStorage: localStorage,
+
+		done: make(chan struct{}),
 	}
+}
+
+// WaitForShutdown waits until Flamenco wants to shut down the application.
+// Returns `true` when the application should restart.
+// Returns `false` when the context closes.
+func (f *Flamenco) WaitForShutdown(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	case <-f.done:
+		return true
+	}
+}
+
+// requestShutdown closes the 'done' channel, signalling to callers of
+// WaitForShutdown() that a shutdown is requested.
+func (f *Flamenco) requestShutdown() {
+	close(f.done)
 }
 
 // sendAPIError wraps sending of an error in the Error format, and
