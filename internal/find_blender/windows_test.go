@@ -5,7 +5,6 @@ package find_blender
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
-	"flag"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
