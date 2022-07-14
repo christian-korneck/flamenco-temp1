@@ -713,6 +713,21 @@ func (mr *MockConfigServiceMockRecorder) Get() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfigService)(nil).Get))
 }
 
+// IsFirstRun mocks base method.
+func (m *MockConfigService) IsFirstRun() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsFirstRun")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsFirstRun indicates an expected call of IsFirstRun.
+func (mr *MockConfigServiceMockRecorder) IsFirstRun() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsFirstRun", reflect.TypeOf((*MockConfigService)(nil).IsFirstRun))
+}
+
 // ResolveVariables mocks base method.
 func (m *MockConfigService) ResolveVariables(arg0 config.VariableAudience, arg1 config.VariablePlatform) map[string]config.ResolvedVariable {
 	m.ctrl.T.Helper()

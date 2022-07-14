@@ -34,6 +34,9 @@ type mockedFlamenco struct {
 	clock        *clock.Mock
 	lastRender   *mocks.MockLastRendered
 	localStorage *mocks.MockLocalStorage
+
+	// Place for some tests to store a temporary directory.
+	tempdir string
 }
 
 func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
@@ -106,6 +109,27 @@ func getRecordedResponseRecorder(echoCtx echo.Context) *httptest.ResponseRecorde
 
 func getRecordedResponse(echoCtx echo.Context) *http.Response {
 	return getRecordedResponseRecorder(echoCtx).Result()
+}
+
+func getResponseJSON(t *testing.T, echoCtx echo.Context, expectStatusCode int, actualPayloadPtr interface{}) {
+	resp := getRecordedResponse(echoCtx)
+	assert.Equal(t, expectStatusCode, resp.StatusCode)
+	contentType := resp.Header.Get(echo.HeaderContentType)
+
+	if !assert.Equal(t, "application/json; charset=UTF-8", contentType) {
+		t.Fatalf("response not JSON but %q, not going to compare body", contentType)
+		return
+	}
+
+	actualJSON, err := io.ReadAll(resp.Body)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	err = json.Unmarshal(actualJSON, actualPayloadPtr)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
 }
 
 // assertResponseJSON asserts that a recorded response is JSON with the given HTTP status code.

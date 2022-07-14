@@ -25,12 +25,14 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mattn/go-colorable"
+	"github.com/pkg/browser"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v3"
 
 	"git.blender.org/flamenco/internal/appinfo"
 	"git.blender.org/flamenco/internal/manager/api_impl"
+	"git.blender.org/flamenco/internal/manager/api_impl/dummy"
 	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/last_rendered"
@@ -49,12 +51,17 @@ import (
 )
 
 var cliArgs struct {
-	version        bool
-	writeConfig    bool
-	delayResponses bool
+	version         bool
+	writeConfig     bool
+	delayResponses  bool
+	firstTimeWizard bool
 }
 
-const developmentWebInterfacePort = 8081
+const (
+	developmentWebInterfacePort = 8081
+
+	webappEntryPoint = "index.html"
+)
 
 func main() {
 	output := zerolog.ConsoleWriter{Out: colorable.NewColorableStdout(), TimeFormat: time.RFC3339}
@@ -80,6 +87,17 @@ func main() {
 	err := configService.Load()
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		log.Error().Err(err).Msg("loading configuration")
+	}
+
+	if cliArgs.firstTimeWizard {
+		configService.ForceFirstRun()
+	}
+	isFirstRun, err := configService.IsFirstRun()
+	switch {
+	case err != nil:
+		log.Fatal().Err(err).Msg("unable to determine whether this is the first run of Flamenco or not")
+	case isFirstRun:
+		log.Info().Msg("This seems to be your first run of Flamenco! A webbrowser will open to help you set things up.")
 	}
 
 	if cliArgs.writeConfig {
@@ -120,8 +138,10 @@ func main() {
 
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater, logStorage)
 	lastRender := last_rendered.New(localStorage)
+
+	shamanServer := buildShamanServer(configService, isFirstRun)
 	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine,
-		logStorage, webUpdater, lastRender, localStorage)
+		shamanServer, logStorage, webUpdater, lastRender, localStorage)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls, localStorage)
 
 	timeoutChecker := timeout_checker.New(
@@ -176,6 +196,11 @@ func main() {
 		timeoutChecker.Run(mainCtx)
 	}()
 
+	// Open a webbrowser, but give the web service some time to start first.
+	if isFirstRun {
+		go openWebbrowser(mainCtx, urls[0])
+	}
+
 	wg.Wait()
 	log.Info().Msg("shutdown complete")
 }
@@ -185,6 +210,7 @@ func buildFlamencoAPI(
 	configService *config.Service,
 	persist *persistence.DB,
 	taskStateMachine *task_state_machine.StateMachine,
+	shamanServer api_impl.Shaman,
 	logStorage *task_logs.Storage,
 	webUpdater *webupdates.BiDirComms,
 	lastRender *last_rendered.LastRenderedProcessor,
@@ -194,7 +220,6 @@ func buildFlamencoAPI(
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading job compilers")
 	}
-	shamanServer := shaman.NewServer(configService.Get().Shaman, nil)
 	flamenco := api_impl.NewFlamenco(
 		compiler, persist, webUpdater, logStorage, configService,
 		taskStateMachine, shamanServer, timeService, lastRender,
@@ -297,7 +322,7 @@ func buildWebService(
 	}
 
 	// Serve static files for the webapp on /app/.
-	webAppHandler, err := web.WebAppHandler()
+	webAppHandler, err := web.WebAppHandler(webappEntryPoint)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to set up HTTP server for embedded web app")
 	}
@@ -382,6 +407,32 @@ func runWebService(ctx context.Context, e *echo.Echo, listen string) error {
 	}
 }
 
+func buildShamanServer(configService *config.Service, isFirstRun bool) api_impl.Shaman {
+	if isFirstRun {
+		log.Info().Msg("Not starting Shaman storage service, as this is the first run of Flamenco. Configure the shared storage location first.")
+		return &dummy.DummyShaman{}
+	}
+	return shaman.NewServer(configService.Get().Shaman, nil)
+}
+
+// openWebbrowser starts a web browser after waiting for 1 second.
+// Closing the context aborts the opening of the browser, but doesn't close the
+// browser itself if has already started.
+func openWebbrowser(ctx context.Context, url url.URL) {
+	select {
+	case <-ctx.Done():
+		return
+	case <-time.After(1 * time.Second):
+	}
+
+	urlToTry := url.String()
+	if err := browser.OpenURL(urlToTry); err != nil {
+		log.Fatal().Err(err).Msgf("unable to open a browser to %s", urlToTry)
+	}
+	log.Info().Str("url", urlToTry).Msgf("opened browser to the Flamenco interface")
+
+}
+
 func parseCliArgs() {
 	var quiet, debug, trace bool
 
@@ -392,6 +443,7 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.writeConfig, "write-config", false, "Writes configuration to flamenco-manager.yaml, then exits.")
 	flag.BoolVar(&cliArgs.delayResponses, "delay", false,
 		"Add a random delay to any HTTP responses. This aids in development of Flamenco Manager's web frontend.")
+	flag.BoolVar(&cliArgs.firstTimeWizard, "wizard", false, "Open a webbrowser with the first-time configuration wizard.")
 
 	flag.Parse()
 

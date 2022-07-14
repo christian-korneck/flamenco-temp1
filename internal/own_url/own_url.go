@@ -29,6 +29,15 @@ func AvailableURLs(schema, listen string) ([]url.URL, error) {
 	return urlsForNetworkInterfaces(schema, listen, addrs)
 }
 
+// ToStringers converts an array of URLs to an array of `fmt.Stringer`.
+func ToStringers(urls []url.URL) []fmt.Stringer {
+	stringers := make([]fmt.Stringer, len(urls))
+	for idx := range urls {
+		stringers[idx] = &urls[idx]
+	}
+	return stringers
+}
+
 // specificHostURL returns the hosts's URL if the "listen" string is specific enough, otherwise nil.
 // Examples: "192.168.0.1:8080" is specific enough, "0.0.0.0:8080" and ":8080" are not.
 func specificHostURL(scheme, listen string) *url.URL {

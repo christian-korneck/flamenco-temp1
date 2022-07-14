@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import * as API from "@/manager-api";
+import { ApiClient } from "@/manager-api";
 import * as urls from '@/urls'
 
 /**
@@ -28,7 +28,7 @@ export const useAPIQueryCount = defineStore("apiQueryCount", {
   },
 });
 
-export class CountingApiClient extends API.ApiClient {
+export class CountingApiClient extends ApiClient {
   callApi(path, httpMethod, pathParams, queryParams, headerParams, formParams,
           bodyParam, authNames, contentTypes, accepts, returnType, apiBasePath ) {
     const apiQueryCount = useAPIQueryCount();

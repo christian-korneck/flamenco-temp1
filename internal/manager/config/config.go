@@ -225,19 +225,20 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 }
 
 func (c *Conf) processStorage() {
-	storagePath, err := filepath.Abs(c.SharedStoragePath)
-	if err != nil {
-		log.Error().Err(err).
-			Str("storage_path", c.SharedStoragePath).
-			Msg("unable to determine absolute storage path")
-	} else {
-		c.SharedStoragePath = storagePath
+	// The shared storage path should be absolute, but only if it's actually configured.
+	if c.SharedStoragePath != "" {
+		storagePath, err := filepath.Abs(c.SharedStoragePath)
+		if err != nil {
+			log.Error().Err(err).
+				Str("storage_path", c.SharedStoragePath).
+				Msg("unable to determine absolute storage path")
+		} else {
+			c.SharedStoragePath = storagePath
+		}
 	}
 
 	// Shaman should use the Flamenco storage location.
-	if c.Shaman.Enabled {
-		c.Shaman.StoragePath = c.SharedStoragePath
-	}
+	c.Shaman.StoragePath = c.SharedStoragePath
 }
 
 // EffectiveStoragePath returns the absolute path of the job storage directory.

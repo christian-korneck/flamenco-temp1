@@ -158,6 +158,9 @@ type ConfigService interface {
 	// basically the configured storage path, but can be influenced by other
 	// options (like Shaman).
 	EffectiveStoragePath() string
+
+	// IsFirstRun returns true if this is likely to be the first run of Flamenco.
+	IsFirstRun() (bool, error)
 }
 
 type Shaman interface {

@@ -17,7 +17,8 @@ import (
 var webStaticFS embed.FS
 
 // WebAppHandler returns a HTTP handler to serve the static files of the Flamenco Manager web app.
-func WebAppHandler() (http.Handler, error) {
+// `appFilename` is either `index.html` for the main webapp, or `first-time-wizard.html`.
+func WebAppHandler(appFilename string) (http.Handler, error) {
 	// Strip the 'static/' directory off of the embedded filesystem.
 	fs, err := fs.Sub(webStaticFS, "static")
 	if err != nil {
@@ -25,8 +26,9 @@ func WebAppHandler() (http.Handler, error) {
 	}
 
 	// Serve `index.html` from the root directory if the requested file cannot be
-	// found.
-	wrappedFS := WrapFS(fs, "index.html")
+	// found. This is necessary for Vue Router, see the docstring of `FSWrapper`
+	// below.
+	wrappedFS := WrapFS(fs, appFilename)
 
 	// Windows doesn't know this mime type. Web browsers won't load the webapp JS
 	// file when it's served as text/plain.

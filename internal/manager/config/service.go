@@ -1,18 +1,48 @@
 package config
 
-import "github.com/rs/zerolog/log"
-
 // SPDX-License-Identifier: GPL-3.0-or-later
+
+import (
+	"errors"
+	"fmt"
+	"io/fs"
+
+	"github.com/rs/zerolog/log"
+)
 
 // Service provides access to Flamenco Manager configuration.
 type Service struct {
-	config Conf
+	config        Conf
+	forceFirstRun bool
 }
 
 func NewService() *Service {
 	return &Service{
 		config: DefaultConfig(),
 	}
+}
+
+// IsFirstRun returns true if this is likely to be the first run of Flamenco.
+func (s *Service) IsFirstRun() (bool, error) {
+	if s.forceFirstRun {
+		return true, nil
+	}
+
+	config, err := getConf()
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		// No configuration means first run.
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("loading %s: %w", configFilename, err)
+	}
+
+	// No shared storage configured means first run.
+	return config.SharedStoragePath == "", nil
+}
+
+func (s *Service) ForceFirstRun() {
+	s.forceFirstRun = true
 }
 
 func (s *Service) Load() error {
