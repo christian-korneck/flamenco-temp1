@@ -165,6 +165,9 @@ type ConfigService interface {
 	// ForceFirstRun forces IsFirstRun() to return true. This is used to force the
 	// first-time wizard on a configured system.
 	ForceFirstRun()
+
+	// Save writes the in-memory configuration to the config file.
+	Save() error
 }
 
 type Shaman interface {

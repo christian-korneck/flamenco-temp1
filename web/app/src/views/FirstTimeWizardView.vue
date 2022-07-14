@@ -3,8 +3,8 @@
     <h1>Welcome to Flamenco!</h1>
 
     <section>
-      <p>Before Flamenco can be used, a few things need to be set up.</p>
-      <p>This wizard will guide you through the configuration.</p>
+      <p>Before Flamenco can be used, a few things need to be set up. This
+        wizard will guide you through the configuration.</p>
     </section>
     <section>
       <h2>Shared Storage</h2>
@@ -13,10 +13,15 @@
         Manager and Workers exchange files. This could be a NAS in your network,
         or some other file sharing server.</p>
 
+      <p>Make sure this path is the same for all machines involved.</p>
+
       <p class="hint">Using a service like Syncthing, ownCloud, or Dropbox for
         this is not recommended, as Flamenco does not know when every machine has
         received the files.</p>
 
+      <!-- TODO: @submit.prevent makes the button triggerable by pressing ENTER
+        in the input field, but also prevents the browser from caching
+        previously-used values. Would be great if we could have both. -->
       <form @submit.prevent="checkSharedStoragePath">
         <input v-model="sharedStoragePath" type="text">
         <button type="submit">Check</button>
@@ -33,7 +38,7 @@
 
       <p>Choose which Blender to use below:</p>
 
-      <p v-if="blenderExeFinding">... finding Blenders ...</p>
+      <p v-if="isBlenderExeFinding">... finding Blenders ...</p>
       <div v-for="blender in allBlenders" class="blender-selector"
         :class="{ 'selected-blender': (blender == selectedBlender) }">
         <dl>
@@ -46,7 +51,7 @@
           <dt>Source</dt>
           <dd>{{ sourceLabels[blender.source] }}</dd>
         </dl>
-        <button @click="selectedBlender = blender">Use this Blender</button>
+        <button @click="selectedBlender = blender" :disabled="selectedBlender == blender">Use this Blender</button>
       </div>
 
       <p>Or provide an alternative command to try:</p>
@@ -55,11 +60,34 @@
         <input v-model="customBlenderExe" type="text">
         <button type="submit">Check</button>
       </form>
-      <p v-if="blenderExeChecking">... checking ...</p>
+      <p v-if="isBlenderExeChecking">... checking ...</p>
       <p v-if="blenderExeCheckResult != null && blenderExeCheckResult.is_usable" class="check-ok">
         Found something, it is selected above.</p>
       <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
         {{ blenderExeCheckResult.cause }}</p>
+    </section>
+
+    <section v-if="isConfigComplete">
+      <h2>The Final Step</h2>
+      <p>This is the configuration that will be used by Flamenco:</p>
+      <dl>
+        <dt>Storage</dt>
+        <dd>{{ sharedStorageCheckResult.path }}</dd>
+        <dt>Blender</dt>
+        <dd v-if="selectedBlender.source == 'file_association'">
+          Whatever Blender is associated with .blend files
+          (currently "<code>{{ selectedBlender.path }}</code>")
+        </dd>
+        <dd v-if="selectedBlender.source == 'path_envvar'">
+          The command "<code>{{ selectedBlender.input }}</code>" as found on <code>$PATH</code>
+          (currently "<code>{{ selectedBlender.path }}</code>")
+        </dd>
+        <dd v-if="selectedBlender.source == 'input_path'">
+          The command you provided:
+          "<code>{{ selectedBlender.path }}</code>"
+        </dd>
+      </dl>
+      <button @click="confirmWizard" :disabled="isConfirming">Confirm</button>
     </section>
   </div>
 
@@ -73,7 +101,7 @@
 <script>
 import NotificationBar from '@/components/footer/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
-import { MetaApi, PathCheckInput } from "@/manager-api";
+import { MetaApi, PathCheckInput, WizardConfig } from "@/manager-api";
 import { apiClient } from '@/stores/api-query-count';
 
 export default {
@@ -90,17 +118,18 @@ export default {
     allBlenders: [], // combination of autoFoundBlenders and blenderExeCheckResult.
 
     autoFoundBlenders: [], // list of api.BlenderPathCheckResult
-    blenderExeFinding: false,
+    isBlenderExeFinding: false,
     selectedBlender: null, // the chosen api.BlenderPathCheckResult
 
     customBlenderExe: "",
-    blenderExeChecking: false,
+    isBlenderExeChecking: false,
     blenderExeCheckResult: null, // api.BlenderPathCheckResult
     sourceLabels: {
       file_association: "This Blender runs when you double-click a .blend file.",
       path_envvar: "This Blender was found on the $PATH environment.",
       input_path: "You pointed Flamenco to this executable.",
-    }
+    },
+    isConfirming: false,
   }),
   computed: {
     cleanSharedStoragePath() {
@@ -108,6 +137,10 @@ export default {
     },
     cleanCustomBlenderExe() {
       return this.customBlenderExe.trim();
+    },
+    isConfigComplete() {
+      return (this.sharedStorageCheckResult != null && this.sharedStorageCheckResult.is_usable) &&
+        (this.selectedBlender != null && this.selectedBlender.is_usable);
     },
   },
   mounted() {
@@ -135,7 +168,7 @@ export default {
     },
 
     findBlenderExePath() {
-      this.blenderExeFinding = true;
+      this.isBlenderExeFinding = true;
       this.autoFoundBlenders = [];
 
       console.log("Finding Blender");
@@ -149,15 +182,24 @@ export default {
           console.log("Error finding Blender:", error);
         })
         .finally(() => {
-          this.blenderExeFinding = false;
+          this.isBlenderExeFinding = false;
         })
     },
 
     checkBlenderExePath() {
-      this.blenderExeChecking = true;
+      const exeToTry = this.cleanCustomBlenderExe;
+      if (exeToTry == "") {
+        // Just erase any previously-found custom Blender executable.
+        this.isBlenderExeChecking = false;
+        this.blenderExeCheckResult = null;
+        this._refreshAllBlenders();
+        return;
+      }
+
+      this.isBlenderExeChecking = true;
       this.blenderExeCheckResult = null;
 
-      const pathCheck = new PathCheckInput(this.cleanCustomBlenderExe);
+      const pathCheck = new PathCheckInput(exeToTry);
       console.log("requesting path check:", pathCheck);
       this.metaAPI.checkBlenderExePath({ pathCheckInput: pathCheck })
         .then((result) => {
@@ -172,7 +214,7 @@ export default {
           console.log("Error checking storage path:", error);
         })
         .finally(() => {
-          this.blenderExeChecking = false;
+          this.isBlenderExeChecking = false;
         })
     },
 
@@ -182,6 +224,25 @@ export default {
       } else {
         this.allBlenders = this.autoFoundBlenders.concat([this.blenderExeCheckResult]);
       }
+    },
+
+    confirmWizard() {
+      const wizardConfig = new WizardConfig(
+        this.sharedStorageCheckResult.path,
+        this.selectedBlender,
+      );
+      console.log("saving configuration:", wizardConfig);
+      this.isConfirming = true;
+      this.metaAPI.saveWizardConfig({ wizardConfig: wizardConfig })
+        .then((result) => {
+          console.log("Wizard config saved, reload the page");
+        })
+        .catch((error) => {
+          console.log("Error saving wizard config:", error);
+        })
+        .finally(() => {
+          this.isConfirming = false;
+        })
     },
   },
 }

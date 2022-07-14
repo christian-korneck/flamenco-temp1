@@ -116,6 +116,102 @@ func TestCheckSharedStoragePath(t *testing.T) {
 	}
 }
 
+func TestSaveWizardConfig(t *testing.T) {
+	mf, finish := metaTestFixtures(t)
+	defer finish()
+
+	doTest := func(body api.WizardConfig) config.Conf {
+		// Always start the test with a clean configuration.
+		originalConfig := config.DefaultConfig(func(c *config.Conf) {
+			c.SharedStoragePath = ""
+		})
+		var savedConfig config.Conf
+
+		// Mock the loading & saving of the config.
+		mf.config.EXPECT().Get().Return(&originalConfig)
+		mf.config.EXPECT().Save().Do(func() error {
+			savedConfig = originalConfig
+			return nil
+		})
+
+		// Call the API.
+		echoCtx := mf.prepareMockedJSONRequest(body)
+		err := mf.flamenco.SaveWizardConfig(echoCtx)
+		if !assert.NoError(t, err) {
+			t.FailNow()
+		}
+
+		assertResponseNoContent(t, echoCtx)
+		return savedConfig
+	}
+
+	// Test situation where file association with .blend files resulted in a blender executable.
+	{
+		savedConfig := doTest(api.WizardConfig{
+			StorageLocation: mf.tempdir,
+			BlenderExecutable: api.BlenderPathCheckResult{
+				IsUsable: true,
+				Input:    "",
+				Path:     "/path/to/blender",
+				Source:   api.BlenderPathSourceFileAssociation,
+			},
+		})
+		assert.Equal(t, mf.tempdir, savedConfig.SharedStoragePath)
+		expectBlenderVar := config.Variable{
+			Values: config.VariableValues{
+				{Platform: "linux", Value: "blender " + config.DefaultBlenderArguments},
+				{Platform: "windows", Value: "blender " + config.DefaultBlenderArguments},
+				{Platform: "darwin", Value: "blender " + config.DefaultBlenderArguments},
+			},
+		}
+		assert.Equal(t, expectBlenderVar, savedConfig.Variables["blender"])
+	}
+
+	// Test situation where the given command could be found on $PATH.
+	{
+		savedConfig := doTest(api.WizardConfig{
+			StorageLocation: mf.tempdir,
+			BlenderExecutable: api.BlenderPathCheckResult{
+				IsUsable: true,
+				Input:    "kitty",
+				Path:     "/path/to/kitty",
+				Source:   api.BlenderPathSourcePathEnvvar,
+			},
+		})
+		assert.Equal(t, mf.tempdir, savedConfig.SharedStoragePath)
+		expectBlenderVar := config.Variable{
+			Values: config.VariableValues{
+				{Platform: "linux", Value: "kitty " + config.DefaultBlenderArguments},
+				{Platform: "windows", Value: "kitty " + config.DefaultBlenderArguments},
+				{Platform: "darwin", Value: "kitty " + config.DefaultBlenderArguments},
+			},
+		}
+		assert.Equal(t, expectBlenderVar, savedConfig.Variables["blender"])
+	}
+
+	// Test a custom command given with the full path.
+	{
+		savedConfig := doTest(api.WizardConfig{
+			StorageLocation: mf.tempdir,
+			BlenderExecutable: api.BlenderPathCheckResult{
+				IsUsable: true,
+				Input:    "/bin/cat",
+				Path:     "/bin/cat",
+				Source:   api.BlenderPathSourceInputPath,
+			},
+		})
+		assert.Equal(t, mf.tempdir, savedConfig.SharedStoragePath)
+		expectBlenderVar := config.Variable{
+			Values: config.VariableValues{
+				{Platform: "linux", Value: "/bin/cat " + config.DefaultBlenderArguments},
+				{Platform: "windows", Value: "/bin/cat " + config.DefaultBlenderArguments},
+				{Platform: "darwin", Value: "/bin/cat " + config.DefaultBlenderArguments},
+			},
+		}
+		assert.Equal(t, expectBlenderVar, savedConfig.Variables["blender"])
+	}
+}
+
 func metaTestFixtures(t *testing.T) (mockedFlamenco, func()) {
 	mockCtrl := gomock.NewController(t)
 	mf := newMockedFlamenco(mockCtrl)

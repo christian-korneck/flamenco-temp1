@@ -9,6 +9,8 @@ import (
 
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+const DefaultBlenderArguments = "--factory-startup -b -y"
+
 // The default configuration, use DefaultConfig() to obtain a copy.
 var defaultConfig = Conf{
 	Base: Base{
@@ -61,9 +63,9 @@ var defaultConfig = Conf{
 		// The default commands assume that the executables are available on $PATH.
 		"blender": {
 			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "blender --factory-startup -b -y"},
-				VariableValue{Platform: "windows", Value: "blender.exe --factory-startup -b -y"},
-				VariableValue{Platform: "darwin", Value: "blender --factory-startup -b -y"},
+				VariableValue{Platform: "linux", Value: "blender " + DefaultBlenderArguments},
+				VariableValue{Platform: "windows", Value: "blender.exe " + DefaultBlenderArguments},
+				VariableValue{Platform: "darwin", Value: "blender " + DefaultBlenderArguments},
 			},
 		},
 		"ffmpeg": {

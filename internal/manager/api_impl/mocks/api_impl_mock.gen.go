@@ -754,6 +754,20 @@ func (mr *MockConfigServiceMockRecorder) ResolveVariables(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveVariables", reflect.TypeOf((*MockConfigService)(nil).ResolveVariables), arg0, arg1)
 }
 
+// Save mocks base method.
+func (m *MockConfigService) Save() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Save")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Save indicates an expected call of Save.
+func (mr *MockConfigServiceMockRecorder) Save() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConfigService)(nil).Save))
+}
+
 // MockTaskStateMachine is a mock of TaskStateMachine interface.
 type MockTaskStateMachine struct {
 	ctrl     *gomock.Controller
