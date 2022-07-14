@@ -13,6 +13,7 @@
 
 
 import ApiClient from "../ApiClient";
+import BlenderPathCheckResult from '../model/BlenderPathCheckResult';
 import Error from '../model/Error';
 import FlamencoVersion from '../model/FlamencoVersion';
 import ManagerConfiguration from '../model/ManagerConfiguration';
@@ -39,6 +40,50 @@ export default class MetaApi {
         this.apiClient = apiClient || ApiClient.instance;
     }
 
+
+
+    /**
+     * Validate a CLI command for use as way to start Blender
+     * @param {Object} opts Optional parameters
+     * @param {module:model/PathCheckInput} opts.pathCheckInput Command or executable path to check
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/BlenderPathCheckResult} and HTTP response
+     */
+    checkBlenderExePathWithHttpInfo(opts) {
+      opts = opts || {};
+      let postBody = opts['pathCheckInput'];
+
+      let pathParams = {
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = BlenderPathCheckResult;
+      return this.apiClient.callApi(
+        '/api/v3/configuration/check/blender', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Validate a CLI command for use as way to start Blender
+     * @param {Object} opts Optional parameters
+     * @param {module:model/PathCheckInput} opts.pathCheckInput Command or executable path to check
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/BlenderPathCheckResult}
+     */
+    checkBlenderExePath(opts) {
+      return this.checkBlenderExePathWithHttpInfo(opts)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
 
 
     /**
@@ -79,6 +124,45 @@ export default class MetaApi {
      */
     checkSharedStoragePath(opts) {
       return this.checkSharedStoragePathWithHttpInfo(opts)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Find one or more CLI commands for use as way to start Blender
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link Array.<module:model/BlenderPathCheckResult>} and HTTP response
+     */
+    findBlenderExePathWithHttpInfo() {
+      let postBody = null;
+
+      let pathParams = {
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = [BlenderPathCheckResult];
+      return this.apiClient.callApi(
+        '/api/v3/configuration/check/blender', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Find one or more CLI commands for use as way to start Blender
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link Array.<module:model/BlenderPathCheckResult>}
+     */
+    findBlenderExePath() {
+      return this.findBlenderExePathWithHttpInfo()
         .then(function(response_and_data) {
           return response_and_data.data;
         });

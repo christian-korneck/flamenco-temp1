@@ -16,6 +16,12 @@ type ServerInterface interface {
 	// Get the configuration of this Manager.
 	// (GET /api/v3/configuration)
 	GetConfiguration(ctx echo.Context) error
+	// Find one or more CLI commands for use as way to start Blender
+	// (GET /api/v3/configuration/check/blender)
+	FindBlenderExePath(ctx echo.Context) error
+	// Validate a CLI command for use as way to start Blender
+	// (POST /api/v3/configuration/check/blender)
+	CheckBlenderExePath(ctx echo.Context) error
 	// Validate a path for use as shared storage.
 	// (POST /api/v3/configuration/check/shared-storage)
 	CheckSharedStoragePath(ctx echo.Context) error
@@ -132,6 +138,24 @@ func (w *ServerInterfaceWrapper) GetConfiguration(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetConfiguration(ctx)
+	return err
+}
+
+// FindBlenderExePath converts echo context to params.
+func (w *ServerInterfaceWrapper) FindBlenderExePath(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FindBlenderExePath(ctx)
+	return err
+}
+
+// CheckBlenderExePath converts echo context to params.
+func (w *ServerInterfaceWrapper) CheckBlenderExePath(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.CheckBlenderExePath(ctx)
 	return err
 }
 
@@ -671,6 +695,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/api/v3/configuration", wrapper.GetConfiguration)
+	router.GET(baseURL+"/api/v3/configuration/check/blender", wrapper.FindBlenderExePath)
+	router.POST(baseURL+"/api/v3/configuration/check/blender", wrapper.CheckBlenderExePath)
 	router.POST(baseURL+"/api/v3/configuration/check/shared-storage", wrapper.CheckSharedStoragePath)
 	router.GET(baseURL+"/api/v3/configuration/file", wrapper.GetConfigurationFile)
 	router.GET(baseURL+"/api/v3/configuration/variables/:audience/:platform", wrapper.GetVariables)

@@ -95,6 +95,14 @@ type ClientInterface interface {
 	// GetConfiguration request
 	GetConfiguration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FindBlenderExePath request
+	FindBlenderExePath(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CheckBlenderExePath request with any body
+	CheckBlenderExePathWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CheckBlenderExePath(ctx context.Context, body CheckBlenderExePathJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CheckSharedStoragePath request with any body
 	CheckSharedStoragePathWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -226,6 +234,42 @@ type ClientInterface interface {
 
 func (c *Client) GetConfiguration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetConfigurationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FindBlenderExePath(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFindBlenderExePathRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CheckBlenderExePathWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCheckBlenderExePathRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CheckBlenderExePath(ctx context.Context, body CheckBlenderExePathJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCheckBlenderExePathRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -823,6 +867,73 @@ func NewGetConfigurationRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewFindBlenderExePathRequest generates requests for FindBlenderExePath
+func NewFindBlenderExePathRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/configuration/check/blender")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCheckBlenderExePathRequest calls the generic CheckBlenderExePath builder with application/json body
+func NewCheckBlenderExePathRequest(server string, body CheckBlenderExePathJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCheckBlenderExePathRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCheckBlenderExePathRequestWithBody generates requests for CheckBlenderExePath with any type of body
+func NewCheckBlenderExePathRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/configuration/check/blender")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2133,6 +2244,14 @@ type ClientWithResponsesInterface interface {
 	// GetConfiguration request
 	GetConfigurationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetConfigurationResponse, error)
 
+	// FindBlenderExePath request
+	FindBlenderExePathWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*FindBlenderExePathResponse, error)
+
+	// CheckBlenderExePath request with any body
+	CheckBlenderExePathWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckBlenderExePathResponse, error)
+
+	CheckBlenderExePathWithResponse(ctx context.Context, body CheckBlenderExePathJSONRequestBody, reqEditors ...RequestEditorFn) (*CheckBlenderExePathResponse, error)
+
 	// CheckSharedStoragePath request with any body
 	CheckSharedStoragePathWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckSharedStoragePathResponse, error)
 
@@ -2278,6 +2397,52 @@ func (r GetConfigurationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetConfigurationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FindBlenderExePathResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BlenderPathFindResult
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r FindBlenderExePathResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FindBlenderExePathResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CheckBlenderExePathResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BlenderPathCheckResult
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CheckBlenderExePathResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CheckBlenderExePathResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3065,6 +3230,32 @@ func (c *ClientWithResponses) GetConfigurationWithResponse(ctx context.Context, 
 	return ParseGetConfigurationResponse(rsp)
 }
 
+// FindBlenderExePathWithResponse request returning *FindBlenderExePathResponse
+func (c *ClientWithResponses) FindBlenderExePathWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*FindBlenderExePathResponse, error) {
+	rsp, err := c.FindBlenderExePath(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFindBlenderExePathResponse(rsp)
+}
+
+// CheckBlenderExePathWithBodyWithResponse request with arbitrary body returning *CheckBlenderExePathResponse
+func (c *ClientWithResponses) CheckBlenderExePathWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckBlenderExePathResponse, error) {
+	rsp, err := c.CheckBlenderExePathWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCheckBlenderExePathResponse(rsp)
+}
+
+func (c *ClientWithResponses) CheckBlenderExePathWithResponse(ctx context.Context, body CheckBlenderExePathJSONRequestBody, reqEditors ...RequestEditorFn) (*CheckBlenderExePathResponse, error) {
+	rsp, err := c.CheckBlenderExePath(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCheckBlenderExePathResponse(rsp)
+}
+
 // CheckSharedStoragePathWithBodyWithResponse request with arbitrary body returning *CheckSharedStoragePathResponse
 func (c *ClientWithResponses) CheckSharedStoragePathWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckSharedStoragePathResponse, error) {
 	rsp, err := c.CheckSharedStoragePathWithBody(ctx, contentType, body, reqEditors...)
@@ -3495,6 +3686,72 @@ func ParseGetConfigurationResponse(rsp *http.Response) (*GetConfigurationRespons
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFindBlenderExePathResponse parses an HTTP response from a FindBlenderExePathWithResponse call
+func ParseFindBlenderExePathResponse(rsp *http.Response) (*FindBlenderExePathResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FindBlenderExePathResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BlenderPathFindResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCheckBlenderExePathResponse parses an HTTP response from a CheckBlenderExePathWithResponse call
+func ParseCheckBlenderExePathResponse(rsp *http.Response) (*CheckBlenderExePathResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CheckBlenderExePathResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BlenderPathCheckResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 

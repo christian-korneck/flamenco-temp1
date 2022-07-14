@@ -20,6 +20,8 @@ import AvailableJobSettingType from './model/AvailableJobSettingType';
 import AvailableJobSettingVisibility from './model/AvailableJobSettingVisibility';
 import AvailableJobType from './model/AvailableJobType';
 import AvailableJobTypes from './model/AvailableJobTypes';
+import BlenderPathCheckResult from './model/BlenderPathCheckResult';
+import BlenderPathSource from './model/BlenderPathSource';
 import Command from './model/Command';
 import Error from './model/Error';
 import FlamencoVersion from './model/FlamencoVersion';
@@ -159,6 +161,18 @@ export {
      * @property {module:model/AvailableJobTypes}
      */
     AvailableJobTypes,
+
+    /**
+     * The BlenderPathCheckResult model constructor.
+     * @property {module:model/BlenderPathCheckResult}
+     */
+    BlenderPathCheckResult,
+
+    /**
+     * The BlenderPathSource model constructor.
+     * @property {module:model/BlenderPathSource}
+     */
+    BlenderPathSource,
 
     /**
      * The Command model constructor.

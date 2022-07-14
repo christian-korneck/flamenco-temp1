@@ -46,6 +46,15 @@ const (
 	AvailableJobSettingVisibilityWeb AvailableJobSettingVisibility = "web"
 )
 
+// Defines values for BlenderPathSource.
+const (
+	BlenderPathSourceFileAssociation BlenderPathSource = "file_association"
+
+	BlenderPathSourceInputPath BlenderPathSource = "input_path"
+
+	BlenderPathSourcePathEnvvar BlenderPathSource = "path_envvar"
+)
+
 // Defines values for JobStatus.
 const (
 	JobStatusActive JobStatus = "active"
@@ -211,6 +220,28 @@ type AvailableJobTypes struct {
 	JobTypes []AvailableJobType `json:"job_types"`
 }
 
+// BlenderPathCheckResult defines model for BlenderPathCheckResult.
+type BlenderPathCheckResult struct {
+	// Description of why this path is (not) usable.
+	Cause string `json:"cause"`
+
+	// The input that was given to find this Blender.
+	Input *string `json:"input,omitempty"`
+
+	// Whether the path is usable or not.
+	IsUsable bool `json:"is_usable"`
+
+	// The path that was found.
+	Path   string            `json:"path"`
+	Source BlenderPathSource `json:"source"`
+}
+
+// BlenderPathFindResult defines model for BlenderPathFindResult.
+type BlenderPathFindResult []BlenderPathCheckResult
+
+// BlenderPathSource defines model for BlenderPathSource.
+type BlenderPathSource string
+
 // Command represents a single command to execute by the Worker.
 type Command struct {
 	Name       string                 `json:"name"`
@@ -364,7 +395,7 @@ type PathCheckInput struct {
 
 // PathCheckResult defines model for PathCheckResult.
 type PathCheckResult struct {
-	// Description of why this path is not usable.
+	// Description of why this path is (not) usable.
 	Cause string `json:"cause"`
 
 	// Whether the path is usable or not.
@@ -678,6 +709,9 @@ type WorkerSummary struct {
 	Version string `json:"version"`
 }
 
+// CheckBlenderExePathJSONBody defines parameters for CheckBlenderExePath.
+type CheckBlenderExePathJSONBody PathCheckInput
+
 // CheckSharedStoragePathJSONBody defines parameters for CheckSharedStoragePath.
 type CheckSharedStoragePathJSONBody PathCheckInput
 
@@ -725,6 +759,9 @@ type WorkerStateChangedJSONBody WorkerStateChanged
 
 // TaskUpdateJSONBody defines parameters for TaskUpdate.
 type TaskUpdateJSONBody TaskUpdate
+
+// CheckBlenderExePathJSONRequestBody defines body for CheckBlenderExePath for application/json ContentType.
+type CheckBlenderExePathJSONRequestBody CheckBlenderExePathJSONBody
 
 // CheckSharedStoragePathJSONRequestBody defines body for CheckSharedStoragePath for application/json ContentType.
 type CheckSharedStoragePathJSONRequestBody CheckSharedStoragePathJSONBody

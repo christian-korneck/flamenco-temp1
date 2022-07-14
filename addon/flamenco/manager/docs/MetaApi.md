@@ -4,12 +4,85 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**check_blender_exe_path**](MetaApi.md#check_blender_exe_path) | **POST** /api/v3/configuration/check/blender | Validate a CLI command for use as way to start Blender
 [**check_shared_storage_path**](MetaApi.md#check_shared_storage_path) | **POST** /api/v3/configuration/check/shared-storage | Validate a path for use as shared storage.
+[**find_blender_exe_path**](MetaApi.md#find_blender_exe_path) | **GET** /api/v3/configuration/check/blender | Find one or more CLI commands for use as way to start Blender
 [**get_configuration**](MetaApi.md#get_configuration) | **GET** /api/v3/configuration | Get the configuration of this Manager.
 [**get_configuration_file**](MetaApi.md#get_configuration_file) | **GET** /api/v3/configuration/file | Retrieve the configuration of Flamenco Manager.
 [**get_variables**](MetaApi.md#get_variables) | **GET** /api/v3/configuration/variables/{audience}/{platform} | Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser&#39;s platform. 
 [**get_version**](MetaApi.md#get_version) | **GET** /api/v3/version | Get the Flamenco version of this Manager
 
+
+# **check_blender_exe_path**
+> BlenderPathCheckResult check_blender_exe_path()
+
+Validate a CLI command for use as way to start Blender
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import meta_api
+from flamenco.manager.model.error import Error
+from flamenco.manager.model.path_check_input import PathCheckInput
+from flamenco.manager.model.blender_path_check_result import BlenderPathCheckResult
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = meta_api.MetaApi(api_client)
+    path_check_input = PathCheckInput(
+        path="path_example",
+    ) # PathCheckInput | Command or executable path to check (optional)
+
+    # example passing only required values which don't have defaults set
+    # and optional values
+    try:
+        # Validate a CLI command for use as way to start Blender
+        api_response = api_instance.check_blender_exe_path(path_check_input=path_check_input)
+        pprint(api_response)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling MetaApi->check_blender_exe_path: %s\n" % e)
+```
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **path_check_input** | [**PathCheckInput**](PathCheckInput.md)| Command or executable path to check | [optional]
+
+### Return type
+
+[**BlenderPathCheckResult**](BlenderPathCheckResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Normal response, path check went fine. |  -  |
+**0** | Something went wrong. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **check_shared_storage_path**
 > PathCheckResult check_shared_storage_path()
@@ -78,6 +151,69 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Normal response, path check went fine. |  -  |
+**0** | Something went wrong. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **find_blender_exe_path**
+> BlenderPathFindResult find_blender_exe_path()
+
+Find one or more CLI commands for use as way to start Blender
+
+### Example
+
+
+```python
+import time
+import flamenco.manager
+from flamenco.manager.api import meta_api
+from flamenco.manager.model.error import Error
+from flamenco.manager.model.blender_path_find_result import BlenderPathFindResult
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = flamenco.manager.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with flamenco.manager.ApiClient() as api_client:
+    # Create an instance of the API class
+    api_instance = meta_api.MetaApi(api_client)
+
+    # example, this endpoint has no required or optional parameters
+    try:
+        # Find one or more CLI commands for use as way to start Blender
+        api_response = api_instance.find_blender_exe_path()
+        pprint(api_response)
+    except flamenco.manager.ApiException as e:
+        print("Exception when calling MetaApi->find_blender_exe_path: %s\n" % e)
+```
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**BlenderPathFindResult**](BlenderPathFindResult.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Found locations of Blender. |  -  |
 **0** | Something went wrong. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -12,23 +12,25 @@
  */
 
 import ApiClient from '../ApiClient';
+import BlenderPathSource from './BlenderPathSource';
 
 /**
- * The PathCheckResult model module.
- * @module model/PathCheckResult
+ * The BlenderPathCheckResult model module.
+ * @module model/BlenderPathCheckResult
  * @version 0.0.0
  */
-class PathCheckResult {
+class BlenderPathCheckResult {
     /**
-     * Constructs a new <code>PathCheckResult</code>.
-     * @alias module:model/PathCheckResult
-     * @param path {String} The path that was checked.
+     * Constructs a new <code>BlenderPathCheckResult</code>.
+     * @alias module:model/BlenderPathCheckResult
+     * @param path {String} The path that was found.
+     * @param source {module:model/BlenderPathSource} 
      * @param isUsable {Boolean} Whether the path is usable or not.
      * @param cause {String} Description of why this path is (not) usable.
      */
-    constructor(path, isUsable, cause) { 
+    constructor(path, source, isUsable, cause) { 
         
-        PathCheckResult.initialize(this, path, isUsable, cause);
+        BlenderPathCheckResult.initialize(this, path, source, isUsable, cause);
     }
 
     /**
@@ -36,25 +38,32 @@ class PathCheckResult {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, path, isUsable, cause) { 
+    static initialize(obj, path, source, isUsable, cause) { 
         obj['path'] = path;
+        obj['source'] = source;
         obj['is_usable'] = isUsable;
         obj['cause'] = cause;
     }
 
     /**
-     * Constructs a <code>PathCheckResult</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>BlenderPathCheckResult</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/PathCheckResult} obj Optional instance to populate.
-     * @return {module:model/PathCheckResult} The populated <code>PathCheckResult</code> instance.
+     * @param {module:model/BlenderPathCheckResult} obj Optional instance to populate.
+     * @return {module:model/BlenderPathCheckResult} The populated <code>BlenderPathCheckResult</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new PathCheckResult();
+            obj = obj || new BlenderPathCheckResult();
 
+            if (data.hasOwnProperty('input')) {
+                obj['input'] = ApiClient.convertToType(data['input'], 'String');
+            }
             if (data.hasOwnProperty('path')) {
                 obj['path'] = ApiClient.convertToType(data['path'], 'String');
+            }
+            if (data.hasOwnProperty('source')) {
+                obj['source'] = BlenderPathSource.constructFromObject(data['source']);
             }
             if (data.hasOwnProperty('is_usable')) {
                 obj['is_usable'] = ApiClient.convertToType(data['is_usable'], 'Boolean');
@@ -70,27 +79,38 @@ class PathCheckResult {
 }
 
 /**
- * The path that was checked.
+ * The input that was given to find this Blender.
+ * @member {String} input
+ */
+BlenderPathCheckResult.prototype['input'] = undefined;
+
+/**
+ * The path that was found.
  * @member {String} path
  */
-PathCheckResult.prototype['path'] = undefined;
+BlenderPathCheckResult.prototype['path'] = undefined;
+
+/**
+ * @member {module:model/BlenderPathSource} source
+ */
+BlenderPathCheckResult.prototype['source'] = undefined;
 
 /**
  * Whether the path is usable or not.
  * @member {Boolean} is_usable
  */
-PathCheckResult.prototype['is_usable'] = undefined;
+BlenderPathCheckResult.prototype['is_usable'] = undefined;
 
 /**
  * Description of why this path is (not) usable.
  * @member {String} cause
  */
-PathCheckResult.prototype['cause'] = undefined;
+BlenderPathCheckResult.prototype['cause'] = undefined;
 
 
 
 
 
 
-export default PathCheckResult;
+export default BlenderPathCheckResult;
 

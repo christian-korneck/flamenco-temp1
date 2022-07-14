@@ -16,6 +16,9 @@ from flamenco.manager.model.available_job_setting_type import AvailableJobSettin
 from flamenco.manager.model.available_job_setting_visibility import AvailableJobSettingVisibility
 from flamenco.manager.model.available_job_type import AvailableJobType
 from flamenco.manager.model.available_job_types import AvailableJobTypes
+from flamenco.manager.model.blender_path_check_result import BlenderPathCheckResult
+from flamenco.manager.model.blender_path_find_result import BlenderPathFindResult
+from flamenco.manager.model.blender_path_source import BlenderPathSource
 from flamenco.manager.model.command import Command
 from flamenco.manager.model.error import Error
 from flamenco.manager.model.flamenco_version import FlamencoVersion
