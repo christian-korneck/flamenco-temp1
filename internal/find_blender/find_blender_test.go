@@ -19,8 +19,11 @@ func TestGetBlenderVersion(t *testing.T) {
 	}
 
 	path, err := exec.LookPath("blender")
-	if !assert.NoError(t, err) {
-		t.Fatal("running with -withBlender requires having a `blender` command on $PATH")
+	if err != nil {
+		path, err = fileAssociation()
+		if !assert.NoError(t, err) {
+			t.Fatal("running with -withBlender requires having a `blender` command on $PATH or a file association to .blend files")
+		}
 	}
 
 	ctx := context.Background()
@@ -29,6 +32,8 @@ func TestGetBlenderVersion(t *testing.T) {
 	version, err := getBlenderVersion(ctx, path)
 	if assert.NoError(t, err) {
 		assert.Contains(t, version, "Blender")
+		assert.NotContains(t, version, "\n", "Everything after the first newline should be skipped")
+		assert.NotContains(t, version, "\r", "Everything after the first line feed should be skipped")
 	}
 
 	// Try non-existing executable:

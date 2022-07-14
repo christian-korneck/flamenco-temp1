@@ -92,6 +92,11 @@ func getBlenderVersion(ctx context.Context, commandline string) (string, error) 
 		return "", err
 	}
 
-	version := strings.TrimSpace(string(stdoutStderr))
-	return version, nil
+	version := string(stdoutStderr)
+	lines := strings.SplitN(version, "\n", 2)
+	if len(lines) > 0 {
+		version = lines[0]
+	}
+
+	return strings.TrimSpace(version), nil
 }
