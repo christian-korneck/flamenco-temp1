@@ -58,6 +58,7 @@ type PersistenceService interface {
 	AddWorkerToJobBlocklist(ctx context.Context, job *persistence.Job, worker *persistence.Worker, taskType string) error
 	FetchJobBlocklist(ctx context.Context, jobUUID string) ([]persistence.JobBlock, error)
 	RemoveFromJobBlocklist(ctx context.Context, jobUUID, workerUUID, taskType string) error
+	ClearJobBlocklist(ctx context.Context, job *persistence.Job) error
 
 	// WorkersLeftToRun returns a set of worker UUIDs that can run tasks of the given type on the given job.
 	WorkersLeftToRun(ctx context.Context, job *persistence.Job, taskType string) (map[string]bool, error)

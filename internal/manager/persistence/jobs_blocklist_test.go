@@ -65,6 +65,27 @@ func TestFetchJobBlocklist(t *testing.T) {
 	}
 }
 
+func TestClearJobBlocklist(t *testing.T) {
+	ctx, close, db, job, _ := jobTasksTestFixtures(t)
+	defer close()
+
+	// Add a worker and some entries to the block list.
+	worker := createWorker(ctx, t, db)
+	err := db.AddWorkerToJobBlocklist(ctx, job, worker, "blender")
+	assert.NoError(t, err)
+	err = db.AddWorkerToJobBlocklist(ctx, job, worker, "ffmpeg")
+	assert.NoError(t, err)
+
+	// Clear the blocklist.
+	err = db.ClearJobBlocklist(ctx, job)
+	assert.NoError(t, err)
+
+	// Check that it is indeed empty.
+	list, err := db.FetchJobBlocklist(ctx, job.UUID)
+	assert.NoError(t, err)
+	assert.Empty(t, list)
+}
+
 func TestRemoveFromJobBlocklist(t *testing.T) {
 	ctx, close, db, job, _ := jobTasksTestFixtures(t)
 	defer close()
@@ -91,6 +112,7 @@ func TestRemoveFromJobBlocklist(t *testing.T) {
 		assert.Equal(t, entry.TaskType, "blender")
 	}
 }
+
 func TestWorkersLeftToRun(t *testing.T) {
 	ctx, close, db, job, _ := jobTasksTestFixtures(t)
 	defer close()

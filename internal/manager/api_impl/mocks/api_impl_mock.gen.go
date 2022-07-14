@@ -98,6 +98,20 @@ func (mr *MockPersistenceServiceMockRecorder) ClearFailureListOfTask(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearFailureListOfTask", reflect.TypeOf((*MockPersistenceService)(nil).ClearFailureListOfTask), arg0, arg1)
 }
 
+// ClearJobBlocklist mocks base method.
+func (m *MockPersistenceService) ClearJobBlocklist(arg0 context.Context, arg1 *persistence.Job) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearJobBlocklist", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearJobBlocklist indicates an expected call of ClearJobBlocklist.
+func (mr *MockPersistenceServiceMockRecorder) ClearJobBlocklist(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearJobBlocklist", reflect.TypeOf((*MockPersistenceService)(nil).ClearJobBlocklist), arg0, arg1)
+}
+
 // CountTaskFailuresOfWorker mocks base method.
 func (m *MockPersistenceService) CountTaskFailuresOfWorker(arg0 context.Context, arg1 *persistence.Job, arg2 *persistence.Worker, arg3 string) (int, error) {
 	m.ctrl.T.Helper()

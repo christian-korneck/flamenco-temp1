@@ -217,6 +217,7 @@ func TestSetJobStatusFailedToRequeueing(t *testing.T) {
 	mf.persistence.EXPECT().FetchJob(ctx, jobID).Return(&dbJob, nil)
 	mf.stateMachine.EXPECT().JobStatusChange(ctx, &dbJob, statusUpdate.Status, "someone pushed a button")
 	mf.persistence.EXPECT().ClearFailureListOfJob(ctx, &dbJob)
+	mf.persistence.EXPECT().ClearJobBlocklist(ctx, &dbJob)
 
 	// Do the call.
 	err := mf.flamenco.SetJobStatus(echoCtx, jobID)

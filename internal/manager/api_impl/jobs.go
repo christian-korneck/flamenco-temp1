@@ -148,6 +148,10 @@ func (f *Flamenco) SetJobStatus(e echo.Context, jobID string) error {
 			logger.Error().Err(err).Msg("error clearing failure list")
 			return sendAPIError(e, http.StatusInternalServerError, "unexpected error clearing the job's tasks' failure list")
 		}
+		if err := f.persist.ClearJobBlocklist(ctx, dbJob); err != nil {
+			logger.Error().Err(err).Msg("error clearing failure list")
+			return sendAPIError(e, http.StatusInternalServerError, "unexpected error clearing the job's tasks' failure list")
+		}
 	}
 
 	return e.NoContent(http.StatusNoContent)

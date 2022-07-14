@@ -51,6 +51,14 @@ func (db *DB) FetchJobBlocklist(ctx context.Context, jobUUID string) ([]JobBlock
 	return entries, tx.Error
 }
 
+// ClearJobBlocklist removes the entire blocklist of this job.
+func (db *DB) ClearJobBlocklist(ctx context.Context, job *Job) error {
+	tx := db.gormDB.WithContext(ctx).
+		Where("job_id = ?", job.ID).
+		Delete(JobBlock{})
+	return tx.Error
+}
+
 func (db *DB) RemoveFromJobBlocklist(ctx context.Context, jobUUID, workerUUID, taskType string) error {
 	// Find the job ID.
 	job := Job{}
