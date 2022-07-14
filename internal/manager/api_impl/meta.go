@@ -9,9 +9,11 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"git.blender.org/flamenco/internal/appinfo"
+	"git.blender.org/flamenco/internal/find_blender"
 	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/pkg/api"
 	"github.com/labstack/echo/v4"
@@ -142,6 +144,89 @@ func (f *Flamenco) CheckSharedStoragePath(e echo.Context) error {
 		IsUsable: true,
 		Path:     path,
 	})
+}
+
+func (f *Flamenco) FindBlenderExePath(e echo.Context) error {
+	logger := requestLogger(e)
+	ctx := e.Request().Context()
+
+	response := api.BlenderPathFindResult{}
+
+	// TODO: the code below is a bit too coupled with the innards of find_blender.CheckBlender().
+
+	// Find by file association, falling back to just finding "blender" on the
+	// path if not available. This uses find_blender.CheckBlender() instead of
+	// find_blender.FindBlender() because the former also tries to run the found
+	// executable and reports on the version of Blender.
+	result, err := find_blender.CheckBlender(ctx, "")
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		logger.Info().Msg("Blender could not be found")
+	case err != nil:
+		logger.Warn().Err(err).Msg("there was an error finding Blender")
+		return sendAPIError(e, http.StatusInternalServerError, "there was an error finding Blender: %v", err)
+	default:
+		response = append(response, api.BlenderPathCheckResult{
+			IsUsable: true,
+			Path:     result.FoundLocation,
+			Cause:    result.BlenderVersion,
+			Source:   result.Source,
+		})
+	}
+
+	if result.Source == api.BlenderPathSourceFileAssociation {
+		// There could be another Blender found on $PATH.
+		result, err := find_blender.CheckBlender(ctx, "blender")
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
+			logger.Info().Msg("Blender could not be found as 'blender' on $PATH")
+		case err != nil:
+			logger.Warn().Err(err).Msg("there was an error finding Blender as 'blender' on $PATH")
+			return sendAPIError(e, http.StatusInternalServerError, "there was an error finding Blender: %v", err)
+		default:
+			response = append(response, api.BlenderPathCheckResult{
+				IsUsable: true,
+				Path:     result.FoundLocation,
+				Cause:    result.BlenderVersion,
+				Source:   result.Source,
+			})
+		}
+	}
+
+	return e.JSON(http.StatusOK, response)
+}
+
+func (f *Flamenco) CheckBlenderExePath(e echo.Context) error {
+	logger := requestLogger(e)
+
+	var toCheck api.CheckSharedStoragePathJSONBody
+	if err := e.Bind(&toCheck); err != nil {
+		logger.Warn().Err(err).Msg("bad request received")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format")
+	}
+
+	command := toCheck.Path
+	logger = logger.With().Str("command", command).Logger()
+	logger.Info().Msg("checking whether this command leads to Blender")
+
+	ctx := e.Request().Context()
+	checkResult, err := find_blender.CheckBlender(ctx, command)
+	response := api.BlenderPathCheckResult{
+		Source: checkResult.Source,
+	}
+
+	switch {
+	case errors.Is(err, exec.ErrNotFound):
+		response.Cause = "Blender could not be found"
+	case err != nil:
+		response.Cause = fmt.Sprintf("There was an error running the command: %v", err)
+	default:
+		response.IsUsable = true
+		response.Path = checkResult.FoundLocation
+		response.Cause = fmt.Sprintf("Found %v", checkResult.BlenderVersion)
+	}
+
+	return e.JSON(http.StatusOK, response)
 }
 
 func flamencoManagerDir() (string, error) {

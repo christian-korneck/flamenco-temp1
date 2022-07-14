@@ -699,6 +699,18 @@ func (mr *MockConfigServiceMockRecorder) ExpandVariables(arg0, arg1, arg2 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVariables", reflect.TypeOf((*MockConfigService)(nil).ExpandVariables), arg0, arg1, arg2)
 }
 
+// ForceFirstRun mocks base method.
+func (m *MockConfigService) ForceFirstRun() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ForceFirstRun")
+}
+
+// ForceFirstRun indicates an expected call of ForceFirstRun.
+func (mr *MockConfigServiceMockRecorder) ForceFirstRun() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceFirstRun", reflect.TypeOf((*MockConfigService)(nil).ForceFirstRun))
+}
+
 // Get mocks base method.
 func (m *MockConfigService) Get() *config.Conf {
 	m.ctrl.T.Helper()

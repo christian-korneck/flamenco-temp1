@@ -4,7 +4,7 @@ package find_blender
 
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// findBlender returns ErrNotAvailable, as the file association lookup is only available on Windows.
-func findBlender() (string, error) {
+// fileAssociation isn't implemented on non-Windows platforms.
+func fileAssociation() (string, error) {
 	return "", ErrNotAvailable
 }

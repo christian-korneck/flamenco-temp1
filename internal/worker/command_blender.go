@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 
 	"github.com/google/shlex"
@@ -18,6 +17,7 @@ import (
 
 	"git.blender.org/flamenco/internal/find_blender"
 	"git.blender.org/flamenco/pkg/api"
+	"git.blender.org/flamenco/pkg/crosspath"
 )
 
 // The buffer size used to read stdout/stderr output from Blender.
@@ -116,14 +116,14 @@ func (ce *CommandExecutor) cmdBlenderRenderCommand(
 		return nil, err
 	}
 
-	if filepath.Dir(parameters.exe) == "." {
+	if crosspath.Dir(parameters.exe) == "." {
 		// No directory path given. Check that the executable can be found on the
 		// path.
 		if _, err := exec.LookPath(parameters.exe); err != nil {
 			// Attempt a platform-specific way to find which Blender executable to
 			// use. If Blender cannot not be found, just use the configured command
 			// and let the OS produce the errors.
-			path, err := find_blender.FindBlender()
+			path, err := find_blender.FileAssociation()
 			if err == nil {
 				logger.Info().Str("path", path).Msg("found Blender")
 				parameters.exe = path

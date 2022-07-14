@@ -161,6 +161,10 @@ type ConfigService interface {
 
 	// IsFirstRun returns true if this is likely to be the first run of Flamenco.
 	IsFirstRun() (bool, error)
+
+	// ForceFirstRun forces IsFirstRun() to return true. This is used to force the
+	// first-time wizard on a configured system.
+	ForceFirstRun()
 }
 
 type Shaman interface {

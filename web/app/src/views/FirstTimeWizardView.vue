@@ -30,6 +30,36 @@
 
     <section>
       <h2>Which Blender?</h2>
+
+      <p>Choose which Blender to use below:</p>
+
+      <p v-if="blenderExeFinding">... finding Blenders ...</p>
+      <div v-for="blender in allBlenders" class="blender-selector"
+        :class="{ 'selected-blender': (blender == selectedBlender) }">
+        <dl>
+          <dt>Version</dt>
+          <dd>{{ blender.cause }}</dd>
+
+          <dt>Path</dt>
+          <dd>{{ blender.path }}</dd>
+
+          <dt>Source</dt>
+          <dd>{{ sourceLabels[blender.source] }}</dd>
+        </dl>
+        <button @click="selectedBlender = blender">Use this Blender</button>
+      </div>
+
+      <p>Or provide an alternative command to try:</p>
+
+      <form @submit.prevent="checkBlenderExePath">
+        <input v-model="customBlenderExe" type="text">
+        <button type="submit">Check</button>
+      </form>
+      <p v-if="blenderExeChecking">... checking ...</p>
+      <p v-if="blenderExeCheckResult != null"
+        :class="{ 'check-ok': blenderExeCheckResult.is_usable, 'check-failed': !blenderExeCheckResult.is_usable }">
+        {{ blenderExeCheckResult.cause }}
+      </p>
     </section>
   </div>
 
@@ -54,13 +84,34 @@ export default {
   },
   data: () => ({
     sharedStoragePath: "",
-    sharedStorageCheckResult: null,
+    sharedStorageCheckResult: null, // api.PathCheckResult
     metaAPI: new MetaApi(apiClient),
+
+    allBlenders: [], // combination of autoFoundBlenders and blenderExeCheckResult.
+
+    autoFoundBlenders: [], // list of api.BlenderPathCheckResult
+    blenderExeFinding: false,
+    selectedBlender: null, // the chosen api.BlenderPathCheckResult
+
+    customBlenderExe: "",
+    blenderExeChecking: false,
+    blenderExeCheckResult: null, // api.BlenderPathCheckResult
+    sourceLabels: {
+      file_association: "This Blender runs when you double-click a .blend file.",
+      path_envvar: "This Blender was found on the $PATH environment.",
+      input_path: "You pointed Flamenco to this executable.",
+    }
   }),
   computed: {
     cleanSharedStoragePath() {
       return this.sharedStoragePath.trim();
     },
+    cleanCustomBlenderExe() {
+      return this.customBlenderExe.trim();
+    },
+  },
+  mounted() {
+    this.findBlenderExePath();
   },
   methods: {
     // SocketIO connection event handlers:
@@ -69,6 +120,7 @@ export default {
     onSIODisconnected(reason) {
     },
 
+    // TODO: add a Refresh button that calls this again.
     checkSharedStoragePath() {
       const pathCheck = new PathCheckInput(this.cleanSharedStoragePath);
       console.log("requesting path check:", pathCheck);
@@ -80,6 +132,56 @@ export default {
         .catch((error) => {
           console.log("Error checking storage path:", error);
         })
+    },
+
+    findBlenderExePath() {
+      this.blenderExeFinding = true;
+      this.autoFoundBlenders = [];
+
+      console.log("Finding Blender");
+      this.metaAPI.findBlenderExePath()
+        .then((result) => {
+          console.log("Result of finding Blender:", result);
+          this.autoFoundBlenders = result;
+          this._refreshAllBlenders();
+        })
+        .catch((error) => {
+          console.log("Error finding Blender:", error);
+        })
+        .finally(() => {
+          this.blenderExeFinding = false;
+        })
+    },
+
+    checkBlenderExePath() {
+      this.blenderExeChecking = true;
+      this.blenderExeCheckResult = null;
+
+      const pathCheck = new PathCheckInput(this.cleanCustomBlenderExe);
+      console.log("requesting path check:", pathCheck);
+      this.metaAPI.checkBlenderExePath({ pathCheckInput: pathCheck })
+        .then((result) => {
+          console.log("Blender exe path check result:", result);
+          this.blenderExeCheckResult = result;
+          if (result.is_usable) {
+            this.selectedBlender = result;
+          }
+          this._refreshAllBlenders();
+        })
+        .catch((error) => {
+          console.log("Error checking storage path:", error);
+        })
+        .finally(() => {
+          this.blenderExeChecking = false;
+        })
+    },
+
+    _refreshAllBlenders() {
+      if (this.blenderExeCheckResult == null || !this.blenderExeCheckResult.is_usable) {
+        this.allBlenders = this.autoFoundBlenders;
+      } else {
+        this.allBlenders = this.autoFoundBlenders.concat([this.blenderExeCheckResult]);
+      }
     },
   },
 }

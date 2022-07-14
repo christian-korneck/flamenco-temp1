@@ -36,6 +36,46 @@ func (m *MockFlamencoClient) EXPECT() *MockFlamencoClientMockRecorder {
 	return m.recorder
 }
 
+// CheckBlenderExePathWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) CheckBlenderExePathWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.CheckBlenderExePathResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckBlenderExePathWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.CheckBlenderExePathResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckBlenderExePathWithBodyWithResponse indicates an expected call of CheckBlenderExePathWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) CheckBlenderExePathWithBodyWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckBlenderExePathWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).CheckBlenderExePathWithBodyWithResponse), varargs...)
+}
+
+// CheckBlenderExePathWithResponse mocks base method.
+func (m *MockFlamencoClient) CheckBlenderExePathWithResponse(arg0 context.Context, arg1 api.CheckBlenderExePathJSONRequestBody, arg2 ...api.RequestEditorFn) (*api.CheckBlenderExePathResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckBlenderExePathWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.CheckBlenderExePathResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckBlenderExePathWithResponse indicates an expected call of CheckBlenderExePathWithResponse.
+func (mr *MockFlamencoClientMockRecorder) CheckBlenderExePathWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckBlenderExePathWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).CheckBlenderExePathWithResponse), varargs...)
+}
+
 // CheckSharedStoragePathWithBodyWithResponse mocks base method.
 func (m *MockFlamencoClient) CheckSharedStoragePathWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.CheckSharedStoragePathResponse, error) {
 	m.ctrl.T.Helper()
@@ -254,6 +294,26 @@ func (mr *MockFlamencoClientMockRecorder) FetchWorkersWithResponse(arg0 interfac
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorkersWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchWorkersWithResponse), varargs...)
+}
+
+// FindBlenderExePathWithResponse mocks base method.
+func (m *MockFlamencoClient) FindBlenderExePathWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.FindBlenderExePathResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindBlenderExePathWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.FindBlenderExePathResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindBlenderExePathWithResponse indicates an expected call of FindBlenderExePathWithResponse.
+func (mr *MockFlamencoClientMockRecorder) FindBlenderExePathWithResponse(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBlenderExePathWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FindBlenderExePathWithResponse), varargs...)
 }
 
 // GetConfigurationFileWithResponse mocks base method.

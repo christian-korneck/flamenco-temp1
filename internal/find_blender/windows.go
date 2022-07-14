@@ -14,9 +14,9 @@ import (
 	"unsafe"
 )
 
-// findBlender returns the full path of `blender.exe` associated with ".blend" files.
-func findBlender() (string, error) {
-	exe, err := fileAssociation(".blend")
+// fileAssociation returns the full path of `blender.exe` associated with ".blend" files.
+func fileAssociation() (string, error) {
+	exe, err := getFileAssociation(".blend")
 	if err != nil {
 		return "", err
 	}
@@ -40,9 +40,9 @@ func findBlender() (string, error) {
 	return blenderPath, nil
 }
 
-// fileAssociation finds the executable associated with the given extension.
+// getFileAssociation finds the executable associated with the given extension.
 // The extension must be a string like ".blend".
-func fileAssociation(extension string) (string, error) {
+func getFileAssociation(extension string) (string, error) {
 	// Load library.
 	libname := "shlwapi.dll"
 	libshlwapi, err := syscall.LoadLibrary(libname)
