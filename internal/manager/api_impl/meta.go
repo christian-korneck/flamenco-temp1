@@ -184,8 +184,7 @@ func (f *Flamenco) FindBlenderExePath(e echo.Context) error {
 		case errors.Is(err, fs.ErrNotExist):
 			logger.Info().Msg("Blender could not be found as 'blender' on $PATH")
 		case err != nil:
-			logger.Warn().Err(err).Msg("there was an error finding Blender as 'blender' on $PATH")
-			return sendAPIError(e, http.StatusInternalServerError, "there was an error finding Blender: %v", err)
+			logger.Info().Err(err).Msg("there was an error finding Blender as 'blender' on $PATH")
 		default:
 			response = append(response, api.BlenderPathCheckResult{
 				IsUsable: true,
