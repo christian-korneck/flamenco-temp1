@@ -1,9 +1,9 @@
 <template>
   <div class="first-time-wizard">
-    <h1>Welcome to Flamenco 3!</h1>
+    <h1>Welcome to Flamenco!</h1>
 
     <section>
-      <p>Before Flamenco 3 can be used, a few things need to be set up.</p>
+      <p>Before Flamenco can be used, a few things need to be set up.</p>
       <p>This wizard will guide you through the configuration.</p>
     </section>
     <section>
@@ -56,10 +56,10 @@
         <button type="submit">Check</button>
       </form>
       <p v-if="blenderExeChecking">... checking ...</p>
-      <p v-if="blenderExeCheckResult != null"
-        :class="{ 'check-ok': blenderExeCheckResult.is_usable, 'check-failed': !blenderExeCheckResult.is_usable }">
-        {{ blenderExeCheckResult.cause }}
-      </p>
+      <p v-if="blenderExeCheckResult != null && blenderExeCheckResult.is_usable" class="check-ok">
+        Found something, it is selected above.</p>
+      <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
+        {{ blenderExeCheckResult.cause }}</p>
     </section>
   </div>
 
