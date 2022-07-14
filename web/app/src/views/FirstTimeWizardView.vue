@@ -87,6 +87,8 @@
           "<code>{{ selectedBlender.path }}</code>"
         </dd>
       </dl>
+
+      <p v-if="isConfirmed" class="check-ok">Configuration has been saved, Flamenco will restart.</p>
       <button @click="confirmWizard" :disabled="isConfirming">Confirm</button>
     </section>
   </div>
@@ -130,6 +132,7 @@ export default {
       input_path: "You pointed Flamenco to this executable.",
     },
     isConfirming: false,
+    isConfirmed: false,
   }),
   computed: {
     cleanSharedStoragePath() {
@@ -233,14 +236,17 @@ export default {
       );
       console.log("saving configuration:", wizardConfig);
       this.isConfirming = true;
+      this.isConfirmed = false;
       this.metaAPI.saveWizardConfig({ wizardConfig: wizardConfig })
         .then((result) => {
           console.log("Wizard config saved, reload the page");
+          this.isConfirmed = true;
+          // Give the Manager some time to restart.
+          window.setTimeout(() => { window.location.reload() }, 2000);
         })
         .catch((error) => {
           console.log("Error saving wizard config:", error);
-        })
-        .finally(() => {
+          // Only clear this flag on an error.
           this.isConfirming = false;
         })
     },
