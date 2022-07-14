@@ -102,6 +102,26 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+  /api/v3/configuration/wizard:
+    summary: Save the configuration from the First-Time Wizard.
+    post:
+      summary: Update the Manager's configuration, and restart it in fully functional mode.
+      tags: [meta]
+      operationId: saveWizardConfig
+      requestBody:
+        description: Configuration to save.
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WizardConfig" }
+      responses:
+        "204":
+          description: Normal response. The webapp should do a full refresh at this point.
+        default:
+          description: Something went wrong.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
   /api/v3/configuration/file:
     summary: >
       Access to the configuration file of Flamenco Manager. This is not schema'd
@@ -991,6 +1011,17 @@ components:
           type: boolean
       required: [storageLocation, shamanEnabled, isFirstRun]
 
+    WizardConfig:
+      type: object
+      description: Configuration obtained from the First-Time Wizard.
+      properties:
+        "storageLocation":
+          description: Directory used for job file storage.
+          type: string
+        "blenderExecutable":
+          $ref: "#/components/schemas/BlenderPathCheckResult"
+      required: [storageLocation, blenderExecutable]
+
     ManagerVariables:
       description: Mapping from variable name to its properties.
       type: object
@@ -1057,7 +1088,7 @@ components:
         "cause":
           description: Description of why this path is (not) usable.
           type: string
-      required: [path, source, is_usable, cause]
+      required: [input, path, source, is_usable, cause]
 
     BlenderPathSource:
       type: string
