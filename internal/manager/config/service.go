@@ -32,7 +32,7 @@ func (s *Service) IsFirstRun() (bool, error) {
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
 		// No configuration means first run.
-		return false, nil
+		return true, nil
 	case err != nil:
 		return false, fmt.Errorf("loading %s: %w", configFilename, err)
 	}
