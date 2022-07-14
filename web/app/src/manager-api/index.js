@@ -36,6 +36,8 @@ import ManagerConfiguration from './model/ManagerConfiguration';
 import ManagerVariable from './model/ManagerVariable';
 import ManagerVariableAudience from './model/ManagerVariableAudience';
 import MayKeepRunning from './model/MayKeepRunning';
+import PathCheckInput from './model/PathCheckInput';
+import PathCheckResult from './model/PathCheckResult';
 import RegisteredWorker from './model/RegisteredWorker';
 import SecurityError from './model/SecurityError';
 import ShamanCheckout from './model/ShamanCheckout';
@@ -253,6 +255,18 @@ export {
      * @property {module:model/MayKeepRunning}
      */
     MayKeepRunning,
+
+    /**
+     * The PathCheckInput model constructor.
+     * @property {module:model/PathCheckInput}
+     */
+    PathCheckInput,
+
+    /**
+     * The PathCheckResult model constructor.
+     * @property {module:model/PathCheckResult}
+     */
+    PathCheckResult,
 
     /**
      * The RegisteredWorker model constructor.

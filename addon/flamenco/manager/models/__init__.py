@@ -36,6 +36,8 @@ from flamenco.manager.model.manager_variable import ManagerVariable
 from flamenco.manager.model.manager_variable_audience import ManagerVariableAudience
 from flamenco.manager.model.manager_variables import ManagerVariables
 from flamenco.manager.model.may_keep_running import MayKeepRunning
+from flamenco.manager.model.path_check_input import PathCheckInput
+from flamenco.manager.model.path_check_result import PathCheckResult
 from flamenco.manager.model.registered_worker import RegisteredWorker
 from flamenco.manager.model.security_error import SecurityError
 from flamenco.manager.model.shaman_checkout import ShamanCheckout

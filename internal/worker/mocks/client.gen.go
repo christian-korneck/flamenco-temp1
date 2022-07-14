@@ -36,6 +36,46 @@ func (m *MockFlamencoClient) EXPECT() *MockFlamencoClientMockRecorder {
 	return m.recorder
 }
 
+// CheckSharedStoragePathWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) CheckSharedStoragePathWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.CheckSharedStoragePathResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckSharedStoragePathWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.CheckSharedStoragePathResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckSharedStoragePathWithBodyWithResponse indicates an expected call of CheckSharedStoragePathWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) CheckSharedStoragePathWithBodyWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckSharedStoragePathWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).CheckSharedStoragePathWithBodyWithResponse), varargs...)
+}
+
+// CheckSharedStoragePathWithResponse mocks base method.
+func (m *MockFlamencoClient) CheckSharedStoragePathWithResponse(arg0 context.Context, arg1 api.CheckSharedStoragePathJSONRequestBody, arg2 ...api.RequestEditorFn) (*api.CheckSharedStoragePathResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckSharedStoragePathWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.CheckSharedStoragePathResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckSharedStoragePathWithResponse indicates an expected call of CheckSharedStoragePathWithResponse.
+func (mr *MockFlamencoClientMockRecorder) CheckSharedStoragePathWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckSharedStoragePathWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).CheckSharedStoragePathWithResponse), varargs...)
+}
+
 // FetchGlobalLastRenderedInfoWithResponse mocks base method.
 func (m *MockFlamencoClient) FetchGlobalLastRenderedInfoWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.FetchGlobalLastRenderedInfoResponse, error) {
 	m.ctrl.T.Helper()
@@ -214,6 +254,26 @@ func (mr *MockFlamencoClientMockRecorder) FetchWorkersWithResponse(arg0 interfac
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorkersWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchWorkersWithResponse), varargs...)
+}
+
+// GetConfigurationFileWithResponse mocks base method.
+func (m *MockFlamencoClient) GetConfigurationFileWithResponse(arg0 context.Context, arg1 ...api.RequestEditorFn) (*api.GetConfigurationFileResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetConfigurationFileWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.GetConfigurationFileResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetConfigurationFileWithResponse indicates an expected call of GetConfigurationFileWithResponse.
+func (mr *MockFlamencoClientMockRecorder) GetConfigurationFileWithResponse(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigurationFileWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).GetConfigurationFileWithResponse), varargs...)
 }
 
 // GetConfigurationWithResponse mocks base method.

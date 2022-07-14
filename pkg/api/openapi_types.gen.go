@@ -323,6 +323,9 @@ type JobsQueryResult struct {
 
 // ManagerConfiguration defines model for ManagerConfiguration.
 type ManagerConfiguration struct {
+	// Whether this is considered the first time the Manager runs. This is determined by a few factors, like a non-existent configuration file or certain settings being empty while they shouldn't be.
+	IsFirstRun bool `json:"isFirstRun"`
+
 	// Whether the Shaman file transfer API is available.
 	ShamanEnabled bool `json:"shamanEnabled"`
 
@@ -352,6 +355,23 @@ type MayKeepRunning struct {
 
 	// Indicates that a status change requested for the worker. It should use the `workerState` operation to determine which state to go to next. If this is `true`, `mayKeepRunning` MUST be `false`.
 	StatusChangeRequested bool `json:"statusChangeRequested"`
+}
+
+// PathCheckInput defines model for PathCheckInput.
+type PathCheckInput struct {
+	Path string `json:"path"`
+}
+
+// PathCheckResult defines model for PathCheckResult.
+type PathCheckResult struct {
+	// Description of why this path is not usable.
+	Cause string `json:"cause"`
+
+	// Whether the path is usable or not.
+	IsUsable bool `json:"is_usable"`
+
+	// The path that was checked.
+	Path string `json:"path"`
 }
 
 // RegisteredWorker defines model for RegisteredWorker.
@@ -658,6 +678,9 @@ type WorkerSummary struct {
 	Version string `json:"version"`
 }
 
+// CheckSharedStoragePathJSONBody defines parameters for CheckSharedStoragePath.
+type CheckSharedStoragePathJSONBody PathCheckInput
+
 // SubmitJobJSONBody defines parameters for SubmitJob.
 type SubmitJobJSONBody SubmittedJob
 
@@ -702,6 +725,9 @@ type WorkerStateChangedJSONBody WorkerStateChanged
 
 // TaskUpdateJSONBody defines parameters for TaskUpdate.
 type TaskUpdateJSONBody TaskUpdate
+
+// CheckSharedStoragePathJSONRequestBody defines body for CheckSharedStoragePath for application/json ContentType.
+type CheckSharedStoragePathJSONRequestBody CheckSharedStoragePathJSONBody
 
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody

@@ -16,6 +16,12 @@ type ServerInterface interface {
 	// Get the configuration of this Manager.
 	// (GET /api/v3/configuration)
 	GetConfiguration(ctx echo.Context) error
+	// Validate a path for use as shared storage.
+	// (POST /api/v3/configuration/check/shared-storage)
+	CheckSharedStoragePath(ctx echo.Context) error
+	// Retrieve the configuration of Flamenco Manager.
+	// (GET /api/v3/configuration/file)
+	GetConfigurationFile(ctx echo.Context) error
 	// Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser's platform.
 	// (GET /api/v3/configuration/variables/{audience}/{platform})
 	GetVariables(ctx echo.Context, audience ManagerVariableAudience, platform string) error
@@ -126,6 +132,24 @@ func (w *ServerInterfaceWrapper) GetConfiguration(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetConfiguration(ctx)
+	return err
+}
+
+// CheckSharedStoragePath converts echo context to params.
+func (w *ServerInterfaceWrapper) CheckSharedStoragePath(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.CheckSharedStoragePath(ctx)
+	return err
+}
+
+// GetConfigurationFile converts echo context to params.
+func (w *ServerInterfaceWrapper) GetConfigurationFile(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetConfigurationFile(ctx)
 	return err
 }
 
@@ -647,6 +671,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/api/v3/configuration", wrapper.GetConfiguration)
+	router.POST(baseURL+"/api/v3/configuration/check/shared-storage", wrapper.CheckSharedStoragePath)
+	router.GET(baseURL+"/api/v3/configuration/file", wrapper.GetConfigurationFile)
 	router.GET(baseURL+"/api/v3/configuration/variables/:audience/:platform", wrapper.GetVariables)
 	router.POST(baseURL+"/api/v3/jobs", wrapper.SubmitJob)
 	router.GET(baseURL+"/api/v3/jobs/last-rendered", wrapper.FetchGlobalLastRenderedInfo)

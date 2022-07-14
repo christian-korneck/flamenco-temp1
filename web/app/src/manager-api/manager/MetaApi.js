@@ -13,10 +13,13 @@
 
 
 import ApiClient from "../ApiClient";
+import Error from '../model/Error';
 import FlamencoVersion from '../model/FlamencoVersion';
 import ManagerConfiguration from '../model/ManagerConfiguration';
 import ManagerVariable from '../model/ManagerVariable';
 import ManagerVariableAudience from '../model/ManagerVariableAudience';
+import PathCheckInput from '../model/PathCheckInput';
+import PathCheckResult from '../model/PathCheckResult';
 
 /**
 * Meta service.
@@ -36,6 +39,50 @@ export default class MetaApi {
         this.apiClient = apiClient || ApiClient.instance;
     }
 
+
+
+    /**
+     * Validate a path for use as shared storage.
+     * @param {Object} opts Optional parameters
+     * @param {module:model/PathCheckInput} opts.pathCheckInput Path to check
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/PathCheckResult} and HTTP response
+     */
+    checkSharedStoragePathWithHttpInfo(opts) {
+      opts = opts || {};
+      let postBody = opts['pathCheckInput'];
+
+      let pathParams = {
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = PathCheckResult;
+      return this.apiClient.callApi(
+        '/api/v3/configuration/check/shared-storage', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Validate a path for use as shared storage.
+     * @param {Object} opts Optional parameters
+     * @param {module:model/PathCheckInput} opts.pathCheckInput Path to check
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/PathCheckResult}
+     */
+    checkSharedStoragePath(opts) {
+      return this.checkSharedStoragePathWithHttpInfo(opts)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
 
 
     /**
@@ -71,6 +118,45 @@ export default class MetaApi {
      */
     getConfiguration() {
       return this.getConfigurationWithHttpInfo()
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * Retrieve the configuration of Flamenco Manager.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link Object.<String, {String: Object}>} and HTTP response
+     */
+    getConfigurationFileWithHttpInfo() {
+      let postBody = null;
+
+      let pathParams = {
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json', 'application/yaml'];
+      let returnType = {'String': Object};
+      return this.apiClient.callApi(
+        '/api/v3/configuration/file', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Retrieve the configuration of Flamenco Manager.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link Object.<String, {String: Object}>}
+     */
+    getConfigurationFile() {
+      return this.getConfigurationFileWithHttpInfo()
         .then(function(response_and_data) {
           return response_and_data.data;
         });

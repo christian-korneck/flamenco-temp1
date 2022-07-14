@@ -24,10 +24,11 @@ class ManagerConfiguration {
      * @alias module:model/ManagerConfiguration
      * @param storageLocation {String} Directory used for job file storage.
      * @param shamanEnabled {Boolean} Whether the Shaman file transfer API is available.
+     * @param isFirstRun {Boolean} Whether this is considered the first time the Manager runs. This is determined by a few factors, like a non-existent configuration file or certain settings being empty while they shouldn't be. 
      */
-    constructor(storageLocation, shamanEnabled) { 
+    constructor(storageLocation, shamanEnabled, isFirstRun) { 
         
-        ManagerConfiguration.initialize(this, storageLocation, shamanEnabled);
+        ManagerConfiguration.initialize(this, storageLocation, shamanEnabled, isFirstRun);
     }
 
     /**
@@ -35,9 +36,10 @@ class ManagerConfiguration {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, storageLocation, shamanEnabled) { 
+    static initialize(obj, storageLocation, shamanEnabled, isFirstRun) { 
         obj['storageLocation'] = storageLocation;
         obj['shamanEnabled'] = shamanEnabled;
+        obj['isFirstRun'] = isFirstRun;
     }
 
     /**
@@ -57,6 +59,9 @@ class ManagerConfiguration {
             if (data.hasOwnProperty('shamanEnabled')) {
                 obj['shamanEnabled'] = ApiClient.convertToType(data['shamanEnabled'], 'Boolean');
             }
+            if (data.hasOwnProperty('isFirstRun')) {
+                obj['isFirstRun'] = ApiClient.convertToType(data['isFirstRun'], 'Boolean');
+            }
         }
         return obj;
     }
@@ -75,6 +80,12 @@ ManagerConfiguration.prototype['storageLocation'] = undefined;
  * @member {Boolean} shamanEnabled
  */
 ManagerConfiguration.prototype['shamanEnabled'] = undefined;
+
+/**
+ * Whether this is considered the first time the Manager runs. This is determined by a few factors, like a non-existent configuration file or certain settings being empty while they shouldn't be. 
+ * @member {Boolean} isFirstRun
+ */
+ManagerConfiguration.prototype['isFirstRun'] = undefined;
 
 
 
