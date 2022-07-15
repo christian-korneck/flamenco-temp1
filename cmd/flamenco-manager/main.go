@@ -11,10 +11,12 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	http_pprof "net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
 	"runtime"
+	"runtime/pprof"
 	"strings"
 	"sync"
 	"syscall"
@@ -55,6 +57,7 @@ var cliArgs struct {
 	writeConfig     bool
 	delayResponses  bool
 	firstTimeWizard bool
+	pprof           bool
 }
 
 const (
@@ -381,6 +384,20 @@ func buildWebService(
 		return c.Redirect(http.StatusTemporaryRedirect, "/app/")
 	})
 
+	// Register profiler functions.
+	if cliArgs.pprof {
+		e.GET("/debug/pprof/", echo.WrapHandler(http.HandlerFunc(http_pprof.Index)))
+		e.GET("/debug/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(http_pprof.Cmdline)))
+		e.GET("/debug/pprof/profile", echo.WrapHandler(http.HandlerFunc(http_pprof.Profile)))
+		e.GET("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(http_pprof.Symbol)))
+		e.GET("/debug/pprof/trace", echo.WrapHandler(http.HandlerFunc(http_pprof.Trace)))
+		for _, profile := range pprof.Profiles() {
+			name := profile.Name()
+			e.GET("/debug/pprof/"+name, echo.WrapHandler(http_pprof.Handler(name)))
+		}
+		log.Info().Msg("profiler debugging info available on /debug/pprof/")
+	}
+
 	// Log available routes
 	routeLogger := log.Level(zerolog.TraceLevel)
 	routeLogger.Trace().Msg("available routes:")
@@ -476,6 +493,7 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.delayResponses, "delay", false,
 		"Add a random delay to any HTTP responses. This aids in development of Flamenco Manager's web frontend.")
 	flag.BoolVar(&cliArgs.firstTimeWizard, "wizard", false, "Open a webbrowser with the first-time configuration wizard.")
+	flag.BoolVar(&cliArgs.pprof, "pprof", false, "Expose profiler endpoints on /debug/pprof/.")
 
 	flag.Parse()
 
