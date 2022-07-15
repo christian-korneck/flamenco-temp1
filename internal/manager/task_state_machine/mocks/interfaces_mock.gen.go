@@ -165,6 +165,20 @@ func (mr *MockPersistenceServiceMockRecorder) SaveTaskActivity(arg0, arg1 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTaskActivity", reflect.TypeOf((*MockPersistenceService)(nil).SaveTaskActivity), arg0, arg1)
 }
 
+// SaveTaskStatus mocks base method.
+func (m *MockPersistenceService) SaveTaskStatus(arg0 context.Context, arg1 *persistence.Task) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveTaskStatus", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveTaskStatus indicates an expected call of SaveTaskStatus.
+func (mr *MockPersistenceServiceMockRecorder) SaveTaskStatus(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTaskStatus", reflect.TypeOf((*MockPersistenceService)(nil).SaveTaskStatus), arg0, arg1)
+}
+
 // UpdateJobsTaskStatuses mocks base method.
 func (m *MockPersistenceService) UpdateJobsTaskStatuses(arg0 context.Context, arg1 *persistence.Job, arg2 api.TaskStatus, arg3 string) error {
 	m.ctrl.T.Helper()

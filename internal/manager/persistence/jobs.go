@@ -247,8 +247,22 @@ func (db *DB) FetchTask(ctx context.Context, taskUUID string) (*Task, error) {
 }
 
 func (db *DB) SaveTask(ctx context.Context, t *Task) error {
-	if err := db.gormDB.WithContext(ctx).Save(t).Error; err != nil {
-		return taskError(err, "saving task")
+	tx := db.gormDB.WithContext(ctx).
+		Omit("job").
+		Omit("worker").
+		Save(t)
+	if tx.Error != nil {
+		return taskError(tx.Error, "saving task")
+	}
+	return nil
+}
+
+func (db *DB) SaveTaskStatus(ctx context.Context, t *Task) error {
+	tx := db.gormDB.WithContext(ctx).
+		Select("Status").
+		Save(t)
+	if tx.Error != nil {
+		return taskError(tx.Error, "saving task")
 	}
 	return nil
 }
@@ -265,7 +279,9 @@ func (db *DB) SaveTaskActivity(ctx context.Context, t *Task) error {
 
 func (db *DB) TaskAssignToWorker(ctx context.Context, t *Task, w *Worker) error {
 	tx := db.gormDB.WithContext(ctx).
-		Model(t).Updates(Task{WorkerID: &w.ID})
+		Model(t).
+		Select("WorkerID").
+		Updates(Task{WorkerID: &w.ID})
 	if tx.Error != nil {
 		return taskError(tx.Error, "assigning task %s to worker %s", t.UUID, w.UUID)
 	}

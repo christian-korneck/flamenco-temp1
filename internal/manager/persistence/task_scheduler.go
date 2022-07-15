@@ -149,5 +149,6 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 
 func assignTaskToWorker(tx *gorm.DB, w *Worker, t *Task) error {
 	return tx.Model(t).
+		Select("WorkerID", "LastTouchedAt").
 		Updates(Task{WorkerID: &w.ID, LastTouchedAt: tx.NowFunc()}).Error
 }

@@ -373,7 +373,7 @@ func (m *StateMachineMocks) expectSaveTaskWithStatus(
 	expectTaskStatus api.TaskStatus,
 ) *gomock.Call {
 	return m.persist.EXPECT().
-		SaveTask(gomock.Any(), task).
+		SaveTaskStatus(gomock.Any(), task).
 		DoAndReturn(func(ctx context.Context, savedTask *persistence.Task) error {
 			assert.Equal(t, expectTaskStatus, savedTask.Status)
 			return nil

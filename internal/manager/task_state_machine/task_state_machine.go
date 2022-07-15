@@ -76,7 +76,7 @@ func (sm *StateMachine) taskStatusChangeOnly(
 		Logger()
 	logger.Debug().Msg("task state changed")
 
-	if err := sm.persist.SaveTask(ctx, task); err != nil {
+	if err := sm.persist.SaveTaskStatus(ctx, task); err != nil {
 		return fmt.Errorf("saving task to database: %w", err)
 	}
 

@@ -17,6 +17,7 @@ import (
 
 type PersistenceService interface {
 	SaveTask(ctx context.Context, task *persistence.Task) error
+	SaveTaskStatus(ctx context.Context, t *persistence.Task) error
 	SaveTaskActivity(ctx context.Context, t *persistence.Task) error
 	SaveJobStatus(ctx context.Context, j *persistence.Job) error
 

@@ -32,8 +32,8 @@ func TestRequeueActiveTasksOfWorker(t *testing.T) {
 	// Expect this re-queueing to end up in the task's log and activity.
 	mocks.persist.EXPECT().SaveTaskActivity(ctx, task1) // TODO: test saved activity value
 	mocks.persist.EXPECT().SaveTaskActivity(ctx, task2) // TODO: test saved activity value
-	mocks.persist.EXPECT().SaveTask(ctx, task1)         // TODO: test saved task status
-	mocks.persist.EXPECT().SaveTask(ctx, task2)         // TODO: test saved task status
+	mocks.persist.EXPECT().SaveTaskStatus(ctx, task1)   // TODO: test saved task status
+	mocks.persist.EXPECT().SaveTaskStatus(ctx, task2)   // TODO: test saved task status
 
 	logMsg := "Task was requeued by Manager because worker had to test"
 	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task1.Job.UUID, task1.UUID, logMsg)
