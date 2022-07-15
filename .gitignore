@@ -8,6 +8,7 @@
 /flamenco-worker
 /flamenco-manager_race
 /flamenco-worker_race
+/stresser
 /addon-packer
 flamenco-manager.yaml
 flamenco-worker.yaml
