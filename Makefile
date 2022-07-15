@@ -42,6 +42,7 @@ flamenco-manager:
 flamenco-worker:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
 
+.PHONY: stresser
 stresser:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/stresser
 
