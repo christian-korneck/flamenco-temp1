@@ -62,10 +62,6 @@ func fetchTask(ctx context.Context, client worker.FlamencoClient) *api.AssignedT
 		}
 		switch {
 		case resp.JSON200 != nil:
-			log.Info().
-				Str("job", resp.JSON200.Job).
-				Str("task", resp.JSON200.Uuid).
-				Msg("obtained task")
 			return resp.JSON200
 		case resp.JSON423 != nil:
 			log.Fatal().Str("requestedStatus", string(resp.JSON423.StatusRequested)).

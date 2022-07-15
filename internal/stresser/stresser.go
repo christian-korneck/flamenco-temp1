@@ -14,7 +14,7 @@ import (
 
 const (
 	// For the actual stress test.
-	durationWaitStress = 500 * time.Millisecond
+	durationWaitStress = 0 * time.Millisecond
 	reportPeriod       = 2 * time.Second
 )
 
@@ -34,6 +34,9 @@ func Run(ctx context.Context, client worker.FlamencoClient) {
 		return
 	}
 	logger := log.With().Str("task", task.Uuid).Logger()
+	logger.Info().
+		Str("job", task.Job).
+		Msg("obtained task")
 
 	// Mark the task as active.
 	err := sendTaskUpdate(ctx, client, task.Uuid, api.TaskUpdate{
@@ -58,29 +61,40 @@ func Run(ctx context.Context, client worker.FlamencoClient) {
 		case <-time.After(wait):
 		}
 
-		increaseNumRequests()
-		err := stress(ctx, client, task)
-		if err != nil {
-			log.Info().Err(err).Str("task", task.Uuid).Msg("Manager rejected task update")
-			increaseNumFailed()
-		}
+		// stressBySendingTaskUpdate(ctx, client, task)
+		stressByRequestingTask(ctx, client)
 
 		wait = durationWaitStress
 	}
 }
 
-func stress(ctx context.Context, client worker.FlamencoClient, task *api.AssignedTask) error {
-	logline := "This is a log-line for stress testing. It will be repeated more than once.\n"
-	bigLog := strings.Repeat(logline, 1000)
+func stressByRequestingTask(ctx context.Context, client worker.FlamencoClient) {
+	increaseNumRequests()
+	task := fetchTask(ctx, client)
+	if task == nil {
+		increaseNumFailed()
+		log.Info().Msg("error obtaining task")
+	}
+}
+
+func stressBySendingTaskUpdate(ctx context.Context, client worker.FlamencoClient, task *api.AssignedTask) {
+	logLine := "This is a log-line for stress testing. It will be repeated more than once.\n"
+	logToSend := strings.Repeat(logLine, 5)
+
+	increaseNumRequests()
 
 	mutex.RLock()
 	update := api.TaskUpdate{
 		Activity: ptr(fmt.Sprintf("stress test update %v", numRequests)),
-		Log:      &bigLog,
+		Log:      &logToSend,
 	}
 	mutex.RUnlock()
 
-	return sendTaskUpdate(ctx, client, task.Uuid, update)
+	err := sendTaskUpdate(ctx, client, task.Uuid, update)
+	if err != nil {
+		log.Info().Err(err).Str("task", task.Uuid).Msg("Manager rejected task update")
+		increaseNumFailed()
+	}
 }
 
 func ptr[T any](value T) *T {
