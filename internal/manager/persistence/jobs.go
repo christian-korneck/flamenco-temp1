@@ -48,7 +48,7 @@ type Task struct {
 
 	// Which worker is/was working on this.
 	WorkerID      *uint
-	Worker        *Worker   `gorm:"foreignkey:WorkerID;references:ID;constraint:OnDelete:CASCADE"`
+	Worker        *Worker   `gorm:"foreignkey:WorkerID;references:ID;constraint:OnDelete:SET NULL"`
 	LastTouchedAt time.Time `gorm:"index"` // Should contain UTC timestamps.
 
 	// Dependencies are tasks that need to be completed before this one can run.
