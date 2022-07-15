@@ -4,8 +4,6 @@ package worker
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,8 +11,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	_ "modernc.org/sqlite"
 
+	"git.blender.org/flamenco/internal/worker/persistence"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -30,7 +28,7 @@ import (
 
 // UpstreamBufferDB implements the UpstreamBuffer interface using a database as backend.
 type UpstreamBufferDB struct {
-	db      *sql.DB
+	db      UpstreamBufferPersistence
 	dbMutex *sync.Mutex // Protects from "database locked" errors
 
 	client        FlamencoClient
@@ -39,6 +37,14 @@ type UpstreamBufferDB struct {
 
 	done chan struct{}
 	wg   *sync.WaitGroup
+}
+
+type UpstreamBufferPersistence interface {
+	UpstreamBufferQueueSize(ctx context.Context) (int, error)
+	UpstreamBufferQueue(ctx context.Context, taskID string, apiTaskUpdate api.TaskUpdateJSONRequestBody) error
+	UpstreamBufferFrontItem(ctx context.Context) (*persistence.TaskUpdate, error)
+	UpstreamBufferDiscard(ctx context.Context, queuedTaskUpdate *persistence.TaskUpdate) error
+	Close() error
 }
 
 const defaultUpstreamFlushInterval = 30 * time.Second
@@ -68,24 +74,11 @@ func (ub *UpstreamBufferDB) OpenDB(dbCtx context.Context, databaseFilename strin
 		return errors.New("upstream buffer database already opened")
 	}
 
-	db, err := sql.Open("sqlite", databaseFilename)
+	db, err := persistence.OpenDB(dbCtx, databaseFilename)
 	if err != nil {
 		return fmt.Errorf("opening %s: %w", databaseFilename, err)
 	}
-
-	if err := db.PingContext(dbCtx); err != nil {
-		return fmt.Errorf("accessing %s: %w", databaseFilename, err)
-	}
-
-	if _, err := db.ExecContext(dbCtx, "PRAGMA foreign_keys = 1"); err != nil {
-		return fmt.Errorf("enabling foreign keys: %w", err)
-	}
-
 	ub.db = db
-
-	if err := ub.prepareDatabase(dbCtx); err != nil {
-		return err
-	}
 
 	ub.wg.Add(1)
 	go ub.periodicFlushLoop()
@@ -97,7 +90,7 @@ func (ub *UpstreamBufferDB) SendTaskUpdate(ctx context.Context, taskID string, u
 	ub.dbMutex.Lock()
 	defer ub.dbMutex.Unlock()
 
-	queueSize, err := ub.queueSize()
+	queueSize, err := ub.queueSize(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to determine upstream queue size: %w", err)
 	}
@@ -151,53 +144,15 @@ func (ub *UpstreamBufferDB) Close() error {
 	return ub.db.Close()
 }
 
-// prepareDatabase creates the database schema, if necessary.
-func (ub *UpstreamBufferDB) prepareDatabase(dbCtx context.Context) error {
-	ub.dbMutex.Lock()
-	defer ub.dbMutex.Unlock()
-
-	tx, err := ub.db.BeginTx(dbCtx, nil)
-	if err != nil {
-		return fmt.Errorf("beginning database transaction: %w", err)
-	}
-	defer rollbackTransaction(tx)
-
-	stmt := `CREATE TABLE IF NOT EXISTS task_update_queue(task_id VARCHAR(36), payload BLOB)`
-	log.Debug().Str("sql", stmt).Msg("creating database table")
-
-	if _, err := tx.ExecContext(dbCtx, stmt); err != nil {
-		return fmt.Errorf("creating database table: %w", err)
-	}
-
-	if err = tx.Commit(); err != nil {
-		return fmt.Errorf("commiting creation of database table: %w", err)
-	}
-
-	return nil
-}
-
-func (ub *UpstreamBufferDB) queueSize() (int, error) {
+func (ub *UpstreamBufferDB) queueSize(ctx context.Context) (int, error) {
 	if ub.db == nil {
 		log.Panic().Msg("no database opened, unable to inspect upstream queue")
 	}
 
-	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), databaseContextTimeout)
+	dbCtx, dbCtxCancel := context.WithTimeout(ctx, databaseContextTimeout)
 	defer dbCtxCancel()
 
-	var queueSize int
-
-	err := ub.db.
-		QueryRowContext(dbCtx, "SELECT count(*) FROM task_update_queue").
-		Scan(&queueSize)
-
-	switch {
-	case err == sql.ErrNoRows:
-		return 0, nil
-	case err != nil:
-		return 0, err
-	default:
-		return queueSize, nil
-	}
+	return ub.db.UpstreamBufferQueueSize(dbCtx)
 }
 
 func (ub *UpstreamBufferDB) queueTaskUpdate(taskID string, update api.TaskUpdateJSONRequestBody) error {
@@ -208,35 +163,13 @@ func (ub *UpstreamBufferDB) queueTaskUpdate(taskID string, update api.TaskUpdate
 	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), databaseContextTimeout)
 	defer dbCtxCancel()
 
-	tx, err := ub.db.BeginTx(dbCtx, nil)
-	if err != nil {
-		return fmt.Errorf("beginning database transaction: %w", err)
-	}
-	defer rollbackTransaction(tx)
-
-	blob, err := json.Marshal(update)
-	if err != nil {
-		return fmt.Errorf("converting task update to JSON: %w", err)
-	}
-
-	stmt := `INSERT INTO task_update_queue (task_id, payload) VALUES (?, ?)`
-	log.Debug().Str("sql", stmt).Str("task", taskID).Msg("inserting task update")
-
-	if _, err := tx.ExecContext(dbCtx, stmt, taskID, blob); err != nil {
-		return fmt.Errorf("queueing task update: %w", err)
-	}
-
-	if err = tx.Commit(); err != nil {
-		return fmt.Errorf("committing queued task update: %w", err)
-	}
-
-	return nil
+	return ub.db.UpstreamBufferQueue(dbCtx, taskID, update)
 }
 
 func (ub *UpstreamBufferDB) QueueSize() (int, error) {
 	ub.dbMutex.Lock()
 	defer ub.dbMutex.Unlock()
-	return ub.queueSize()
+	return ub.queueSize(context.Background())
 }
 
 func (ub *UpstreamBufferDB) Flush(ctx context.Context) error {
@@ -246,7 +179,7 @@ func (ub *UpstreamBufferDB) Flush(ctx context.Context) error {
 
 	// See if we need to flush at all.
 	ub.dbMutex.Lock()
-	queueSize, err := ub.queueSize()
+	queueSize, err := ub.queueSize(ctx)
 	ub.dbMutex.Unlock()
 
 	switch {
@@ -273,48 +206,31 @@ func (ub *UpstreamBufferDB) Flush(ctx context.Context) error {
 }
 
 func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err error) {
-	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), databaseContextTimeout)
+	dbCtx, dbCtxCancel := context.WithTimeout(ctx, databaseContextTimeout)
 	defer dbCtxCancel()
 
-	tx, err := ub.db.BeginTx(dbCtx, nil)
+	queued, err := ub.db.UpstreamBufferFrontItem(dbCtx)
 	if err != nil {
-		return false, fmt.Errorf("beginning database transaction: %w", err)
+		return false, fmt.Errorf("finding first queued task update: %w", err)
 	}
-	defer rollbackTransaction(tx)
-
-	stmt := `SELECT rowid, task_id, payload FROM task_update_queue ORDER BY rowid LIMIT 1`
-	log.Trace().Str("sql", stmt).Msg("fetching queued task updates")
-
-	var rowID int64
-	var taskID string
-	var blob []byte
-
-	err = tx.QueryRowContext(dbCtx, stmt).Scan(&rowID, &taskID, &blob)
-	switch {
-	case err == sql.ErrNoRows:
-		// Flush operation is done.
-		log.Debug().Msg("task update queue empty")
+	if queued == nil {
+		// Nothing is queued.
 		return true, nil
-	case err != nil:
-		return false, fmt.Errorf("querying task update queue: %w", err)
 	}
 
-	logger := log.With().Str("task", taskID).Logger()
+	logger := log.With().Str("task", queued.TaskID).Logger()
 
-	var update api.TaskUpdateJSONRequestBody
-	if err := json.Unmarshal(blob, &update); err != nil {
+	apiTaskUpdate, err := queued.Unmarshal()
+	if err != nil {
 		// If we can't unmarshal the queued task update, there is little else to do
 		// than to discard it and ignore it ever happened.
 		logger.Warn().Err(err).
 			Msg("unable to unmarshal queued task update, discarding")
-		if err := ub.discardRow(tx, rowID); err != nil {
-			return false, err
-		}
-		return false, tx.Commit()
+		return false, ub.db.UpstreamBufferDiscard(dbCtx, queued)
 	}
 
 	// actually attempt delivery.
-	resp, err := ub.client.TaskUpdateWithResponse(ctx, taskID, update)
+	resp, err := ub.client.TaskUpdateWithResponse(ctx, queued.TaskID, *apiTaskUpdate)
 	if err != nil {
 		logger.Info().Err(err).Msg("communication with Manager still problematic")
 		return true, err
@@ -334,24 +250,10 @@ func (ub *UpstreamBufferDB) flushFirstItem(ctx context.Context) (done bool, err 
 			Msg("queued task update discarded by Manager, unknown reason")
 	}
 
-	if err := ub.discardRow(tx, rowID); err != nil {
+	if err := ub.db.UpstreamBufferDiscard(dbCtx, queued); err != nil {
 		return false, err
 	}
-	return false, tx.Commit()
-}
-
-func (ub *UpstreamBufferDB) discardRow(tx *sql.Tx, rowID int64) error {
-	dbCtx, dbCtxCancel := context.WithTimeout(context.Background(), databaseContextTimeout)
-	defer dbCtxCancel()
-
-	stmt := `DELETE FROM task_update_queue WHERE rowid = ?`
-	log.Trace().Str("sql", stmt).Int64("rowID", rowID).Msg("un-queueing task update")
-
-	_, err := tx.ExecContext(dbCtx, stmt, rowID)
-	if err != nil {
-		return fmt.Errorf("un-queueing task update: %w", err)
-	}
-	return nil
+	return false, nil
 }
 
 func (ub *UpstreamBufferDB) periodicFlushLoop() {
@@ -372,12 +274,5 @@ func (ub *UpstreamBufferDB) periodicFlushLoop() {
 				log.Warn().Err(err).Msg("error flushing task update queue")
 			}
 		}
-	}
-}
-
-func rollbackTransaction(tx *sql.Tx) {
-	if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-		// log.Error().Err(err).Msg("rolling back transaction")
-		log.Panic().Err(err).Msg("rolling back transaction")
 	}
 }

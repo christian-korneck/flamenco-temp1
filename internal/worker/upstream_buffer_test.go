@@ -6,13 +6,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/benbjohnson/clock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	_ "modernc.org/sqlite"
 
 	"git.blender.org/flamenco/internal/worker/mocks"
 	"git.blender.org/flamenco/pkg/api"
@@ -105,4 +106,59 @@ func TestUpstreamBufferManagerUnavailable(t *testing.T) {
 	assert.Equal(t, 0, queueSize)
 
 	assert.NoError(t, ub.Close())
+}
+
+func TestStressingBuffer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping potentially heavy test due to -short CLI arg")
+		return
+	}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	ctx := context.Background()
+
+	ub, mocks := mockUpstreamBufferDB(t, mockCtrl)
+	assert.NoError(t, ub.OpenDB(ctx, sqliteTestDBName(t)))
+
+	// Queue task updates much faster than the Manager can handle.
+	taskID := "3960dec4-978e-40ab-bede-bfa6428c6ebc"
+	update := api.TaskUpdateJSONRequestBody{
+		Activity:   ptr("Testing da ünits"),
+		Log:        ptr("¿Unicode logging should work?"),
+		TaskStatus: ptr(api.TaskStatusActive),
+	}
+
+	// Make the Manager slow to respond.
+	const managerResponseTime = 250 * time.Millisecond
+	mocks.client.EXPECT().
+		TaskUpdateWithResponse(ctx, taskID, update).
+		DoAndReturn(func(ctx context.Context, taskID string, body api.TaskUpdateJSONRequestBody, editors ...api.RequestEditorFn) (*api.TaskUpdateResponse, error) {
+			time.Sleep(managerResponseTime)
+			return &api.TaskUpdateResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusNoContent},
+			}, nil
+		}).
+		AnyTimes()
+
+	// Send updates MUCH faster than the slowed-down Manager can handle.
+	wg := sync.WaitGroup{}
+	for i := 0; i < 100; i++ {
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			err := ub.SendTaskUpdate(ctx, taskID, update)
+			assert.NoError(t, err)
+		}()
+
+		// Also mix in a bunch of flushes.
+		go func() {
+			defer wg.Done()
+			_, err := ub.flushFirstItem(ctx)
+			assert.NoError(t, err)
+		}()
+	}
+	wg.Wait()
+
 }
