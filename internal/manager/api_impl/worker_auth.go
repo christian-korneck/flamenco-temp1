@@ -4,6 +4,8 @@ package api_impl
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
 	"errors"
 
 	oapi_middle "github.com/deepmap/oapi-codegen/pkg/middleware"
@@ -23,7 +25,7 @@ const (
 var (
 	errAuthBad = errors.New("no such worker known")
 
-	passwordHasher = BCryptHasher{}
+	passwordHasher WorkerPasswordHasher = BCryptHasher{}
 )
 
 type WorkerPasswordHasher interface {
@@ -42,6 +44,22 @@ func (h BCryptHasher) GenerateHashedPassword(password []byte) ([]byte, error) {
 }
 func (h BCryptHasher) CompareHashAndPassword(hashedPassword, password []byte) error {
 	return bcrypt.CompareHashAndPassword(hashedPassword, password)
+}
+
+type SHA256Hasher struct{}
+
+func (h SHA256Hasher) hash(password []byte) []byte {
+	hasher := sha256.New()
+	return hasher.Sum(password)
+}
+func (h SHA256Hasher) GenerateHashedPassword(password []byte) ([]byte, error) {
+	return h.hash(password), nil
+}
+func (h SHA256Hasher) CompareHashAndPassword(hashedPassword, password []byte) error {
+	if subtle.ConstantTimeCompare(hashedPassword, h.hash(password)) != 1 {
+		return bcrypt.ErrMismatchedHashAndPassword
+	}
+	return nil
 }
 
 // OpenAPI authentication function for authing workers.
