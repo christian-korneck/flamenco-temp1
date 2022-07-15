@@ -39,6 +39,10 @@ flamenco-manager:
 	$(MAKE) webapp-static
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
 
+.PHONY: flamenco-manager-without-webapp
+flamenco-manager-without-webapp:
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-manager
+
 flamenco-worker:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
 
