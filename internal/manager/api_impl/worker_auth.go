@@ -22,7 +22,27 @@ const (
 
 var (
 	errAuthBad = errors.New("no such worker known")
+
+	passwordHasher = BCryptHasher{}
 )
+
+type WorkerPasswordHasher interface {
+	GenerateHashedPassword(password []byte) ([]byte, error)
+	CompareHashAndPassword(hashedPassword, password []byte) error
+}
+
+// BCryptHasher uses BCrypt to hash the worker passwords.
+type BCryptHasher struct{}
+
+func (h BCryptHasher) GenerateHashedPassword(password []byte) ([]byte, error) {
+	// The default BCrypt cost is made for important passwords. For Flamenco, the
+	// Worker password is not that important.
+	const bcryptCost = bcrypt.MinCost
+	return bcrypt.GenerateFromPassword(password, bcryptCost)
+}
+func (h BCryptHasher) CompareHashAndPassword(hashedPassword, password []byte) error {
+	return bcrypt.CompareHashAndPassword(hashedPassword, password)
+}
 
 // OpenAPI authentication function for authing workers.
 // The worker will be fetched from the database and stored in the request context.
@@ -49,7 +69,7 @@ func WorkerAuth(ctx context.Context, authInfo *openapi3filter.AuthenticationInpu
 	}
 
 	// Check the password.
-	err = bcrypt.CompareHashAndPassword([]byte(hashedSecret), []byte(p))
+	err = passwordHasher.CompareHashAndPassword([]byte(hashedSecret), []byte(p))
 	if err != nil {
 		logger.Warn().Str("username", u).Msg("authentication error")
 		return authInfo.NewError(errAuthBad)
