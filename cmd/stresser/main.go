@@ -55,6 +55,13 @@ func main() {
 	client := stresser.GetFlamencoClient(mainCtx, config)
 	stresser.Run(mainCtx, client)
 
+	log.Info().Msg("signing off at Manager")
+	shutdownCtx, shutdownCtxCancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer shutdownCtxCancel()
+	if _, err := client.SignOffWithResponse(shutdownCtx); err != nil {
+		log.Warn().Err(err).Msg("error signing off at Manager")
+	}
+
 	log.Info().Msg("stresser shutting down")
 }
 
