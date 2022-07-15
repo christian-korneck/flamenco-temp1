@@ -435,6 +435,7 @@ func (db *DB) UpdateJobsTaskStatusesConditional(ctx context.Context, job *Job,
 func (db *DB) TaskTouchedByWorker(ctx context.Context, t *Task) error {
 	tx := db.gormDB.WithContext(ctx).
 		Model(t).
+		Select("LastTouchedAt").
 		Updates(Task{LastTouchedAt: db.gormDB.NowFunc()})
 	if err := tx.Error; err != nil {
 		return taskError(err, "saving task 'last touched at'")
