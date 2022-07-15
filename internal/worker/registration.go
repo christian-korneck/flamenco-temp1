@@ -27,9 +27,15 @@ var (
 	errSignOnRejected          = errors.New("manager rejected our sign-on credentials")      // Reached Manager, but it rejected our creds.
 )
 
+type WorkerConfigWithCredentials interface {
+	WorkerConfig() (WorkerConfig, error)
+	WorkerCredentials() (WorkerCredentials, error)
+	SaveCredentials(creds WorkerCredentials) error
+}
+
 // registerOrSignOn tries to sign on, and if that fails (or there are no credentials) tries to register.
 // Returns an authenticated Flamenco OpenAPI client.
-func RegisterOrSignOn(ctx context.Context, configWrangler FileConfigWrangler) (
+func RegisterOrSignOn(ctx context.Context, configWrangler WorkerConfigWithCredentials) (
 	client FlamencoClient, startupState api.WorkerStatus,
 ) {
 	// Load configuration

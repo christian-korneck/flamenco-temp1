@@ -42,6 +42,9 @@ flamenco-manager:
 flamenco-worker:
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/flamenco-worker
 
+stresser:
+	go build -v ${BUILD_FLAGS} ${PKG}/cmd/stresser
+
 addon-packer: cmd/addon-packer/addon-packer.go
 	go build -v ${BUILD_FLAGS} ${PKG}/cmd/addon-packer
 

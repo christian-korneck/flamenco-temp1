@@ -102,7 +102,7 @@ func main() {
 	// reached and accepts our sign-on request. An offline Manager would cause the
 	// Worker to wait for it indefinitely.
 	startupCtx := context.Background()
-	client, startupState := worker.RegisterOrSignOn(startupCtx, configWrangler)
+	client, startupState := worker.RegisterOrSignOn(startupCtx, &configWrangler)
 
 	shutdownComplete = make(chan struct{})
 	workerCtx, workerCtxCancel := context.WithCancel(context.Background())
