@@ -159,6 +159,20 @@ func (s *Storage) filepath(jobID, taskID string) string {
 	return path.Join(dirpath, filename)
 }
 
+// TaskLog reads the entire log file.
+func (s *Storage) TaskLog(jobID, taskID string) (string, error) {
+	filepath := s.filepath(jobID, taskID)
+
+	s.taskLock(taskID)
+	defer s.taskUnlock(taskID)
+
+	buffer, err := os.ReadFile(filepath)
+	if err != nil {
+		return "", fmt.Errorf("reading log file of job %q task %q: %w", jobID, taskID, err)
+	}
+	return string(buffer), nil
+}
+
 // Tail reads the final few lines of a task log.
 func (s *Storage) Tail(jobID, taskID string) (string, error) {
 	filepath := s.filepath(jobID, taskID)

@@ -215,6 +215,45 @@ func (f *Flamenco) SetTaskStatus(e echo.Context, taskID string) error {
 	return e.NoContent(http.StatusNoContent)
 }
 
+func (f *Flamenco) FetchTaskLog(e echo.Context, taskID string) error {
+	logger := requestLogger(e)
+	ctx := e.Request().Context()
+
+	logger = logger.With().Str("task", taskID).Logger()
+	if !uuid.IsValid(taskID) {
+		logger.Warn().Msg("fetchTaskLog: bad task ID ")
+		return sendAPIError(e, http.StatusBadRequest, "bad task ID")
+	}
+
+	dbTask, err := f.persist.FetchTask(ctx, taskID)
+	if err != nil {
+		if errors.Is(err, persistence.ErrTaskNotFound) {
+			return sendAPIError(e, http.StatusNotFound, "no such task")
+		}
+		logger.Error().Err(err).Msg("error fetching task")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task: %v", err)
+	}
+	logger = logger.With().Str("job", dbTask.Job.UUID).Logger()
+
+	fullLog, err := f.logStorage.TaskLog(dbTask.Job.UUID, taskID)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			logger.Debug().Msg("task log unavailable, task has no log on disk")
+			return e.NoContent(http.StatusNoContent)
+		}
+		logger.Error().Err(err).Msg("unable to fetch task log")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task log: %v", err)
+	}
+
+	if fullLog == "" {
+		logger.Debug().Msg("task log unavailable, on-disk task log is empty")
+		return e.NoContent(http.StatusNoContent)
+	}
+
+	logger.Debug().Msg("fetched task log")
+	return e.String(http.StatusOK, fullLog)
+}
+
 func (f *Flamenco) FetchTaskLogTail(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	ctx := e.Request().Context()

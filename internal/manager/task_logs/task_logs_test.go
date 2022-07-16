@@ -74,7 +74,7 @@ func TestLogRotation(t *testing.T) {
 	assert.True(t, errors.Is(err, fs.ErrNotExist))
 }
 
-func TestLogTail(t *testing.T) {
+func TestLogTailAndFullLog(t *testing.T) {
 	s, finish, mocks := taskLogsTestFixtures(t)
 	defer finish()
 
@@ -110,6 +110,14 @@ func TestLogTail(t *testing.T) {
 	err = s.Write(zerolog.Nop(), jobID, taskID, bigString)
 	assert.NoError(t, err)
 
+	// Check the full log, it should be the entire bigString plus what was written before that.
+	contents, err = s.TaskLog(jobID, taskID)
+	if assert.NoError(t, err) {
+		expect := "Just a single line\nAnd another line!\n" + bigString
+		assert.Equal(t, expect, contents)
+	}
+
+	// Check the tail, it should only be the few last lines of bigString.
 	contents, err = s.Tail(jobID, taskID)
 	assert.NoError(t, err)
 	assert.Equal(t,
