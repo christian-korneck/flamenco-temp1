@@ -12,10 +12,9 @@
       <dt class="field-status">Status</dt>
       <dd v-html="workerStatusHTML"></dd>
 
-      <template v-if="workerData.last_seen">
       <dt class="field-last_seen">Last Seen</dt>
-      <dd>{{ datetime.relativeTime(workerData.last_seen) }}</dd>
-      </template>
+      <dd v-if="workerData.last_seen">{{ datetime.relativeTime(workerData.last_seen) }}</dd>
+      <dd v-else>never</dd>
 
       <dt class="field-version">Version</dt>
       <dd title="Version of Flamenco">{{ workerData.version }}</dd>
