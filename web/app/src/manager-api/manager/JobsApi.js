@@ -317,6 +317,52 @@ export default class JobsApi {
 
 
     /**
+     * Fetch the entire task log.
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link String} and HTTP response
+     */
+    fetchTaskLogWithHttpInfo(taskId) {
+      let postBody = null;
+      // verify the required parameter 'taskId' is set
+      if (taskId === undefined || taskId === null) {
+        throw new Error("Missing the required parameter 'taskId' when calling fetchTaskLog");
+      }
+
+      let pathParams = {
+        'task_id': taskId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['text/plain', 'application/json'];
+      let returnType = 'String';
+      return this.apiClient.callApi(
+        '/api/v3/tasks/{task_id}/log', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * Fetch the entire task log.
+     * @param {String} taskId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link String}
+     */
+    fetchTaskLog(taskId) {
+      return this.fetchTaskLogWithHttpInfo(taskId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
      * Fetch the last few lines of the task's log.
      * @param {String} taskId 
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link String} and HTTP response

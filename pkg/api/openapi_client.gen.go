@@ -179,6 +179,9 @@ type ClientInterface interface {
 	// FetchTask request
 	FetchTask(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchTaskLog request
+	FetchTaskLog(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// FetchTaskLogTail request
 	FetchTaskLogTail(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -611,6 +614,18 @@ func (c *Client) ShamanFileStoreWithBody(ctx context.Context, checksum string, f
 
 func (c *Client) FetchTask(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFetchTaskRequest(c.Server, taskId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchTaskLog(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchTaskLogRequest(c.Server, taskId)
 	if err != nil {
 		return nil, err
 	}
@@ -1733,6 +1748,40 @@ func NewFetchTaskRequest(server string, taskId string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewFetchTaskLogRequest generates requests for FetchTaskLog
+func NewFetchTaskLogRequest(server string, taskId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/tasks/%s/log", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewFetchTaskLogTailRequest generates requests for FetchTaskLogTail
 func NewFetchTaskLogTailRequest(server string, taskId string) (*http.Request, error) {
 	var err error
@@ -2397,6 +2446,9 @@ type ClientWithResponsesInterface interface {
 	// FetchTask request
 	FetchTaskWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskResponse, error)
 
+	// FetchTaskLog request
+	FetchTaskLogWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskLogResponse, error)
+
 	// FetchTaskLogTail request
 	FetchTaskLogTailWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskLogTailResponse, error)
 
@@ -2971,6 +3023,28 @@ func (r FetchTaskResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FetchTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type FetchTaskLogResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchTaskLogResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchTaskLogResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3594,6 +3668,15 @@ func (c *ClientWithResponses) FetchTaskWithResponse(ctx context.Context, taskId 
 		return nil, err
 	}
 	return ParseFetchTaskResponse(rsp)
+}
+
+// FetchTaskLogWithResponse request returning *FetchTaskLogResponse
+func (c *ClientWithResponses) FetchTaskLogWithResponse(ctx context.Context, taskId string, reqEditors ...RequestEditorFn) (*FetchTaskLogResponse, error) {
+	rsp, err := c.FetchTaskLog(ctx, taskId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchTaskLogResponse(rsp)
 }
 
 // FetchTaskLogTailWithResponse request returning *FetchTaskLogTailResponse
@@ -4465,6 +4548,32 @@ func ParseFetchTaskResponse(rsp *http.Response) (*FetchTaskResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchTaskLogResponse parses an HTTP response from a FetchTaskLogWithResponse call
+func ParseFetchTaskLogResponse(rsp *http.Response) (*FetchTaskLogResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchTaskLogResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

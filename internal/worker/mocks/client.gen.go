@@ -236,6 +236,26 @@ func (mr *MockFlamencoClientMockRecorder) FetchTaskLogTailWithResponse(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTaskLogTailWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchTaskLogTailWithResponse), varargs...)
 }
 
+// FetchTaskLogWithResponse mocks base method.
+func (m *MockFlamencoClient) FetchTaskLogWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchTaskLogResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FetchTaskLogWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.FetchTaskLogResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchTaskLogWithResponse indicates an expected call of FetchTaskLogWithResponse.
+func (mr *MockFlamencoClientMockRecorder) FetchTaskLogWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTaskLogWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchTaskLogWithResponse), varargs...)
+}
+
 // FetchTaskWithResponse mocks base method.
 func (m *MockFlamencoClient) FetchTaskWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchTaskResponse, error) {
 	m.ctrl.T.Helper()
