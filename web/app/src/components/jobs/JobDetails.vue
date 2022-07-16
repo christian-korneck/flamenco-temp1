@@ -4,7 +4,7 @@
       <last-rendered-image ref="lastRenderedImage" :jobID="jobData.id" thumbnailSuffix="-small" />
     </div>
 
-    <TabsWrapper @clicked-job-details-tab="$emit('reshuffled')">
+    <TabsWrapper @clicked-job-details-tab="emit_reshuffled_delayed">
       <TabItem title="Job Settings">
         <dl v-if="hasSettings">
           <template v-for="value, key in settingsToDisplay">
@@ -164,6 +164,7 @@ export default {
       if (this.jobData) {
         this._setJobSettings(this.jobData.settings);
       }
+      this.$emit('reshuffled');
     },
 
     _clearJobSettings() {
@@ -204,8 +205,17 @@ export default {
 
       this.simpleSettings = filtered;
       this.$emit('reshuffled');
-    }
-  }
+    },
+    emit_reshuffled_delayed() {
+      const reshuffle = () => { this.$emit('reshuffled'); }
+
+      // Changing tabs requires two sequential "reshuffled" events, at least it
+      // does on Firefox. Not sure what the reason is, but it works to get rid
+      // of the scrollbar.
+      reshuffle();
+      this.$nextTick(reshuffle);
+    },
+  },
 };
 </script>
 

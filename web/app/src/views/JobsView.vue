@@ -204,6 +204,7 @@ export default {
           this.jobs.setActiveJob(job);
           // Forward the full job to Tabulator, so that that gets updated too.
           this.$refs.jobsTable.processJobUpdate(job);
+          this._recalcTasksTableHeight();
         });
     },
 
