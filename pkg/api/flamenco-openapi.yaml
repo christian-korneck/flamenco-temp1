@@ -489,6 +489,56 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/v3/worker-mgt/workers/{worker_id}/sleep-schedule:
+    summary: Get or update the worker's sleep schedule.
+    get:
+      operationId: fetchWorkerSleepSchedule
+      tags: [worker-mgt]
+      parameters:
+        - name: worker_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Normal response, the sleep schedule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkerSleepSchedule"
+        "204":
+          description: The worker has no sleep schedule.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      operationId: setWorkerSleepSchedule
+      tags: [worker-mgt]
+      parameters:
+        - name: worker_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        description: The new sleep schedule.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkerSleepSchedule"
+      responses:
+        "204":
+          description: The schedule has been stored.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   ## Jobs
 
   /api/v3/jobs/types:
@@ -1936,6 +1986,30 @@ components:
             Whether the status change should happen immediately, or after the
             worker's current task is finished.
       required: [status, is_lazy]
+
+    WorkerSleepSchedule:
+      type: object
+      description: >
+        Sleep schedule for a single Worker. Start and end time indicate the time
+        of each day at which the schedule is active. Applies only when today is
+        in `days_of_week`, or when `days_of_week` is empty.
+
+        Start and end time are in 24-hour HH:MM notation.
+      properties:
+        "is_active": { type: boolean }
+        "days_of_week":
+          type: string
+          description: >
+            Space-separated two-letter strings indicating days of week the
+            schedule is active ("mo", "tu", etc.). Empty means "every day".
+        "start_time": { type: string, format: "HH:MM" }
+        "end_time": { type: string, format: "HH:MM" }
+      required: [is_active, days_of_week, start_time, end_time]
+      example:
+        is_active: true
+        days_of_week: "mo,tu,th,fr"
+        start_time: "09:00"
+        end_time: "18:00"
 
   securitySchemes:
     worker_auth:
