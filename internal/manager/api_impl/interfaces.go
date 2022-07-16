@@ -65,6 +65,9 @@ type PersistenceService interface {
 	// CountTaskFailuresOfWorker returns the number of task failures of this worker, on this particular job and task type.
 	CountTaskFailuresOfWorker(ctx context.Context, job *persistence.Job, worker *persistence.Worker, taskType string) (int, error)
 
+	FetchWorkerSleepSchedule(ctx context.Context, workerUUID string) (*persistence.SleepSchedule, error)
+	SetWorkerSleepSchedule(ctx context.Context, workerUUID string, schedule persistence.SleepSchedule) error
+
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
 	QueryJobTaskSummaries(ctx context.Context, jobUUID string) ([]*persistence.Task, error)

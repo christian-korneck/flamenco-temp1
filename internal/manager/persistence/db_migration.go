@@ -11,6 +11,7 @@ func (db *DB) migrate() error {
 		&Job{},
 		&JobBlock{},
 		&LastRendered{},
+		&SleepSchedule{},
 		&Task{},
 		&TaskFailure{},
 		&Worker{},
