@@ -123,7 +123,8 @@ type LogStorage interface {
 	WriteTimestamped(logger zerolog.Logger, jobID, taskID string, logText string) error
 	RotateFile(logger zerolog.Logger, jobID, taskID string)
 	Tail(jobID, taskID string) (string, error)
-	TaskLog(jobID, taskID string) (string, error)
+	TaskLogSize(jobID, taskID string) (int64, error)
+	Filepath(jobID, taskID string) string
 }
 
 // LastRendered processes the "last rendered" images.

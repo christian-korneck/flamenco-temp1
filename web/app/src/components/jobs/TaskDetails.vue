@@ -13,20 +13,22 @@
       <dd class="field-status-label" :class="'status-' + taskData.status">{{ taskData.status }}</dd>
 
       <dt class="field-worker" title="Assigned To">Assigned To</dt>
-      <dd><worker-link :worker="taskData.worker" /></dd>
+      <dd>
+        <worker-link :worker="taskData.worker" />
+      </dd>
 
       <template v-if="taskData.failed_by_workers.length > 0">
-      <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
-      <dd>
-        <div v-for="worker in taskData.failed_by_workers">
-          <worker-link :worker="worker" />
-        </div>
-      </dd>
+        <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
+        <dd>
+          <div v-for="worker in taskData.failed_by_workers">
+            <worker-link :worker="worker" />
+          </div>
+        </dd>
       </template>
 
       <template v-if="taskData.type">
-      <dt class="field-type" title="Type">Type</dt>
-      <dd>{{ taskData.type }}</dd>
+        <dt class="field-type" title="Type">Type</dt>
+        <dd>{{ taskData.type }}</dd>
       </template>
 
       <dt class="field-priority" title="Priority">Priority</dt>
@@ -52,6 +54,9 @@
         <dd>{{ cmd.parameters }}</dd>
       </template>
     </dl>
+
+    <h3 class="sub-title">Task Log</h3>
+    <button @click="openFullLog" title="Opens the task log in a new window.">Open Full Log</button>
   </template>
 
   <div v-else class="details-no-item-selected">
@@ -61,19 +66,22 @@
 
 <script lang="js">
 import * as datetime from "@/datetime";
-import * as API from '@/manager-api';
+import { JobsApi } from '@/manager-api';
+import { backendURL } from '@/urls';
 import { apiClient } from '@/stores/api-query-count';
+import { useNotifs } from "@/stores/notifications";
 import WorkerLink from '@/components/WorkerLink.vue';
 
 export default {
   props: [
     "taskData", // Task data to show.
   ],
-  components: {WorkerLink},
+  components: { WorkerLink },
   data() {
     return {
       datetime: datetime, // So that the template can access it.
-      jobsApi: new API.JobsApi(apiClient),
+      jobsApi: new JobsApi(apiClient),
+      notifs: useNotifs(),
     };
   },
   mounted() {
@@ -85,12 +93,32 @@ export default {
       return !!this.taskData && !!this.taskData.id;
     },
   },
+  methods: {
+    openFullLog() {
+      const taskUUID = this.taskData.id;
+
+      this.jobsApi.fetchTaskLogInfo(taskUUID)
+        .then((logInfo) => {
+          if (logInfo == null) {
+            this.notifs.add(`Task ${taskUUID} has no log yet`)
+            return;
+          }
+          console.log(`task ${taskUUID} log info:`, logInfo);
+
+          const url = backendURL(logInfo.url);
+          window.open(url, "_blank");
+        })
+        .catch((error) => {
+          console.log(`Error fetching task ${taskUUID} log info:`, error);
+        })
+    },
+  },
 };
 </script>
 
 <style scoped>
 /* Prevent fields with long IDs from overflowing. */
-.field-id + dd {
+.field-id+dd {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -74,7 +74,7 @@ func TestLogRotation(t *testing.T) {
 	assert.True(t, errors.Is(err, fs.ErrNotExist))
 }
 
-func TestLogTailAndFullLog(t *testing.T) {
+func TestLogTailAndSize(t *testing.T) {
 	s, finish, mocks := taskLogsTestFixtures(t)
 	defer finish()
 
@@ -86,10 +86,16 @@ func TestLogTailAndFullLog(t *testing.T) {
 	mocks.broadcaster.EXPECT().BroadcastTaskLogUpdate(gomock.Any()).Times(3)
 	mocks.localStorage.EXPECT().ForJob(jobID).Return(jobDir).AnyTimes()
 
+	// Check tail & size of non-existent log file.
 	contents, err := s.Tail(jobID, taskID)
 	assert.ErrorIs(t, err, os.ErrNotExist)
 	assert.Equal(t, "", contents)
 
+	size, err := s.TaskLogSize(jobID, taskID)
+	assert.ErrorIs(t, err, fs.ErrNotExist)
+	assert.Equal(t, int64(0), size)
+
+	// Test a single line.
 	err = s.Write(zerolog.Nop(), jobID, taskID, "Just a single line")
 	assert.NoError(t, err)
 	contents, err = s.Tail(jobID, taskID)
@@ -110,11 +116,11 @@ func TestLogTailAndFullLog(t *testing.T) {
 	err = s.Write(zerolog.Nop(), jobID, taskID, bigString)
 	assert.NoError(t, err)
 
-	// Check the full log, it should be the entire bigString plus what was written before that.
-	contents, err = s.TaskLog(jobID, taskID)
+	// Check the log size, it should be the entire bigString plus what was written before that.
+	size, err = s.TaskLogSize(jobID, taskID)
 	if assert.NoError(t, err) {
-		expect := "Just a single line\nAnd another line!\n" + bigString
-		assert.Equal(t, expect, contents)
+		expect := int64(len("Just a single line\nAnd another line!\n" + bigString))
+		assert.Equal(t, expect, size)
 	}
 
 	// Check the tail, it should only be the few last lines of bigString.
@@ -184,7 +190,7 @@ func TestLogWritingParallel(t *testing.T) {
 
 	// Test that the final log contains 1000 lines of of 100 characters, without
 	// any run getting interrupted by another one.
-	contents, err := os.ReadFile(s.filepath(jobID, taskID))
+	contents, err := os.ReadFile(s.Filepath(jobID, taskID))
 	assert.NoError(t, err)
 	lines := strings.Split(string(contents), "\n")
 	assert.Equal(t, numGoroutines+1, len(lines),

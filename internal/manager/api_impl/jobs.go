@@ -5,6 +5,7 @@ package api_impl
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"path"
@@ -17,6 +18,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/internal/uuid"
 	"git.blender.org/flamenco/pkg/api"
+	"git.blender.org/flamenco/pkg/crosspath"
 )
 
 // JobFilesURLPrefix is the URL prefix that the Flamenco API expects to serve
@@ -215,13 +217,13 @@ func (f *Flamenco) SetTaskStatus(e echo.Context, taskID string) error {
 	return e.NoContent(http.StatusNoContent)
 }
 
-func (f *Flamenco) FetchTaskLog(e echo.Context, taskID string) error {
+func (f *Flamenco) FetchTaskLogInfo(e echo.Context, taskID string) error {
 	logger := requestLogger(e)
 	ctx := e.Request().Context()
 
 	logger = logger.With().Str("task", taskID).Logger()
 	if !uuid.IsValid(taskID) {
-		logger.Warn().Msg("fetchTaskLog: bad task ID ")
+		logger.Warn().Msg("FetchTaskLogInfo: bad task ID ")
 		return sendAPIError(e, http.StatusBadRequest, "bad task ID")
 	}
 
@@ -235,7 +237,7 @@ func (f *Flamenco) FetchTaskLog(e echo.Context, taskID string) error {
 	}
 	logger = logger.With().Str("job", dbTask.Job.UUID).Logger()
 
-	fullLog, err := f.logStorage.TaskLog(dbTask.Job.UUID, taskID)
+	size, err := f.logStorage.TaskLogSize(dbTask.Job.UUID, taskID)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			logger.Debug().Msg("task log unavailable, task has no log on disk")
@@ -245,13 +247,36 @@ func (f *Flamenco) FetchTaskLog(e echo.Context, taskID string) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching task log: %v", err)
 	}
 
-	if fullLog == "" {
+	if size == 0 {
 		logger.Debug().Msg("task log unavailable, on-disk task log is empty")
 		return e.NoContent(http.StatusNoContent)
 	}
+	if size > math.MaxInt {
+		// The OpenAPI definition just has type "integer", which translates to an
+		// 'int' in Go.
+		logger.Warn().
+			Int64("size", size).
+			Int("cappedSize", math.MaxInt).
+			Msg("Task log is larger than can be stored in an int, capping the reported size. The log can still be entirely downloaded.")
+		size = math.MaxInt
+	}
 
-	logger.Debug().Msg("fetched task log")
-	return e.String(http.StatusOK, fullLog)
+	taskLogInfo := api.TaskLogInfo{
+		TaskId: taskID,
+		JobId:  dbTask.Job.UUID,
+		Size:   int(size),
+	}
+
+	fullLogPath := f.logStorage.Filepath(dbTask.Job.UUID, taskID)
+	relPath, err := f.localStorage.RelPath(fullLogPath)
+	if err != nil {
+		logger.Error().Err(err).Msg("task log is outside the manager storage, cannot construct its URL for download")
+	} else {
+		taskLogInfo.Url = path.Join(JobFilesURLPrefix, crosspath.ToSlash(relPath))
+	}
+
+	logger.Debug().Msg("fetched task log info")
+	return e.JSON(http.StatusOK, &taskLogInfo)
 }
 
 func (f *Flamenco) FetchTaskLogTail(e echo.Context, taskID string) error {

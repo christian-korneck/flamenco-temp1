@@ -593,6 +593,20 @@ func (m *MockLogStorage) EXPECT() *MockLogStorageMockRecorder {
 	return m.recorder
 }
 
+// Filepath mocks base method.
+func (m *MockLogStorage) Filepath(arg0, arg1 string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Filepath", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Filepath indicates an expected call of Filepath.
+func (mr *MockLogStorageMockRecorder) Filepath(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Filepath", reflect.TypeOf((*MockLogStorage)(nil).Filepath), arg0, arg1)
+}
+
 // RotateFile mocks base method.
 func (m *MockLogStorage) RotateFile(arg0 zerolog.Logger, arg1, arg2 string) {
 	m.ctrl.T.Helper()
@@ -620,19 +634,19 @@ func (mr *MockLogStorageMockRecorder) Tail(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tail", reflect.TypeOf((*MockLogStorage)(nil).Tail), arg0, arg1)
 }
 
-// TaskLog mocks base method.
-func (m *MockLogStorage) TaskLog(arg0, arg1 string) (string, error) {
+// TaskLogSize mocks base method.
+func (m *MockLogStorage) TaskLogSize(arg0, arg1 string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TaskLog", arg0, arg1)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "TaskLogSize", arg0, arg1)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TaskLog indicates an expected call of TaskLog.
-func (mr *MockLogStorageMockRecorder) TaskLog(arg0, arg1 interface{}) *gomock.Call {
+// TaskLogSize indicates an expected call of TaskLogSize.
+func (mr *MockLogStorageMockRecorder) TaskLogSize(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TaskLog", reflect.TypeOf((*MockLogStorage)(nil).TaskLog), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TaskLogSize", reflect.TypeOf((*MockLogStorage)(nil).TaskLogSize), arg0, arg1)
 }
 
 // Write mocks base method.

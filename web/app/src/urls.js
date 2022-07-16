@@ -25,3 +25,10 @@ export function ws() {
 export function api() {
   return URLs.api;
 }
+
+// Backend URLs (like task logs, SwaggerUI, etc.) should be relative to the API
+// url in order to stay working when the web development server is in use.
+export function backendURL(path) {
+  const url = new URL(path, URLs.api);
+  return url.href;
+}

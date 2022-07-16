@@ -94,7 +94,7 @@ func (s *Storage) writeToDisk(logger zerolog.Logger, jobID, taskID string, logTe
 	s.taskLock(taskID)
 	defer s.taskUnlock(taskID)
 
-	filepath := s.filepath(jobID, taskID)
+	filepath := s.Filepath(jobID, taskID)
 	logger = logger.With().Str("filepath", filepath).Logger()
 
 	if err := os.MkdirAll(path.Dir(filepath), 0755); err != nil {
@@ -135,7 +135,7 @@ func (s *Storage) writeToDisk(logger zerolog.Logger, jobID, taskID string, logTe
 
 // RotateFile rotates the task's log file, ignoring (but logging) any errors that occur.
 func (s *Storage) RotateFile(logger zerolog.Logger, jobID, taskID string) {
-	logpath := s.filepath(jobID, taskID)
+	logpath := s.Filepath(jobID, taskID)
 	logger = logger.With().Str("logpath", logpath).Logger()
 
 	s.taskLock(taskID)
@@ -148,34 +148,34 @@ func (s *Storage) RotateFile(logger zerolog.Logger, jobID, taskID string) {
 	}
 }
 
-// filepath returns the file path suitable to write a log file.
+// Filepath returns the file path suitable to write a log file.
 // Note that this intentionally shares the behaviour of `pathForJob()` in
 // `internal/manager/local_storage/local_storage.go`; it is intended that the
 // file handling code in this source file is migrated to use the `local_storage`
 // package at some point.
-func (s *Storage) filepath(jobID, taskID string) string {
+func (s *Storage) Filepath(jobID, taskID string) string {
 	dirpath := s.localStorage.ForJob(jobID)
 	filename := fmt.Sprintf("task-%v.txt", taskID)
 	return path.Join(dirpath, filename)
 }
 
-// TaskLog reads the entire log file.
-func (s *Storage) TaskLog(jobID, taskID string) (string, error) {
-	filepath := s.filepath(jobID, taskID)
+// TaskLogSize returns the size of the task log, in bytes.
+func (s *Storage) TaskLogSize(jobID, taskID string) (int64, error) {
+	filepath := s.Filepath(jobID, taskID)
 
 	s.taskLock(taskID)
 	defer s.taskUnlock(taskID)
 
-	buffer, err := os.ReadFile(filepath)
+	stat, err := os.Stat(filepath)
 	if err != nil {
-		return "", fmt.Errorf("reading log file of job %q task %q: %w", jobID, taskID, err)
+		return 0, fmt.Errorf("unable to access log file of job %q task %q: %w", jobID, taskID, err)
 	}
-	return string(buffer), nil
+	return stat.Size(), nil
 }
 
 // Tail reads the final few lines of a task log.
 func (s *Storage) Tail(jobID, taskID string) (string, error) {
-	filepath := s.filepath(jobID, taskID)
+	filepath := s.Filepath(jobID, taskID)
 
 	s.taskLock(taskID)
 	defer s.taskUnlock(taskID)
