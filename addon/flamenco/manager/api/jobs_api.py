@@ -33,6 +33,7 @@ from flamenco.manager.model.jobs_query import JobsQuery
 from flamenco.manager.model.jobs_query_result import JobsQueryResult
 from flamenco.manager.model.submitted_job import SubmittedJob
 from flamenco.manager.model.task import Task
+from flamenco.manager.model.task_log_info import TaskLogInfo
 from flamenco.manager.model.task_status_change import TaskStatusChange
 
 
@@ -334,12 +335,12 @@ class JobsApi(object):
             },
             api_client=api_client
         )
-        self.fetch_task_log_endpoint = _Endpoint(
+        self.fetch_task_log_info_endpoint = _Endpoint(
             settings={
-                'response_type': (str,),
+                'response_type': (TaskLogInfo,),
                 'auth': [],
                 'endpoint_path': '/api/v3/tasks/{task_id}/log',
-                'operation_id': 'fetch_task_log',
+                'operation_id': 'fetch_task_log_info',
                 'http_method': 'GET',
                 'servers': None,
             },
@@ -377,7 +378,6 @@ class JobsApi(object):
             },
             headers_map={
                 'accept': [
-                    'text/plain',
                     'application/json'
                 ],
                 'content_type': [],
@@ -1250,17 +1250,17 @@ class JobsApi(object):
             task_id
         return self.fetch_task_endpoint.call_with_http_info(**kwargs)
 
-    def fetch_task_log(
+    def fetch_task_log_info(
         self,
         task_id,
         **kwargs
     ):
-        """Fetch the entire task log.  # noqa: E501
+        """Get the URL of the task log, and some more info.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.fetch_task_log(task_id, async_req=True)
+        >>> thread = api.fetch_task_log_info(task_id, async_req=True)
         >>> result = thread.get()
 
         Args:
@@ -1295,7 +1295,7 @@ class JobsApi(object):
             async_req (bool): execute request asynchronously
 
         Returns:
-            str
+            TaskLogInfo
                 If the method is called asynchronously, returns the request
                 thread.
         """
@@ -1325,7 +1325,7 @@ class JobsApi(object):
         kwargs['_host_index'] = kwargs.get('_host_index')
         kwargs['task_id'] = \
             task_id
-        return self.fetch_task_log_endpoint.call_with_http_info(**kwargs)
+        return self.fetch_task_log_info_endpoint.call_with_http_info(**kwargs)
 
     def fetch_task_log_tail(
         self,

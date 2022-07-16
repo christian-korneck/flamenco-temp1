@@ -83,9 +83,9 @@ type ServerInterface interface {
 	// Fetch a single task.
 	// (GET /api/v3/tasks/{task_id})
 	FetchTask(ctx echo.Context, taskId string) error
-	// Fetch the entire task log.
+	// Get the URL of the task log, and some more info.
 	// (GET /api/v3/tasks/{task_id}/log)
-	FetchTaskLog(ctx echo.Context, taskId string) error
+	FetchTaskLogInfo(ctx echo.Context, taskId string) error
 	// Fetch the last few lines of the task's log.
 	// (GET /api/v3/tasks/{task_id}/logtail)
 	FetchTaskLogTail(ctx echo.Context, taskId string) error
@@ -481,8 +481,8 @@ func (w *ServerInterfaceWrapper) FetchTask(ctx echo.Context) error {
 	return err
 }
 
-// FetchTaskLog converts echo context to params.
-func (w *ServerInterfaceWrapper) FetchTaskLog(ctx echo.Context) error {
+// FetchTaskLogInfo converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchTaskLogInfo(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "task_id" -------------
 	var taskId string
@@ -493,7 +493,7 @@ func (w *ServerInterfaceWrapper) FetchTaskLog(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.FetchTaskLog(ctx, taskId)
+	err = w.Handler.FetchTaskLogInfo(ctx, taskId)
 	return err
 }
 
@@ -748,7 +748,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/v3/shaman/files/:checksum/:filesize", wrapper.ShamanFileStoreCheck)
 	router.POST(baseURL+"/api/v3/shaman/files/:checksum/:filesize", wrapper.ShamanFileStore)
 	router.GET(baseURL+"/api/v3/tasks/:task_id", wrapper.FetchTask)
-	router.GET(baseURL+"/api/v3/tasks/:task_id/log", wrapper.FetchTaskLog)
+	router.GET(baseURL+"/api/v3/tasks/:task_id/log", wrapper.FetchTaskLogInfo)
 	router.GET(baseURL+"/api/v3/tasks/:task_id/logtail", wrapper.FetchTaskLogTail)
 	router.POST(baseURL+"/api/v3/tasks/:task_id/setstatus", wrapper.SetTaskStatus)
 	router.GET(baseURL+"/api/v3/version", wrapper.GetVersion)

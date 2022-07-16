@@ -25,6 +25,7 @@ import JobsQuery from '../model/JobsQuery';
 import JobsQueryResult from '../model/JobsQueryResult';
 import SubmittedJob from '../model/SubmittedJob';
 import Task from '../model/Task';
+import TaskLogInfo from '../model/TaskLogInfo';
 import TaskStatusChange from '../model/TaskStatusChange';
 
 /**
@@ -317,15 +318,15 @@ export default class JobsApi {
 
 
     /**
-     * Fetch the entire task log.
+     * Get the URL of the task log, and some more info.
      * @param {String} taskId 
-     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link String} and HTTP response
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/TaskLogInfo} and HTTP response
      */
-    fetchTaskLogWithHttpInfo(taskId) {
+    fetchTaskLogInfoWithHttpInfo(taskId) {
       let postBody = null;
       // verify the required parameter 'taskId' is set
       if (taskId === undefined || taskId === null) {
-        throw new Error("Missing the required parameter 'taskId' when calling fetchTaskLog");
+        throw new Error("Missing the required parameter 'taskId' when calling fetchTaskLogInfo");
       }
 
       let pathParams = {
@@ -340,8 +341,8 @@ export default class JobsApi {
 
       let authNames = [];
       let contentTypes = [];
-      let accepts = ['text/plain', 'application/json'];
-      let returnType = 'String';
+      let accepts = ['application/json'];
+      let returnType = TaskLogInfo;
       return this.apiClient.callApi(
         '/api/v3/tasks/{task_id}/log', 'GET',
         pathParams, queryParams, headerParams, formParams, postBody,
@@ -350,12 +351,12 @@ export default class JobsApi {
     }
 
     /**
-     * Fetch the entire task log.
+     * Get the URL of the task log, and some more info.
      * @param {String} taskId 
-     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link String}
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/TaskLogInfo}
      */
-    fetchTaskLog(taskId) {
-      return this.fetchTaskLogWithHttpInfo(taskId)
+    fetchTaskLogInfo(taskId) {
+      return this.fetchTaskLogInfoWithHttpInfo(taskId)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

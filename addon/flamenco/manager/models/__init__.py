@@ -61,6 +61,7 @@ from flamenco.manager.model.socket_io_task_update import SocketIOTaskUpdate
 from flamenco.manager.model.socket_io_worker_update import SocketIOWorkerUpdate
 from flamenco.manager.model.submitted_job import SubmittedJob
 from flamenco.manager.model.task import Task
+from flamenco.manager.model.task_log_info import TaskLogInfo
 from flamenco.manager.model.task_status import TaskStatus
 from flamenco.manager.model.task_status_change import TaskStatusChange
 from flamenco.manager.model.task_summary import TaskSummary

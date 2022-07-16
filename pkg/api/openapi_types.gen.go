@@ -603,6 +603,18 @@ type Task struct {
 	Worker *TaskWorker `json:"worker,omitempty"`
 }
 
+// Info about the log of a single task.
+type TaskLogInfo struct {
+	JobId string `json:"job_id"`
+
+	// The size of the task log, in bytes.
+	Size   int    `json:"size"`
+	TaskId string `json:"task_id"`
+
+	// The URL at which the task log itself can be downloaded.
+	Url string `json:"url"`
+}
+
 // TaskStatus defines model for TaskStatus.
 type TaskStatus string
 
