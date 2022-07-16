@@ -103,6 +103,11 @@ generate-py:
 # The generator outputs files so that we can write our own tests. We don't,
 # though, so it's better to just remove those placeholders.
 	rm -rf addon/flamenco/manager/test
+# The generators always produce UNIX line-ends. This creates false file
+# modifications with Git. Convert them to DOS line-ends to avoid this.
+ifeq ($(OS),Windows_NT)
+	git status --porcelain | grep '^ M addon/flamenco/manager' | cut -d' ' -f3 | xargs unix2dos --keepdate
+endif
 
 generate-js:
 # The generator doesn't consistently overwrite existing files, nor does it
@@ -134,6 +139,11 @@ generate-js:
 # which is listed in our `.
 	mv web/_tmp-manager-api-javascript/src web/app/src/manager-api
 	rm -rf web/_tmp-manager-api-javascript
+# The generators always produce UNIX line-ends. This creates false file
+# modifications with Git. Convert them to DOS line-ends to avoid this.
+ifeq ($(OS),Windows_NT)
+	git status --porcelain | grep '^ M web/app/src/manager-api' | cut -d' ' -f3 | xargs unix2dos --keepdate
+endif
 
 version:
 	@echo "OS          : ${OS}"
