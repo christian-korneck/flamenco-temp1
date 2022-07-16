@@ -4,6 +4,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useTaskLog } from '@/stores/tasklog'
 import { useTasks } from '@/stores/tasks'
 import { apiClient } from '@/stores/api-query-count';
+import { JobsApi } from '@/manager-api';
 
 const taskLog = useTaskLog();
 const tasks = useTasks();
@@ -61,7 +62,7 @@ function _fetchLogTail(taskID) {
 
   if (!taskID) return;
 
-  const jobsAPI = new API.JobsApi(apiClient);
+  const jobsAPI = new JobsApi(apiClient);
   return jobsAPI.fetchTaskLogTail(taskID)
     .then((logTail) => {
       taskLog.addChunk(logTail);
