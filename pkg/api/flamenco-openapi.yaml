@@ -2007,7 +2007,7 @@ components:
       required: [is_active, days_of_week, start_time, end_time]
       example:
         is_active: true
-        days_of_week: "mo,tu,th,fr"
+        days_of_week: "mo tu th fr"
         start_time: "09:00"
         end_time: "18:00"
 
