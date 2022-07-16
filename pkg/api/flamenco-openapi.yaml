@@ -777,10 +777,10 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /api/v3/tasks/{task_id}/log:
-    summary: Fetch the task's entire log.
+    summary: Retrieve info about the task log.
     get:
-      operationId: fetchTaskLog
-      summary: Fetch the entire task log.
+      operationId: fetchTaskLogInfo
+      summary: Get the URL of the task log, and some more info.
       tags: [jobs]
       parameters:
         - name: task_id
@@ -789,11 +789,11 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         "200":
-          description: The task log.
+          description: The task log info.
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/TaskLogInfo"
         "204":
           description: Returned when the task has no log yet.
         default:
@@ -1541,6 +1541,20 @@ components:
         task_type: { type: string }
         updated: { type: string, format: date-time }
       required: [id, name, status, priority, task_type, updated]
+
+    TaskLogInfo:
+      type: object
+      description: Info about the log of a single task.
+      properties:
+        "task_id": { type: string, format: uuid }
+        "job_id": { type: string, format: uuid }
+        "url":
+          description: The URL at which the task log itself can be downloaded.
+          type: string
+        "size":
+          description: The size of the task log, in bytes.
+          type: integer
+      required: [task_id, job_id, url, size]
 
     JobLastRenderedImageInfo:
       description: >
