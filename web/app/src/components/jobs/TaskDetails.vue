@@ -56,9 +56,13 @@
     </dl>
 
     <h3 class="sub-title">Task Log</h3>
-    <button @click="$emit('showTaskLogTail')" title="Open the task log tail in the footer.">
-      Follow Task Log</button>
-    <button @click="openFullLog" title="Opens the task log in a new window.">Open Full Log</button>
+    <div class="btn-bar-group">
+      <section class="btn-bar tasklog">
+        <button class="btn" @click="$emit('showTaskLogTail')" title="Open the task log tail in the footer.">
+          Follow Task Log</button>
+        <button class="btn" @click="openFullLog" title="Opens the task log in a new window.">Open Full Log</button>
+      </section>
+    </div>
   </template>
 
   <div v-else class="details-no-item-selected">
