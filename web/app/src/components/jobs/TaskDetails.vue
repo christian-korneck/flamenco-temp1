@@ -56,6 +56,8 @@
     </dl>
 
     <h3 class="sub-title">Task Log</h3>
+    <button @click="$emit('showTaskLogTail')" title="Open the task log tail in the footer.">
+      Follow Task Log</button>
     <button @click="openFullLog" title="Opens the task log in a new window.">Open Full Log</button>
   </template>
 
@@ -75,6 +77,9 @@ import WorkerLink from '@/components/WorkerLink.vue';
 export default {
   props: [
     "taskData", // Task data to show.
+  ],
+  emits: [
+    "showTaskLogTail", // Emitted when the user presses the "follow task log" button.
   ],
   components: { WorkerLink },
   data() {

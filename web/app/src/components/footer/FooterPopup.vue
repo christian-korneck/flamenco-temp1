@@ -13,6 +13,13 @@ const tabs = { NotificationList, TaskLog }
 watch(currentTab, async (newTab) => {
   localStorage.setItem("footer-popover-active-tab", newTab);
 });
+
+function showTaskLogTail() {
+  currentTab.value = 'TaskLog';
+}
+defineExpose({
+  showTaskLogTail,
+});
 </script>
 
 <template>

@@ -7,7 +7,7 @@
     <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
   </div>
   <div class="col col-3">
-    <task-details :taskData="tasks.activeTask" />
+    <task-details :taskData="tasks.activeTask" @showTaskLogTail="showTaskLogTail" />
   </div>
 
   <footer class="app-footer" v-if="!showFooterPopup" @click="showFooterPopup = true">
@@ -119,6 +119,13 @@ export default {
           if (this.$refs.tasksTable)
             this.$refs.tasksTable.processTaskUpdate(task);
         });
+    },
+
+    showTaskLogTail() {
+      this.showFooterPopup = true;
+      this.$nextTick(() => {
+        this.$refs.footerPopup.showTaskLogTail();
+      })
     },
 
     // SocketIO data event handlers:
