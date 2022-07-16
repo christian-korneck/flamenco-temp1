@@ -104,6 +104,12 @@ type ServerInterface interface {
 
 	// (POST /api/v3/worker-mgt/workers/{worker_id}/setstatus)
 	RequestWorkerStatusChange(ctx echo.Context, workerId string) error
+
+	// (GET /api/v3/worker-mgt/workers/{worker_id}/sleep-schedule)
+	FetchWorkerSleepSchedule(ctx echo.Context, workerId string) error
+
+	// (POST /api/v3/worker-mgt/workers/{worker_id}/sleep-schedule)
+	SetWorkerSleepSchedule(ctx echo.Context, workerId string) error
 	// Register a new worker
 	// (POST /api/v3/worker/register-worker)
 	RegisterWorker(ctx echo.Context) error
@@ -579,6 +585,38 @@ func (w *ServerInterfaceWrapper) RequestWorkerStatusChange(ctx echo.Context) err
 	return err
 }
 
+// FetchWorkerSleepSchedule converts echo context to params.
+func (w *ServerInterfaceWrapper) FetchWorkerSleepSchedule(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "worker_id" -------------
+	var workerId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, ctx.Param("worker_id"), &workerId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter worker_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.FetchWorkerSleepSchedule(ctx, workerId)
+	return err
+}
+
+// SetWorkerSleepSchedule converts echo context to params.
+func (w *ServerInterfaceWrapper) SetWorkerSleepSchedule(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "worker_id" -------------
+	var workerId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, ctx.Param("worker_id"), &workerId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter worker_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.SetWorkerSleepSchedule(ctx, workerId)
+	return err
+}
+
 // RegisterWorker converts echo context to params.
 func (w *ServerInterfaceWrapper) RegisterWorker(ctx echo.Context) error {
 	var err error
@@ -755,6 +793,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/v3/worker-mgt/workers", wrapper.FetchWorkers)
 	router.GET(baseURL+"/api/v3/worker-mgt/workers/:worker_id", wrapper.FetchWorker)
 	router.POST(baseURL+"/api/v3/worker-mgt/workers/:worker_id/setstatus", wrapper.RequestWorkerStatusChange)
+	router.GET(baseURL+"/api/v3/worker-mgt/workers/:worker_id/sleep-schedule", wrapper.FetchWorkerSleepSchedule)
+	router.POST(baseURL+"/api/v3/worker-mgt/workers/:worker_id/sleep-schedule", wrapper.SetWorkerSleepSchedule)
 	router.POST(baseURL+"/api/v3/worker/register-worker", wrapper.RegisterWorker)
 	router.POST(baseURL+"/api/v3/worker/sign-off", wrapper.SignOff)
 	router.POST(baseURL+"/api/v3/worker/sign-on", wrapper.SignOn)

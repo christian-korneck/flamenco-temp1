@@ -276,6 +276,26 @@ func (mr *MockFlamencoClientMockRecorder) FetchTaskWithResponse(arg0, arg1 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchTaskWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchTaskWithResponse), varargs...)
 }
 
+// FetchWorkerSleepScheduleWithResponse mocks base method.
+func (m *MockFlamencoClient) FetchWorkerSleepScheduleWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchWorkerSleepScheduleResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FetchWorkerSleepScheduleWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.FetchWorkerSleepScheduleResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchWorkerSleepScheduleWithResponse indicates an expected call of FetchWorkerSleepScheduleWithResponse.
+func (mr *MockFlamencoClientMockRecorder) FetchWorkerSleepScheduleWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorkerSleepScheduleWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).FetchWorkerSleepScheduleWithResponse), varargs...)
+}
+
 // FetchWorkerWithResponse mocks base method.
 func (m *MockFlamencoClient) FetchWorkerWithResponse(arg0 context.Context, arg1 string, arg2 ...api.RequestEditorFn) (*api.FetchWorkerResponse, error) {
 	m.ctrl.T.Helper()
@@ -774,6 +794,46 @@ func (mr *MockFlamencoClientMockRecorder) SetTaskStatusWithResponse(arg0, arg1, 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTaskStatusWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SetTaskStatusWithResponse), varargs...)
+}
+
+// SetWorkerSleepScheduleWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) SetWorkerSleepScheduleWithBodyWithResponse(arg0 context.Context, arg1, arg2 string, arg3 io.Reader, arg4 ...api.RequestEditorFn) (*api.SetWorkerSleepScheduleResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	for _, a := range arg4 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetWorkerSleepScheduleWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.SetWorkerSleepScheduleResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetWorkerSleepScheduleWithBodyWithResponse indicates an expected call of SetWorkerSleepScheduleWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) SetWorkerSleepScheduleWithBodyWithResponse(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWorkerSleepScheduleWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SetWorkerSleepScheduleWithBodyWithResponse), varargs...)
+}
+
+// SetWorkerSleepScheduleWithResponse mocks base method.
+func (m *MockFlamencoClient) SetWorkerSleepScheduleWithResponse(arg0 context.Context, arg1 string, arg2 api.SetWorkerSleepScheduleJSONRequestBody, arg3 ...api.RequestEditorFn) (*api.SetWorkerSleepScheduleResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetWorkerSleepScheduleWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.SetWorkerSleepScheduleResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetWorkerSleepScheduleWithResponse indicates an expected call of SetWorkerSleepScheduleWithResponse.
+func (mr *MockFlamencoClientMockRecorder) SetWorkerSleepScheduleWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWorkerSleepScheduleWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SetWorkerSleepScheduleWithResponse), varargs...)
 }
 
 // ShamanCheckoutRequirementsWithBodyWithResponse mocks base method.

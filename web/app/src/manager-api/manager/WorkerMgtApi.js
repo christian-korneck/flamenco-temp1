@@ -16,6 +16,7 @@ import ApiClient from "../ApiClient";
 import Error from '../model/Error';
 import Worker from '../model/Worker';
 import WorkerList from '../model/WorkerList';
+import WorkerSleepSchedule from '../model/WorkerSleepSchedule';
 import WorkerStatusChangeRequest from '../model/WorkerStatusChangeRequest';
 
 /**
@@ -78,6 +79,50 @@ export default class WorkerMgtApi {
      */
     fetchWorker(workerId) {
       return this.fetchWorkerWithHttpInfo(workerId)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * @param {String} workerId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing data of type {@link module:model/WorkerSleepSchedule} and HTTP response
+     */
+    fetchWorkerSleepScheduleWithHttpInfo(workerId) {
+      let postBody = null;
+      // verify the required parameter 'workerId' is set
+      if (workerId === undefined || workerId === null) {
+        throw new Error("Missing the required parameter 'workerId' when calling fetchWorkerSleepSchedule");
+      }
+
+      let pathParams = {
+        'worker_id': workerId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = [];
+      let accepts = ['application/json'];
+      let returnType = WorkerSleepSchedule;
+      return this.apiClient.callApi(
+        '/api/v3/worker-mgt/workers/{worker_id}/sleep-schedule', 'GET',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * @param {String} workerId 
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with data of type {@link module:model/WorkerSleepSchedule}
+     */
+    fetchWorkerSleepSchedule(workerId) {
+      return this.fetchWorkerSleepScheduleWithHttpInfo(workerId)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
@@ -167,6 +212,56 @@ export default class WorkerMgtApi {
      */
     requestWorkerStatusChange(workerId, workerStatusChangeRequest) {
       return this.requestWorkerStatusChangeWithHttpInfo(workerId, workerStatusChangeRequest)
+        .then(function(response_and_data) {
+          return response_and_data.data;
+        });
+    }
+
+
+    /**
+     * @param {String} workerId 
+     * @param {module:model/WorkerSleepSchedule} workerSleepSchedule The new sleep schedule.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
+     */
+    setWorkerSleepScheduleWithHttpInfo(workerId, workerSleepSchedule) {
+      let postBody = workerSleepSchedule;
+      // verify the required parameter 'workerId' is set
+      if (workerId === undefined || workerId === null) {
+        throw new Error("Missing the required parameter 'workerId' when calling setWorkerSleepSchedule");
+      }
+      // verify the required parameter 'workerSleepSchedule' is set
+      if (workerSleepSchedule === undefined || workerSleepSchedule === null) {
+        throw new Error("Missing the required parameter 'workerSleepSchedule' when calling setWorkerSleepSchedule");
+      }
+
+      let pathParams = {
+        'worker_id': workerId
+      };
+      let queryParams = {
+      };
+      let headerParams = {
+      };
+      let formParams = {
+      };
+
+      let authNames = [];
+      let contentTypes = ['application/json'];
+      let accepts = ['application/json'];
+      let returnType = null;
+      return this.apiClient.callApi(
+        '/api/v3/worker-mgt/workers/{worker_id}/sleep-schedule', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, null
+      );
+    }
+
+    /**
+     * @param {String} workerId 
+     * @param {module:model/WorkerSleepSchedule} workerSleepSchedule The new sleep schedule.
+     * @return {Promise} a {@link https://www.promisejs.org/|Promise}
+     */
+    setWorkerSleepSchedule(workerId, workerSleepSchedule) {
+      return this.setWorkerSleepScheduleWithHttpInfo(workerId, workerSleepSchedule)
         .then(function(response_and_data) {
           return response_and_data.data;
         });

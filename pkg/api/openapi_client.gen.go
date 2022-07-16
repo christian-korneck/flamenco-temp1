@@ -204,6 +204,14 @@ type ClientInterface interface {
 
 	RequestWorkerStatusChange(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// FetchWorkerSleepSchedule request
+	FetchWorkerSleepSchedule(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetWorkerSleepSchedule request with any body
+	SetWorkerSleepScheduleWithBody(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SetWorkerSleepSchedule(ctx context.Context, workerId string, body SetWorkerSleepScheduleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RegisterWorker request with any body
 	RegisterWorkerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -722,6 +730,42 @@ func (c *Client) RequestWorkerStatusChangeWithBody(ctx context.Context, workerId
 
 func (c *Client) RequestWorkerStatusChange(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRequestWorkerStatusChangeRequest(c.Server, workerId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) FetchWorkerSleepSchedule(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFetchWorkerSleepScheduleRequest(c.Server, workerId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SetWorkerSleepScheduleWithBody(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetWorkerSleepScheduleRequestWithBody(c.Server, workerId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SetWorkerSleepSchedule(ctx context.Context, workerId string, body SetWorkerSleepScheduleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetWorkerSleepScheduleRequest(c.Server, workerId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1998,6 +2042,87 @@ func NewRequestWorkerStatusChangeRequestWithBody(server string, workerId string,
 	return req, nil
 }
 
+// NewFetchWorkerSleepScheduleRequest generates requests for FetchWorkerSleepSchedule
+func NewFetchWorkerSleepScheduleRequest(server string, workerId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, workerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/worker-mgt/workers/%s/sleep-schedule", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSetWorkerSleepScheduleRequest calls the generic SetWorkerSleepSchedule builder with application/json body
+func NewSetWorkerSleepScheduleRequest(server string, workerId string, body SetWorkerSleepScheduleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetWorkerSleepScheduleRequestWithBody(server, workerId, "application/json", bodyReader)
+}
+
+// NewSetWorkerSleepScheduleRequestWithBody generates requests for SetWorkerSleepSchedule with any type of body
+func NewSetWorkerSleepScheduleRequestWithBody(server string, workerId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "worker_id", runtime.ParamLocationPath, workerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v3/worker-mgt/workers/%s/sleep-schedule", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewRegisterWorkerRequest calls the generic RegisterWorker builder with application/json body
 func NewRegisterWorkerRequest(server string, body RegisterWorkerJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -2470,6 +2595,14 @@ type ClientWithResponsesInterface interface {
 	RequestWorkerStatusChangeWithBodyWithResponse(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestWorkerStatusChangeResponse, error)
 
 	RequestWorkerStatusChangeWithResponse(ctx context.Context, workerId string, body RequestWorkerStatusChangeJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestWorkerStatusChangeResponse, error)
+
+	// FetchWorkerSleepSchedule request
+	FetchWorkerSleepScheduleWithResponse(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*FetchWorkerSleepScheduleResponse, error)
+
+	// SetWorkerSleepSchedule request with any body
+	SetWorkerSleepScheduleWithBodyWithResponse(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetWorkerSleepScheduleResponse, error)
+
+	SetWorkerSleepScheduleWithResponse(ctx context.Context, workerId string, body SetWorkerSleepScheduleJSONRequestBody, reqEditors ...RequestEditorFn) (*SetWorkerSleepScheduleResponse, error)
 
 	// RegisterWorker request with any body
 	RegisterWorkerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterWorkerResponse, error)
@@ -3184,6 +3317,51 @@ func (r RequestWorkerStatusChangeResponse) StatusCode() int {
 	return 0
 }
 
+type FetchWorkerSleepScheduleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WorkerSleepSchedule
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r FetchWorkerSleepScheduleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r FetchWorkerSleepScheduleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SetWorkerSleepScheduleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r SetWorkerSleepScheduleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetWorkerSleepScheduleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type RegisterWorkerResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3748,6 +3926,32 @@ func (c *ClientWithResponses) RequestWorkerStatusChangeWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseRequestWorkerStatusChangeResponse(rsp)
+}
+
+// FetchWorkerSleepScheduleWithResponse request returning *FetchWorkerSleepScheduleResponse
+func (c *ClientWithResponses) FetchWorkerSleepScheduleWithResponse(ctx context.Context, workerId string, reqEditors ...RequestEditorFn) (*FetchWorkerSleepScheduleResponse, error) {
+	rsp, err := c.FetchWorkerSleepSchedule(ctx, workerId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseFetchWorkerSleepScheduleResponse(rsp)
+}
+
+// SetWorkerSleepScheduleWithBodyWithResponse request with arbitrary body returning *SetWorkerSleepScheduleResponse
+func (c *ClientWithResponses) SetWorkerSleepScheduleWithBodyWithResponse(ctx context.Context, workerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetWorkerSleepScheduleResponse, error) {
+	rsp, err := c.SetWorkerSleepScheduleWithBody(ctx, workerId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetWorkerSleepScheduleResponse(rsp)
+}
+
+func (c *ClientWithResponses) SetWorkerSleepScheduleWithResponse(ctx context.Context, workerId string, body SetWorkerSleepScheduleJSONRequestBody, reqEditors ...RequestEditorFn) (*SetWorkerSleepScheduleResponse, error) {
+	rsp, err := c.SetWorkerSleepSchedule(ctx, workerId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetWorkerSleepScheduleResponse(rsp)
 }
 
 // RegisterWorkerWithBodyWithResponse request with arbitrary body returning *RegisterWorkerResponse
@@ -4733,6 +4937,65 @@ func ParseRequestWorkerStatusChangeResponse(rsp *http.Response) (*RequestWorkerS
 	}
 
 	response := &RequestWorkerStatusChangeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseFetchWorkerSleepScheduleResponse parses an HTTP response from a FetchWorkerSleepScheduleWithResponse call
+func ParseFetchWorkerSleepScheduleResponse(rsp *http.Response) (*FetchWorkerSleepScheduleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &FetchWorkerSleepScheduleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkerSleepSchedule
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetWorkerSleepScheduleResponse parses an HTTP response from a SetWorkerSleepScheduleWithResponse call
+func ParseSetWorkerSleepScheduleResponse(rsp *http.Response) (*SetWorkerSleepScheduleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetWorkerSleepScheduleResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

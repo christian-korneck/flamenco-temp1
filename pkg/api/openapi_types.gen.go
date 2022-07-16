@@ -693,6 +693,16 @@ type WorkerSignOn struct {
 	SupportedTaskTypes []string `json:"supported_task_types"`
 }
 
+// Sleep schedule for a single Worker. Start and end time indicate the time of each day at which the schedule is active. Applies only when today is in `days_of_week`, or when `days_of_week` is empty.
+// Start and end time are in 24-hour HH:MM notation.
+type WorkerSleepSchedule struct {
+	// Space-separated two-letter strings indicating days of week the schedule is active ("mo", "tu", etc.). Empty means "every day".
+	DaysOfWeek string `json:"days_of_week"`
+	EndTime    string `json:"end_time"`
+	IsActive   bool   `json:"is_active"`
+	StartTime  string `json:"start_time"`
+}
+
 // WorkerStateChange defines model for WorkerStateChange.
 type WorkerStateChange struct {
 	StatusRequested WorkerStatus `json:"status_requested"`
@@ -771,6 +781,9 @@ type SetTaskStatusJSONBody TaskStatusChange
 // RequestWorkerStatusChangeJSONBody defines parameters for RequestWorkerStatusChange.
 type RequestWorkerStatusChangeJSONBody WorkerStatusChangeRequest
 
+// SetWorkerSleepScheduleJSONBody defines parameters for SetWorkerSleepSchedule.
+type SetWorkerSleepScheduleJSONBody WorkerSleepSchedule
+
 // RegisterWorkerJSONBody defines parameters for RegisterWorker.
 type RegisterWorkerJSONBody WorkerRegistration
 
@@ -815,6 +828,9 @@ type SetTaskStatusJSONRequestBody SetTaskStatusJSONBody
 
 // RequestWorkerStatusChangeJSONRequestBody defines body for RequestWorkerStatusChange for application/json ContentType.
 type RequestWorkerStatusChangeJSONRequestBody RequestWorkerStatusChangeJSONBody
+
+// SetWorkerSleepScheduleJSONRequestBody defines body for SetWorkerSleepSchedule for application/json ContentType.
+type SetWorkerSleepScheduleJSONRequestBody SetWorkerSleepScheduleJSONBody
 
 // RegisterWorkerJSONRequestBody defines body for RegisterWorker for application/json ContentType.
 type RegisterWorkerJSONRequestBody RegisterWorkerJSONBody

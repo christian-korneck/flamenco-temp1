@@ -72,6 +72,7 @@ import WorkerAllOf from './model/WorkerAllOf';
 import WorkerList from './model/WorkerList';
 import WorkerRegistration from './model/WorkerRegistration';
 import WorkerSignOn from './model/WorkerSignOn';
+import WorkerSleepSchedule from './model/WorkerSleepSchedule';
 import WorkerStateChange from './model/WorkerStateChange';
 import WorkerStateChanged from './model/WorkerStateChanged';
 import WorkerStatus from './model/WorkerStatus';
@@ -475,6 +476,12 @@ export {
      * @property {module:model/WorkerSignOn}
      */
     WorkerSignOn,
+
+    /**
+     * The WorkerSleepSchedule model constructor.
+     * @property {module:model/WorkerSleepSchedule}
+     */
+    WorkerSleepSchedule,
 
     /**
      * The WorkerStateChange model constructor.

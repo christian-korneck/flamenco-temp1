@@ -73,6 +73,7 @@ from flamenco.manager.model.worker_all_of import WorkerAllOf
 from flamenco.manager.model.worker_list import WorkerList
 from flamenco.manager.model.worker_registration import WorkerRegistration
 from flamenco.manager.model.worker_sign_on import WorkerSignOn
+from flamenco.manager.model.worker_sleep_schedule import WorkerSleepSchedule
 from flamenco.manager.model.worker_state_change import WorkerStateChange
 from flamenco.manager.model.worker_state_changed import WorkerStateChanged
 from flamenco.manager.model.worker_status import WorkerStatus
