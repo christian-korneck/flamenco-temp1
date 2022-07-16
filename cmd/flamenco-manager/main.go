@@ -292,7 +292,9 @@ func buildWebService(
 	e.Use(middleware.Recover())
 
 	// For development of the web interface, to get a less predictable order of asynchronous requests.
-	e.Use(randomDelayMiddleware)
+	if cliArgs.delayResponses {
+		e.Use(randomDelayMiddleware)
+	}
 
 	// Disabled, as it causes issues with "204 No Content" responses.
 	// TODO: investigate & file a bug report. Adding the check on an empty slice
