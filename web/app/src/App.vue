@@ -16,8 +16,8 @@
     </nav>
     <api-spinner />
     <span class="app-version">
-      <a href="/flamenco3-addon.zip">add-on</a>
-      | <a href="/api/v3/swagger-ui/">API</a>
+      <a :href="backendURL('/flamenco3-addon.zip')">add-on</a>
+      | <a :href="backendURL('/api/v3/swagger-ui/')">API</a>
       | version: {{ flamencoVersion }}
     </span>
   </header>
@@ -27,6 +27,7 @@
 <script>
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
+import { backendURL } from '@/urls';
 
 import ApiSpinner from '@/components/ApiSpinner.vue'
 
@@ -41,6 +42,7 @@ export default {
   data: () => ({
     flamencoName: DEFAULT_FLAMENCO_NAME,
     flamencoVersion: DEFAULT_FLAMENCO_VERSION,
+    backendURL: backendURL,
   }),
   mounted() {
     window.app = this;
