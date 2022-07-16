@@ -776,6 +776,33 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /api/v3/tasks/{task_id}/log:
+    summary: Fetch the task's entire log.
+    get:
+      operationId: fetchTaskLog
+      summary: Fetch the entire task log.
+      tags: [jobs]
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The task log.
+          content:
+            text/plain:
+              schema:
+                type: string
+        "204":
+          description: Returned when the task has no log yet.
+        default:
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/v3/tasks/{task_id}/setstatus:
     summary: >
       Request a status change for the given task. This may have effect on the
