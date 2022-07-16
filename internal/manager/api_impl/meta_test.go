@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"git.blender.org/flamenco/internal/manager/config"
@@ -98,7 +99,12 @@ func TestCheckSharedStoragePath(t *testing.T) {
 	}
 
 	// Test inaccessible path.
-	{
+	// For some reason, this doesn't work on Windows, and creating a file in
+	// that directory is still allowed. The Explorer's properties panel of the
+	// directory also shows "Read Only (only applies to files)", so at least
+	// that seems consistent.
+	// FIXME: find another way to test with unwritable directories on Windows.
+	if runtime.GOOS != "windows" {
 		parentPath := filepath.Join(mf.tempdir, "deep")
 		testPath := filepath.Join(parentPath, "nesting")
 		if err := os.Mkdir(parentPath, fs.ModePerm); !assert.NoError(t, err) {
