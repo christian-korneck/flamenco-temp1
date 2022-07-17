@@ -15,7 +15,7 @@ import (
 )
 
 // Time period for checking the schedule of every worker.
-const checkInterval = 10 * time.Second
+const checkInterval = 1 * time.Minute
 
 // SleepScheduler manages wake/sleep cycles of Workers.
 type SleepScheduler struct {
@@ -165,7 +165,7 @@ func (ss *SleepScheduler) CheckSchedules(ctx context.Context) {
 		return
 	}
 	if len(toCheck) == 0 {
-		log.Debug().Msg("sleep scheduler: no sleep schedules need checking")
+		log.Trace().Msg("sleep scheduler: no sleep schedules need checking")
 		return
 	}
 
