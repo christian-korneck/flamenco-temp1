@@ -17,6 +17,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/sleep_scheduler"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
 	"git.blender.org/flamenco/internal/manager/webupdates"
 	"git.blender.org/flamenco/pkg/api"
@@ -24,7 +25,7 @@ import (
 )
 
 // Generate mock implementations of these interfaces.
-//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman,LastRendered,LocalStorage
+//go:generate go run github.com/golang/mock/mockgen -destination mocks/api_impl_mock.gen.go -package mocks git.blender.org/flamenco/internal/manager/api_impl PersistenceService,ChangeBroadcaster,JobCompiler,LogStorage,ConfigService,TaskStateMachine,Shaman,LastRendered,LocalStorage,WorkerSleepScheduler
 
 type PersistenceService interface {
 	StoreAuthoredJob(ctx context.Context, authoredJob job_compilers.AuthoredJob) error
@@ -64,9 +65,6 @@ type PersistenceService interface {
 	WorkersLeftToRun(ctx context.Context, job *persistence.Job, taskType string) (map[string]bool, error)
 	// CountTaskFailuresOfWorker returns the number of task failures of this worker, on this particular job and task type.
 	CountTaskFailuresOfWorker(ctx context.Context, job *persistence.Job, worker *persistence.Worker, taskType string) (int, error)
-
-	FetchWorkerSleepSchedule(ctx context.Context, workerUUID string) (*persistence.SleepSchedule, error)
-	SetWorkerSleepSchedule(ctx context.Context, workerUUID string, schedule persistence.SleepSchedule) error
 
 	// Database queries.
 	QueryJobs(ctx context.Context, query api.JobsQuery) ([]*persistence.Job, error)
@@ -206,3 +204,10 @@ type TimeService interface {
 }
 
 var _ TimeService = (clock.Clock)(nil)
+
+type WorkerSleepScheduler interface {
+	FetchSchedule(ctx context.Context, workerUUID string) (*persistence.SleepSchedule, error)
+	SetSchedule(ctx context.Context, workerUUID string, schedule *persistence.SleepSchedule) error
+}
+
+var _ WorkerSleepScheduler = (*sleep_scheduler.SleepScheduler)(nil)

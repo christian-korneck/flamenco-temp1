@@ -18,7 +18,7 @@ func (f *Flamenco) FetchWorkerSleepSchedule(e echo.Context, workerUUID string) e
 	ctx := e.Request().Context()
 	logger := requestLogger(e)
 	logger = logger.With().Str("worker", workerUUID).Logger()
-	schedule, err := f.persist.FetchWorkerSleepSchedule(ctx, workerUUID)
+	schedule, err := f.sleepScheduler.FetchSchedule(ctx, workerUUID)
 
 	switch {
 	case errors.Is(err, persistence.ErrWorkerNotFound):
@@ -33,9 +33,9 @@ func (f *Flamenco) FetchWorkerSleepSchedule(e echo.Context, workerUUID string) e
 
 	apiSchedule := api.WorkerSleepSchedule{
 		DaysOfWeek: schedule.DaysOfWeek,
-		EndTime:    schedule.EndTime,
+		EndTime:    schedule.EndTime.String(),
 		IsActive:   schedule.IsActive,
-		StartTime:  schedule.StartTime,
+		StartTime:  schedule.StartTime.String(),
 	}
 	return e.JSON(http.StatusOK, apiSchedule)
 }
@@ -57,14 +57,22 @@ func (f *Flamenco) SetWorkerSleepSchedule(e echo.Context, workerUUID string) err
 	}
 	schedule := api.WorkerSleepSchedule(req)
 
+	// Create a sleep schedule that can be persisted.
 	dbSchedule := persistence.SleepSchedule{
 		IsActive:   schedule.IsActive,
 		DaysOfWeek: schedule.DaysOfWeek,
-		StartTime:  schedule.StartTime,
-		EndTime:    schedule.EndTime,
+	}
+	if err := dbSchedule.StartTime.Scan(schedule.StartTime); err != nil {
+		logger.Warn().Err(err).Msg("bad request received, cannot parse schedule start time")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format for schedule start time")
+	}
+	if err := dbSchedule.EndTime.Scan(schedule.EndTime); err != nil {
+		logger.Warn().Err(err).Msg("bad request received, cannot parse schedule end time")
+		return sendAPIError(e, http.StatusBadRequest, "invalid format for schedule end time")
 	}
 
-	err = f.persist.SetWorkerSleepSchedule(ctx, workerUUID, dbSchedule)
+	// Send the sleep schedule to the scheduler.
+	err = f.sleepScheduler.SetSchedule(ctx, workerUUID, &dbSchedule)
 	switch {
 	case errors.Is(err, persistence.ErrWorkerNotFound):
 		logger.Warn().Msg("SetWorkerSleepSchedule: worker does not exist")

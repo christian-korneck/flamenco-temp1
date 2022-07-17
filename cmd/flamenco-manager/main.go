@@ -40,6 +40,7 @@ import (
 	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/local_storage"
 	"git.blender.org/flamenco/internal/manager/persistence"
+	"git.blender.org/flamenco/internal/manager/sleep_scheduler"
 	"git.blender.org/flamenco/internal/manager/swagger_ui"
 	"git.blender.org/flamenco/internal/manager/task_logs"
 	"git.blender.org/flamenco/internal/manager/task_state_machine"
@@ -159,11 +160,12 @@ func runFlamencoManager() bool {
 	logStorage := task_logs.NewStorage(localStorage, timeService, webUpdater)
 
 	taskStateMachine := task_state_machine.NewStateMachine(persist, webUpdater, logStorage)
+	sleepScheduler := sleep_scheduler.New(timeService, persist, webUpdater)
 	lastRender := last_rendered.New(localStorage)
 
 	shamanServer := buildShamanServer(configService, isFirstRun)
 	flamenco := buildFlamencoAPI(timeService, configService, persist, taskStateMachine,
-		shamanServer, logStorage, webUpdater, lastRender, localStorage)
+		shamanServer, logStorage, webUpdater, lastRender, localStorage, sleepScheduler)
 	e := buildWebService(flamenco, persist, ssdp, webUpdater, urls, localStorage)
 
 	timeoutChecker := timeout_checker.New(
@@ -223,6 +225,13 @@ func runFlamencoManager() bool {
 		timeoutChecker.Run(mainCtx)
 	}()
 
+	// Run the Worker sleep scheduler.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		sleepScheduler.Run(mainCtx)
+	}()
+
 	// Open a webbrowser, but give the web service some time to start first.
 	if isFirstRun {
 		go openWebbrowser(mainCtx, urls[0])
@@ -250,6 +259,7 @@ func buildFlamencoAPI(
 	webUpdater *webupdates.BiDirComms,
 	lastRender *last_rendered.LastRenderedProcessor,
 	localStorage local_storage.StorageInfo,
+	sleepScheduler *sleep_scheduler.SleepScheduler,
 ) *api_impl.Flamenco {
 	compiler, err := job_compilers.Load(timeService)
 	if err != nil {
@@ -258,7 +268,7 @@ func buildFlamencoAPI(
 	flamenco := api_impl.NewFlamenco(
 		compiler, persist, webUpdater, logStorage, configService,
 		taskStateMachine, shamanServer, timeService, lastRender,
-		localStorage)
+		localStorage, sleepScheduler)
 	return flamenco
 }
 
@@ -272,6 +282,7 @@ func buildWebService(
 ) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
+	e.HidePort = true
 
 	// The request should come in fairly quickly, given that Flamenco is intended
 	// to run on a local network.

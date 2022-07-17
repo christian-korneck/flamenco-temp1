@@ -16,16 +16,17 @@ import (
 )
 
 type Flamenco struct {
-	jobCompiler  JobCompiler
-	persist      PersistenceService
-	broadcaster  ChangeBroadcaster
-	logStorage   LogStorage
-	config       ConfigService
-	stateMachine TaskStateMachine
-	shaman       Shaman
-	clock        TimeService
-	lastRender   LastRendered
-	localStorage LocalStorage
+	jobCompiler    JobCompiler
+	persist        PersistenceService
+	broadcaster    ChangeBroadcaster
+	logStorage     LogStorage
+	config         ConfigService
+	stateMachine   TaskStateMachine
+	shaman         Shaman
+	clock          TimeService
+	lastRender     LastRendered
+	localStorage   LocalStorage
+	sleepScheduler WorkerSleepScheduler
 
 	// The task scheduler can be locked to prevent multiple Workers from getting
 	// the same task. It is also used for certain other queries, like
@@ -51,18 +52,20 @@ func NewFlamenco(
 	ts TimeService,
 	lr LastRendered,
 	localStorage LocalStorage,
+	wss WorkerSleepScheduler,
 ) *Flamenco {
 	return &Flamenco{
-		jobCompiler:  jc,
-		persist:      jps,
-		broadcaster:  b,
-		logStorage:   logStorage,
-		config:       cs,
-		stateMachine: sm,
-		shaman:       sha,
-		clock:        ts,
-		lastRender:   lr,
-		localStorage: localStorage,
+		jobCompiler:    jc,
+		persist:        jps,
+		broadcaster:    b,
+		logStorage:     logStorage,
+		config:         cs,
+		stateMachine:   sm,
+		shaman:         sha,
+		clock:          ts,
+		lastRender:     lr,
+		localStorage:   localStorage,
+		sleepScheduler: wss,
 
 		done: make(chan struct{}),
 	}

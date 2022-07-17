@@ -83,10 +83,11 @@ func (db *DB) FetchWorkers(ctx context.Context) ([]*Worker, error) {
 func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
 	err := db.gormDB.WithContext(ctx).
 		Model(w).
-		Select("status", "status_requested").
+		Select("status", "status_requested", "lazy_status_request").
 		Updates(Worker{
-			Status:          w.Status,
-			StatusRequested: w.StatusRequested,
+			Status:            w.Status,
+			StatusRequested:   w.StatusRequested,
+			LazyStatusRequest: w.LazyStatusRequest,
 		}).Error
 	if err != nil {
 		return fmt.Errorf("saving worker: %w", err)

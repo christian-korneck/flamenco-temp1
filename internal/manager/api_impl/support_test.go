@@ -23,17 +23,18 @@ import (
 )
 
 type mockedFlamenco struct {
-	flamenco     *Flamenco
-	jobCompiler  *mocks.MockJobCompiler
-	persistence  *mocks.MockPersistenceService
-	broadcaster  *mocks.MockChangeBroadcaster
-	logStorage   *mocks.MockLogStorage
-	config       *mocks.MockConfigService
-	stateMachine *mocks.MockTaskStateMachine
-	shaman       *mocks.MockShaman
-	clock        *clock.Mock
-	lastRender   *mocks.MockLastRendered
-	localStorage *mocks.MockLocalStorage
+	flamenco       *Flamenco
+	jobCompiler    *mocks.MockJobCompiler
+	persistence    *mocks.MockPersistenceService
+	broadcaster    *mocks.MockChangeBroadcaster
+	logStorage     *mocks.MockLogStorage
+	config         *mocks.MockConfigService
+	stateMachine   *mocks.MockTaskStateMachine
+	shaman         *mocks.MockShaman
+	clock          *clock.Mock
+	lastRender     *mocks.MockLastRendered
+	localStorage   *mocks.MockLocalStorage
+	sleepScheduler *mocks.MockWorkerSleepScheduler
 
 	// Place for some tests to store a temporary directory.
 	tempdir string
@@ -49,6 +50,7 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	sha := mocks.NewMockShaman(mockCtrl)
 	lr := mocks.NewMockLastRendered(mockCtrl)
 	localStore := mocks.NewMockLocalStorage(mockCtrl)
+	wss := mocks.NewMockWorkerSleepScheduler(mockCtrl)
 
 	clock := clock.NewMock()
 	mockedNow, err := time.Parse(time.RFC3339, "2022-06-09T11:14:41+02:00")
@@ -57,19 +59,20 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 	}
 	clock.Set(mockedNow)
 
-	f := NewFlamenco(jc, ps, cb, logStore, cs, sm, sha, clock, lr, localStore)
+	f := NewFlamenco(jc, ps, cb, logStore, cs, sm, sha, clock, lr, localStore, wss)
 
 	return mockedFlamenco{
-		flamenco:     f,
-		jobCompiler:  jc,
-		persistence:  ps,
-		broadcaster:  cb,
-		logStorage:   logStore,
-		config:       cs,
-		stateMachine: sm,
-		clock:        clock,
-		lastRender:   lr,
-		localStorage: localStore,
+		flamenco:       f,
+		jobCompiler:    jc,
+		persistence:    ps,
+		broadcaster:    cb,
+		logStorage:     logStore,
+		config:         cs,
+		stateMachine:   sm,
+		clock:          clock,
+		lastRender:     lr,
+		localStorage:   localStore,
+		sleepScheduler: wss,
 	}
 }
 
