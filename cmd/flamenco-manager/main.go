@@ -137,9 +137,13 @@ func runFlamencoManager() bool {
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
+	// Find our URLs, and log them for the user's convenience.
 	urls, err := own_url.AvailableURLs("http", listen)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to figure out my own URL")
+	}
+	for _, url := range urls {
+		log.Info().Stringer("url", &url).Msg("possble URL at which to reach Flamenco Manager")
 	}
 
 	ssdp := makeAutoDiscoverable(urls)
