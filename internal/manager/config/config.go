@@ -171,7 +171,7 @@ func DefaultConfig(override ...func(c *Conf)) Conf {
 
 // loadConf parses the given file and returns its contents as a Conf object.
 func loadConf(filename string, overrides ...func(c *Conf)) (Conf, error) {
-	log.Info().Str("file", filename).Msg("loading configuration")
+	log.Debug().Str("file", filename).Msg("loading configuration")
 	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		var evt *zerolog.Event
