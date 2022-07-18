@@ -232,12 +232,11 @@ type TestMocks struct {
 func (m *TestMocks) todayAt(hour, minute int) time.Time {
 	now := m.clock.Now()
 	return time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
-
 }
 
 // endOfDay returns midnight of the day after whatever the mocked clock's "now" is set to.
 func (m *TestMocks) endOfDay() time.Time {
-	now := m.clock.Now()
+	now := m.clock.Now().UTC()
 	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, 1)
 }
 

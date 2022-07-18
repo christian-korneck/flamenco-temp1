@@ -63,6 +63,11 @@ func (db *DB) SetWorkerSleepSchedule(ctx context.Context, workerUUID string, sch
 	schedule.WorkerID = worker.ID
 	schedule.Worker = worker
 
+	// Only store timestamps in UTC.
+	if schedule.NextCheck.Location() != time.UTC {
+		schedule.NextCheck = schedule.NextCheck.UTC()
+	}
+
 	tx := db.gormDB.WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "worker_id"}},
@@ -73,6 +78,11 @@ func (db *DB) SetWorkerSleepSchedule(ctx context.Context, workerUUID string, sch
 }
 
 func (db *DB) SetWorkerSleepScheduleNextCheck(ctx context.Context, schedule *SleepSchedule) error {
+	// Only store timestamps in UTC.
+	if schedule.NextCheck.Location() != time.UTC {
+		schedule.NextCheck = schedule.NextCheck.UTC()
+	}
+
 	tx := db.gormDB.WithContext(ctx).
 		Select("next_check").
 		Updates(schedule)
@@ -92,9 +102,11 @@ func (db *DB) FetchSleepScheduleWorker(ctx context.Context, schedule *SleepSched
 
 // FetchSleepSchedulesToCheck returns the sleep schedules that are due for a check.
 func (db *DB) FetchSleepSchedulesToCheck(ctx context.Context) ([]*SleepSchedule, error) {
-	log.Trace().Msg("fetching sleep schedules that need checking")
-
 	now := db.gormDB.NowFunc()
+
+	log.Debug().
+		Str("timeout", now.String()).
+		Msg("fetching sleep schedules that need checking")
 
 	schedules := []*SleepSchedule{}
 	tx := db.gormDB.WithContext(ctx).

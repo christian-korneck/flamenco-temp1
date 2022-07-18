@@ -243,7 +243,7 @@ func TestFetchSleepSchedulesToCheck(t *testing.T) {
 	ctx, finish, db := persistenceTestFixtures(t, 1*time.Second)
 	defer finish()
 
-	mockedNow := mustParseTime("2022-06-07T11:14:47+02:00")
+	mockedNow := mustParseTime("2022-06-07T11:14:47+02:00").UTC()
 	mockedPast := mockedNow.Add(-10 * time.Second)
 	mockedFuture := mockedNow.Add(10 * time.Second)
 
