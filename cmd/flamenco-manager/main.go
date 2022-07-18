@@ -142,9 +142,7 @@ func runFlamencoManager() bool {
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to figure out my own URL")
 	}
-	for _, url := range urls {
-		log.Info().Stringer("url", &url).Msg("possble URL at which to reach Flamenco Manager")
-	}
+	logURLs(urls)
 
 	ssdp := makeAutoDiscoverable(urls)
 
@@ -619,4 +617,16 @@ func registerOAPIBodyDecoders() {
 	// "application/octet-stream" can be handled by our OpenAPI library.
 	openapi3filter.RegisterBodyDecoder("image/jpeg", openapi3filter.FileBodyDecoder)
 	openapi3filter.RegisterBodyDecoder("image/png", openapi3filter.FileBodyDecoder)
+}
+
+func logURLs(urls []url.URL) {
+	log.Info().Int("count", len(urls)).Msg("possble URL at which to reach Flamenco Manager")
+	for _, url := range urls {
+		// Don't log this with something like `Str("url", url.String())`, because
+		// that puts `url=` in front of the URL. This can interfere with
+		// link-detection in the terminal. Having a space in front is much better,
+		// as that is guaranteed to count as word-delimiter for double-click
+		// word-selection.
+		log.Info().Msgf("- %s", url.String())
+	}
 }
