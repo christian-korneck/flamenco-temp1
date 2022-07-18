@@ -279,7 +279,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 
 	// Check that this worker is actually allowed to do work.
 	if worker.StatusRequested != "" {
-		logger.Warn().
+		logger.Info().
 			Str("workerStatus", string(worker.Status)).
 			Str("requestedStatus", string(worker.StatusRequested)).
 			Msg("worker asking for task but needs state change first")
