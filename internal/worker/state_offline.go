@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"git.blender.org/flamenco/pkg/api"
@@ -40,13 +41,17 @@ func (w *Worker) SignOff(ctx context.Context) {
 
 	logger.Info().Msg("signing off at Manager")
 
-	resp, err := w.client.SignOffWithResponse(ctx)
-	if err != nil {
+	SignOff(ctx, logger, w.client)
+}
+
+// SignOff sends a signoff request to the Manager.
+// Any error is logged but not returned.
+func SignOff(ctx context.Context, logger zerolog.Logger, client FlamencoClient) {
+	resp, err := client.SignOffWithResponse(ctx)
+	switch {
+	case err != nil:
 		logger.Error().Err(err).Msg("unable to sign off at Manager")
-		return
-	}
-	if resp.JSONDefault != nil {
+	case resp.JSONDefault != nil:
 		logger.Error().Interface("error", resp.JSONDefault).Msg("error received when signing off at Manager")
-		return
 	}
 }

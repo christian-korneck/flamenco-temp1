@@ -119,6 +119,7 @@ func main() {
 
 	if cliArgs.flush {
 		log.Info().Msg("upstream buffer flushed, shutting down")
+		worker.SignOff(workerCtx, log.Logger, client)
 		workerCtxCancel()
 		shutdown()
 		return
