@@ -41,12 +41,14 @@ func (ss *SleepScheduler) Run(ctx context.Context) {
 		Msg("sleep scheduler starting")
 	defer log.Info().Msg("sleep scheduler shutting down")
 
+	waitDuration := 2 * time.Second // First check should be quickly after startup.
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(checkInterval):
+		case <-time.After(waitDuration):
 			ss.CheckSchedules(ctx)
+			waitDuration = checkInterval
 		}
 	}
 }
