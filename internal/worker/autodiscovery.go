@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,7 +65,8 @@ func AutodiscoverManager(ctx context.Context) (string, error) {
 
 	switch len(usableURLs) {
 	case 0:
-		return "", fmt.Errorf("autodetected %d URLs, but none were usable", len(urls))
+		urlsAsString := strings.Join(urls, ", ")
+		return "", fmt.Errorf("autodetected %d URLs (%s), but none were usable", len(urls), urlsAsString)
 	case 1:
 		log.Info().Str("url", usableURLs[0]).Msg("found Manager")
 	default:
