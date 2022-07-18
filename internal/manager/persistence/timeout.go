@@ -11,6 +11,14 @@ import (
 
 // This file contains functions for dealing with task/worker timeouts. Not database timeouts.
 
+// workerStatusNoTimeout contains the worker statuses that are exempt from
+// timeout checking. A worker in any other status will be subject to the timeout
+// check.
+var workerStatusNoTimeout = []api.WorkerStatus{
+	api.WorkerStatusError,
+	api.WorkerStatusOffline,
+}
+
 // FetchTimedOutTasks returns a slice of tasks that have timed out.
 //
 // In order to time out, a task must be in status `active` and not touched by a
@@ -36,7 +44,7 @@ func (db *DB) FetchTimedOutWorkers(ctx context.Context, lastSeenBefore time.Time
 	result := []*Worker{}
 	tx := db.gormDB.WithContext(ctx).
 		Model(&Worker{}).
-		Where("workers.status = ?", api.WorkerStatusAwake).
+		Where("workers.status not in ?", workerStatusNoTimeout).
 		Where("workers.last_seen_at <= ?", lastSeenBefore).
 		Scan(&result)
 	if tx.Error != nil {
