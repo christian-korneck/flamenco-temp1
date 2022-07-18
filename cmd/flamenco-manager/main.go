@@ -54,6 +54,7 @@ import (
 )
 
 var cliArgs struct {
+	debug           bool
 	version         bool
 	writeConfig     bool
 	delayResponses  bool
@@ -297,8 +298,12 @@ func buildWebService(
 	// limitations in Go that get in our way here.
 
 	// Hook Zerolog onto Echo:
+	lechoSetters := []lecho.Setter{}
+	if cliArgs.debug {
+		lechoSetters = append(lechoSetters, lecho.WithCaller())
+	}
 	e.Use(lecho.Middleware(lecho.Config{
-		Logger: lecho.From(log.Logger),
+		Logger: lecho.From(log.Logger, lechoSetters...),
 	}))
 
 	// Ensure panics when serving a web request won't bring down the server.
@@ -511,6 +516,8 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.pprof, "pprof", false, "Expose profiler endpoints on /debug/pprof/.")
 
 	flag.Parse()
+
+	cliArgs.debug = debug || trace
 
 	var logLevel zerolog.Level
 	switch {
