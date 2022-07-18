@@ -478,7 +478,14 @@ func (f *Flamenco) workerSeen(
 
 	err := f.persist.WorkerSeen(bgCtx, w)
 	if err != nil {
-		logger.Error().Err(err).Msg("error marking Worker as 'seen' in the database")
+		if bgCtx.Err() != nil {
+			logger.Error().
+				Err(err).
+				AnErr("contextError", bgCtx.Err()).
+				Msg("error marking Worker as 'seen' in the database, database operation timed out")
+		} else {
+			logger.Error().Err(err).Msg("error marking Worker as 'seen' in the database")
+		}
 		return err
 	}
 	return nil
