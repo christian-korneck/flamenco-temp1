@@ -1139,3 +1139,18 @@ func (mr *MockWorkerSleepSchedulerMockRecorder) SetSchedule(arg0, arg1, arg2 int
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSchedule", reflect.TypeOf((*MockWorkerSleepScheduler)(nil).SetSchedule), arg0, arg1, arg2)
 }
+
+// WorkerStatus mocks base method.
+func (m *MockWorkerSleepScheduler) WorkerStatus(arg0 context.Context, arg1 string) (api.WorkerStatus, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WorkerStatus", arg0, arg1)
+	ret0, _ := ret[0].(api.WorkerStatus)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WorkerStatus indicates an expected call of WorkerStatus.
+func (mr *MockWorkerSleepSchedulerMockRecorder) WorkerStatus(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WorkerStatus", reflect.TypeOf((*MockWorkerSleepScheduler)(nil).WorkerStatus), arg0, arg1)
+}

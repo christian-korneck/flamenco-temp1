@@ -52,6 +52,9 @@ func TestScheduledWorkerStatus(t *testing.T) {
 	var sched persistence.SleepSchedule
 	empty := persistence.EmptyTimeOfDay()
 
+	// No schedule means 'awake'.
+	assert.Equal(t, api.WorkerStatusAwake, scheduledWorkerStatus(mocks.todayAt(11, 16), nil))
+
 	// Below, S, N, and E respectively mean Start, Now, and End times.
 	// Their order shows their relation to "Now". Lower-case letters mean "no value".
 	// Note that N can never be before 's' or after 'e'.

@@ -168,6 +168,9 @@ func TestWorkerSignOn(t *testing.T) {
 	worker.Status = api.WorkerStatusOffline
 	prevStatus := worker.Status
 
+	mf.sleepScheduler.EXPECT().WorkerStatus(gomock.Any(), worker.UUID).
+		Return(api.WorkerStatusAsleep, nil)
+
 	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(api.SocketIOWorkerUpdate{
 		Id:             worker.UUID,
 		Name:           "Lazy Boi",
@@ -190,7 +193,7 @@ func TestWorkerSignOn(t *testing.T) {
 	assert.NoError(t, err)
 
 	assertResponseJSON(t, echo, http.StatusOK, api.WorkerStateChange{
-		StatusRequested: api.WorkerStatusAwake,
+		StatusRequested: api.WorkerStatusAsleep,
 	})
 }
 

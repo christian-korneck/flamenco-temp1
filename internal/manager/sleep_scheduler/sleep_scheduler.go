@@ -75,6 +75,16 @@ func (ss *SleepScheduler) SetSchedule(ctx context.Context, workerUUID string, sc
 	return ss.ApplySleepSchedule(ctx, schedule)
 }
 
+// WorkerStatus returns the status the worker should be in right now, according to its schedule.
+// If the worker has no schedule active, returns 'awake'.
+func (ss *SleepScheduler) WorkerStatus(ctx context.Context, workerUUID string) (api.WorkerStatus, error) {
+	schedule, err := ss.persist.FetchWorkerSleepSchedule(ctx, workerUUID)
+	if err != nil {
+		return "", err
+	}
+	return ss.scheduledWorkerStatus(schedule), nil
+}
+
 // scheduledWorkerStatus returns the expected worker status for the current date/time.
 func (ss *SleepScheduler) scheduledWorkerStatus(sched *persistence.SleepSchedule) api.WorkerStatus {
 	now := ss.clock.Now()

@@ -79,27 +79,38 @@ func (f *Flamenco) SignOn(e echo.Context) error {
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	logger.Info().Msg("worker signing on")
 	w, prevStatus, err := f.workerUpdateAfterSignOn(e, req)
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
 
-	// Broadcast the status change.
+	// Broadcast the status change to 'starting'.
 	update := webupdates.NewWorkerUpdate(w)
 	if prevStatus != "" {
 		update.PreviousStatus = &prevStatus
 	}
 	f.broadcaster.BroadcastWorkerUpdate(update)
 
-	resp := api.WorkerStateChange{}
-	if w.StatusRequested != "" {
-		resp.StatusRequested = w.StatusRequested
-	} else {
-		resp.StatusRequested = api.WorkerStatusAwake
+	// Get the status the Worker should go to after starting up.
+	ctx := e.Request().Context()
+	initialStatus, err := f.workerInitialStatus(ctx, w)
+	if err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "error figuring out your initial status: %v", err)
 	}
 
-	return e.JSON(http.StatusOK, resp)
+	logger.Info().Str("initialStatus", string(initialStatus)).Msg("worker signing on")
+
+	return e.JSON(http.StatusOK, api.WorkerStateChange{
+		StatusRequested: initialStatus,
+	})
+}
+
+// workerInitialStatus returns the status the worker should go to after starting up.
+func (f *Flamenco) workerInitialStatus(ctx context.Context, w *persistence.Worker) (api.WorkerStatus, error) {
+	if w.StatusRequested != "" {
+		return w.StatusRequested, nil
+	}
+	return f.sleepScheduler.WorkerStatus(ctx, w.UUID)
 }
 
 func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSONBody) (*persistence.Worker, api.WorkerStatus, error) {

@@ -12,6 +12,11 @@ import (
 
 // scheduledWorkerStatus returns the expected worker status at the given date/time.
 func scheduledWorkerStatus(now time.Time, sched *persistence.SleepSchedule) api.WorkerStatus {
+	if sched == nil {
+		// If there is no schedule at all, the worker should be awake.
+		return api.WorkerStatusAwake
+	}
+
 	tod := persistence.MakeTimeOfDay(now)
 
 	if !sched.IsActive {

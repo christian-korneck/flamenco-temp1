@@ -208,6 +208,7 @@ var _ TimeService = (clock.Clock)(nil)
 type WorkerSleepScheduler interface {
 	FetchSchedule(ctx context.Context, workerUUID string) (*persistence.SleepSchedule, error)
 	SetSchedule(ctx context.Context, workerUUID string, schedule *persistence.SleepSchedule) error
+	WorkerStatus(ctx context.Context, workerUUID string) (api.WorkerStatus, error)
 }
 
 var _ WorkerSleepScheduler = (*sleep_scheduler.SleepScheduler)(nil)
