@@ -23,9 +23,11 @@ package own_url
  */
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net"
+	"sort"
 
 	"github.com/rs/zerolog/log"
 )
@@ -83,7 +85,7 @@ func networkInterfaces() ([]net.IP, error) {
 			case ip.IsUnspecified():
 				logger.Trace().Msg("    - skipping unspecified")
 			default:
-				logger.Trace().Msg("    - usable")
+				logger.Trace().Msg("    - potentially usable")
 				ifaceAddresses = append(ifaceAddresses, ip)
 			}
 		}
@@ -95,39 +97,73 @@ func networkInterfaces() ([]net.IP, error) {
 		return usableAddresses, ErrNoInterface
 	}
 
+	sort.Slice(usableAddresses, func(i, j int) bool {
+		// Sort loopback addresses after others.
+		if usableAddresses[i].IsLoopback() != usableAddresses[j].IsLoopback() {
+			return usableAddresses[j].IsLoopback()
+		}
+		// Sort IPv4 before IPv6, because people are likely to be more familiar with
+		// them.
+		if isIPv4(usableAddresses[i]) != isIPv4(usableAddresses[j]) {
+			return isIPv4(usableAddresses[i])
+		}
+		// Otherwise just order lexicographically.
+		return bytes.Compare(usableAddresses[i], usableAddresses[j]) < 0
+	})
+
 	return usableAddresses, nil
 }
 
-// filterAddresses reduces the number of IPv6 addresses.
-// It prefers link-local addresses; if these are in the list, all the other IPv6
-// addresses will be removed. Link-local addresses are stable and meant for
-// same-network connections, which is exactly what Flamenco needs.
-// Loopback addresses (localhost) are always filtered out, unless they're the only addresses available.
+// filterAddresses reduces the number of IP addresses.
+//
+// The function prefers non-link-local addresses over link-local ones.
+// Link-local addresses are stable and meant for same-network connections, but
+// they require a "zone index", typically the interface name, so something like
+// `[fe80::cafe:f00d%eth0]`. This is not supported by webbrowsers. Furthermore,
+// they require the interface name of the side initiating the connection,
+// whereas this code is used to answer the question "how can this machine be
+// reached?".
+//
+// Source: https://stackoverflow.com/a/52972417/875379
+//
+// Loopback addresses (localhost) are always filtered out, unless they're the
+// only addresses available.
 func filterAddresses(addrs []net.IP) []net.IP {
 	keepAddrs := make([]net.IP, 0)
+	keepLinkLocalv4 := hasOnlyLinkLocalv4(addrs)
 
-	if hasOnlyLoopback(addrs) {
-		return addrs
-	}
-
-	var keepLinkLocalv6 = hasLinkLocalv6(addrs)
-	var keepLinkLocalv4 = hasLinkLocalv4(addrs)
-
-	var keep bool
 	for _, addr := range addrs {
 		if addr.IsLoopback() {
 			continue
 		}
 
 		isv4 := isIPv4(addr)
+
+		var keep bool
 		if isv4 {
 			keep = keepLinkLocalv4 == addr.IsLinkLocalUnicast()
 		} else {
-			keep = keepLinkLocalv6 == addr.IsLinkLocalUnicast()
+			// Never keep IPv6 link-local addresses. They need a "zone index" to work,
+			// and those can only be determined on the connecting side. Furthermore,
+			// they're incompatible with most webbrowsers.
+			keep = !addr.IsLinkLocalUnicast()
 		}
 
 		if keep {
 			keepAddrs = append(keepAddrs, addr)
+		}
+	}
+
+	// Only when after the filtering there is nothing left, add the loopback
+	// addresses. This is likely a bit of a strange test, because either this is a
+	// loopback device (and should only have loopback addresses) or it is not (and
+	// should only have non-loopback addresses). It does make the code reliable
+	// even when things are mixed, which is nice.
+	if len(keepAddrs) == 0 {
+		for _, addr := range addrs {
+			if addr.IsLoopback() {
+				keepAddrs = append(keepAddrs, addr)
+			}
 		}
 	}
 
@@ -138,29 +174,17 @@ func isIPv4(addr net.IP) bool {
 	return addr.To4() != nil
 }
 
-func hasLinkLocalv6(addrs []net.IP) bool {
+func hasOnlyLinkLocalv4(addrs []net.IP) bool {
+	hasLinkLocalv4 := false
 	for _, addr := range addrs {
-		if !isIPv4(addr) && addr.IsLinkLocalUnicast() {
-			return true
+		// Only consider non-loopback IPv4 addresses.
+		if addr.IsLoopback() || !isIPv4(addr) {
+			continue
 		}
-	}
-	return false
-}
-
-func hasLinkLocalv4(addrs []net.IP) bool {
-	for _, addr := range addrs {
-		if isIPv4(addr) && addr.IsLinkLocalUnicast() {
-			return true
-		}
-	}
-	return false
-}
-
-func hasOnlyLoopback(addrs []net.IP) bool {
-	for _, addr := range addrs {
-		if !addr.IsLoopback() {
+		if !addr.IsLinkLocalUnicast() {
 			return false
 		}
+		hasLinkLocalv4 = true
 	}
-	return true
+	return hasLinkLocalv4
 }
