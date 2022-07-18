@@ -271,6 +271,42 @@ func TestWorkerSignoffStatusChangeRequest(t *testing.T) {
 	assertResponseNoContent(t, echo)
 }
 
+func TestWorkerState(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker).Times(2)
+
+	// No state change requested.
+	{
+		echo := mf.prepareMockedRequest(nil)
+		requestWorkerStore(echo, &worker)
+		err := mf.flamenco.WorkerState(echo)
+		if assert.NoError(t, err) {
+			assertResponseNoContent(t, echo)
+		}
+	}
+
+	// State change requested.
+	{
+		requestStatus := api.WorkerStatusAsleep
+		worker.StatusChangeRequest(requestStatus, false)
+
+		echo := mf.prepareMockedRequest(nil)
+		requestWorkerStore(echo, &worker)
+
+		err := mf.flamenco.WorkerState(echo)
+		if assert.NoError(t, err) {
+			assertResponseJSON(t, echo, http.StatusOK, api.WorkerStateChange{
+				StatusRequested: requestStatus,
+			})
+		}
+	}
+}
+
 func TestWorkerStateChanged(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

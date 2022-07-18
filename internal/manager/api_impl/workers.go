@@ -180,7 +180,12 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 
 // (GET /api/worker/state)
 func (f *Flamenco) WorkerState(e echo.Context) error {
+	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
+
+	if err := f.workerSeen(logger, worker); err != nil {
+		return sendAPIError(e, http.StatusInternalServerError, "error marking worker as 'seen'")
+	}
 
 	if worker.StatusRequested == "" {
 		return e.NoContent(http.StatusNoContent)
