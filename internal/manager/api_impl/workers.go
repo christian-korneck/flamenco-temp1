@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
@@ -130,7 +129,7 @@ func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSON
 		return nil, "", err
 	}
 
-	err = f.workerSeen(ctx, logger, w)
+	err = f.workerSeen(logger, w)
 	if err != nil {
 		return nil, "", err
 	}
@@ -140,13 +139,6 @@ func (f *Flamenco) workerUpdateAfterSignOn(e echo.Context, update api.SignOnJSON
 
 func (f *Flamenco) SignOff(e echo.Context) error {
 	logger := requestLogger(e)
-
-	var req api.SignOnJSONBody
-	err := e.Bind(&req)
-	if err != nil {
-		logger.Warn().Err(err).Msg("bad request received")
-		return sendAPIError(e, http.StatusBadRequest, "invalid format")
-	}
 
 	logger.Info().Msg("worker signing off")
 	w := requestWorkerOrPanic(e)
@@ -158,10 +150,10 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 
 	// Pass a generic background context, as these changes should be stored even
 	// when the HTTP connection is aborted.
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer ctxCancel()
+	bgCtx, bgCtxCancel := bgContext()
+	defer bgCtxCancel()
 
-	err = f.persist.SaveWorkerStatus(ctx, w)
+	err := f.persist.SaveWorkerStatus(bgCtx, w)
 	if err != nil {
 		logger.Warn().
 			Err(err).
@@ -171,10 +163,10 @@ func (f *Flamenco) SignOff(e echo.Context) error {
 	}
 
 	// Ignore database errors here; the rest of the signoff process should just happen.
-	_ = f.workerSeen(ctx, logger, w)
+	_ = f.workerSeen(logger, w)
 
 	// Re-queue all tasks (should be only one) this worker is now working on.
-	err = f.stateMachine.RequeueActiveTasksOfWorker(ctx, w, "worker signed off")
+	err = f.stateMachine.RequeueActiveTasksOfWorker(bgCtx, w, "worker signed off")
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error re-queueing your tasks")
 	}
@@ -230,8 +222,10 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		w.StatusChangeClear()
 	}
 
-	ctx := e.Request().Context()
-	err = f.persist.SaveWorkerStatus(ctx, w)
+	bgCtx, bgCtxCancel := bgContext()
+	defer bgCtxCancel()
+
+	err = f.persist.SaveWorkerStatus(bgCtx, w)
 	if err != nil {
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
@@ -239,7 +233,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
 
-	if err := f.workerSeen(ctx, logger, w); err != nil {
+	if err := f.workerSeen(logger, w); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error storing worker 'last seen' timestamp in database")
 	}
 
@@ -253,7 +247,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	logger := requestLogger(e)
 	worker := requestWorkerOrPanic(e)
-	ctx := e.Request().Context()
+	reqCtx := e.Request().Context()
 	logger.Debug().Msg("worker requesting task")
 
 	f.taskSchedulerMutex.Lock()
@@ -262,7 +256,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	// The worker is actively asking for a task, so note that it was seen
 	// regardless of any failures below, or whether there actually is a task to
 	// run.
-	if err := f.workerSeen(ctx, logger, worker); err != nil {
+	if err := f.workerSeen(logger, worker); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError,
 			"error storing worker 'last seen' timestamp in database")
 	}
@@ -289,7 +283,7 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 	}
 
 	// Get a task to execute:
-	dbTask, err := f.persist.ScheduleTask(e.Request().Context(), worker)
+	dbTask, err := f.persist.ScheduleTask(reqCtx, worker)
 	if err != nil {
 		if persistence.ErrIsDBBusy(err) {
 			logger.Warn().Msg("database busy scheduling task for worker")
@@ -302,6 +296,11 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		return e.NoContent(http.StatusNoContent)
 	}
 
+	// The task is assigned to the Worker now. Even when it disconnects, the
+	// processing of the task should continue.
+	bgCtx, bgCtxCancel := bgContext()
+	defer bgCtxCancel()
+
 	// Add a note to the task log about the worker assignment.
 	msg := fmt.Sprintf("Task assigned to worker %s (%s)", worker.Name, worker.UUID)
 	if err := f.logStorage.WriteTimestamped(logger, dbTask.Job.UUID, dbTask.UUID, msg); err != nil {
@@ -310,12 +309,12 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 
 	// Move the task to 'active' status so that it won't be assigned to another
 	// worker. This also enables the task timeout monitoring.
-	if err := f.stateMachine.TaskStatusChange(ctx, dbTask, api.TaskStatusActive); err != nil {
+	if err := f.stateMachine.TaskStatusChange(bgCtx, dbTask, api.TaskStatusActive); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error marking task as active: %v", err)
 	}
 
 	// Start timeout measurement as soon as the Worker gets the task assigned.
-	if err := f.workerPingedTask(ctx, logger, dbTask); err != nil {
+	if err := f.workerPingedTask(logger, dbTask); err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error updating task for timeout calculation: %v", err)
 	}
 
@@ -353,7 +352,7 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 		Int64("imageSizeBytes", filesize).
 		Logger()
 
-	err := f.workerSeen(ctx, logger, worker)
+	err := f.workerSeen(logger, worker)
 	if err != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "error updating 'last seen' timestamp of worker: %v", err)
 	}
@@ -439,11 +438,13 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 }
 
 func (f *Flamenco) workerPingedTask(
-	ctx context.Context,
 	logger zerolog.Logger,
 	task *persistence.Task,
 ) error {
-	err := f.persist.TaskTouchedByWorker(ctx, task)
+	bgCtx, bgCtxCancel := bgContext()
+	defer bgCtxCancel()
+
+	err := f.persist.TaskTouchedByWorker(bgCtx, task)
 	if err != nil {
 		logger.Error().Err(err).Msg("error marking task as 'touched' by worker")
 		return err
@@ -453,11 +454,13 @@ func (f *Flamenco) workerPingedTask(
 
 // workerSeen marks the worker as 'seen' and logs any database error that may occur.
 func (f *Flamenco) workerSeen(
-	ctx context.Context,
 	logger zerolog.Logger,
 	w *persistence.Worker,
 ) error {
-	err := f.persist.WorkerSeen(ctx, w)
+	bgCtx, bgCtxCancel := bgContext()
+	defer bgCtxCancel()
+
+	err := f.persist.WorkerSeen(bgCtx, w)
 	if err != nil {
 		logger.Error().Err(err).Msg("error marking Worker as 'seen' in the database")
 		return err
@@ -499,9 +502,9 @@ func (f *Flamenco) MayWorkerRun(e echo.Context, taskID string) error {
 	// Errors saving the "worker pinged task" and "worker seen" fields in the
 	// database are just logged. It's not something to bother the worker with.
 	if mkr.MayKeepRunning {
-		_ = f.workerPingedTask(ctx, logger, dbTask)
+		_ = f.workerPingedTask(logger, dbTask)
 	}
-	_ = f.workerSeen(ctx, logger, worker)
+	_ = f.workerSeen(logger, worker)
 
 	return e.JSON(http.StatusOK, mkr)
 }

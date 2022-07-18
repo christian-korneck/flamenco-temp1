@@ -38,14 +38,15 @@ func TestTaskScheduleHappy(t *testing.T) {
 	}
 
 	ctx := echo.Request().Context()
+	bgCtx := gomock.Not(ctx)
 	mf.persistence.EXPECT().ScheduleTask(ctx, &worker).Return(&task, nil)
-	mf.persistence.EXPECT().TaskTouchedByWorker(ctx, &task)
-	mf.persistence.EXPECT().WorkerSeen(ctx, &worker)
+	mf.persistence.EXPECT().TaskTouchedByWorker(bgCtx, &task)
+	mf.persistence.EXPECT().WorkerSeen(bgCtx, &worker)
 
-	mf.logStorage.EXPECT().WriteTimestamped(gomock.Any(), job.UUID, task.UUID,
+	mf.logStorage.EXPECT().WriteTimestamped(bgCtx, job.UUID, task.UUID,
 		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
 
-	mf.stateMachine.EXPECT().TaskStatusChange(gomock.Any(), &task, api.TaskStatusActive)
+	mf.stateMachine.EXPECT().TaskStatusChange(bgCtx, &task, api.TaskStatusActive)
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
@@ -73,11 +74,12 @@ func TestTaskScheduleNoTaskAvailable(t *testing.T) {
 
 	// Expect a call into the persistence layer, which should return nil.
 	ctx := echo.Request().Context()
+	bgCtx := gomock.Not(ctx)
 	mf.persistence.EXPECT().ScheduleTask(ctx, &worker).Return(nil, nil)
 
 	// This call should still trigger a "worker seen" call, as the worker is
 	// actively asking for tasks.
-	mf.persistence.EXPECT().WorkerSeen(ctx, &worker)
+	mf.persistence.EXPECT().WorkerSeen(bgCtx, &worker)
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
@@ -97,7 +99,8 @@ func TestTaskScheduleNonActiveStatus(t *testing.T) {
 
 	// The worker should be marked as 'seen', even when it's in a state that
 	// doesn't allow task execution.
-	mf.persistence.EXPECT().WorkerSeen(echoCtx.Request().Context(), &worker)
+	bgCtx := gomock.Not(echoCtx.Request().Context())
+	mf.persistence.EXPECT().WorkerSeen(bgCtx, &worker)
 
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
@@ -119,7 +122,8 @@ func TestTaskScheduleOtherStatusRequested(t *testing.T) {
 
 	// The worker should be marked as 'seen', even when it's in a state that
 	// doesn't allow task execution.
-	mf.persistence.EXPECT().WorkerSeen(echoCtx.Request().Context(), &worker)
+	bgCtx := gomock.Not(echoCtx.Request().Context())
+	mf.persistence.EXPECT().WorkerSeen(bgCtx, &worker)
 
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)
@@ -145,7 +149,8 @@ func TestTaskScheduleOtherStatusRequestedAndBadState(t *testing.T) {
 
 	// The worker should be marked as 'seen', even when it's in a state that
 	// doesn't allow task execution.
-	mf.persistence.EXPECT().WorkerSeen(echoCtx.Request().Context(), &worker)
+	bgCtx := gomock.Not(echoCtx.Request().Context())
+	mf.persistence.EXPECT().WorkerSeen(bgCtx, &worker)
 
 	err := mf.flamenco.ScheduleTask(echoCtx)
 	assert.NoError(t, err)

@@ -67,9 +67,12 @@ func (f *Flamenco) TaskUpdate(e echo.Context, taskID string) error {
 			"task status %s not allowed to be sent by Worker", *taskUpdate.TaskStatus)
 	}
 
-	taskUpdateErr := f.doTaskUpdate(ctx, logger, worker, dbTask, taskUpdate)
-	workerUpdateErr := f.workerPingedTask(ctx, logger, dbTask)
-	workerSeenErr := f.workerSeen(ctx, logger, worker)
+	bgCtx, bgCtxCancel := bgContext()
+	defer bgCtxCancel()
+
+	taskUpdateErr := f.doTaskUpdate(bgCtx, logger, worker, dbTask, taskUpdate)
+	workerUpdateErr := f.workerPingedTask(logger, dbTask)
+	workerSeenErr := f.workerSeen(logger, worker)
 
 	if taskUpdateErr != nil {
 		return sendAPIError(e, http.StatusInternalServerError, "unable to handle task update: %v", taskUpdateErr)
