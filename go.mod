@@ -5,9 +5,11 @@ go 1.18
 require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/deepmap/oapi-codegen v1.9.0
+	github.com/disintegration/imaging v1.6.2
 	github.com/dop251/goja v0.0.0-20211217115348-3f9136fa235d
 	github.com/dop251/goja_nodejs v0.0.0-20210225215109-d91c329300e7
 	github.com/fromkeith/gossdp v0.0.0-20180102154144-1b2c43f6886e
+	github.com/gertd/go-pluralize v0.2.1
 	github.com/getkin/kin-openapi v0.88.0
 	github.com/glebarez/go-sqlite v1.14.7
 	github.com/glebarez/sqlite v1.3.5
@@ -17,6 +19,7 @@ require (
 	github.com/graarh/golang-socketio v0.0.0-20170510162725-2c44953b9b5f
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/mattn/go-colorable v0.1.12
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.7.0
 	github.com/ziflex/lecho/v3 v3.1.0
@@ -29,9 +32,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
-	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
@@ -45,7 +46,6 @@ require (
 	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
