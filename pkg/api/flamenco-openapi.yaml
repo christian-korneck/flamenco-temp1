@@ -1224,6 +1224,11 @@ components:
           items: { type: string }
         software_version: { type: string }
       required: [name, supported_task_types, software_version]
+      example:
+        # This example may be nice to use from the SwaggerUI interface.
+        name: API user
+        supported_task_types: [blender, ffmpeg, file-management, misc]
+        software_version: swagger-ui
 
     WorkerStateChange:
       type: object
@@ -1236,6 +1241,8 @@ components:
       properties:
         status: { $ref: "#/components/schemas/WorkerStatus" }
       required: [status]
+      example:
+        status: "awake"
 
     AssignedTask:
       type: object
