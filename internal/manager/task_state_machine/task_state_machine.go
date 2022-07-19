@@ -80,10 +80,12 @@ func (sm *StateMachine) taskStatusChangeOnly(
 		return fmt.Errorf("saving task to database: %w", err)
 	}
 
-	// logStorage already logs any error, and an error here shouldn't block the
-	// rest of the function.
-	_ = sm.logStorage.WriteTimestamped(logger, job.UUID, task.UUID,
-		fmt.Sprintf("task changed status %s -> %s", oldTaskStatus, newTaskStatus))
+	if oldTaskStatus != newTaskStatus {
+		// logStorage already logs any error, and an error here shouldn't block the
+		// rest of the function.
+		_ = sm.logStorage.WriteTimestamped(logger, job.UUID, task.UUID,
+			fmt.Sprintf("task changed status %s -> %s", oldTaskStatus, newTaskStatus))
+	}
 
 	// Broadcast this change to the SocketIO clients.
 	taskUpdate := webupdates.NewTaskUpdate(task)
