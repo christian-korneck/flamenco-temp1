@@ -214,6 +214,9 @@ func (p *CreateVideoParams) getInputGlob() ([]string, func(), error) {
 	}
 
 	cliArgs := []string{
+		// FFmpeg needs the input frame rate as well, otherwise it'll default to 25
+		// FPS, and mysteriously drop frames when rendering a 24 FPS shot.
+		"-r", strconv.FormatFloat(p.fps, 'f', -1, 64),
 		"-pattern_type", "glob",
 		"-i", crosspath.ToSlash(p.inputGlob),
 	}

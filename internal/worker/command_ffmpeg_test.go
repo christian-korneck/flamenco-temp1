@@ -42,10 +42,11 @@ func TestCmdFramesToVideoSimplePosix(t *testing.T) {
 
 	cliArgs := []string{
 		"-v", "quiet", // exe
-		"-report",                                              // argsBefore
+		"-report",  // argsBefore
+		"-r", "10", // input frame rate
 		"-pattern_type", "glob", "-i", "path/to/renders/*.png", // inputGlob
 		"-c:v", "hevc", "-crf", "31", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", // args
-		"-r", "10", // fps
+		"-r", "10", // output frame rate
 		"path/to/renders/preview.mkv", // outputFile
 	}
 	mocks.cli.EXPECT().CommandContext(gomock.Any(), "/path/to/ffmpeg", cliArgs).Return(nil)
