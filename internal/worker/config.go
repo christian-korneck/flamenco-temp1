@@ -9,9 +9,11 @@ import (
 	"io/fs"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"git.blender.org/flamenco/internal/appinfo"
 	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -69,7 +71,12 @@ func (fcw *FileConfigWrangler) WorkerConfig() (WorkerConfig, error) {
 	}
 
 	wc := fcw.DefaultConfig()
-	err := fcw.loadConfig(configFilename, &wc)
+	filepath, err := appinfo.InFlamencoHome(configFilename)
+	if err != nil {
+		return wc, err
+	}
+
+	err = fcw.loadConfig(filepath, &wc)
 
 	if err != nil {
 		switch {
@@ -101,14 +108,19 @@ func (fcw *FileConfigWrangler) SaveConfig() error {
 }
 
 func (fcw *FileConfigWrangler) WorkerCredentials() (WorkerCredentials, error) {
+	filepath, err := appinfo.InFlamencoHome(credentialsFilename)
+	if err != nil {
+		return WorkerCredentials{}, err
+	}
+
 	var creds WorkerCredentials
-	err := fcw.loadConfig(credentialsFilename, &creds)
+	err = fcw.loadConfig(filepath, &creds)
 	if err != nil {
 		return WorkerCredentials{}, err
 	}
 
 	log.Info().
-		Str("filename", credentialsFilename).
+		Str("filename", filepath).
 		Msg("loaded credentials")
 	return creds, nil
 }
@@ -116,9 +128,14 @@ func (fcw *FileConfigWrangler) WorkerCredentials() (WorkerCredentials, error) {
 func (fcw *FileConfigWrangler) SaveCredentials(creds WorkerCredentials) error {
 	fcw.creds = &creds
 
-	err := fcw.writeConfig(credentialsFilename, "Credentials", creds)
+	filepath, err := appinfo.InFlamencoHome(credentialsFilename)
 	if err != nil {
-		return fmt.Errorf("writing to %s: %w", credentialsFilename, err)
+		return err
+	}
+
+	err = fcw.writeConfig(filepath, "Credentials", creds)
+	if err != nil {
+		return fmt.Errorf("writing to %s: %w", filepath, err)
 	}
 	return nil
 }
@@ -182,7 +199,16 @@ func (fcw FileConfigWrangler) writeConfig(filename string, filetype string, conf
 
 // LoadConfig loads a YAML configuration file into 'config'
 func (fcw FileConfigWrangler) loadConfig(filename string, config interface{}) error {
-	log.Debug().Str("filename", filename).Msg("loading config file")
+	// Log which directory the config is loaded from.
+	filepath, err := filepath.Abs(filename)
+	if err != nil {
+		log.Warn().Err(err).Str("filename", filename).
+			Msg("config loader: unable to find absolute path of config file")
+		log.Debug().Str("filename", filename).Msg("loading config file")
+	} else {
+		log.Debug().Str("path", filepath).Msg("loading config file")
+	}
+
 	f, err := os.OpenFile(filename, os.O_RDONLY, 0)
 	if err != nil {
 		return err

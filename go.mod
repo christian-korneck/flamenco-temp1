@@ -31,6 +31,7 @@ require (
 )
 
 require (
+	github.com/adrg/xdg v0.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect

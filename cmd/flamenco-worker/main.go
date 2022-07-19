@@ -30,6 +30,8 @@ var (
 	shutdownComplete chan struct{}
 )
 
+const flamencoWorkerDatabase = "flamenco-worker.sqlite"
+
 var cliArgs struct {
 	// Do-and-quit flags.
 	version bool
@@ -231,8 +233,12 @@ func upstreamBufferOrDie(client worker.FlamencoClient, timeService clock.Clock) 
 		log.Fatal().Err(err).Msg("unable to create task update queue database")
 	}
 
-	// TODO: make filename configurable?
-	if err := buffer.OpenDB(ctx, "flamenco-worker.sqlite"); err != nil {
+	dbPath, err := appinfo.InFlamencoHome(flamencoWorkerDatabase)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to figure out where to save my database")
+	}
+
+	if err := buffer.OpenDB(ctx, dbPath); err != nil {
 		log.Fatal().Err(err).Msg("unable to open task update queue database")
 	}
 
