@@ -92,7 +92,7 @@ func register(ctx context.Context, cfg WorkerConfig, client FlamencoClient) Work
 	secretKey := hex.EncodeToString(secret)
 
 	req := api.RegisterWorkerJSONRequestBody{
-		Name:               mustHostname(),
+		Name:               workerName(),
 		Platform:           runtime.GOOS,
 		Secret:             secretKey,
 		SupportedTaskTypes: cfg.TaskTypes,
@@ -151,7 +151,7 @@ func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.W
 	logger := log.With().Str("manager", cfg.ManagerURL).Logger()
 
 	req := api.SignOnJSONRequestBody{
-		Name:               mustHostname(),
+		Name:               workerName(),
 		SupportedTaskTypes: cfg.TaskTypes,
 		SoftwareVersion:    appinfo.ApplicationVersion,
 	}
@@ -186,8 +186,8 @@ func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.W
 	return startupState, nil
 }
 
-// mustHostname either the hostname or logs a fatal error.
-func mustHostname() string {
+// workerName returns a suitable name for  the worker. Errors are fatal.
+func workerName() string {
 	name, ok := os.LookupEnv(workerNameEnvVariable)
 	if ok && name != "" {
 		name = strings.TrimSpace(name)
