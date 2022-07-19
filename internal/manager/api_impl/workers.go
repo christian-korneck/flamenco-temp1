@@ -404,6 +404,10 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 		panic("task could not be fetched, but database gave no error either")
 	}
 
+	// Include the job UUID in the logger.
+	jobUUID := dbTask.Job.UUID
+	logger = logger.With().Str("job", jobUUID).Logger()
+
 	// Read the image bytes into memory.
 	imageBytes, err := io.ReadAll(e.Request().Body)
 	if err != nil {
@@ -412,7 +416,6 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 	}
 
 	// Create the "last rendered" payload.
-	jobUUID := dbTask.Job.UUID
 	thumbnailInfo, err := f.lastRenderedInfoForJob(logger, jobUUID)
 	if err != nil {
 		logger.Error().Err(err).Msg("TaskOutputProduced: error getting last-rendered thumbnail info for job")
@@ -426,7 +429,10 @@ func (f *Flamenco) TaskOutputProduced(e echo.Context, taskID string) error {
 
 		Callback: func(ctx context.Context) {
 			// Store this job as the last one to get a rendered image.
-			f.persist.SetLastRendered(ctx, dbTask.Job)
+			err := f.persist.SetLastRendered(ctx, dbTask.Job)
+			if err != nil {
+				logger.Error().Err(err).Msg("TaskOutputProduced: error marking this job as the last one to receive render output")
+			}
 
 			// Broadcast when the processing is done.
 			update := webupdates.NewLastRenderedUpdate(jobUUID)
