@@ -35,12 +35,16 @@ func TestRequeueActiveTasksOfWorker(t *testing.T) {
 	mocks.persist.EXPECT().SaveTaskStatus(ctx, task1)   // TODO: test saved task status
 	mocks.persist.EXPECT().SaveTaskStatus(ctx, task2)   // TODO: test saved task status
 
-	logMsg := "Task was requeued by Manager because worker had to test"
-	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task1.Job.UUID, task1.UUID, logMsg)
-	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task2.Job.UUID, task2.UUID, logMsg)
+	logMsg1 := "task changed status active -> queued"
+	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task1.Job.UUID, task1.UUID, logMsg1)
+	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task2.Job.UUID, task2.UUID, logMsg1)
+
+	logMsg2 := "Task was requeued by Manager because worker had to test"
+	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task1.Job.UUID, task1.UUID, logMsg2)
+	mocks.logStorage.EXPECT().WriteTimestamped(gomock.Any(), task2.Job.UUID, task2.UUID, logMsg2)
 
 	mocks.broadcaster.EXPECT().BroadcastTaskUpdate(api.SocketIOTaskUpdate{
-		Activity:       logMsg,
+		Activity:       logMsg2,
 		Id:             task1.UUID,
 		JobId:          task1.Job.UUID,
 		Name:           task1.Name,
@@ -50,7 +54,7 @@ func TestRequeueActiveTasksOfWorker(t *testing.T) {
 	})
 
 	mocks.broadcaster.EXPECT().BroadcastTaskUpdate(api.SocketIOTaskUpdate{
-		Activity:       logMsg,
+		Activity:       logMsg2,
 		Id:             task2.UUID,
 		JobId:          task2.Job.UUID,
 		Name:           task2.Name,
