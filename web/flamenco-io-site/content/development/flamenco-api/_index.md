@@ -146,9 +146,9 @@ import (
 
 func main() {
 	client, err := api.NewClientWithResponses("http://localhost:8080")
-  if err != nil {
-    panic(err)
-  }
+	if err != nil {
+		panic(err)
+	}
 
 	ctx := context.Background()
 	resp, err := client.GetVersionWithResponse(ctx)
