@@ -241,16 +241,22 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 	bgCtx, bgCtxCancel := bgContext()
 	defer bgCtxCancel()
 
-	err = f.persist.SaveWorkerStatus(bgCtx, w)
-	if err != nil {
+	if err := f.persist.SaveWorkerStatus(bgCtx, w); err != nil {
 		logger.Warn().Err(err).
 			Str("newStatus", string(w.Status)).
 			Msg("error storing Worker in database")
-		return sendAPIError(e, http.StatusInternalServerError, "error storing worker in database")
 	}
 
-	if err := f.workerSeen(logger, w); err != nil {
-		return sendAPIError(e, http.StatusInternalServerError, "error storing worker 'last seen' timestamp in database")
+	// Any error has already been logged, and the rest of the code should also just run.
+	_ = f.workerSeen(logger, w)
+
+	// Re-queue all tasks (should be only one) this worker is now working on.
+	if prevStatus == api.WorkerStatusAwake && w.Status != api.WorkerStatusAwake {
+		err := f.stateMachine.RequeueActiveTasksOfWorker(bgCtx, w,
+			fmt.Sprintf("worker changed status to '%s'", w.Status))
+		if err != nil {
+			logger.Warn().Err(err).Msg("error re-queueing worker tasks after it changed to non-awake status")
+		}
 	}
 
 	update := webupdates.NewWorkerUpdate(w)

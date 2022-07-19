@@ -316,7 +316,7 @@ func TestWorkerStateChanged(t *testing.T) {
 
 	mf := newMockedFlamenco(mockCtrl)
 	worker := testWorker()
-	worker.Status = api.WorkerStatusStarting
+	worker.Status = api.WorkerStatusAwake
 	prevStatus := worker.Status
 
 	// Expect a broadcast of the change
@@ -324,20 +324,21 @@ func TestWorkerStateChanged(t *testing.T) {
 		Id:             worker.UUID,
 		Name:           worker.Name,
 		PreviousStatus: &prevStatus,
-		Status:         api.WorkerStatusAwake,
+		Status:         api.WorkerStatusAsleep,
 		Updated:        worker.UpdatedAt,
 		Version:        worker.Software,
 	})
 
 	// Expect the Worker to be saved with the new status
 	savedWorker := worker
-	savedWorker.Status = api.WorkerStatusAwake
+	savedWorker.Status = api.WorkerStatusAsleep
 	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
 	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
+	mf.stateMachine.EXPECT().RequeueActiveTasksOfWorker(gomock.Any(), &worker, "worker changed status to 'asleep'")
 
 	// Perform the request
 	echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
-		Status: api.WorkerStatusAwake,
+		Status: api.WorkerStatusAsleep,
 	})
 	requestWorkerStore(echo, &worker)
 	err := mf.flamenco.WorkerStateChanged(echo)
