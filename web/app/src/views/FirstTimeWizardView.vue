@@ -1,131 +1,90 @@
 <template>
   <div class="setup-container">
-    <section class="setup-step step-intro is-active">
-      <h1>Welcome</h1>
+    <steps-wrapper>
+      <step-item title="Welcome">
+        <p>Let's set you up.</p>
+      </step-item>
 
-      <ul class="progress">
-        <li class="active"><span></span></li>
-        <li><span></span></li>
-        <li><span></span></li>
-        <li><span></span></li>
-      </ul>
+      <step-item title="Shared Storage">
+        <p>Flamenco needs some shared storage, to have a central place where the
+          Manager and Workers exchange files. This could be a NAS in your network,
+          or some other file sharing server.</p>
 
-      <p>Let's set you up.</p>
+        <p>Make sure this path is the same for all machines involved.</p>
 
-      <div class="btn-bar">
-        <button class="btn btn-primary align-center">Start Setup</button>
-      </div>
-    </section>
+        <p class="hint">Using a service like Syncthing, ownCloud, or Dropbox for
+          this is not recommended, as Flamenco does not know when every machine has
+          received the files.</p>
 
-    <section class="setup-step is-active">
-      <h2>Shared Storage</h2>
+        <!-- TODO: @submit.prevent makes the button triggerable by pressing ENTER
+          in the input field, but also prevents the browser from caching
+          previously-used values. Would be great if we could have both. -->
+        <form @submit.prevent="checkSharedStoragePath">
+          <input v-model="sharedStoragePath" type="text">
+          <button type="submit">Check</button>
+        </form>
 
-      <ul class="progress">
-        <li><span></span></li>
-        <li class="active"><span></span></li>
-        <li><span></span></li>
-        <li><span></span></li>
-      </ul>
+        <p v-if="sharedStorageCheckResult != null"
+          :class="{ 'check-ok': sharedStorageCheckResult.is_usable, 'check-failed': !sharedStorageCheckResult.is_usable }">
+          {{ sharedStorageCheckResult.cause }}
+        </p>
+      </step-item>
+      <step-item title="Blender">
+        <p>Choose which Blender to use below:</p>
 
-      <p>Flamenco needs some shared storage, to have a central place where the
-        Manager and Workers exchange files. This could be a NAS in your network,
-        or some other file sharing server.</p>
+        <p v-if="isBlenderExeFinding">... finding Blenders ...</p>
+        <div v-for="blender in allBlenders" class="blender-selector"
+          :class="{ 'selected-blender': (blender == selectedBlender) }">
+          <dl>
+            <dt>Version</dt>
+            <dd>{{ blender.cause }}</dd>
 
-      <p>Make sure this path is the same for all machines involved.</p>
+            <dt>Path</dt>
+            <dd>{{ blender.path }}</dd>
 
-      <p class="hint">Using a service like Syncthing, ownCloud, or Dropbox for
-        this is not recommended, as Flamenco does not know when every machine has
-        received the files.</p>
+            <dt>Source</dt>
+            <dd>{{ sourceLabels[blender.source] }}</dd>
+          </dl>
+          <button @click="selectedBlender = blender" :disabled="selectedBlender == blender">Use this Blender</button>
+        </div>
 
-      <!-- TODO: @submit.prevent makes the button triggerable by pressing ENTER
-        in the input field, but also prevents the browser from caching
-        previously-used values. Would be great if we could have both. -->
-      <form @submit.prevent="checkSharedStoragePath">
-        <input v-model="sharedStoragePath" type="text">
-        <button type="submit">Check</button>
-      </form>
+        <p>Or provide an alternative command to try:</p>
 
-      <p v-if="sharedStorageCheckResult != null"
-        :class="{ 'check-ok': sharedStorageCheckResult.is_usable, 'check-failed': !sharedStorageCheckResult.is_usable }">
-        {{ sharedStorageCheckResult.cause }}
-      </p>
-
-      <div class="btn-bar btn-bar-wide">
-        <button class="btn">Back</button>
-        <button class="btn btn-primary" disabled>Next</button>
-      </div>
-    </section>
-
-    <section class="setup-step is-active">
-      <h2>Which Blender?</h2>
-
-      <ul class="progress">
-        <li><span></span></li>
-        <li><span></span></li>
-        <li class="active"><span></span></li>
-        <li><span></span></li>
-      </ul>
-
-      <p>Choose which Blender to use below:</p>
-
-      <p v-if="isBlenderExeFinding">... finding Blenders ...</p>
-      <div v-for="blender in allBlenders" class="blender-selector"
-        :class="{ 'selected-blender': (blender == selectedBlender) }">
-        <dl>
-          <dt>Version</dt>
-          <dd>{{ blender.cause }}</dd>
-
-          <dt>Path</dt>
-          <dd>{{ blender.path }}</dd>
-
-          <dt>Source</dt>
-          <dd>{{ sourceLabels[blender.source] }}</dd>
-        </dl>
-        <button @click="selectedBlender = blender" :disabled="selectedBlender == blender">Use this Blender</button>
-      </div>
-
-      <p>Or provide an alternative command to try:</p>
-
-      <form @submit.prevent="checkBlenderExePath">
-        <input v-model="customBlenderExe" type="text">
-        <button type="submit">Check</button>
-      </form>
-      <p v-if="isBlenderExeChecking">... checking ...</p>
-      <p v-if="blenderExeCheckResult != null && blenderExeCheckResult.is_usable" class="check-ok">
-        Found something, it is selected above.</p>
-      <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
-        {{ blenderExeCheckResult.cause }}</p>
-
-      <div class="btn-bar btn-bar-wide">
-        <button class="btn">Back</button>
-        <button class="btn btn-primary">Next</button>
-      </div>
-    </section>
-
-    <section v-if="isConfigComplete" class="setup-step is-active">
-      <h2>The Final Step</h2>
-      <p>This is the configuration that will be used by Flamenco:</p>
-      <dl>
-        <dt>Storage</dt>
-        <dd>{{ sharedStorageCheckResult.path }}</dd>
-        <dt>Blender</dt>
-        <dd v-if="selectedBlender.source == 'file_association'">
-          Whatever Blender is associated with .blend files
-          (currently "<code>{{ selectedBlender.path }}</code>")
-        </dd>
-        <dd v-if="selectedBlender.source == 'path_envvar'">
-          The command "<code>{{ selectedBlender.input }}</code>" as found on <code>$PATH</code>
-          (currently "<code>{{ selectedBlender.path }}</code>")
-        </dd>
-        <dd v-if="selectedBlender.source == 'input_path'">
-          The command you provided:
-          "<code>{{ selectedBlender.path }}</code>"
-        </dd>
-      </dl>
-
-      <p v-if="isConfirmed" class="check-ok">Configuration has been saved, Flamenco will restart.</p>
-      <button @click="confirmWizard" :disabled="isConfirming">Confirm</button>
-    </section>
+        <form @submit.prevent="checkBlenderExePath">
+          <input v-model="customBlenderExe" type="text">
+          <button type="submit">Check</button>
+        </form>
+        <p v-if="isBlenderExeChecking">... checking ...</p>
+        <p v-if="blenderExeCheckResult != null && blenderExeCheckResult.is_usable" class="check-ok">
+          Found something, it is selected above.</p>
+        <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
+          {{ blenderExeCheckResult.cause }}</p>
+      </step-item>
+      <step-item title="Review">
+        <div v-if="isConfigComplete">
+          <p>This is the configuration that will be used by Flamenco:</p>
+          <dl>
+            <dt>Storage</dt>
+            <dd>{{ sharedStorageCheckResult.path }}</dd>
+            <dt>Blender</dt>
+            <dd v-if="selectedBlender.source == 'file_association'">
+              Whatever Blender is associated with .blend files
+              (currently "<code>{{ selectedBlender.path }}</code>")
+            </dd>
+            <dd v-if="selectedBlender.source == 'path_envvar'">
+              The command "<code>{{ selectedBlender.input }}</code>" as found on <code>$PATH</code>
+              (currently "<code>{{ selectedBlender.path }}</code>")
+            </dd>
+            <dd v-if="selectedBlender.source == 'input_path'">
+              The command you provided:
+              "<code>{{ selectedBlender.path }}</code>"
+            </dd>
+          </dl>
+        </div>
+        <p v-if="isConfirmed" class="check-ok">Configuration has been saved, Flamenco will restart.</p>
+        <button @click="confirmWizard" :disabled="isConfirming">Confirm</button>
+      </step-item>
+    </steps-wrapper>
   </div>
 
   <footer class="app-footer">
@@ -138,6 +97,8 @@
 <script>
 import NotificationBar from '@/components/footer/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
+import StepItem from '@/components/steps/StepItem.vue';
+import StepsWrapper from '@/components/steps/StepsWrapper.vue';
 import { MetaApi, PathCheckInput, WizardConfig } from "@/manager-api";
 import { apiClient } from '@/stores/api-query-count';
 
@@ -146,6 +107,8 @@ export default {
   components: {
     NotificationBar,
     UpdateListener,
+    StepsWrapper,
+    StepItem,
   },
   data: () => ({
     sharedStoragePath: "",
@@ -291,12 +254,7 @@ export default {
 }
 </script>
 <style>
-:root {
-  --wiz-progress-indicator-size: 6px;
-  --wiz-progress-indicator-border-width: 2px;
-  --wiz-progress-indicator-color: var(--color-text-hint);
-  --wiz-progress-indicator-color-active: var(--color-accent);
-}
+
 
 body.is-first-time-wizard #app {
   grid-template-areas:
@@ -322,68 +280,7 @@ body.is-first-time-wizard #app {
   --color-check-ok: var(--color-status-completed);
 
   max-width: 640px;
-  margin: auto;
-  width: 100%;
-}
-
-.setup-step {
-  background-color: var(--color-background-column);
-  border-radius: var(--border-radius);
-  display: none;
-  padding: var(--spacer) var(--spacer-lg);
-}
-
-.setup-step.is-active{
-  display: block;
-}
-
-.step-intro {
-  text-align: center;
-}
-
-.progress {
-  display: flex;
-  justify-content: space-between;
-  list-style: none;
-  margin-bottom: 2rem;
-  padding: 0;
-  position: relative;
-}
-
-/* Progress indicator dot.  */
-.progress li span {
-  background-color: var(--wiz-progress-indicator-color);
-  border-radius: 50%;
-  border: var(--wiz-progress-indicator-border-width) solid var(--color-background-column);
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color);
-  content: '';
-  display: block;
-  height: var(--wiz-progress-indicator-size);
-  position: relative;
-  width: var(--wiz-progress-indicator-size);
-}
-
-.progress li.active span {
-  background-color: var(--color-accent);
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-active);
-}
-
-.progress li.active+li span,
-.progress li.active+li+li span,
-.progress li.active+li+li+li span,
-.progress li.active+li+li+li+span {
-  background-color: var(--color-background-column);
-}
-
-/* Progress indicator line between dots. */
-.progress:before {
-  background-color: var(--wiz-progress-indicator-color);
-  content: '';
-  display: block;
-  height: var(--wiz-progress-indicator-border-width);
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  margin: 20vh auto auto;
   width: 100%;
 }
 
