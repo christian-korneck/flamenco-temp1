@@ -31,7 +31,7 @@ function prevStepTitle() {
       <ul class="progress">
         <li
           v-for="(title, index) in stepTitles"
-          :class="{active: selectedStep == title}"
+          :class="{current: selectedStep == title, done: index < selectedStepNumber() }"
           @click="updateStepTitle(title)"
           >
           <span></span>
@@ -52,9 +52,6 @@ function prevStepTitle() {
         class="btn btn-primary">Next</button>
     </div>
   </div>
-
-
-
 </template>
 
 <style scoped>
@@ -64,7 +61,7 @@ function prevStepTitle() {
   --wiz-progress-indicator-size: 8px;
   --wiz-progress-indicator-border-width: 2px;
   --wiz-progress-indicator-color: var(--color-text-hint);
-  --wiz-progress-indicator-color-active: var(--color-accent);
+  --wiz-progress-indicator-color-current: var(--color-accent);
 
   display: flex;
   justify-content: space-between;
@@ -74,14 +71,13 @@ function prevStepTitle() {
   position: relative;
 
 }
-
-/* Progress indicator dot.  */
 .progress li {
   cursor: pointer;
 }
 
+/* Progress indicator dot.  */
 .progress li span {
-  background-color: var(--wiz-progress-indicator-color);
+  background-color: var(--color-background-column);
   border-radius: 50%;
   border: var(--wiz-progress-indicator-border-width) solid var(--color-background-column);
   box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color);
@@ -93,15 +89,20 @@ function prevStepTitle() {
   width: var(--wiz-progress-indicator-size);
 }
 
-.progress li.active span {
-  background-color: var(--color-accent);
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-active);
+.progress li.done span {
+  background-color: var(--wiz-progress-indicator-color-current);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
 }
 
-.progress li.active+li span,
-.progress li.active+li+li span {
+.progress li.current span {
   background-color: var(--color-background-column);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
 }
+
+.progress li.current span {
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
+}
+
 
 /* Progress indicator line between dots. */
 .progress:before {
