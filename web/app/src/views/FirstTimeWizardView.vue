@@ -1,60 +1,125 @@
 <template>
   <div class="setup-container">
-    <steps-wrapper>
-      <step-item title="Welcome">
-        <p>Let's set you up.</p>
+    <h1>Flamenco Setup Assistant</h1>
+    <div class="setup-step">
+      <ul class="progress">
+        <li
+          v-for="step in 4" :key="step"
+          @click="jumpToStep(step)"
+          :class="{
+            current: step == currentSetupStep, 
+            done: step < currentSetupStep,
+            disabled: step > overallSetupStep,
+          }"
+          >
+          <span></span>
+        </li>
+      </ul>
+       <step-item
+        v-show="currentSetupStep == 1"
+        @next-clicked="nextStep"
+        :is-next-clickable="true"
+        :is-back-visible="false"
+        title="Welcome!"
+        next-label="Let's go"
+      >
+        <p>This setup assistant will guide you through the initial configuration of Flamenco. You will be up
+          and running in a few minutes!
+        </p>
+        <p>Before we start, here is a quick overview of the Flamenco architecture.</p>
+        <img src="architecture.png" />
+        <p>The illustration shows the key components of Flamenco, and how they interact together. In particular:</p>
+        <ul>
+          <li><strong>Manager</strong>: This application. It coordinates all the activity.</li>
+          <li><strong>Worker</strong>: An workstation or dedicated rendering machine. It executes the tasks assigned by the Manager.</li>
+          <li><strong>Shared Storage</strong>: A location accessible by the Manager and the Workers, where files, logs and internal previews can be saved.</li>
+          <li><strong>Blender Add-on</strong>: This is needed to connect to the Manager and submit a job from Blender.</li>
+        </ul>
+        <p>More information is available on the online documentation at flamenco.blender.org.</p>
       </step-item>
+      <step-item 
+        v-show="currentSetupStep == 2"
+        @next-clicked="nextStep"
+        @back-clicked="prevStep"
+        :is-next-clickable="sharedStorageCheckResult !=null && sharedStorageCheckResult.is_usable"
+        title="Shared Storage"
+      >
+        <p>Please specify a storage path (or drive), where you want to store your Flamenco data.
+          The location of the shared storage should be accessible by Flamenco Manager and by the Workers.
+          This could be:
+        </p>
+        <ul>
+          <li>A NAS in your network</li>
+          <li>A local drive or folder, if you are working alone</li>
+          <li>Some other file sharing server</li>
+        </ul>
 
-      <step-item title="Shared Storage">
-        <p>Flamenco needs some shared storage, to have a central place where the
-          Manager and Workers exchange files. This could be a NAS in your network,
-          or some other file sharing server.</p>
+        <p>Using a service like Syncthing, ownCloud, or Dropbox for
+          this is not recommended, as Flamenco can't coordinate data synchronization.</p>
 
-        <p>Make sure this path is the same for all machines involved.</p>
-
-        <p class="hint">Using a service like Syncthing, ownCloud, or Dropbox for
-          this is not recommended, as Flamenco does not know when every machine has
-          received the files.</p>
-
-        <!-- TODO: @submit.prevent makes the button triggerable by pressing ENTER
-          in the input field, but also prevents the browser from caching
-          previously-used values. Would be great if we could have both. -->
-        <form @submit.prevent="checkSharedStoragePath">
-          <input v-model="sharedStoragePath" type="text">
-          <button type="submit">Check</button>
-        </form>
-
+        <input 
+          v-model="sharedStoragePath" 
+          @input="checkSharedStoragePath"
+          @keyup.enter="nextStepAfterStoragePath"
+          type="text" 
+          placeholder="Shared Storage Path"
+          class="path-input"
+        >
         <p v-if="sharedStorageCheckResult != null"
-          :class="{ 'check-ok': sharedStorageCheckResult.is_usable, 'check-failed': !sharedStorageCheckResult.is_usable }">
+          :class="{ 
+            'check-ok': sharedStorageCheckResult.is_usable, 
+            'check-failed': !sharedStorageCheckResult.is_usable 
+          }">
           {{ sharedStorageCheckResult.cause }}
         </p>
+        <p v-else></p>
       </step-item>
-      <step-item title="Blender">
-        <p>Choose which Blender to use below:</p>
+      <step-item 
+        v-show="currentSetupStep == 3"
+        @next-clicked="nextStep"
+        @back-clicked="prevStep"
+        :is-next-clickable="selectedBlender != null && selectedBlender.is_usable"
+        title="Blender"
+      >
 
         <div v-if="isBlenderExeFinding" class="is-in-progress">Looking for Blender installs...</div>
 
-        <div v-for="blender in allBlenders" class="blender-selector"
-          :class="{ 'selected-blender': (blender == selectedBlender) }">
-          <dl>
-            <dt>Version</dt>
-            <dd>{{ blender.cause }}</dd>
+        <fieldset v-if="allBlenders.length > 1">
+          <legend>Choose which Blender to use:</legend>
+          <div v-for="(blender, index) in allBlenders">
+            <label :for="'blender-'+index">
+              <input type="radio" v-model="selectedBlender" name="blender" :value="blender.path" :id="'blender-'+index">
+              {{ blender.cause }} 
+              <span 
+                :aria-label="blender.path" 
+                data-microtip-position="top" 
+                role="tooltip">
+                [Path]
+              </span>
+              <span 
+                :aria-label="sourceLabels[blender.source]" 
+                data-microtip-position="top" 
+                role="tooltip">
+                [Source]
+              </span>
+            </label>
+          </div>
+        </fieldset>
 
-            <dt>Path</dt>
-            <dd>{{ blender.path }}</dd>
+        <p v-if="allBlenders.length <= 1">
+          Provide a path to Blender. This path should be accessible by all Workers. If your rendering
+          setup features operating systems different form the one you are currently using, you can 
+          manually set up the other paths later. 
+        </p>
+        <p v-else>Or provide an alternative command to try.</p>
 
-            <dt>Source</dt>
-            <dd>{{ sourceLabels[blender.source] }}</dd>
-          </dl>
-          <button @click="selectedBlender = blender" :disabled="selectedBlender == blender">Use this Blender</button>
-        </div>
-
-        <p>Or provide an alternative command to try:</p>
-
-        <form @submit.prevent="checkBlenderExePath">
-          <input v-model="customBlenderExe" type="text">
-          <button type="submit">Check</button>
-        </form>
+        <input
+          @input="checkBlenderExePath" 
+          v-model="customBlenderExe" 
+          type="text"
+          placeholder="Blender Path"
+          class="path-input"
+        >
 
         <div v-if="isBlenderExeChecking" class="is-in-progress">Checking...</div>
 
@@ -63,7 +128,14 @@
         <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
           {{ blenderExeCheckResult.cause }}</p>
       </step-item>
-      <step-item title="Review">
+      <step-item 
+        v-show="currentSetupStep == 4"
+        @next-clicked="confirmWizard"
+        @back-clicked="prevStep"
+        next-label="Confirm"
+        title="Review"
+        :is-next-clickable="isConfigComplete"
+      >
         <div v-if="isConfigComplete">
           <p>This is the configuration that will be used by Flamenco:</p>
           <dl>
@@ -85,9 +157,8 @@
           </dl>
         </div>
         <p v-if="isConfirmed" class="check-ok">Configuration has been saved, Flamenco will restart.</p>
-        <button @click="confirmWizard" :disabled="isConfirming">Confirm</button>
       </step-item>
-    </steps-wrapper>
+    </div>
   </div>
 
   <footer class="app-footer">
@@ -98,19 +169,33 @@
 </template>
 
 <script>
+import microtip from 'microtip/microtip.css'
 import NotificationBar from '@/components/footer/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
 import StepItem from '@/components/steps/StepItem.vue';
-import StepsWrapper from '@/components/steps/StepsWrapper.vue';
 import { MetaApi, PathCheckInput, WizardConfig } from "@/manager-api";
 import { apiClient } from '@/stores/api-query-count';
+
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
 
 export default {
   name: 'FirstTimeWizardView',
   components: {
     NotificationBar,
     UpdateListener,
-    StepsWrapper,
     StepItem,
   },
   data: () => ({
@@ -134,6 +219,8 @@ export default {
     },
     isConfirming: false,
     isConfirmed: false,
+    currentSetupStep: 1,
+    overallSetupStep: 1,
   }),
   computed: {
     cleanSharedStoragePath() {
@@ -142,9 +229,14 @@ export default {
     cleanCustomBlenderExe() {
       return this.customBlenderExe.trim();
     },
+    isSharedStorageValid() {
+      return this.sharedStorageCheckResult != null && this.sharedStorageCheckResult.is_usable;
+    },
+    isSelectedBlenderValid() {
+      return this.selectedBlender != null && this.selectedBlender.is_usable;
+    },
     isConfigComplete() {
-      return (this.sharedStorageCheckResult != null && this.sharedStorageCheckResult.is_usable) &&
-        (this.selectedBlender != null && this.selectedBlender.is_usable);
+      return this.isSharedStorageValid && this.isSelectedBlenderValid;
     },
   },
   mounted() {
@@ -159,7 +251,6 @@ export default {
     onSIODisconnected(reason) {
     },
 
-    // TODO: add a Refresh button that calls this again.
     checkSharedStoragePath() {
       const pathCheck = new PathCheckInput(this.cleanSharedStoragePath);
       console.log("requesting path check:", pathCheck);
@@ -172,6 +263,7 @@ export default {
           console.log("Error checking storage path:", error);
         })
     },
+
 
     findBlenderExePath() {
       this.isBlenderExeFinding = true;
@@ -232,6 +324,29 @@ export default {
       }
     },
 
+    nextStepAfterStoragePath() {
+      if (this.isSharedStorageValid) {
+        this.nextStep();
+      }
+    },
+
+    nextStep() {
+      if (this.overallSetupStep <= this.currentSetupStep) {
+        this.overallSetupStep = this.currentSetupStep + 1;
+      }
+      this.currentSetupStep++;
+    },
+
+    prevStep() {
+      this.currentSetupStep--;
+    },
+
+    jumpToStep(step) {
+      if (step <= this.overallSetupStep) {
+        this.currentSetupStep = step;
+      }
+    },
+
     confirmWizard() {
       const wizardConfig = new WizardConfig(
         this.sharedStorageCheckResult.path,
@@ -254,9 +369,82 @@ export default {
         })
     },
   },
+  created() {
+    this.checkSharedStoragePath = debounce(this.checkSharedStoragePath, 200)
+    this.checkBlenderExePath = debounce(this.checkBlenderExePath, 200)
+  }
 }
 </script>
 <style>
+
+.progress {
+  --wiz-progress-indicator-size: 8px;
+  --wiz-progress-indicator-border-width: 2px;
+  --wiz-progress-indicator-color: var(--color-text-hint);
+  --wiz-progress-indicator-color-current: var(--color-accent);
+
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  margin-bottom: 2rem;
+  padding: 0;
+  position: relative;
+
+}
+.progress li {
+  cursor: pointer;
+}
+
+/* Progress indicator dot.  */
+.progress li span {
+  background-color: var(--color-background-column);
+  border-radius: 50%;
+  border: var(--wiz-progress-indicator-border-width) solid var(--color-background-column);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color);
+  content: '';
+  cursor: pointer;
+  display: block;
+  height: var(--wiz-progress-indicator-size);
+  position: relative;
+  width: var(--wiz-progress-indicator-size);
+}
+
+.progress li.disabled span {
+  cursor: not-allowed;
+}
+
+.progress li.done span {
+  background-color: var(--wiz-progress-indicator-color-current);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
+}
+
+.progress li.current span {
+  background-color: var(--color-background-column);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
+}
+
+.progress li.current span {
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
+}
+
+
+/* Progress indicator line between dots. */
+.progress:before {
+  background-color: var(--wiz-progress-indicator-color);
+  content: '';
+  display: block;
+  height: var(--wiz-progress-indicator-border-width);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+}
+
+.setup-step {
+  background-color: var(--color-background-column);
+  border-radius: var(--border-radius);
+  padding: var(--spacer) var(--spacer-lg);
+}
 
 
 body.is-first-time-wizard #app {
@@ -282,21 +470,32 @@ body.is-first-time-wizard #app {
   margin-left: auto;
 }
 
+input.path-input {
+  width: 100%;
+  height: 2rem;
+}
+
 .setup-container {
   --color-check-failed: var(--color-status-failed);
   --color-check-ok: var(--color-status-completed);
 
   max-width: 640px;
-  margin: 20vh auto auto;
+  margin: 10vh auto auto;
   width: 100%;
 }
 
 .setup-container h1 {
   font-size: xx-large;
+  text-align: center;
 }
 
 .setup-container section {
   font-size: larger;
+}
+
+.setup-container img {
+  max-width: 100%;
+  border-radius: var(--border-radius);
 }
 
 .setup-container p.hint {

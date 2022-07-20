@@ -83,7 +83,7 @@ func TestCheckSharedStoragePath(t *testing.T) {
 	assertResponseJSON(t, echoCtx, http.StatusOK, api.PathCheckResult{
 		Path:     "",
 		IsUsable: false,
-		Cause:    "An empty path is never suitable as shared storage",
+		Cause:    "An empty path is not suitable as shared storage",
 	})
 
 	// Test usable path (well, at least readable & writable; it may not be shared via Samba/NFS).

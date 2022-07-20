@@ -95,7 +95,7 @@ func (f *Flamenco) CheckSharedStoragePath(e echo.Context) error {
 
 	// Check for emptyness.
 	if path == "" {
-		return mkError("An empty path is never suitable as shared storage")
+		return mkError("An empty path is not suitable as shared storage")
 	}
 
 	// Check whether it is actually a directory.
