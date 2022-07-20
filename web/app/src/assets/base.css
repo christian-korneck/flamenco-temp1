@@ -286,6 +286,12 @@ dl dd:empty {
   margin-left: auto;
 }
 
+.btn-bar .align-center,
+.btn-bar-group .align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .btn-bar-group {
   align-items: center;
   display: flex;
@@ -297,7 +303,9 @@ dl dd:empty {
 }
 
 .btn-bar-group select+.btn,
-.btn-bar-group .btn+select {
+.btn-bar-group select+button,
+.btn-bar-group .btn+select,
+.btn-bar-group button+select {
   margin-left: var(--spacer-sm)
 }
 
@@ -312,7 +320,7 @@ select {
   padding: var(--spacer-xs) var(--spacer-sm);
 }
 
-.btn {
+button, .btn {
   align-items: center;
   background-color: var(--color-button-background);
   border-radius: var(--border-radius);
@@ -325,13 +333,21 @@ select {
   padding: var(--spacer-xs) var(--spacer-sm);
   touch-action: manipulation;
   transition-duration: var(--transition-speed);
-  transition-property: color, background-color, border-color;
+  transition-property: background-color, border-color, color;
+  user-select: none;
 }
 
-.btn-bar .btn+.btn {
+.btn-bar.btn-bar-wide {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.btn-bar .btn+.btn,
+.btn-bar button+button {
   margin-left: var(--spacer-sm);
 }
 
+button[disabled],
 .btn[disabled] {
   background-color: transparent;
   border-color: var(--color-button-background);
@@ -340,11 +356,13 @@ select {
   pointer-events: none;
 }
 
+button:hover:not([disabled]),
 .btn:hover:not([disabled]) {
   transition: all 100ms;
   color: white;
 }
 
+button:focus,
 .btn:focus {
   /* Make sure the outline is clearly visible inside the button. */
   outline-offset: -0.5em;
