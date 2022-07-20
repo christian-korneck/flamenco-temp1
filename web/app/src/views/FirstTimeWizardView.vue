@@ -278,6 +278,10 @@ body.is-first-time-wizard #app {
   }
 }
 
+.btn-bar-wide .btn:last-child {
+  margin-left: auto;
+}
+
 .setup-container {
   --color-check-failed: var(--color-status-failed);
   --color-check-ok: var(--color-status-completed);
