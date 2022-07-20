@@ -32,7 +32,8 @@
       <step-item title="Blender">
         <p>Choose which Blender to use below:</p>
 
-        <p v-if="isBlenderExeFinding">... finding Blenders ...</p>
+        <div v-if="isBlenderExeFinding" class="is-in-progress">Looking for Blender installs...</div>
+
         <div v-for="blender in allBlenders" class="blender-selector"
           :class="{ 'selected-blender': (blender == selectedBlender) }">
           <dl>
@@ -54,7 +55,9 @@
           <input v-model="customBlenderExe" type="text">
           <button type="submit">Check</button>
         </form>
-        <p v-if="isBlenderExeChecking">... checking ...</p>
+
+        <div v-if="isBlenderExeChecking" class="is-in-progress">Checking...</div>
+
         <p v-if="blenderExeCheckResult != null && blenderExeCheckResult.is_usable" class="check-ok">
           Found something, it is selected above.</p>
         <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
@@ -328,5 +331,24 @@ body.is-first-time-wizard #app {
 .setup-container .blender-selector button {
   display: block;
   margin-left: auto;
+}
+
+.is-in-progress {
+  animation: is-in-progress 3s infinite linear;
+  background-image: linear-gradient(to left, var(--color-text-muted), rgba(255, 255, 255, 0.25), var(--color-text-muted));
+  background-size: 200px;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes is-in-progress {
+  0% {
+    background-position: 0px;
+  }
+
+  100% {
+    background-position: 200px;
+  }
 }
 </style>
