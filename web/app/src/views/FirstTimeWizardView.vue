@@ -1,6 +1,6 @@
 <template>
   <div class="setup-container">
-    <section class="setup-step step-intro">
+    <section class="setup-step step-intro is-active">
       <h1>Welcome</h1>
 
       <ul class="progress">
@@ -56,7 +56,7 @@
       </div>
     </section>
 
-    <section class="setup-step">
+    <section class="setup-step is-active">
       <h2>Which Blender?</h2>
 
       <ul class="progress">
@@ -102,7 +102,7 @@
       </div>
     </section>
 
-    <section v-if="isConfigComplete">
+    <section v-if="isConfigComplete" class="setup-step is-active">
       <h2>The Final Step</h2>
       <p>This is the configuration that will be used by Flamenco:</p>
       <dl>
