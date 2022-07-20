@@ -1,13 +1,31 @@
 <template>
-  <div class="first-time-wizard">
-    <h1>Welcome to Flamenco!</h1>
+  <div class="setup-container">
+    <section class="setup-step step-intro">
+      <h1>Welcome</h1>
 
-    <section>
-      <p>Before Flamenco can be used, a few things need to be set up. This
-        wizard will guide you through the configuration.</p>
+      <ul class="progress">
+        <li class="active"><span></span></li>
+        <li><span></span></li>
+        <li><span></span></li>
+        <li><span></span></li>
+      </ul>
+
+      <p>Let's set you up.</p>
+
+      <div class="btn-bar">
+        <button class="btn btn-primary align-center">Start Setup</button>
+      </div>
     </section>
-    <section>
+
+    <section class="setup-step is-active">
       <h2>Shared Storage</h2>
+
+      <ul class="progress">
+        <li><span></span></li>
+        <li class="active"><span></span></li>
+        <li><span></span></li>
+        <li><span></span></li>
+      </ul>
 
       <p>Flamenco needs some shared storage, to have a central place where the
         Manager and Workers exchange files. This could be a NAS in your network,
@@ -31,10 +49,22 @@
         :class="{ 'check-ok': sharedStorageCheckResult.is_usable, 'check-failed': !sharedStorageCheckResult.is_usable }">
         {{ sharedStorageCheckResult.cause }}
       </p>
+
+      <div class="btn-bar btn-bar-wide">
+        <button class="btn">Back</button>
+        <button class="btn btn-primary" disabled>Next</button>
+      </div>
     </section>
 
-    <section>
+    <section class="setup-step">
       <h2>Which Blender?</h2>
+
+      <ul class="progress">
+        <li><span></span></li>
+        <li><span></span></li>
+        <li class="active"><span></span></li>
+        <li><span></span></li>
+      </ul>
 
       <p>Choose which Blender to use below:</p>
 
@@ -65,6 +95,11 @@
         Found something, it is selected above.</p>
       <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
         {{ blenderExeCheckResult.cause }}</p>
+
+      <div class="btn-bar btn-bar-wide">
+        <button class="btn">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
     </section>
 
     <section v-if="isConfigComplete">
@@ -148,6 +183,8 @@ export default {
   },
   mounted() {
     this.findBlenderExePath();
+
+    document.body.classList.add('is-first-time-wizard');
   },
   methods: {
     // SocketIO connection event handlers:
@@ -253,3 +290,146 @@ export default {
   },
 }
 </script>
+<style>
+:root {
+  --wiz-progress-indicator-size: 6px;
+  --wiz-progress-indicator-border-width: 2px;
+  --wiz-progress-indicator-color: var(--color-text-hint);
+  --wiz-progress-indicator-color-active: var(--color-accent);
+}
+
+body.is-first-time-wizard #app {
+  grid-template-areas:
+    "header"
+    "col-full-width"
+    "footer";
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 1280px) {
+  body.is-first-time-wizard #app {
+    grid-template-areas:
+      "header"
+      "col-full-width"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--header-height) 1fr var(--footer-height);
+  }
+}
+
+.setup-container {
+  --color-check-failed: var(--color-status-failed);
+  --color-check-ok: var(--color-status-completed);
+
+  max-width: 640px;
+  margin: auto;
+  width: 100%;
+}
+
+.setup-step {
+  background-color: var(--color-background-column);
+  border-radius: var(--border-radius);
+  display: none;
+  padding: var(--spacer) var(--spacer-lg);
+}
+
+.setup-step.is-active{
+  display: block;
+}
+
+.step-intro {
+  text-align: center;
+}
+
+.progress {
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  margin-bottom: 2rem;
+  padding: 0;
+  position: relative;
+}
+
+/* Progress indicator dot.  */
+.progress li span {
+  background-color: var(--wiz-progress-indicator-color);
+  border-radius: 50%;
+  border: var(--wiz-progress-indicator-border-width) solid var(--color-background-column);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color);
+  content: '';
+  display: block;
+  height: var(--wiz-progress-indicator-size);
+  position: relative;
+  width: var(--wiz-progress-indicator-size);
+}
+
+.progress li.active span {
+  background-color: var(--color-accent);
+  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-active);
+}
+
+.progress li.active+li span,
+.progress li.active+li+li span,
+.progress li.active+li+li+li span,
+.progress li.active+li+li+li+span {
+  background-color: var(--color-background-column);
+}
+
+/* Progress indicator line between dots. */
+.progress:before {
+  background-color: var(--wiz-progress-indicator-color);
+  content: '';
+  display: block;
+  height: var(--wiz-progress-indicator-border-width);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+}
+
+.setup-container h1 {
+  font-size: xx-large;
+}
+
+.setup-container section {
+  font-size: larger;
+}
+
+.setup-container p.hint {
+  color: var(--color-text-hint);
+  font-size: smaller;
+}
+
+.setup-container .check-ok {
+  color: var(--color-check-ok);
+}
+
+.setup-container .check-failed {
+  color: var(--color-check-failed);
+}
+
+.setup-container .check-ok::before {
+  content: "✔ ";
+}
+
+.setup-container .check-failed::before {
+  content: "❌ ";
+}
+
+.setup-container .blender-selector {
+  padding: 0.5em;
+  outline: thin solid var(--color-border);
+  border-radius: var(--border-radius);
+}
+
+.setup-container .blender-selector.selected-blender {
+  color: var(--color-accent-text);
+  background-color: var(--color-accent-background);
+  outline-width: var(--border-width);
+}
+
+.setup-container .blender-selector button {
+  display: block;
+  margin-left: auto;
+}
+</style>
