@@ -368,6 +368,18 @@ button:focus,
   outline-offset: -0.5em;
 }
 
+.btn-primary {
+  background-color: var(--color-accent-background);
+  border-color: var(--color-accent-background);
+  color: var(--color-accent-text);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
 .btn-bar .btn.dangerous {
   background-color: #7c4d41;
   color: #e4c5c0;
