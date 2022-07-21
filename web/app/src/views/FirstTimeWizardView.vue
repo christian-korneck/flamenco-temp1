@@ -16,7 +16,8 @@
         </li>
         <div class="progress-bar"></div>
       </ul>
-       <step-item
+
+      <step-item
         v-show="currentSetupStep == 1"
         @next-clicked="nextStep"
         :is-next-clickable="true"
@@ -38,6 +39,7 @@
         </ul>
         <p>More information is available on the online documentation at flamenco.blender.org.</p>
       </step-item>
+
       <step-item
         v-show="currentSetupStep == 2"
         @next-clicked="nextStepAfterCheckSharedStoragePath"
@@ -74,6 +76,7 @@
         </p>
         <p v-else></p>
       </step-item>
+
       <step-item
         v-show="currentSetupStep == 3"
         @next-clicked="nextStep"
@@ -148,11 +151,11 @@
           >
 
           <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
-
           <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
             {{ blenderExeCheckResult.cause }}</p>
         </div>
       </step-item>
+
       <step-item
         v-show="currentSetupStep == 4"
         @next-clicked="confirmWizard"
