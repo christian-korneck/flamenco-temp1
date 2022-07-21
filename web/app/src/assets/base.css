@@ -69,7 +69,7 @@
 
   --color-worker-status-starting: hsl(68, 100%, 30%);
   --color-worker-status-awake: var(--color-status-active);
-  --color-worker-status-asleep: hsl(194, 100%, 19%);
+  --color-worker-status-asleep: hsl(208, 80%, 55%);
   --color-worker-status-error: var(--color-status-failed);
   --color-worker-status-shutdown: var(--color-status-paused);
   --color-worker-status-testing: hsl(166 100% 46%);
