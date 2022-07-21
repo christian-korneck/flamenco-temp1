@@ -419,11 +419,6 @@ export default {
 }
 </script>
 <style>
-
-label {
-  display: block;
-}
-
 .progress {
   --wiz-progress-indicator-size: 8px;
   --wiz-progress-indicator-border-width: 2px;

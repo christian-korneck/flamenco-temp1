@@ -310,6 +310,10 @@ dl dd:empty {
   margin-left: var(--spacer-sm)
 }
 
+label {
+  display: block;
+}
+
 input[type="text"] {
   appearance: none;
   background-color: var(--color-background);
