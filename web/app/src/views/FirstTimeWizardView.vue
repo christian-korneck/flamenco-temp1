@@ -456,8 +456,8 @@ export default {
   position: absolute;
   top: calc(50% - calc(var(--setup-progress-indicator-border-width) / 2));
   transform: translateY(-50%);
-  background-color: var(--color-accent);
-  height: var(--wiz-progress-indicator-border-width);
+  background-image: linear-gradient(to right, var(--color-accent) 85%, var(--color-accent-text));
+  border-radius: 999rem;
   height: var(--setup-progress-indicator-border-width);
   position: absolute;
   transition: width 500ms ease-out;
@@ -467,7 +467,7 @@ export default {
 
 /* Progress indicator dot.  */
 .progress li span {
-  background-color: var(--color-background-column);
+  background-color: var(--color-background);
   border-radius: 50%;
   border: var(--setup-progress-indicator-border-width) solid var(--color-background);
   box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color);
@@ -485,6 +485,10 @@ export default {
 
 .progress li.disabled span {
   cursor: not-allowed;
+}
+
+.progress li:not(.disabled):hover span {
+  transform: scale(1.1);
 }
 
 .progress li.done span {
