@@ -287,7 +287,7 @@ export default {
   mounted() {
     this.findBlenderExePath();
 
-    document.body.classList.add('is-first-time-wizard');
+    document.body.classList.add('is-setup-assistant');
   },
   methods: {
     // SocketIO connection event handlers:
@@ -501,7 +501,7 @@ export default {
   box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
 }
 
-body.is-first-time-wizard #app {
+body.is-setup-assistant #app {
   grid-template-areas:
     "header"
     "col-full-width"
@@ -510,7 +510,7 @@ body.is-first-time-wizard #app {
 }
 
 @media (max-width: 1280px) {
-  body.is-first-time-wizard #app {
+  body.is-setup-assistant #app {
     grid-template-areas:
       "header"
       "col-full-width"
