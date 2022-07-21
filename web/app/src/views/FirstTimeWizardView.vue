@@ -529,8 +529,8 @@ body.is-setup-assistant #app {
 }
 
 .setup-container {
-  --color-check-failed: var(--color-status-failed);
-  --color-check-ok: var(--color-status-completed);
+  --color-check-failed: var(--color-danger);
+  --color-check-ok: var(--color-success);
 
   max-width: 640px;
   margin: 10vh auto auto;
