@@ -153,6 +153,14 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
     log = _log.getChild(bl_idname)
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        # Only allow the
+        propgroup = getattr(context.scene, "flamenco_job_settings", None)
+        if propgroup is None:
+            return False
+        return getattr(propgroup, 'job_type', None) is not None
+
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
         filepath = self._save_blendfile(context)
 
