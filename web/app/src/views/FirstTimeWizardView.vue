@@ -539,12 +539,16 @@ body.is-setup-assistant #app {
 .setup-step {
   background-color: var(--color-background-column);
   border-radius: var(--border-radius);
+  font-size: var(--font-size-lg);
   padding: var(--spacer) var(--spacer-lg);
 }
 
-.setup-container h1 {
-  font-size: xx-large;
-  text-align: center;
+.setup-step p {
+  line-height: 1.4rem;
+}
+
+input[type="text"] {
+  font-size: var(--font-size-lg);
 }
 
 .setup-container section {

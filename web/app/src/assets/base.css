@@ -31,6 +31,7 @@
   --font-family-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro","Fira Mono", "Droid Sans Mono", "Courier New", monospace;
   --font-size-base: 14px;
   --font-size-sm: 12px;
+  --font-size-lg: 16px;
 
   --table-color-background-row: #303030;
   --table-color-background-row-odd: #2b2b2b;
