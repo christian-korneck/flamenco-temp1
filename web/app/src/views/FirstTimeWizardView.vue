@@ -7,7 +7,7 @@
           v-for="step in 4" :key="step"
           @click="jumpToStep(step)"
           :class="{
-            current: step == currentSetupStep, 
+            current: step == currentSetupStep,
             done: step < currentSetupStep,
             disabled: step > overallSetupStep,
           }"
@@ -37,11 +37,11 @@
         </ul>
         <p>More information is available on the online documentation at flamenco.blender.org.</p>
       </step-item>
-      <step-item 
+      <step-item
         v-show="currentSetupStep == 2"
-        @next-clicked="nextStep"
+        @next-clicked="nextStepAfterCheckSharedStoragePath"
         @back-clicked="prevStep"
-        :is-next-clickable="sharedStorageCheckResult !=null && sharedStorageCheckResult.is_usable"
+        :is-next-clickable="sharedStoragePath.length > 0"
         title="Shared Storage"
       >
         <p>Please specify a storage path (or drive), where you want to store your Flamenco data.
@@ -57,24 +57,23 @@
         <p>Using a service like Syncthing, ownCloud, or Dropbox for
           this is not recommended, as Flamenco can't coordinate data synchronization.</p>
 
-        <input 
-          v-model="sharedStoragePath" 
-          @input="checkSharedStoragePath"
-          @keyup.enter="nextStepAfterStoragePath"
-          type="text" 
+        <input
+          v-model="sharedStoragePath"
+          @keyup.enter="nextStepAfterCheckSharedStoragePath"
+          type="text"
           placeholder="Shared Storage Path"
           class="path-input"
         >
         <p v-if="sharedStorageCheckResult != null"
-          :class="{ 
-            'check-ok': sharedStorageCheckResult.is_usable, 
-            'check-failed': !sharedStorageCheckResult.is_usable 
+          :class="{
+            'check-ok': sharedStorageCheckResult.is_usable,
+            'check-failed': !sharedStorageCheckResult.is_usable
           }">
           {{ sharedStorageCheckResult.cause }}
         </p>
         <p v-else></p>
       </step-item>
-      <step-item 
+      <step-item
         v-show="currentSetupStep == 3"
         @next-clicked="nextStep"
         @back-clicked="prevStep"
@@ -84,57 +83,82 @@
 
         <div v-if="isBlenderExeFinding" class="is-in-progress">Looking for Blender installs...</div>
 
-        <fieldset v-if="allBlenders.length > 1">
-          <legend>Choose which Blender to use:</legend>
-          <div v-for="(blender, index) in allBlenders">
-            <label :for="'blender-'+index">
-              <input type="radio" v-model="selectedBlender" name="blender" :value="blender.path" :id="'blender-'+index">
-              {{ blender.cause }} 
-              <span 
-                :aria-label="blender.path" 
-                data-microtip-position="top" 
-                role="tooltip">
-                [Path]
-              </span>
-              <span 
-                :aria-label="sourceLabels[blender.source]" 
-                data-microtip-position="top" 
-                role="tooltip">
-                [Source]
-              </span>
-            </label>
-          </div>
+        <p v-if="autoFoundBlenders.length === 0">Provide a path to Blender. This path should be accessible by all Workers. If your rendering
+          setup features operating systems different form the one you are currently using, you can
+          manually set up the other paths later.</p>
+
+        <p v-else>Choose how a Worker should invoke the Blender command when performing a task.</p>
+
+        <fieldset v-if="allBlenders.length >= 1">
+          <label v-if="autoFoundBlenderPathEnvvar" for="blender-path_envvar">
+            <input type="radio" v-model="selectedBlender" name="blender" :value="autoFoundBlenderPathEnvvar" id="blender-path_envvar">
+            {{ sourceLabels[autoFoundBlenderPathEnvvar.source] }} <br>
+            <span>{{autoFoundBlenderPathEnvvar.path}}</span>
+            <span
+              :aria-label="autoFoundBlenderPathEnvvar.cause"
+              data-microtip-position="top"
+              role="tooltip">
+              [Command output]
+            </span>
+          </label>
+          <label v-if="autoFoundBlenderFileAssociation" for="blender-file_association">
+            <input type="radio" v-model="selectedBlender" name="blender" :value="autoFoundBlenderFileAssociation" id="blender-file_association">
+            {{ sourceLabels[autoFoundBlenderFileAssociation.source] }} <br>
+            <span>{{autoFoundBlenderFileAssociation.path}}</span>
+            <span
+              :aria-label="autoFoundBlenderFileAssociation.cause"
+              data-microtip-position="top"
+              role="tooltip">
+              [Command output]
+            </span>
+          </label>
+          <label for="blender-input_path">
+            <input
+              type="radio"
+              v-model="selectedBlender"
+              name="blender"
+              :value="blenderFromInputPath"
+              id="blender-input_path"
+              >
+            {{ sourceLabels['input_path'] }} <br>
+            <span>
+              <input
+                @input="checkBlenderExePath"
+                v-model="customBlenderExe"
+
+                type="text"
+                placeholder="Blender Path"
+                class="path-input"
+              >
+            </span>
+            <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
+            <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
+              {{ blenderExeCheckResult.cause }}</p>
+          </label>
         </fieldset>
 
-        <p v-if="allBlenders.length <= 1">
-          Provide a path to Blender. This path should be accessible by all Workers. If your rendering
-          setup features operating systems different form the one you are currently using, you can 
-          manually set up the other paths later. 
-        </p>
-        <p v-else>Or provide an alternative command to try.</p>
+        <div v-if="autoFoundBlenders.length === 0">
+          <input
+            @input="checkBlenderExePath"
+            v-model="customBlenderExe"
+            type="text"
+            placeholder="Blender Path"
+            class="path-input"
+          >
 
-        <input
-          @input="checkBlenderExePath" 
-          v-model="customBlenderExe" 
-          type="text"
-          placeholder="Blender Path"
-          class="path-input"
-        >
+          <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
 
-        <div v-if="isBlenderExeChecking" class="is-in-progress">Checking...</div>
-
-        <p v-if="blenderExeCheckResult != null && blenderExeCheckResult.is_usable" class="check-ok">
-          Found something, it is selected above.</p>
-        <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
-          {{ blenderExeCheckResult.cause }}</p>
+          <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
+            {{ blenderExeCheckResult.cause }}</p>
+        </div>
       </step-item>
-      <step-item 
+      <step-item
         v-show="currentSetupStep == 4"
         @next-clicked="confirmWizard"
         @back-clicked="prevStep"
         next-label="Confirm"
         title="Review"
-        :is-next-clickable="isConfigComplete"
+        :is-next-clickable="setupConfirmIsClickable"
       >
         <div v-if="isConfigComplete">
           <p>This is the configuration that will be used by Flamenco:</p>
@@ -194,9 +218,9 @@ function debounce(func, wait, immediate) {
 export default {
   name: 'FirstTimeWizardView',
   components: {
-    NotificationBar,
     UpdateListener,
     StepItem,
+    NotificationBar,
   },
   data: () => ({
     sharedStoragePath: "",
@@ -213,9 +237,9 @@ export default {
     isBlenderExeChecking: false,
     blenderExeCheckResult: null, // api.BlenderPathCheckResult
     sourceLabels: {
-      file_association: "This Blender runs when you double-click a .blend file.",
-      path_envvar: "This Blender was found on the $PATH environment.",
-      input_path: "You pointed Flamenco to this executable.",
+      file_association: "Blender that runs when you double-click a .blend file.",
+      path_envvar: "Blender that was found on the $PATH environment.",
+      input_path: "Another Blender executable.",
     },
     isConfirming: false,
     isConfirmed: false,
@@ -238,6 +262,22 @@ export default {
     isConfigComplete() {
       return this.isSharedStorageValid && this.isSelectedBlenderValid;
     },
+    autoFoundBlenderPathEnvvar() {
+      return this.autoFoundBlenders.find(b => b.source === 'path_envvar');
+    },
+    autoFoundBlenderFileAssociation() {
+      return this.autoFoundBlenders.find(b => b.source === 'file_association');
+    },
+    blenderFromInputPath() {
+      return this.allBlenders.find(b => b.source === 'input_path');
+    },
+    setupConfirmIsClickable() {
+      if (this.isConfirming || this.isConfirmed) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   },
   mounted() {
     this.findBlenderExePath();
@@ -251,19 +291,21 @@ export default {
     onSIODisconnected(reason) {
     },
 
-    checkSharedStoragePath() {
+    nextStepAfterCheckSharedStoragePath() {
       const pathCheck = new PathCheckInput(this.cleanSharedStoragePath);
       console.log("requesting path check:", pathCheck);
-      this.metaAPI.checkSharedStoragePath({ pathCheckInput: pathCheck })
+      return this.metaAPI.checkSharedStoragePath({ pathCheckInput: pathCheck })
         .then((result) => {
           console.log("Storage path check result:", result);
           this.sharedStorageCheckResult = result;
+          if (this.isSharedStorageValid) {
+            this.nextStep();
+          }
         })
         .catch((error) => {
           console.log("Error checking storage path:", error);
         })
     },
-
 
     findBlenderExePath() {
       this.isBlenderExeFinding = true;
@@ -305,6 +347,8 @@ export default {
           this.blenderExeCheckResult = result;
           if (result.is_usable) {
             this.selectedBlender = result;
+          } else if (this.selectedBlender.source === 'input_path') {
+            this.selectedBlender = null;
           }
           this._refreshAllBlenders();
         })
@@ -321,12 +365,6 @@ export default {
         this.allBlenders = this.autoFoundBlenders;
       } else {
         this.allBlenders = this.autoFoundBlenders.concat([this.blenderExeCheckResult]);
-      }
-    },
-
-    nextStepAfterStoragePath() {
-      if (this.isSharedStorageValid) {
-        this.nextStep();
       }
     },
 
@@ -376,6 +414,10 @@ export default {
 }
 </script>
 <style>
+
+label {
+  display: block;
+}
 
 .progress {
   --wiz-progress-indicator-size: 8px;
