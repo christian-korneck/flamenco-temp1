@@ -449,9 +449,8 @@ export default {
 }
 
 .progress-bar {
-  --progress-bar-total-segments: calc(v-bind('totalSetupSteps') - 1); /* Substract 1 because the first step has no progress. */
-  --percentage-each-step-width: calc(100% / var(--progress-bar-total-segments));
-  --percentage-at-current-step: calc(calc(v-bind('currentSetupStep') / var(--progress-bar-total-segments)) * 100%);
+  --width-each-segment: calc(100% / calc(v-bind('totalSetupSteps') - 1)); /* Substract 1 because the first step has no progress. */
+  --progress-bar-width-at-current-step: calc(var(--width-each-segment) * calc(v-bind('currentSetupStep') - 1));
 
   position: absolute;
   top: calc(50% - calc(var(--wiz-progress-indicator-border-width) / 2));
@@ -460,7 +459,7 @@ export default {
   height: var(--wiz-progress-indicator-border-width);
   position: absolute;
   transition: width 500ms ease-out;
-  width: calc(var(--percentage-at-current-step) - var(--percentage-each-step-width));
+  width: var(--progress-bar-width-at-current-step);
   z-index: 2;
 }
 
