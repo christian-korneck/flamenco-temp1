@@ -470,11 +470,6 @@ body.is-first-time-wizard #app {
   margin-left: auto;
 }
 
-input.path-input {
-  width: 100%;
-  height: 2rem;
-}
-
 .setup-container {
   --color-check-failed: var(--color-status-failed);
   --color-check-ok: var(--color-status-completed);
