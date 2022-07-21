@@ -552,8 +552,19 @@ input[type="text"] {
   font-size: var(--font-size-lg);
 }
 
-.setup-container section {
-  font-size: larger;
+h1 {
+  font-size: xx-large;
+  margin: 0 auto var(--spacer);
+  display: block;
+  text-align: center;
+  display: inline-block;
+  background: linear-gradient(45deg, hsl(246deg 82% 82%), hsl(256deg 82% 72%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+h2 {
+  margin-top: var(--spacer-sm);
 }
 
 .setup-container img {
