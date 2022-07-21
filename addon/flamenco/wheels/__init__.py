@@ -8,12 +8,12 @@ from pathlib import Path
 import sys
 import logging
 from types import ModuleType
-from typing import Iterator
+from typing import Iterator, Iterable
 
 _my_dir = Path(__file__).parent
 _log = logging.getLogger(__name__)
 
-def load_wheel(module_name: str, submodules: tuple[str]) -> list[ModuleType]:
+def load_wheel(module_name: str, submodules: Iterable[str]) -> list[ModuleType]:
     """Loads modules from a wheel file 'module_name*.whl'.
 
     Loads `module_name`, and if submodules are given, loads
