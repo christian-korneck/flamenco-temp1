@@ -700,6 +700,18 @@ func (m *MockConfigService) EXPECT() *MockConfigServiceMockRecorder {
 	return m.recorder
 }
 
+// ConvertTwoWayVariables mocks base method.
+func (m *MockConfigService) ConvertTwoWayVariables(arg0 <-chan string, arg1 chan<- string, arg2 config.VariableAudience, arg3 config.VariablePlatform) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ConvertTwoWayVariables", arg0, arg1, arg2, arg3)
+}
+
+// ConvertTwoWayVariables indicates an expected call of ConvertTwoWayVariables.
+func (mr *MockConfigServiceMockRecorder) ConvertTwoWayVariables(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConvertTwoWayVariables", reflect.TypeOf((*MockConfigService)(nil).ConvertTwoWayVariables), arg0, arg1, arg2, arg3)
+}
+
 // EffectiveStoragePath mocks base method.
 func (m *MockConfigService) EffectiveStoragePath() string {
 	m.ctrl.T.Helper()
@@ -715,17 +727,15 @@ func (mr *MockConfigServiceMockRecorder) EffectiveStoragePath() *gomock.Call {
 }
 
 // ExpandVariables mocks base method.
-func (m *MockConfigService) ExpandVariables(arg0 string, arg1 config.VariableAudience, arg2 config.VariablePlatform) string {
+func (m *MockConfigService) ExpandVariables(arg0 <-chan string, arg1 chan<- string, arg2 config.VariableAudience, arg3 config.VariablePlatform) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExpandVariables", arg0, arg1, arg2)
-	ret0, _ := ret[0].(string)
-	return ret0
+	m.ctrl.Call(m, "ExpandVariables", arg0, arg1, arg2, arg3)
 }
 
 // ExpandVariables indicates an expected call of ExpandVariables.
-func (mr *MockConfigServiceMockRecorder) ExpandVariables(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockConfigServiceMockRecorder) ExpandVariables(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVariables", reflect.TypeOf((*MockConfigService)(nil).ExpandVariables), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVariables", reflect.TypeOf((*MockConfigService)(nil).ExpandVariables), arg0, arg1, arg2, arg3)
 }
 
 // ForceFirstRun mocks base method.

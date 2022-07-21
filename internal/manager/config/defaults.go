@@ -92,4 +92,7 @@ var defaultConfig = Conf{
 		// 	},
 		// },
 	},
+
+	// This should not be set to anything else, except in unit tests.
+	currentGOOS: VariablePlatform(runtime.GOOS),
 }

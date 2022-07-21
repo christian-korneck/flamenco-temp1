@@ -3,6 +3,8 @@ package config
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"io"
@@ -114,6 +116,10 @@ type ShamanGarbageCollect struct {
 type Conf struct {
 	Base `yaml:",inline"`
 
+	// Store GOOS in a variable so it can be modified by unit tests, making the
+	// test independent of the actual platform.
+	currentGOOS VariablePlatform `yaml:"-"`
+
 	// Variable name → Variable definition
 	Variables map[string]Variable `yaml:"variables"`
 
@@ -163,10 +169,13 @@ func getConf() (Conf, error) {
 
 // DefaultConfig returns a copy of the default configuration.
 func DefaultConfig(override ...func(c *Conf)) Conf {
-	c := defaultConfig
+	c, err := defaultConfig.copy()
+	if err != nil {
+		panic(fmt.Sprintf("unable to create copy of default config: %v", err))
+	}
 	c.Meta.Version = latestConfigVersion
 	c.processAfterLoading(override...)
-	return c
+	return *c
 }
 
 // loadConf parses the given file and returns its contents as a Conf object.
@@ -224,6 +233,13 @@ func (c *Conf) processAfterLoading(override ...func(c *Conf)) {
 	c.checkVariables()
 }
 
+// MockCurrentGOOSForTests can be used in unit tests to make the variable
+// replacement system think it's running a different operating system. This
+// should only be used to make the tests independent of the actual OS.
+func (c *Conf) MockCurrentGOOSForTests(mockedGOOS string) {
+	c.currentGOOS = VariablePlatform(mockedGOOS)
+}
+
 func (c *Conf) processStorage() {
 	// The shared storage path should be absolute, but only if it's actually configured.
 	if c.SharedStoragePath != "" {
@@ -267,6 +283,8 @@ func (c *Conf) EffectiveStoragePath() string {
 func (c *Conf) addImplicitVariables() {
 	c.implicitVariables = make(map[string]Variable)
 
+	// The 'jobs' variable MUST be one-way only. There is no way that the Manager
+	// can know how this path can be reached on other platforms.
 	c.implicitVariables["jobs"] = Variable{
 		IsTwoWay: false,
 		Values: []VariableValue{
@@ -387,29 +405,91 @@ func updateMap[K comparable, V any](target map[K]V, updateWith map[K]V) {
 	}
 }
 
-// ExpandVariables converts "{variable name}" to the value that belongs to the given audience and platform.
-func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
+// ExpandVariables converts "{variable name}" to the value that belongs to the
+// given audience and platform. The function iterates over all strings provided
+// by the input channel, and sends the expanded result into the output channel.
+// It will return when the input channel is closed.
+func (c *Conf) ExpandVariables(inputChannel <-chan string, outputChannel chan<- string,
+	audience VariableAudience, platform VariablePlatform) {
+
+	// Get the variables for the given audience & platform.
 	varsForPlatform := c.getVariables(audience, platform)
 	if len(varsForPlatform) == 0 {
 		log.Warn().
-			Str("valueToExpand", valueToExpand).
 			Str("audience", string(audience)).
 			Str("platform", string(platform)).
 			Msg("no variables defined for this platform given this audience")
+	}
+
+	// Get the two-way variables for the Manager platform.
+	twoWayVars := make(map[string]string)
+	if platform != c.currentGOOS {
+		twoWayVars = c.GetTwoWayVariables(audience, c.currentGOOS)
+	}
+
+	doValueReplacement := func(valueToExpand string) string {
+		// Expand variables from {varname} to their value for the target platform.
+		for varname, varvalue := range varsForPlatform {
+			placeholder := fmt.Sprintf("{%s}", varname)
+			valueToExpand = strings.Replace(valueToExpand, placeholder, varvalue, -1)
+		}
+
+		// Go through the two-way variables, to make sure that the result of
+		// expanding variables gets the two-way variables applied as well. This is
+		// necessary to make implicitly-defined variable, which are only defined for
+		// the Manager's platform, usable for the target platform.
+		//
+		// Practically, this replaces "value for the Manager platform" with "value
+		// for the target platform".
+		for varname, managerValue := range twoWayVars {
+			targetValue, ok := varsForPlatform[varname]
+			if !ok {
+				continue
+			}
+			if !strings.HasPrefix(valueToExpand, managerValue) {
+				continue
+			}
+			valueToExpand = targetValue + valueToExpand[len(managerValue):]
+		}
+
 		return valueToExpand
 	}
 
-	// Variable replacement
-	for varname, varvalue := range varsForPlatform {
-		placeholder := fmt.Sprintf("{%s}", varname)
-		valueToExpand = strings.Replace(valueToExpand, placeholder, varvalue, -1)
+	for valueToExpand := range inputChannel {
+		outputChannel <- doValueReplacement(valueToExpand)
+	}
+}
+
+// ConvertTwoWayVariables converts the value of a variable with "{variable
+// name}", but only for two-way variables. The function iterates over all
+// strings provided by the input channel, and sends the expanded result into the
+// output channel. It will return when the input channel is closed.
+func (c *Conf) ConvertTwoWayVariables(inputChannel <-chan string, outputChannel chan<- string,
+	audience VariableAudience, platform VariablePlatform) {
+
+	// Get the variables for the given audience & platform.
+	twoWayVars := c.GetTwoWayVariables(audience, platform)
+	if len(twoWayVars) == 0 {
+		log.Debug().
+			Str("audience", string(audience)).
+			Str("platform", string(platform)).
+			Msg("no two-way variables defined for this platform given this audience")
 	}
 
-	// TODO: this needs to go through multiple variable replacements, to make sure
-	// that, for example, the `{jobs}` variable gets the two-way variables applied
-	// as well.
+	doValueReplacement := func(valueToConvert string) string {
+		for varName, varValue := range twoWayVars {
+			if !strings.HasPrefix(valueToConvert, varValue) {
+				continue
+			}
+			valueToConvert = fmt.Sprintf("{%s}%s", varName, valueToConvert[len(varValue):])
+		}
 
-	return valueToExpand
+		return valueToConvert
+	}
+
+	for valueToExpand := range inputChannel {
+		outputChannel <- doValueReplacement(valueToExpand)
+	}
 }
 
 // getVariables returns the variable values for this (audience, platform) combination.
@@ -426,6 +506,24 @@ func (c *Conf) getVariables(audience VariableAudience, platform VariablePlatform
 	updateMap(varsForPlatform, platformsForAudience[VariablePlatformAll])
 	updateMap(varsForPlatform, platformsForAudience[platform])
 	return varsForPlatform
+}
+
+// GetTwoWayVariables returns the two-way variable values for this (audience,
+// platform) combination. If no variables are found, just returns an empty map.
+// If a value is defined for both the "all" platform and specifically the given
+// platform, the specific platform definition wins.
+func (c *Conf) GetTwoWayVariables(audience VariableAudience, platform VariablePlatform) map[string]string {
+	varsForPlatform := c.getVariables(audience, platform)
+
+	// Only keep the two-way variables.
+	twoWayVars := map[string]string{}
+	for varname, value := range varsForPlatform {
+		isTwoWay := c.implicitVariables[varname].IsTwoWay || c.Variables[varname].IsTwoWay
+		if isTwoWay {
+			twoWayVars[varname] = value
+		}
+	}
+	return twoWayVars
 }
 
 // ResolveVariables returns the variables for this (audience, platform) combination.
@@ -549,6 +647,23 @@ func (c *Conf) Write(filename string) error {
 
 	log.Debug().Str("filename", filename).Msg("config file written")
 	return nil
+}
+
+// copy creates a deep copy of this configuration.
+func (c *Conf) copy() (*Conf, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	dec := gob.NewDecoder(&buf)
+	err := enc.Encode(c)
+	if err != nil {
+		return nil, err
+	}
+	var copy Conf
+	err = dec.Decode(&copy)
+	if err != nil {
+		return nil, err
+	}
+	return &copy, nil
 }
 
 // GetTestConfig returns the configuration for unit tests.

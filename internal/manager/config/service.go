@@ -71,9 +71,11 @@ func (s *Service) Save() error {
 }
 
 // Expose some functions on Conf here, for easier mocking of functionality via interfaces.
-//
-func (s *Service) ExpandVariables(valueToExpand string, audience VariableAudience, platform VariablePlatform) string {
-	return s.config.ExpandVariables(valueToExpand, audience, platform)
+func (s *Service) ExpandVariables(inputChannel <-chan string, outputChannel chan<- string, audience VariableAudience, platform VariablePlatform) {
+	s.config.ExpandVariables(inputChannel, outputChannel, audience, platform)
+}
+func (s *Service) ConvertTwoWayVariables(inputChannel <-chan string, outputChannel chan<- string, audience VariableAudience, platform VariablePlatform) {
+	s.config.ConvertTwoWayVariables(inputChannel, outputChannel, audience, platform)
 }
 func (s *Service) ResolveVariables(audience VariableAudience, platform VariablePlatform) map[string]ResolvedVariable {
 	return s.config.ResolveVariables(audience, platform)

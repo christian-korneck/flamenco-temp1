@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/job_compilers"
 	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
@@ -21,7 +22,7 @@ func ptr[T any](value T) *T {
 	return &value
 }
 
-func TestSubmitJob(t *testing.T) {
+func TestSubmitJobWithoutSettings(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -29,10 +30,17 @@ func TestSubmitJob(t *testing.T) {
 	worker := testWorker()
 
 	submittedJob := api.SubmittedJob{
-		Name:     "поднео посао",
-		Type:     "test",
-		Priority: 50,
+		Name:              "поднео посао",
+		Type:              "test",
+		Priority:          50,
+		SubmitterPlatform: worker.Platform,
 	}
+
+	mf.expectConvertTwoWayVariables(t,
+		config.VariableAudienceWorkers,
+		config.VariablePlatform(worker.Platform),
+		map[string]string{},
+	)
 
 	// Expect the job compiler to be called.
 	authoredJob := job_compilers.AuthoredJob{
@@ -78,9 +86,96 @@ func TestSubmitJob(t *testing.T) {
 	requestWorkerStore(echoCtx, &worker)
 	err := mf.flamenco.SubmitJob(echoCtx)
 	assert.NoError(t, err)
-
 }
 
+func TestSubmitJobWithSettings(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+	worker := testWorker()
+
+	submittedJob := api.SubmittedJob{
+		Name:              "поднео посао",
+		Type:              "test",
+		Priority:          50,
+		SubmitterPlatform: worker.Platform,
+		Settings: &api.JobSettings{AdditionalProperties: map[string]interface{}{
+			"result": "/render/frames/exploding.kittens",
+		}},
+		Metadata: &api.JobMetadata{AdditionalProperties: map[string]string{
+			"project": "/projects/exploding-kittens",
+		}},
+	}
+
+	mf.expectConvertTwoWayVariables(t,
+		config.VariableAudienceWorkers,
+		config.VariablePlatform(worker.Platform),
+		map[string]string{
+			"jobbies":  "/render/jobs",
+			"frames":   "/render/frames",
+			"projects": "/projects",
+		},
+	)
+
+	// Same job submittedJob, but then with two-way variables injected.
+	variableReplacedSettings := map[string]interface{}{
+		"result": "{frames}/exploding.kittens",
+	}
+	variableReplacedMetadata := map[string]string{
+		"project": "{projects}/exploding-kittens",
+	}
+	variableReplacedJob := submittedJob
+	variableReplacedJob.Settings = &api.JobSettings{AdditionalProperties: variableReplacedSettings}
+	variableReplacedJob.Metadata = &api.JobMetadata{AdditionalProperties: variableReplacedMetadata}
+
+	// Expect the job compiler to be called.
+	authoredJob := job_compilers.AuthoredJob{
+		JobID:    "afc47568-bd9d-4368-8016-e91d945db36d",
+		Name:     variableReplacedJob.Name,
+		JobType:  variableReplacedJob.Type,
+		Priority: variableReplacedJob.Priority,
+		Status:   api.JobStatusUnderConstruction,
+		Created:  mf.clock.Now(),
+		Settings: variableReplacedJob.Settings.AdditionalProperties,
+		Metadata: variableReplacedJob.Metadata.AdditionalProperties,
+	}
+	mf.jobCompiler.EXPECT().Compile(gomock.Any(), variableReplacedJob).Return(&authoredJob, nil)
+
+	// Expect the job to be saved with 'queued' status:
+	queuedJob := authoredJob
+	queuedJob.Status = api.JobStatusQueued
+	mf.persistence.EXPECT().StoreAuthoredJob(gomock.Any(), queuedJob).Return(nil)
+
+	// Expect the job to be fetched from the database again:
+	dbJob := persistence.Job{
+		UUID:     queuedJob.JobID,
+		Name:     queuedJob.Name,
+		JobType:  queuedJob.JobType,
+		Priority: queuedJob.Priority,
+		Status:   queuedJob.Status,
+		Settings: variableReplacedSettings,
+		Metadata: variableReplacedMetadata,
+	}
+	mf.persistence.EXPECT().FetchJob(gomock.Any(), queuedJob.JobID).Return(&dbJob, nil)
+
+	// Expect the new job to be broadcast.
+	jobUpdate := api.SocketIOJobUpdate{
+		Id:       dbJob.UUID,
+		Name:     &dbJob.Name,
+		Priority: dbJob.Priority,
+		Status:   dbJob.Status,
+		Type:     dbJob.JobType,
+		Updated:  dbJob.UpdatedAt,
+	}
+	mf.broadcaster.EXPECT().BroadcastNewJob(jobUpdate)
+
+	// Do the call.
+	echoCtx := mf.prepareMockedJSONRequest(submittedJob)
+	requestWorkerStore(echoCtx, &worker)
+	err := mf.flamenco.SubmitJob(echoCtx)
+	assert.NoError(t, err)
+}
 func TestGetJobTypeHappy(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

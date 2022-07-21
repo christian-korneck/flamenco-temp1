@@ -154,6 +154,122 @@ func TestReplaceJobsVariable(t *testing.T) {
 	}
 }
 
+func TestReplaceTwoWayVariables(t *testing.T) {
+	c := config.DefaultConfig(func(c *config.Conf) {
+		// Mock that the Manager is running Linux.
+		c.MockCurrentGOOSForTests("linux")
+
+		// Register one variable in the same way that the implicit 'jobs' variable is registered.
+		c.Variables["locally-set-path"] = config.Variable{
+			Values: []config.VariableValue{
+				{Value: "/render/frames", Platform: config.VariablePlatformAll, Audience: config.VariableAudienceAll},
+			},
+		}
+		c.Variables["unused"] = config.Variable{
+			Values: []config.VariableValue{
+				{Value: "Ignore it, it'll be faaaain!", Platform: config.VariablePlatformAll, Audience: config.VariableAudienceAll},
+			},
+		}
+		// These two-way variables should be used to translate the path as well.
+		c.Variables["project"] = config.Variable{
+			IsTwoWay: true,
+			Values: []config.VariableValue{
+				{Value: "/projects/sprite-fright", Platform: config.VariablePlatformAll, Audience: config.VariableAudienceAll},
+			},
+		}
+		c.Variables["render"] = config.Variable{
+			IsTwoWay: true,
+			Values: []config.VariableValue{
+				{Value: "/render", Platform: config.VariablePlatformLinux, Audience: config.VariableAudienceWorkers},
+				{Value: "/Volumes/render", Platform: config.VariablePlatformDarwin, Audience: config.VariableAudienceWorkers},
+				{Value: "R:", Platform: config.VariablePlatformWindows, Audience: config.VariableAudienceWorkers},
+			},
+		}
+	})
+
+	// Test job without settings or metadata.
+	{
+		original := varReplSubmittedJob()
+		original.Settings = nil
+		original.Metadata = nil
+		replaced := varReplSubmittedJob()
+		replaced.Settings = nil
+		replaced.Metadata = nil
+		replaceTwoWayVariables(&c, replaced)
+
+		assert.Equal(t, original.Type, replaced.Type, "two-way variable replacement shouldn't happen on the Type property")
+		assert.Equal(t, original.Name, replaced.Name, "two-way variable replacement shouldn't happen on the Name property")
+		assert.Equal(t, original.Priority, replaced.Priority, "two-way variable replacement shouldn't happen on the Priority property")
+		assert.Equal(t, original.SubmitterPlatform, replaced.SubmitterPlatform)
+		assert.Nil(t, replaced.Settings)
+		assert.Nil(t, replaced.Metadata)
+	}
+
+	// Test with settings & metadata.
+	{
+		original := varReplSubmittedJob()
+		replaced := jsonWash(varReplSubmittedJob())
+		replaceTwoWayVariables(&c, replaced)
+
+		expectSettings := map[string]interface{}{
+			"blender_cmd":           "{blender}",
+			"filepath":              "{render}/jobs/sf/scene123.blend",
+			"render_output_root":    "{render}/frames/sf/scene123",
+			"render_output_path":    "{render}/frames/sf/scene123/Substituição variável bidirecional/######",
+			"different_prefix_path": "/backup/render/frames/sf/scene123", // two-way variables should only apply to prefixes.
+			"frames":                "1-10",
+			"chunk_size":            float64(3),  // Changed type due to the JSON-washing.
+			"fps":                   float64(24), // Changed type due to the JSON-washing.
+			"extract_audio":         true,
+			"images_or_video":       "images",
+			"format":                "PNG",
+			"output_file_extension": ".png",
+		}
+		expectMetadata := map[string]string{
+			"user.name": "Sybren Stüvel",
+			"project":   "Sprite Fright",
+			"root":      "{project}",
+			"scene":     "{project}/scenes/123",
+		}
+
+		assert.Equal(t, original.Type, replaced.Type, "two-way variable replacement shouldn't happen on the Type property")
+		assert.Equal(t, original.Name, replaced.Name, "two-way variable replacement shouldn't happen on the Name property")
+		assert.Equal(t, original.Priority, replaced.Priority, "two-way variable replacement shouldn't happen on the Priority property")
+		assert.Equal(t, original.SubmitterPlatform, replaced.SubmitterPlatform)
+		assert.Equal(t, expectSettings, replaced.Settings.AdditionalProperties)
+		assert.Equal(t, expectMetadata, replaced.Metadata.AdditionalProperties)
+	}
+}
+
+func varReplSubmittedJob() api.SubmittedJob {
+	return api.SubmittedJob{
+		Type:              "simple-blender-render",
+		Name:              "Ignore it, it'll be faaaain!",
+		Priority:          50,
+		SubmitterPlatform: "linux",
+		Settings: &api.JobSettings{AdditionalProperties: map[string]interface{}{
+			"blender_cmd":           "{blender}",
+			"filepath":              "/render/jobs/sf/scene123.blend",
+			"render_output_root":    "/render/frames/sf/scene123",
+			"render_output_path":    "/render/frames/sf/scene123/Substituição variável bidirecional/######",
+			"different_prefix_path": "/backup/render/frames/sf/scene123",
+			"frames":                "1-10",
+			"chunk_size":            3,
+			"fps":                   24,
+			"extract_audio":         true,
+			"images_or_video":       "images",
+			"format":                "PNG",
+			"output_file_extension": ".png",
+		}},
+		Metadata: &api.JobMetadata{AdditionalProperties: map[string]string{
+			"user.name": "Sybren Stüvel",
+			"project":   "Sprite Fright",
+			"root":      "/projects/sprite-fright",
+			"scene":     "/projects/sprite-fright/scenes/123",
+		}},
+	}
+}
+
 // jsonWash converts the given value to JSON and back.
 // This makes sure the types are as closed to what the API will handle as
 // possible, making the difference between "array of strings" and "array of

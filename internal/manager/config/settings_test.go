@@ -3,6 +3,7 @@ package config
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"sync"
 	"testing"
 
 	"git.blender.org/flamenco/pkg/crosspath"
@@ -41,9 +42,6 @@ func TestVariableValidation(t *testing.T) {
 	assert.Equal(t, c.Variables["blender"].Values[1].Value, "/valid/path/blender")
 }
 
-// TODO: Test two-way variables. Even though they're not currently in the
-// default configuration, they should work.
-
 func TestStorageImplicitVariablesWithShaman(t *testing.T) {
 	c := DefaultConfig(func(c *Conf) {
 		// Having the Shaman enabled should create an implicit variable "{jobs}" at the Shaman checkout path.
@@ -51,7 +49,7 @@ func TestStorageImplicitVariablesWithShaman(t *testing.T) {
 		c.Shaman.Enabled = true
 
 		c.Variables["jobs"] = Variable{
-			IsTwoWay: true,
+			IsTwoWay: false,
 			Values: []VariableValue{
 				{
 					Audience: VariableAudienceAll,
@@ -79,7 +77,7 @@ func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
 		c.Shaman.Enabled = false
 
 		c.Variables["jobs"] = Variable{
-			IsTwoWay: true,
+			IsTwoWay: false,
 			Values: []VariableValue{
 				{
 					Audience: VariableAudienceAll,
@@ -98,4 +96,91 @@ func TestStorageImplicitVariablesWithoutShaman(t *testing.T) {
 	assert.Equal(t,
 		crosspath.ToSlash(c.SharedStoragePath),
 		c.implicitVariables["jobs"].Values[0].Value)
+}
+
+func TestExpandVariables(t *testing.T) {
+	c := DefaultConfig(func(c *Conf) {
+		c.Variables["demo"] = Variable{
+			Values: []VariableValue{
+				{Value: "demo-value", Audience: VariableAudienceAll, Platform: VariablePlatformDarwin},
+			},
+		}
+		c.Variables["ffmpeg"] = Variable{
+			Values: []VariableValue{
+				{Value: "/path/to/ffmpeg", Audience: VariableAudienceUsers, Platform: VariablePlatformLinux},
+				{Value: "/path/to/ffmpeg/on/darwin", Audience: VariableAudienceUsers, Platform: VariablePlatformDarwin},
+				{Value: "C:/flamenco/ffmpeg", Audience: VariableAudienceUsers, Platform: VariablePlatformWindows},
+			},
+		}
+	})
+
+	feeder := make(chan string, 1)
+	receiver := make(chan string, 1)
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		c.ExpandVariables(feeder, receiver, VariableAudienceUsers, VariablePlatformWindows)
+	}()
+
+	feeder <- "unchanged value"
+	assert.Equal(t, "unchanged value", <-receiver)
+
+	feeder <- "{ffmpeg}"
+	assert.Equal(t, "C:/flamenco/ffmpeg", <-receiver)
+
+	feeder <- "{demo}"
+	assert.Equal(t, "{demo}", <-receiver, "missing value on the platform should not be replaced")
+
+	close(feeder)
+	wg.Wait()
+	close(receiver)
+}
+
+func TestExpandVariablesWithTwoWay(t *testing.T) {
+
+	c := DefaultConfig(func(c *Conf) {
+		// Mock that the Manager is running on Linux right now.
+		c.currentGOOS = VariablePlatformLinux
+
+		// Register one variable in the same way that the implicit 'jobs' variable is registered.
+		c.Variables["locally-set-path"] = Variable{
+			Values: []VariableValue{
+				{Value: "/path/on/linux", Platform: VariablePlatformAll, Audience: VariableAudienceAll},
+			},
+		}
+		// This two-way variable should be used to translate the path as well.
+		c.Variables["platform-specifics"] = Variable{
+			IsTwoWay: true,
+			Values: []VariableValue{
+				{Value: "/path/on/linux", Platform: VariablePlatformLinux, Audience: VariableAudienceWorkers},
+				{Value: "/path/on/darwin", Platform: VariablePlatformDarwin, Audience: VariableAudienceWorkers},
+				{Value: "C:/path/on/windows", Platform: VariablePlatformWindows, Audience: VariableAudienceWorkers},
+			},
+		}
+	})
+
+	feeder := make(chan string, 1)
+	receiver := make(chan string, 1)
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// Always target a different-than-current target platform.
+		c.ExpandVariables(feeder, receiver, VariableAudienceWorkers, VariablePlatformWindows)
+	}()
+
+	// Simple two-way variable replacement.
+	feeder <- "/path/on/linux/file.txt"
+	assert.Equal(t, "C:/path/on/windows/file.txt", <-receiver)
+
+	// {locally-set-path} expands to a value that's then further replaced by a two-way variable.
+	feeder <- "{locally-set-path}/should/be/remapped"
+	assert.Equal(t, "C:/path/on/windows/should/be/remapped", <-receiver)
+
+	close(feeder)
+	wg.Wait()
+	close(receiver)
 }

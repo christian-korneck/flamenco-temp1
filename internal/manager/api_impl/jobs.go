@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog"
@@ -76,6 +77,16 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 
 	ctx := e.Request().Context()
 	submittedJob := api.SubmittedJob(job)
+
+	// Replace the special "manager" platform with the Manager's actual platform.
+	if submittedJob.SubmitterPlatform == "manager" {
+		submittedJob.SubmitterPlatform = runtime.GOOS
+	}
+
+	// Before compiling the job, replace the two-way variables. This ensures all
+	// the tasks also use those.
+	replaceTwoWayVariables(f.config, submittedJob)
+
 	authoredJob, err := f.jobCompiler.Compile(ctx, submittedJob)
 	if err != nil {
 		logger.Warn().Err(err).Msg("error compiling job")

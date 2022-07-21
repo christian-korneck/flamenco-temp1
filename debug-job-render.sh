@@ -25,5 +25,6 @@ curl -v -X 'POST' \
     "render_output_root": "/tmp/flamenco/",
     "video_container_format": "MPEG1"
   },
-  "priority": 50
+  "priority": 50,
+  "submitter_platform": "manager"
 }'

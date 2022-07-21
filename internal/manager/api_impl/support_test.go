@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"git.blender.org/flamenco/internal/manager/api_impl/mocks"
+	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
 )
@@ -74,6 +75,55 @@ func newMockedFlamenco(mockCtrl *gomock.Controller) mockedFlamenco {
 		localStorage:   localStore,
 		sleepScheduler: wss,
 	}
+}
+
+func (mf *mockedFlamenco) expectExpandVariables(
+	t *testing.T,
+	expectAudience config.VariableAudience,
+	expectPlatform config.VariablePlatform,
+	variables map[string]string,
+) *gomock.Call {
+
+	// Set up a fake configuration that matches the given variables.
+	c := config.DefaultConfig(func(c *config.Conf) {
+		for varName, varValue := range variables {
+			c.Variables[varName] = config.Variable{
+				Values: []config.VariableValue{
+					{Value: varValue, Audience: expectAudience, Platform: expectPlatform},
+				},
+			}
+		}
+	})
+
+	// Defer the mocked call to the fake configuration.
+	return mf.config.EXPECT().
+		ExpandVariables(gomock.Any(), gomock.Any(), expectAudience, expectPlatform).
+		DoAndReturn(c.ExpandVariables)
+}
+
+func (mf *mockedFlamenco) expectConvertTwoWayVariables(
+	t *testing.T,
+	expectAudience config.VariableAudience,
+	expectPlatform config.VariablePlatform,
+	variables map[string]string,
+) *gomock.Call {
+
+	// Set up a fake configuration that matches the given variables.
+	c := config.DefaultConfig(func(c *config.Conf) {
+		for varName, varValue := range variables {
+			c.Variables[varName] = config.Variable{
+				IsTwoWay: true,
+				Values: []config.VariableValue{
+					{Value: varValue, Audience: expectAudience, Platform: expectPlatform},
+				},
+			}
+		}
+	})
+
+	// Defer the mocked call to the fake configuration.
+	return mf.config.EXPECT().
+		ConvertTwoWayVariables(gomock.Any(), gomock.Any(), expectAudience, expectPlatform).
+		DoAndReturn(c.ConvertTwoWayVariables)
 }
 
 // prepareMockedJSONRequest returns an `echo.Context` that has a JSON request body attached to it.

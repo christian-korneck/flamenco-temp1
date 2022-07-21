@@ -17,5 +17,6 @@ curl -X 'POST' \
     "sleep_repeats": 1,
     "message": "Blender is {blender}"
   },
-  "type": "echo-sleep-test"
+  "type": "echo-sleep-test",
+  "submitter_platform": "manager"
 }'

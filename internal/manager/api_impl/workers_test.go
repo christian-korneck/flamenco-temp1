@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
+	"git.blender.org/flamenco/internal/manager/config"
 	"git.blender.org/flamenco/internal/manager/last_rendered"
 	"git.blender.org/flamenco/internal/manager/persistence"
 	"git.blender.org/flamenco/pkg/api"
@@ -35,6 +36,11 @@ func TestTaskScheduleHappy(t *testing.T) {
 	task := persistence.Task{
 		UUID: "4107c7aa-e86d-4244-858b-6c4fce2af503",
 		Job:  &job,
+		Commands: []persistence.Command{
+			{Name: "test", Parameters: map[string]interface{}{
+				"param": "prefix-{variable}-suffix",
+			}},
+		},
 	}
 
 	ctx := echo.Request().Context()
@@ -42,6 +48,11 @@ func TestTaskScheduleHappy(t *testing.T) {
 	mf.persistence.EXPECT().ScheduleTask(ctx, &worker).Return(&task, nil)
 	mf.persistence.EXPECT().TaskTouchedByWorker(bgCtx, &task)
 	mf.persistence.EXPECT().WorkerSeen(bgCtx, &worker)
+	mf.expectExpandVariables(t,
+		config.VariableAudienceWorkers,
+		config.VariablePlatform(worker.Platform),
+		map[string]string{"variable": "value"},
+	)
 
 	mf.logStorage.EXPECT().WriteTimestamped(bgCtx, job.UUID, task.UUID,
 		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
@@ -53,9 +64,13 @@ func TestTaskScheduleHappy(t *testing.T) {
 
 	// Check the response
 	assignedTask := api.AssignedTask{
-		Uuid:     task.UUID,
-		Job:      job.UUID,
-		Commands: []api.Command{},
+		Uuid: task.UUID,
+		Job:  job.UUID,
+		Commands: []api.Command{
+			{Name: "test", Parameters: map[string]interface{}{
+				"param": "prefix-value-suffix",
+			}},
+		},
 	}
 	assertResponseJSON(t, echo, http.StatusOK, assignedTask)
 	resp := getRecordedResponse(echo)

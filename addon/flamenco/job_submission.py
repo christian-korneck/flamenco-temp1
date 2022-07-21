@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Optional, Union
+import platform
 
 import bpy
 
@@ -43,6 +44,7 @@ def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
         priority=50,
         settings=settings,
         metadata=metadata,
+        submitter_platform=platform.system().lower(),
     )
     return job
 
