@@ -419,10 +419,11 @@ export default {
 </script>
 <style>
 .progress {
-  --wiz-progress-indicator-size: 8px;
-  --wiz-progress-indicator-border-width: 2px;
-  --wiz-progress-indicator-color: var(--color-text-hint);
-  --wiz-progress-indicator-color-current: var(--color-accent);
+  --setup-progress-indicator-size: 8px;
+  --setup-progress-indicator-border-width: 2px;
+  --setup-progress-indicator-color: var(--color-text-hint);
+  --setup-progress-indicator-color-done: var(--color-accent);
+  --setup-progress-indicator-color-current: var(--color-accent-text);
 
   display: flex;
   justify-content: space-between;
@@ -434,12 +435,12 @@ export default {
 
 /* Progress indicator line between dots. */
 .progress:before {
-  background-color: var(--wiz-progress-indicator-color);
+  background-color: var(--setup-progress-indicator-color);
   content: '';
   display: block;
-  height: var(--wiz-progress-indicator-border-width);
+  height: var(--setup-progress-indicator-border-width);
   position: absolute;
-  top: calc(50% - calc(var(--wiz-progress-indicator-border-width) / 2));
+  top: calc(50% - calc(var(--setup-progress-indicator-border-width) / 2));
   transform: translateY(-50%);
   width: 100%;
 }
@@ -453,10 +454,11 @@ export default {
   --progress-bar-width-at-current-step: calc(var(--width-each-segment) * calc(v-bind('currentSetupStep') - 1));
 
   position: absolute;
-  top: calc(50% - calc(var(--wiz-progress-indicator-border-width) / 2));
+  top: calc(50% - calc(var(--setup-progress-indicator-border-width) / 2));
   transform: translateY(-50%);
   background-color: var(--color-accent);
   height: var(--wiz-progress-indicator-border-width);
+  height: var(--setup-progress-indicator-border-width);
   position: absolute;
   transition: width 500ms ease-out;
   width: var(--progress-bar-width-at-current-step);
@@ -467,14 +469,14 @@ export default {
 .progress li span {
   background-color: var(--color-background-column);
   border-radius: 50%;
-  border: var(--wiz-progress-indicator-border-width) solid var(--color-background-column);
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color);
+  border: var(--setup-progress-indicator-border-width) solid var(--color-background);
+  box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color);
   content: '';
   cursor: pointer;
   display: inline-block;
-  height: var(--wiz-progress-indicator-size);
+  height: var(--setup-progress-indicator-size);
   position: relative;
-  width: var(--wiz-progress-indicator-size);
+  width: var(--setup-progress-indicator-size);
   transition-duration: 500ms;
   transition-property: background-color, border, box-shadow;
   transition-delay: 250ms;
@@ -486,17 +488,13 @@ export default {
 }
 
 .progress li.done span {
-  background-color: var(--wiz-progress-indicator-color-current);
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
+  background-color: var(--setup-progress-indicator-color-done);
+  box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color-done);
 }
 
 .progress li.current span {
   background-color: var(--color-background-column);
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
-}
-
-.progress li.current span {
-  box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
+  box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color-current);
 }
 
 body.is-setup-assistant #app {
