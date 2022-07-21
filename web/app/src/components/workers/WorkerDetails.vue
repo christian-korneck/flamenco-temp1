@@ -33,6 +33,27 @@
         <link-worker-task :workerTask="workerData.task" />
       </dd>
     </dl>
+
+    <h3 class="sub-title">Sleep Schedule</h3>
+    <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn">Save</button>
+    <button v-else @click="isScheduleEditing = true" class="btn">Edit</button>
+    <dl>
+      <dt class="field-is_active">Use Schedule</dt>
+      <dd v-if="isScheduleEditing"><input type="checkbox" v-model="workerSleepSchedule.is_active"></dd>
+      <dd v-else><input @change="toggleWorkerSleepSchedule" type="checkbox" v-model="workerSleepSchedule.is_active"></dd>
+
+      <dt class="field-days_of_week">Days of Week</dt>
+      <dd v-if="isScheduleEditing"><input type="text" placeholder="mo tu we th fr" v-model="workerSleepSchedule.days_of_week"></dd>
+      <dd v-else>{{ workerSleepScheduleFormatted.days_of_week }}</dd>
+
+      <dt class="field-start_time">Start Time</dt>
+      <dd v-if="isScheduleEditing"><input type="text" placeholder="09:00" v-model="workerSleepSchedule.start_time"></dd>
+      <dd v-else>{{ workerSleepScheduleFormatted.start_time }}</dd>
+
+      <dt class="field-end_time">End Time</dt>
+      <dd v-if="isScheduleEditing"><input type="text" placeholder="18:00" v-model="workerSleepSchedule.end_time"></dd>
+      <dd v-else>{{ workerSleepScheduleFormatted.end_time }}</dd>
+    </dl>
   </template>
 
   <div v-else class="details-no-item-selected">
@@ -41,8 +62,10 @@
 </template>
 
 <script lang="js">
+import { useNotifs } from '@/stores/notifications'
+
 import * as datetime from "@/datetime";
-import { WorkerMgtApi } from '@/manager-api';
+import { WorkerMgtApi, WorkerSleepSchedule } from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 import { workerStatus } from "../../statusindicator";
 import LinkWorkerTask from '@/components/LinkWorkerTask.vue';
@@ -59,6 +82,9 @@ export default {
       datetime: datetime, // So that the template can access it.
       api: new WorkerMgtApi(apiClient),
       workerStatusHTML: "",
+      workerSleepSchedule: this.defaultWorkerSleepSchedule(),
+      isScheduleEditing: false,
+      notifs: useNotifs(),
     };
   },
   mounted() {
@@ -66,19 +92,66 @@ export default {
     window.workerDetailsVue = this;
   },
   watch: {
-    workerData(newData) {
-      console.log("new data:", plain(newData));
-      if (newData)
+    workerData(newData, oldData) {
+      if (newData) {
         this.workerStatusHTML = workerStatus(newData);
-      else
+      } else {
         this.workerStatusHTML = "";
+      }
+      // Update workerSleepSchedule only if oldData and newData have different ids, or if there is no oldData
+      // and we provide newData.
+      if (((oldData && newData) && (oldData.id != newData.id)) || !oldData && newData) {
+        this.fetchWorkerSleepSchedule();
+      }
     },
   },
   computed: {
     hasWorkerData() {
       return !!this.workerData && !!this.workerData.id;
     },
+    workerSleepScheduleFormatted() {
+      // Utility to display workerSleepSchedule, taking into account the case when the default values are used.
+      // This way, empty strings are represented more meaningfully.
+      return {
+        'days_of_week': this.workerSleepSchedule.days_of_week === '' ? 'every day' : this.workerSleepSchedule.days_of_week,
+        'start_time': this.workerSleepSchedule.start_time === '' ? '00:00' : this.workerSleepSchedule.start_time,
+        'end_time': this.workerSleepSchedule.end_time === '' ? '24:00' : this.workerSleepSchedule.end_time,
+      }
+    },
   },
+  methods: {
+    fetchWorkerSleepSchedule() {
+      this.api.fetchWorkerSleepSchedule(this.workerData.id)
+        .then((schedule) => {
+          // Replace the default workerSleepSchedule if the Worker has one
+
+          if (schedule) {
+            this.workerSleepSchedule = schedule;
+          } else {
+            this.workerSleepSchedule = this.defaultWorkerSleepSchedule();
+          }
+        })
+        .catch((error) => {
+          const errorMsg = JSON.stringify(error); // TODO: handle API errors better.
+          this.notifs.add(`Error: ${errorMsg}`);
+        });
+    },
+    setWorkerSleepSchedule(notifMessage) {
+      this.api.setWorkerSleepSchedule(this.workerData.id, this.workerSleepSchedule).then(
+        this.notifs.add(notifMessage));
+    },
+    toggleWorkerSleepSchedule() {
+      let verb = this.workerSleepSchedule.is_active ? 'Enabled' : 'Disabled';
+      this.setWorkerSleepSchedule(`${verb} schedule for worker ${this.workerData.name}`);
+    },
+    saveWorkerSleepSchedule() {
+      this.setWorkerSleepSchedule(`Updated schedule for worker ${this.workerData.name}`);
+      this.isScheduleEditing = false;
+    },
+    defaultWorkerSleepSchedule() {
+      return new WorkerSleepSchedule(false, '', '', '')  // Default values in OpenAPI
+    },
+  }
 };
 </script>
 
