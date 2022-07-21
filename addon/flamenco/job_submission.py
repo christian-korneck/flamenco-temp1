@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional, Union
 import bpy
 
 from .job_types_propgroup import JobTypePropertyGroup
+from . import preferences
 
 if TYPE_CHECKING:
     from .manager import ApiClient as _ApiClient
@@ -84,3 +85,22 @@ def submit_job(job: _SubmittedJob, api_client: _ApiClient) -> _Job:
     print("Job submitted: %s (%s)" % (response.name, response.id))
 
     return response
+
+
+def is_file_inside_job_storage(context: bpy.types.Context, blendfile: Path) -> bool:
+    """Check whether current blend file is inside the storage path.
+
+    :return: True when the current blend file is inside the Flamenco job storage
+        directory already. In this case it won't be BAT-packed, as it's assumed
+        the job storage dir is accessible by the workers already.
+    """
+
+    blendfile = blendfile.absolute().resolve()
+
+    prefs = preferences.get(context)
+    job_storage = Path(prefs.job_storage).absolute().resolve()
+    try:
+        blendfile.relative_to(job_storage)
+    except ValueError:
+        return False
+    return True

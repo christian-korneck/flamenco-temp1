@@ -170,7 +170,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             self.report({"ERROR"}, "Unable to create job")
             return {"CANCELLED"}
 
-        return self._bat_pack(context, filepath)
+        return self._submit_files(context, filepath)
 
     def modal(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
         # This function is called for TIMER events to poll the BAT pack thread.
@@ -225,7 +225,9 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         return filepath
 
-    def _bat_pack(self, context: bpy.types.Context, blendfile: Path) -> set[str]:
+    def _submit_files(self, context: bpy.types.Context, blendfile: Path) -> set[str]:
+        """Ensure that the files are somewhere in the shared storage."""
+
         from .bat import interface as bat_interface
 
         if bat_interface.is_packing():
@@ -239,6 +241,8 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             # see _on_bat_pack_msg() below.
             self.blendfile_on_farm = None
             self._bat_pack_shaman(context, blendfile)
+        elif job_submission.is_file_inside_job_storage(context, blendfile):
+            self._use_blendfile_directly(context, blendfile)
         else:
             self.blendfile_on_farm = self._bat_pack_filesystem(context, blendfile)
 
@@ -351,6 +355,16 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             setattr(wm, msg.attribute_name, msg.value)
 
         return {"RUNNING_MODAL"}
+
+    def _use_blendfile_directly(self, context: bpy.types.Context, blendfile: Path) -> None:
+        # The temporary '.flamenco.blend' file should not be deleted, as it
+        # will be used directly by the render job.
+        self.temp_blendfile = None
+
+        # The blend file is contained in the job storage path, no need to
+        # copy anything.
+        self.blendfile_on_farm = PurePosixPath(blendfile.absolute().resolve().as_posix())
+        self._submit_job(context)
 
     def _submit_job(self, context: bpy.types.Context) -> None:
         """Use the Flamenco API to submit the new Job."""
