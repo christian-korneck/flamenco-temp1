@@ -76,7 +76,6 @@
           }">
           {{ sharedStorageCheckResult.cause }}
         </p>
-        <p v-else></p>
       </step-item>
 
       <step-item
