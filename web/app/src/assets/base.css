@@ -354,6 +354,10 @@ button, .btn {
   user-select: none;
 }
 
+.btn-lg {
+  font-size: var(--font-size-base);
+}
+
 .btn-bar.btn-bar-wide {
   justify-content: space-between;
   width: 100%;

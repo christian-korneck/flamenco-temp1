@@ -508,6 +508,10 @@ body.is-first-time-wizard #app {
   }
 }
 
+.btn-bar-wide {
+  margin-top: var(--spacer);
+}
+
 .btn-bar-wide .btn:last-child {
   margin-left: auto;
 }

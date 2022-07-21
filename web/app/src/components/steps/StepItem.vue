@@ -21,16 +21,16 @@ const props = defineProps({
     <h2>{{ title }}</h2>
     <slot></slot>
     <div class="btn-bar btn-bar-wide">
-      <button 
+      <button
         v-show="isBackVisible"
         @click="$emit('backClicked')"
-        class="btn"
+        class="btn btn-lg"
       >Back
       </button>
       <button
         @click="$emit('nextClicked')"
         :disabled="!isNextClickable"
-        class="btn btn-primary"
+        class="btn btn-lg btn-primary"
       >
       {{ nextLabel }}
       </button>
