@@ -65,7 +65,9 @@
           @keyup.enter="nextStepAfterCheckSharedStoragePath"
           type="text"
           placeholder="Shared Storage Path"
-          class="path-input"
+          :class="{
+            'is-invalid': (sharedStorageCheckResult != null) && !sharedStorageCheckResult.is_usable
+          }"
         >
         <p v-if="sharedStorageCheckResult != null"
           :class="{
@@ -132,7 +134,6 @@
 
                 type="text"
                 placeholder="Blender Path"
-                class="path-input"
               >
             </span>
             <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
@@ -147,7 +148,6 @@
             v-model="customBlenderExe"
             type="text"
             placeholder="Blender Path"
-            class="path-input"
           >
 
           <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>

@@ -46,6 +46,9 @@
   --transition-speed: 240ms;
   --transition-speed-fast: 60ms;
 
+  --color-danger: hsl(352 100% 56%);
+  --color-success: hsl(102 70% 56%);
+
   --color-status-active: hsl(166 100% 46%);
   --color-status-completed: hsl(166 100% 46%);
 
@@ -329,6 +332,10 @@ input[type="text"] {
 
 input[type="text"]:focus {
   border-color: var(--color-accent);
+}
+
+input[type="text"].is-invalid {
+  border-color: var(--color-danger);
 }
 
 select {
