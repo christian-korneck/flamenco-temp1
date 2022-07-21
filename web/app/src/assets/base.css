@@ -81,6 +81,7 @@
 
 html,
 body {
+  accent-color: var(--color-accent);
   background-color: var(--color-background);
   color: var(--color-text);
   color-scheme: dark;
