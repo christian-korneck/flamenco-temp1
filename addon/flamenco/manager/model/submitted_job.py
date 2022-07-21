@@ -92,6 +92,7 @@ class SubmittedJob(ModelNormal):
             'name': (str,),  # noqa: E501
             'type': (str,),  # noqa: E501
             'priority': (int,),  # noqa: E501
+            'submitter_platform': (str,),  # noqa: E501
             'settings': (JobSettings,),  # noqa: E501
             'metadata': (JobMetadata,),  # noqa: E501
         }
@@ -105,6 +106,7 @@ class SubmittedJob(ModelNormal):
         'name': 'name',  # noqa: E501
         'type': 'type',  # noqa: E501
         'priority': 'priority',  # noqa: E501
+        'submitter_platform': 'submitter_platform',  # noqa: E501
         'settings': 'settings',  # noqa: E501
         'metadata': 'metadata',  # noqa: E501
     }
@@ -116,12 +118,13 @@ class SubmittedJob(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, name, type, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, name, type, submitter_platform, *args, **kwargs):  # noqa: E501
         """SubmittedJob - a model defined in OpenAPI
 
         Args:
             name (str):
             type (str):
+            submitter_platform (str): Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like \"linux\", \"windows\", \"darwin\", \"openbsd\", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms. As a special case, the platform \"manager\" can be given, which will be interpreted as \"the Manager's platform\". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms. 
 
         Keyword Args:
             priority (int): defaults to 50  # noqa: E501
@@ -188,6 +191,7 @@ class SubmittedJob(ModelNormal):
         self.name = name
         self.type = type
         self.priority = priority
+        self.submitter_platform = submitter_platform
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -208,12 +212,13 @@ class SubmittedJob(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, name, type, *args, **kwargs):  # noqa: E501
+    def __init__(self, name, type, submitter_platform, *args, **kwargs):  # noqa: E501
         """SubmittedJob - a model defined in OpenAPI
 
         Args:
             name (str):
             type (str):
+            submitter_platform (str): Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like \"linux\", \"windows\", \"darwin\", \"openbsd\", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms. As a special case, the platform \"manager\" can be given, which will be interpreted as \"the Manager's platform\". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms. 
 
         Keyword Args:
             priority (int): defaults to 50  # noqa: E501
@@ -278,6 +283,7 @@ class SubmittedJob(ModelNormal):
         self.name = name
         self.type = type
         self.priority = priority
+        self.submitter_platform = submitter_platform
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

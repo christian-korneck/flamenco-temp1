@@ -1015,6 +1015,7 @@ with flamenco.manager.ApiClient() as api_client:
         metadata=JobMetadata(
             key="key_example",
         ),
+        submitter_platform="submitter_platform_example",
     ) # SubmittedJob | Job to submit
 
     # example passing only required values which don't have defaults set

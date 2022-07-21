@@ -575,7 +575,11 @@ type SubmittedJob struct {
 	Name     string       `json:"name"`
 	Priority int          `json:"priority"`
 	Settings *JobSettings `json:"settings,omitempty"`
-	Type     string       `json:"type"`
+
+	// Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like "linux", "windows", "darwin", "openbsd", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms.
+	// As a special case, the platform "manager" can be given, which will be interpreted as "the Manager's platform". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms.
+	SubmitterPlatform string `json:"submitter_platform"`
+	Type              string `json:"type"`
 }
 
 // The task as it exists in the Manager database, i.e. before variable replacement.

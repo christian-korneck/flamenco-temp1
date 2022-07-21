@@ -26,10 +26,11 @@ class SubmittedJob {
      * @param name {String} 
      * @param type {String} 
      * @param priority {Number} 
+     * @param submitterPlatform {String} Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like \"linux\", \"windows\", \"darwin\", \"openbsd\", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms. As a special case, the platform \"manager\" can be given, which will be interpreted as \"the Manager's platform\". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms. 
      */
-    constructor(name, type, priority) { 
+    constructor(name, type, priority, submitterPlatform) { 
         
-        SubmittedJob.initialize(this, name, type, priority);
+        SubmittedJob.initialize(this, name, type, priority, submitterPlatform);
     }
 
     /**
@@ -37,10 +38,11 @@ class SubmittedJob {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, name, type, priority) { 
+    static initialize(obj, name, type, priority, submitterPlatform) { 
         obj['name'] = name;
         obj['type'] = type;
         obj['priority'] = priority || 50;
+        obj['submitter_platform'] = submitterPlatform;
     }
 
     /**
@@ -68,6 +70,9 @@ class SubmittedJob {
             }
             if (data.hasOwnProperty('metadata')) {
                 obj['metadata'] = ApiClient.convertToType(data['metadata'], {'String': 'String'});
+            }
+            if (data.hasOwnProperty('submitter_platform')) {
+                obj['submitter_platform'] = ApiClient.convertToType(data['submitter_platform'], 'String');
             }
         }
         return obj;
@@ -102,6 +107,12 @@ SubmittedJob.prototype['settings'] = undefined;
  * @member {Object.<String, String>} metadata
  */
 SubmittedJob.prototype['metadata'] = undefined;
+
+/**
+ * Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like \"linux\", \"windows\", \"darwin\", \"openbsd\", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms. As a special case, the platform \"manager\" can be given, which will be interpreted as \"the Manager's platform\". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms. 
+ * @member {String} submitter_platform
+ */
+SubmittedJob.prototype['submitter_platform'] = undefined;
 
 
 

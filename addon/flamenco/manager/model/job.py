@@ -98,6 +98,7 @@ class Job(ModelComposed):
             'name': (str,),  # noqa: E501
             'type': (str,),  # noqa: E501
             'priority': (int,),  # noqa: E501
+            'submitter_platform': (str,),  # noqa: E501
             'id': (str,),  # noqa: E501
             'created': (datetime,),  # noqa: E501
             'updated': (datetime,),  # noqa: E501
@@ -116,6 +117,7 @@ class Job(ModelComposed):
         'name': 'name',  # noqa: E501
         'type': 'type',  # noqa: E501
         'priority': 'priority',  # noqa: E501
+        'submitter_platform': 'submitter_platform',  # noqa: E501
         'id': 'id',  # noqa: E501
         'created': 'created',  # noqa: E501
         'updated': 'updated',  # noqa: E501
@@ -137,6 +139,7 @@ class Job(ModelComposed):
             name (str):
             type (str):
             priority (int): defaults to 50  # noqa: E501
+            submitter_platform (str): Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like \"linux\", \"windows\", \"darwin\", \"openbsd\", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms. As a special case, the platform \"manager\" can be given, which will be interpreted as \"the Manager's platform\". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms. 
             id (str): UUID of the Job
             created (datetime): Creation timestamp
             updated (datetime): Timestamp of last update.
@@ -247,6 +250,7 @@ class Job(ModelComposed):
             name (str):
             type (str):
             priority (int): defaults to 50  # noqa: E501
+            submitter_platform (str): Operating system of the submitter. This is used to recognise two-way variables. This should be a lower-case version of the platform, like \"linux\", \"windows\", \"darwin\", \"openbsd\", etc. Should be ompatible with Go's `runtime.GOOS`; run `go tool dist list` to get a list of possible platforms. As a special case, the platform \"manager\" can be given, which will be interpreted as \"the Manager's platform\". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms. 
             id (str): UUID of the Job
             created (datetime): Creation timestamp
             updated (datetime): Timestamp of last update.
