@@ -8,8 +8,8 @@ bl_info = {
     "version": (3, 0),
     "blender": (3, 1, 0),
     "description": "Flamenco client for Blender.",
-    "location": "...",
-    "wiki_url": "...",
+    "location": "Output Properties > Flamenco",
+    "doc_url": "https://www.flamenco.io/",
     "category": "System",
     "support": "COMMUNITY",
 }
