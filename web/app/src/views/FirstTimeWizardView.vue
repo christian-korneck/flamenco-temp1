@@ -1,21 +1,21 @@
 <template>
   <div class="setup-container">
     <h1>Flamenco Setup Assistant</h1>
+    <ul class="progress">
+      <li
+        v-for="step in totalSetupSteps" :key="step"
+        @click="jumpToStep(step)"
+        :class="{
+          current: step == currentSetupStep,
+          done: step < currentSetupStep,
+          disabled: step > overallSetupStep,
+        }"
+        >
+        <span></span>
+      </li>
+      <div class="progress-bar"></div>
+    </ul>
     <div class="setup-step">
-      <ul class="progress">
-        <li
-          v-for="step in totalSetupSteps" :key="step"
-          @click="jumpToStep(step)"
-          :class="{
-            current: step == currentSetupStep,
-            done: step < currentSetupStep,
-            disabled: step > overallSetupStep,
-          }"
-          >
-          <span></span>
-        </li>
-        <div class="progress-bar"></div>
-      </ul>
 
       <step-item
         v-show="currentSetupStep == 1"
