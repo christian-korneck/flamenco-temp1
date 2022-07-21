@@ -17,6 +17,11 @@ import (
 // Time period for checking the schedule of every worker.
 const checkInterval = 1 * time.Minute
 
+// skipWorkersInStatus has those worker statuses that should never be changed by the sleep scheduler.
+var skipWorkersInStatus = map[api.WorkerStatus]bool{
+	api.WorkerStatusError: true,
+}
+
 // SleepScheduler manages wake/sleep cycles of Workers.
 type SleepScheduler struct {
 	clock       clock.Clock
@@ -109,6 +114,10 @@ func (ss *SleepScheduler) ApplySleepSchedule(ctx context.Context, schedule *pers
 			return err
 		}
 		worker = schedule.Worker
+	}
+
+	if !ss.mayUpdateWorker(worker) {
+		return nil
 	}
 
 	scheduled := ss.scheduledWorkerStatus(schedule)
@@ -207,4 +216,10 @@ func (ss *SleepScheduler) checkSchedule(ctx context.Context, schedule *persisten
 			Msg("sleep scheduler: error applying worker's sleep schedule")
 		return
 	}
+}
+
+// mayUpdateWorker determines whether the sleep scheduler is allowed to update this Worker.
+func (ss *SleepScheduler) mayUpdateWorker(worker *persistence.Worker) bool {
+	shouldSkip := skipWorkersInStatus[worker.Status]
+	return !shouldSkip
 }

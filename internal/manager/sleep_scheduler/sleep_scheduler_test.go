@@ -171,7 +171,7 @@ func TestApplySleepSchedule(t *testing.T) {
 	testForExpectedStatus(api.WorkerStatusAsleep)
 }
 
-func TestApplySleepScheduleAlreadyCorrectStatus(t *testing.T) {
+func TestApplySleepScheduleNoStatusChange(t *testing.T) {
 	ss, mocks, ctx := testFixtures(t)
 
 	worker := persistence.Worker{
@@ -217,6 +217,12 @@ func TestApplySleepScheduleAlreadyCorrectStatus(t *testing.T) {
 	// Current status is not the right one, but the requested status is already good.
 	worker.Status = api.WorkerStatusAwake
 	worker.StatusRequested = api.WorkerStatusAsleep
+	worker.LazyStatusRequest = false
+	runTest()
+
+	// Current status is not the right one, but error state should not be overwrittne.
+	worker.Status = api.WorkerStatusError
+	worker.StatusRequested = ""
 	worker.LazyStatusRequest = false
 	runTest()
 }
