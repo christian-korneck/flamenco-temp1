@@ -16,7 +16,7 @@ type VariableReplacer interface {
 // replaceTaskVariables performs variable replacement for worker tasks.
 func replaceTaskVariables(replacer VariableReplacer, task api.AssignedTask, worker persistence.Worker) api.AssignedTask {
 	repl := func(value string) string {
-		return replacer.ExpandVariables(value, "workers", config.VariablePlatform(worker.Platform))
+		return replacer.ExpandVariables(value, config.VariableAudienceWorkers, config.VariablePlatform(worker.Platform))
 	}
 
 	for cmdIndex, cmd := range task.Commands {
