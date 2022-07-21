@@ -88,9 +88,12 @@
 
         <div v-if="isBlenderExeFinding" class="is-in-progress">Looking for Blender installs...</div>
 
-        <p v-if="autoFoundBlenders.length === 0">Provide a path to Blender. This path should be accessible by all Workers. If your rendering
-          setup features operating systems different form the one you are currently using, you can
-          manually set up the other paths later.</p>
+        <p v-if="autoFoundBlenders.length === 0">
+          Provide a path to Blender. This path should be accessible by all Workers.
+          <br/><br/>
+          If your rendering setup features operating systems different form the one you are currently using,
+          you can manually set up the other paths later.
+        </p>
 
         <p v-else>Choose how a Worker should invoke the Blender command when performing a task.</p>
 
@@ -118,27 +121,28 @@
             </span>
           </label>
           <label for="blender-input_path">
-            <input
-              type="radio"
-              v-model="selectedBlender"
-              name="blender"
-              :value="blenderFromInputPath"
-              id="blender-input_path"
-              >
-            {{ sourceLabels['input_path'] }} <br>
-            <span>
+            <div>
+              <input
+                type="radio"
+                v-model="selectedBlender"
+                name="blender"
+                :value="blenderFromInputPath"
+                id="blender-input_path"
+                >
+              {{ sourceLabels['input_path'] }}
+            </div>
+            <div>
               <input
                 @input="checkBlenderExePath"
                 v-model="customBlenderExe"
                 :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
-
                 type="text"
                 placeholder="Blender Path"
               >
-            </span>
-            <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
-            <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
-              {{ blenderExeCheckResult.cause }}</p>
+              <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
+              <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
+                {{ blenderExeCheckResult.cause }}</p>
+            </div>
           </label>
         </fieldset>
 
@@ -622,4 +626,12 @@ h2 {
     background-position: 200px;
   }
 }
+
+fieldset input[type="text"] {
+  margin-left: var(--spacer-xl);
+  margin-top: var(--spacer-sm);
+  width: -moz-available;
+  width: -webkit-fill-available;
+}
+
 </style>
