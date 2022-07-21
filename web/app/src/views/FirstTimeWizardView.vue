@@ -570,14 +570,6 @@ body.is-setup-assistant #app {
   color: var(--color-check-failed);
 }
 
-.setup-container .check-ok::before {
-  content: "✔ ";
-}
-
-.setup-container .check-failed::before {
-  content: "❌ ";
-}
-
 .setup-container .blender-selector {
   padding: 0.5em;
   outline: thin solid var(--color-border);
