@@ -3,6 +3,7 @@ package api_impl
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import (
+	"encoding/json"
 	"runtime"
 	"testing"
 
@@ -62,6 +63,21 @@ func TestReplaceVariables(t *testing.T) {
 
 	// No substitution should happen on keys, just on values.
 	assert.Equal(t, 3, replacedTask.Commands[1].Parameters["{blender}"])
+}
+
+func TestReplaceVariablesInterfaceArrays(t *testing.T) {
+	worker := persistence.Worker{Platform: "linux"}
+	conf := config.GetTestConfig()
+
+	task := jsonWash(varreplTestTask())
+	replacedTask := replaceTaskVariables(&conf, task, worker)
+
+	// Due to the conversion via JSON, arrays of strings are now arrays of
+	// interface{} and still need to be handled properly.
+	assert.Equal(t,
+		[]interface{}{"--render-out", "/shared/flamenco/render/long/sybren/blender-cloud-addon/flamenco-test__intermediate/render-smpl-0001-0084-frm-######"},
+		replacedTask.Commands[2].Parameters["args"],
+	)
 }
 
 func TestReplacePathsWindows(t *testing.T) {
@@ -136,4 +152,22 @@ func TestReplaceJobsVariable(t *testing.T) {
 		expectPath := crosspath.Join(storagePath, "jobs", "path/in/storage.blend")
 		assert.Equal(t, expectPath, replacedTask.Commands[2].Parameters["filepath"])
 	}
+}
+
+// jsonWash converts the given value to JSON and back.
+// This makes sure the types are as closed to what the API will handle as
+// possible, making the difference between "array of strings" and "array of
+// interface{}s that happen to be strings".
+func jsonWash[T any](value T) T {
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		panic(err)
+	}
+	var jsonWashedValue T
+	err = json.Unmarshal(bytes, &jsonWashedValue)
+	if err != nil {
+		panic(err)
+	}
+
+	return jsonWashedValue
 }
