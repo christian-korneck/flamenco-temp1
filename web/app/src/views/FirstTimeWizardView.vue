@@ -506,13 +506,6 @@ label {
   box-shadow: 0 0 0 var(--wiz-progress-indicator-border-width) var(--wiz-progress-indicator-color-current);
 }
 
-.setup-step {
-  background-color: var(--color-background-column);
-  border-radius: var(--border-radius);
-  padding: var(--spacer) var(--spacer-lg);
-}
-
-
 body.is-first-time-wizard #app {
   grid-template-areas:
     "header"
@@ -547,6 +540,12 @@ body.is-first-time-wizard #app {
   max-width: 640px;
   margin: 10vh auto auto;
   width: 100%;
+}
+
+.setup-step {
+  background-color: var(--color-background-column);
+  border-radius: var(--border-radius);
+  padding: var(--spacer) var(--spacer-lg);
 }
 
 .setup-container h1 {
