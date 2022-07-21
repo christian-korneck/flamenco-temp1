@@ -130,6 +130,7 @@
               <input
                 @input="checkBlenderExePath"
                 v-model="customBlenderExe"
+                :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
 
                 type="text"
                 placeholder="Blender Path"
@@ -145,6 +146,7 @@
           <input
             @input="checkBlenderExePath"
             v-model="customBlenderExe"
+            :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
             type="text"
             placeholder="Blender Path"
           >
