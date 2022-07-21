@@ -412,7 +412,7 @@ func (c *Conf) ExpandVariables(valueToExpand string, audience VariableAudience, 
 	return valueToExpand
 }
 
-// GetVariables returns the variable values for this (audience, platform) combination.
+// getVariables returns the variable values for this (audience, platform) combination.
 // If no variables are found, just returns an empty map. If a value is defined
 // for both the "all" platform and specifically the given platform, the specific
 // platform definition wins.
