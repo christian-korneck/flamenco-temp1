@@ -463,7 +463,6 @@ export default {
     },
   },
   created() {
-    this.checkSharedStoragePath = debounce(this.checkSharedStoragePath, 200)
     this.checkBlenderExePath = debounce(this.checkBlenderExePath, 200)
   }
 }
