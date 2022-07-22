@@ -28,7 +28,7 @@ import (
 )
 
 type CreateVideoParams struct {
-	exe        string   // Expansion of `{ffmpeg}`: executable path + its CLI parameters defined by the Manager.
+	exe        string   // Executable path + its CLI parameters defined by the Manager.
 	fps        float64  // Frames per second of the video file.
 	inputGlob  string   // Glob of input files.
 	outputFile string   // File to save the video to.

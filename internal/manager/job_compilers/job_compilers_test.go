@@ -114,7 +114,7 @@ func TestSimpleBlenderRenderHappy(t *testing.T) {
 	assert.Equal(t, 1, len(tVideo.Commands))
 	assert.Equal(t, "frames-to-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"exe":        "{ffmpeg}",
+		"exe":        "ffmpeg",
 		"inputGlob":  "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
 		"outputFile": "/render/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
 		"fps":        int64(24),
@@ -198,7 +198,7 @@ func TestSimpleBlenderRenderWindowsPaths(t *testing.T) {
 	assert.Equal(t, 1, len(tVideo.Commands))
 	assert.Equal(t, "frames-to-video", tVideo.Commands[0].Name)
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"exe":        "{ffmpeg}",
+		"exe":        "ffmpeg",
 		"inputGlob":  "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/*.png",
 		"outputFile": "R:/sprites/farm_output/promo/square_ellie/square_ellie.lighting_light_breakdown2__intermediate-2006-01-02_090405/scene123-1-10.mp4",
 		"fps":        int64(24),
@@ -247,7 +247,7 @@ func TestSimpleBlenderRenderOutputPathFieldReplacement(t *testing.T) {
 
 	tVideo := aj.Tasks[4] // This should be a video encoding task
 	assert.EqualValues(t, AuthoredCommandParameters{
-		"exe":        "{ffmpeg}",
+		"exe":        "ffmpeg",
 		"inputGlob":  "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/*.png",
 		"outputFile": "/root/2006-01-02_090405/jobname__intermediate-2006-01-02_090405/scene123-1-10.mp4",
 		"fps":        int64(24),

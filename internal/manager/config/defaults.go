@@ -67,13 +67,6 @@ var defaultConfig = Conf{
 				VariableValue{Platform: "darwin", Value: "blender " + DefaultBlenderArguments},
 			},
 		},
-		"ffmpeg": {
-			Values: VariableValues{
-				VariableValue{Platform: "linux", Value: "ffmpeg"},
-				VariableValue{Platform: "windows", Value: "ffmpeg.exe"},
-				VariableValue{Platform: "darwin", Value: "ffmpeg"},
-			},
-		},
 		// TODO: determine useful defaults for these.
 		// "job_storage": {
 		// 	IsTwoWay: true,
