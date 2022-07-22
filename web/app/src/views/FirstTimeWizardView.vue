@@ -61,24 +61,29 @@
         :is-next-clickable="sharedStoragePath.length > 0"
         title="Shared Storage"
       >
-        <p>Please specify a storage path (or drive), where you want to store your Flamenco data.
+        <p>Specify a path (or drive) where you want to store your Flamenco data.</p>
+        <p>
           The location of the shared storage should be accessible by Flamenco Manager and by the Workers.
           This could be:
         </p>
+
         <ul>
+          <li>A local drive or folder (e.g. if you are working by yourself)</li>
           <li>A NAS in your network</li>
-          <li>A local drive or folder, if you are working alone</li>
-          <li>Some other file sharing server</li>
+          <li>Other file sharing server</li>
         </ul>
 
-        <p>Using a service like Syncthing, ownCloud, or Dropbox for
-          this is not recommended, as Flamenco can't coordinate data synchronization.</p>
+        <p>
+          Using services like Dropbox, Syncthing, or ownCloud for
+          this is not recommended, as Flamenco can't coordinate data synchronization.
+          <a href="https://flamenco.blender.org/usage/getting-started/">Learn more</a>.
+        </p>
 
         <input
           v-model="sharedStoragePath"
           @keyup.enter="nextStepAfterCheckSharedStoragePath"
           type="text"
-          placeholder="Shared Storage Path"
+          placeholder="Path to shared storage"
           :class="{
             'is-invalid': (sharedStorageCheckResult != null) && !sharedStorageCheckResult.is_usable
           }"
