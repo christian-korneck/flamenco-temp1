@@ -348,17 +348,18 @@ fieldset {
   border-radius: var(--border-radius);
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="time"] {
   appearance: none;
   background-color: var(--color-background);
   border-radius: var(--border-radius);
   border: var(--border-width) solid var(--border-color);
   box-sizing: border-box;
   display: block;
-  padding: var(--spacer-sm);
-  width: 100%;
   outline: none;
-  transition: border-color var(--transition-speed) ease-in-out
+  padding: var(--spacer-sm);
+  transition: border-color var(--transition-speed) ease-in-out;
+  width: 100%;
 }
 
 input[type="text"]:focus {
@@ -367,6 +368,17 @@ input[type="text"]:focus {
 
 input[type="text"].is-invalid {
   border-color: var(--color-danger);
+}
+
+input[type="time"] {
+  height: 37px;
+}
+
+.input-help-text {
+  display: inline-block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: var(--spacer-xs);
 }
 
 select {
@@ -379,7 +391,7 @@ select {
   padding: var(--spacer-xs) var(--spacer-sm);
 }
 
-button, .btn {
+button, input[type='button'], .btn {
   align-items: center;
   background-color: var(--color-button-background);
   border-radius: var(--border-radius);
@@ -411,6 +423,7 @@ button, .btn {
 }
 
 button[disabled],
+input[type='button'][disabled],
 .btn[disabled] {
   background-color: transparent;
   border-color: var(--color-button-background);
@@ -420,6 +433,7 @@ button[disabled],
 }
 
 button:hover:not([disabled]),
+input[type='button']:hover:not([disabled]),
 .btn:hover:not([disabled]) {
   transition: all 100ms;
   color: white;
@@ -441,6 +455,17 @@ button:focus,
   background-color: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-accent-text);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border-color: var(--color-text-muted);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-text);
+  color: var(--color-text);
 }
 
 .btn-bar .btn.dangerous {

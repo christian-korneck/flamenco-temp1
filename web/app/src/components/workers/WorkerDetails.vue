@@ -34,26 +34,71 @@
       </dd>
     </dl>
 
-    <h3 class="sub-title">Sleep Schedule</h3>
-    <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn">Save</button>
-    <button v-else @click="isScheduleEditing = true" class="btn">Edit</button>
-    <dl>
-      <dt class="field-is_active">Use Schedule</dt>
-      <dd v-if="isScheduleEditing"><input type="checkbox" v-model="workerSleepSchedule.is_active"></dd>
-      <dd v-else><input @change="toggleWorkerSleepSchedule" type="checkbox" v-model="workerSleepSchedule.is_active"></dd>
+    <section class="sleep-schedule" :class="{'is-schedule-active': workerSleepSchedule.is_active}">
+      <h3 class="sub-title">Sleep Schedule</h3>
+      <div class="btn-bar-group">
+        <div class="btn-bar">
+          <label for="toggle-sleep-schedule" v-if="!isScheduleEditing">
+            <input
+              v-model="workerSleepSchedule.is_active"
+              @change="toggleWorkerSleepSchedule"
+              class="toggle-sleep-schedule"
+              id="toggle-sleep-schedule"
+              type="checkbox">
+            <span class="btn btn-primary" v-if="workerSleepSchedule.is_active">
+              Turn Schedule Off
+            </span>
+            <span class="btn" v-else>
+              Turn Schedule On
+            </span>
+          </label>
 
-      <dt class="field-days_of_week">Days of Week</dt>
-      <dd v-if="isScheduleEditing"><input type="text" placeholder="mo tu we th fr" v-model="workerSleepSchedule.days_of_week"></dd>
-      <dd v-else>{{ workerSleepScheduleFormatted.days_of_week }}</dd>
+          <button v-if="isScheduleEditing" @click="cancelEditWorkerSleepSchedule" class="btn">Cancel</button>
+          <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn btn-primary">Save Schedule</button>
+          <button v-else @click="isScheduleEditing = true" class="btn btn-secondary">Edit</button>
+        </div>
+      </div>
 
-      <dt class="field-start_time">Start Time</dt>
-      <dd v-if="isScheduleEditing"><input type="text" placeholder="09:00" v-model="workerSleepSchedule.start_time"></dd>
-      <dd v-else>{{ workerSleepScheduleFormatted.start_time }}</dd>
+      <p v-if="isScheduleEditing">Adjust at which time of the day (and on which days) this worker should go to sleep.</p>
+      <div class="sleep-schedule-edit" v-if="isScheduleEditing">
+        <div>
+          <label>Days of the week</label>
+          <input type="text" placeholder="mo tu we th fr" v-model="workerSleepSchedule.days_of_week">
+          <span class="input-help-text">
+            Write the days name using their first two letters, separated by spaces.
+            (e.g. mo tu we th fr)
+          </span>
+        </div>
+        <div>
+          <label>Start Time</label>
+          <input type="time" placeholder="09:00" v-model="workerSleepSchedule.start_time">
+        </div>
+        <div>
+          <label>End Time</label>
+          <input type="time" placeholder="18:00" v-model="workerSleepSchedule.end_time">
+        </div>
+      </div>
 
-      <dt class="field-end_time">End Time</dt>
-      <dd v-if="isScheduleEditing"><input type="text" placeholder="18:00" v-model="workerSleepSchedule.end_time"></dd>
-      <dd v-else>{{ workerSleepScheduleFormatted.end_time }}</dd>
-    </dl>
+      <dl v-if="!isScheduleEditing">
+        <dt>Status</dt>
+        <dd>
+          <span v-if="workerSleepSchedule.is_active">enabled</span>
+          <span v-else>disabled</span>
+        </dd>
+        <dt>Days of Week</dt>
+        <dd>
+          {{ workerSleepScheduleFormatted.days_of_week }}
+        </dd>
+        <dt>Start Time</dt>
+        <dd>
+          {{ workerSleepScheduleFormatted.start_time }}
+        </dd>
+        <dt>End Time</dt>
+        <dd>
+          {{ workerSleepScheduleFormatted.end_time }}
+        </dd>
+      </dl>
+    </section>
   </template>
 
   <div v-else class="details-no-item-selected">
@@ -148,6 +193,10 @@ export default {
       this.setWorkerSleepSchedule(`Updated schedule for worker ${this.workerData.name}`);
       this.isScheduleEditing = false;
     },
+    cancelEditWorkerSleepSchedule() {
+      this.fetchWorkerSleepSchedule();
+      this.isScheduleEditing = false;
+    },
     defaultWorkerSleepSchedule() {
       return new WorkerSleepSchedule(false, '', '', '')  // Default values in OpenAPI
     },
@@ -156,6 +205,46 @@ export default {
 </script>
 
 <style scoped>
+
+.sleep-schedule .btn-bar label+.btn {
+  margin-left: var(--spacer-sm);
+}
+.sleep-schedule dl {
+  color: var(--color-text-muted);
+}
+.sleep-schedule.is-schedule-active dl {
+  color: unset;
+}
+
+.sleep-schedule-edit {
+  display: flex;
+  margin: var(--spacer-lg) 0;
+}
+
+.sleep-schedule-edit > div {
+  margin-right: var(--spacer-sm);
+}
+
+.sleep-schedule-edit > div:first-child {
+  flex: 1;
+}
+
+.sleep-schedule-edit label {
+  margin-bottom: var(--spacer-xs);
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  color: var(--color-text-muted);
+}
+
+.toggle-sleep-schedule {
+  visibility: hidden;
+  display: none;
+}
+
+input[type="text"] {
+  font-family: var(--font-family-mono);
+}
+
 /* Prevent fields with long IDs from overflowing. */
 .field-id+dd {
   overflow: hidden;
