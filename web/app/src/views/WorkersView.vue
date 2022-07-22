@@ -50,6 +50,8 @@ export default {
   mounted() {
     window.workersView = this;
     this._fetchWorker(this.workerID);
+
+    document.body.classList.add('is-two-columns');
   },
   watch: {
     workerID(newWorkerID, oldWorkerID) {
