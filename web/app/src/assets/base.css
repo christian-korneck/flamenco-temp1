@@ -324,7 +324,7 @@ fieldset {
   background-color: var(--color-background-column-highlight);
   border: none;
   margin-bottom: var(--spacer);
-  padding: var(--spacer);
+  border-radius: var(--border-radius);
 }
 
 input[type="text"] {

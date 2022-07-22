@@ -17,7 +17,7 @@
       </li>
       <div class="progress-bar"></div>
     </ul>
-    <div class="setup-step">
+    <div class="setup-step step-welcome">
 
       <step-item
         v-show="currentSetupStep == 1"
@@ -27,19 +27,31 @@
         title="Welcome!"
         next-label="Let's go"
       >
-        <p>This setup assistant will guide you through the initial configuration of Flamenco. You will be up
+        <p>
+          This setup assistant will guide you through the initial configuration of Flamenco. You will be up
           and running in a few minutes!
         </p>
         <p>Before we start, here is a quick overview of the Flamenco architecture.</p>
-        <img src="architecture.png" />
-        <p>The illustration shows the key components of Flamenco, and how they interact together. In particular:</p>
+
+        <img src="architecture.png" alt="Flamenco architecture"/>
+
+        <p>The illustration shows the key components and how they interact together:</p>
         <ul>
-          <li><strong>Manager</strong>: This application. It coordinates all the activity.</li>
-          <li><strong>Worker</strong>: An workstation or dedicated rendering machine. It executes the tasks assigned by the Manager.</li>
-          <li><strong>Shared Storage</strong>: A location accessible by the Manager and the Workers, where files, logs and internal previews can be saved.</li>
-          <li><strong>Blender Add-on</strong>: This is needed to connect to the Manager and submit a job from Blender.</li>
+          <li>
+            <h3>Manager</h3>This application. It coordinates all the activity.
+          </li>
+          <li>
+            <h3>Worker</h3>A workstation or dedicated rendering machine. It executes the tasks assigned by the Manager.
+          </li>
+          <li>
+            <h3>Shared Storage</h3>A location accessible by the Manager and the Workers, where files, logs and internal previews can be saved.
+          </li>
+          <li>
+            <h3>Blender Add-on</h3>This is needed to connect to the Manager and submit a job from Blender.
+          </li>
         </ul>
-        <p>More information is available on the online documentation at flamenco.blender.org.</p>
+        <p>More information is available on the online documentation at
+          <a href="https://flamenco.blender.org">flamenco.blender.org</a>.</p>
       </step-item>
 
       <step-item
@@ -426,6 +438,22 @@ export default {
 }
 </script>
 <style>
+
+.step-welcome ul {
+  padding-left: var(--spacer-xl);
+  margin-bottom: var(--spacer-xl);
+}
+
+.setup-step ul li {
+  margin-bottom: var(--spacer-xs);
+}
+
+.step-welcome ul li h3 {
+  color: var(--color-text-highlight);
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacer-xs);
+}
+
 .progress {
   --setup-progress-indicator-size: 8px;
   --setup-progress-indicator-border-width: 2px;
@@ -566,22 +594,24 @@ body.is-setup-assistant #app {
   line-height: 1.4rem;
 }
 
+.setup-step a {
+  text-decoration: underline;
+}
+
 input[type="text"] {
   font-size: var(--font-size-lg);
 }
 
 h1 {
-  font-size: xx-large;
-  margin: 0 auto var(--spacer);
   display: block;
+  font-size: xx-large;
+  margin: 0 auto var(--spacer-lg);
+  padding-bottom: var(--spacer);
   text-align: center;
-  display: inline-block;
-  background: linear-gradient(45deg, hsl(246deg 82% 82%), hsl(256deg 82% 72%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 h2 {
+  color: var(--color-text-highlight);
   margin-top: var(--spacer-sm);
 }
 
@@ -640,10 +670,13 @@ h2 {
 }
 
 fieldset input[type="text"] {
-  margin-left: var(--spacer-xl);
+  margin-left: 1.66rem;
   margin-top: var(--spacer-sm);
   width: -moz-available;
   width: -webkit-fill-available;
 }
 
+fieldset label {
+  margin: var(--spacer) var(--spacer-sm);
+}
 </style>
