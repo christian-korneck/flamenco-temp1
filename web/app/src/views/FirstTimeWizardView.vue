@@ -108,37 +108,63 @@
         <div v-if="isBlenderExeFinding" class="is-in-progress">Looking for Blender installs...</div>
 
         <p v-if="autoFoundBlenders.length === 0">
-          Provide a path to Blender. This path should be accessible by all Workers.
+          Provide a path to a Blender executable accessible by all Workers.
           <br/><br/>
           If your rendering setup features operating systems different form the one you are currently using,
           you can manually set up the other paths later.
         </p>
 
-        <p v-else>Choose how a Worker should invoke the Blender command when performing a task.</p>
+        <p v-else>Choose how a Worker should invoke the Blender command when performing a task:</p>
 
         <fieldset v-if="autoFoundBlenders.length >= 1">
           <label v-if="autoFoundBlenderPathEnvvar" for="blender-path_envvar">
-            <input type="radio" v-model="selectedBlender" name="blender" :value="autoFoundBlenderPathEnvvar" id="blender-path_envvar">
-            {{ sourceLabels[autoFoundBlenderPathEnvvar.source] }} <br>
-            <span>{{autoFoundBlenderPathEnvvar.path}}</span>
-            <span
-              :aria-label="autoFoundBlenderPathEnvvar.cause"
-              data-microtip-position="top"
-              role="tooltip">
-              [Command output]
-            </span>
+            <div>
+              <input
+                v-model="selectedBlender"
+                :value="autoFoundBlenderPathEnvvar"
+                id="blender-path_envvar"
+                name="blender"
+                type="radio">
+                {{ sourceLabels[autoFoundBlenderPathEnvvar.source] }}
+            </div>
+            <div class="setup-path-command">
+              <span class="path">
+                {{autoFoundBlenderPathEnvvar.path}}
+              </span>
+              <span
+                :aria-label="autoFoundBlenderPathEnvvar.cause"
+                class="command-preview"
+                data-microtip-position="top"
+                role="tooltip">
+                [preview output]
+              </span>
+            </div>
           </label>
+
           <label v-if="autoFoundBlenderFileAssociation" for="blender-file_association">
-            <input type="radio" v-model="selectedBlender" name="blender" :value="autoFoundBlenderFileAssociation" id="blender-file_association">
-            {{ sourceLabels[autoFoundBlenderFileAssociation.source] }} <br>
-            <span>{{autoFoundBlenderFileAssociation.path}}</span>
-            <span
-              :aria-label="autoFoundBlenderFileAssociation.cause"
-              data-microtip-position="top"
-              role="tooltip">
-              [Command output]
-            </span>
+            <div>
+              <input
+                v-model="selectedBlender"
+                :value="autoFoundBlenderFileAssociation"
+                id="blender-file_association"
+                name="blender"
+                type="radio">
+                {{ sourceLabels[autoFoundBlenderFileAssociation.source] }}
+            </div>
+            <div class="setup-path-command">
+              <span class="path">
+                {{autoFoundBlenderFileAssociation.path}}
+              </span>
+              <span
+                :aria-label="autoFoundBlenderFileAssociation.cause"
+                class="command-preview"
+                data-microtip-position="top"
+                role="tooltip">
+                [preview output]
+              </span>
+            </div>
           </label>
+
           <label for="blender-input_path">
             <div>
               <input
@@ -156,7 +182,7 @@
                 v-model="customBlenderExe"
                 :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
                 type="text"
-                placeholder="Blender Path"
+                placeholder="Path to Blender executable"
               >
               <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
               <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">
@@ -171,7 +197,7 @@
             v-model="customBlenderExe"
             :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
             type="text"
-            placeholder="Blender Path"
+            placeholder="Path to Blender executable"
           >
 
           <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
@@ -265,9 +291,9 @@ export default {
     isBlenderExeChecking: false,
     blenderExeCheckResult: null, // api.BlenderPathCheckResult
     sourceLabels: {
-      file_association: "Blender that runs when you double-click a .blend file.",
-      path_envvar: "Blender that was found on the $PATH environment.",
-      input_path: "Another Blender executable.",
+      file_association: "Blender that runs when you double-click a .blend file:",
+      path_envvar: "Blender found on the $PATH environment:",
+      input_path: "Another Blender executable:",
     },
     isConfirming: false,
     isConfirmed: false,
@@ -674,14 +700,40 @@ h2 {
   }
 }
 
-fieldset input[type="text"] {
+fieldset input[type="text"],
+.setup-path-command {
   margin-left: 1.66rem;
   margin-top: var(--spacer-sm);
   width: -moz-available;
   width: -webkit-fill-available;
 }
 
+.setup-path-command {
+  align-items: center;
+  background-color: var(--color-background-column);
+  border-radius: var(--border-radius);
+  display: flex;
+  font-size: var(--font-size-base);
+  padding: var(--spacer-sm);
+}
+
+.setup-path-command .path {
+  font-family: var(--font-family-mono);
+  font-weight: bold;
+  word-break: break-word;
+}
+
+.setup-path-command .command-preview {
+  color: var(--color-text-muted);
+  cursor: help;
+  margin-left: auto;
+}
+
 fieldset label {
-  margin: var(--spacer) var(--spacer-sm);
+  margin: var(--spacer-lg) var(--spacer-sm);
+}
+
+fieldset .check-failed {
+  margin-left: 1.66rem;
 }
 </style>
