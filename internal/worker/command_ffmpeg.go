@@ -22,6 +22,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"git.blender.org/flamenco/internal/find_ffmpeg"
 	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/crosspath"
 )
@@ -202,6 +203,22 @@ func cmdFramesToVideoParams(logger zerolog.Logger, cmd api.Command) (CreateVideo
 	}
 	parameters.args = append(parameters.args,
 		"-r", strconv.FormatFloat(parameters.fps, 'f', -1, 64))
+
+	// If the executable is just "ffmpeg" or "ffmpeg.exe", find it on the system.
+	if parameters.exe == "ffmpeg" || parameters.exe == "ffmpeg.exe" {
+		result, err := find_ffmpeg.Find()
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
+			log.Warn().Msg("FFmpeg could not be found on this system, render jobs may not run correctly")
+			return parameters, NewParameterInvalidError("exe", cmd, err.Error())
+		case err != nil:
+			log.Warn().Err(err).Msg("there was an unexpected error finding FFmepg on this system, render jobs may not run correctly")
+			return parameters, NewParameterInvalidError("exe", cmd, err.Error())
+		}
+
+		log.Debug().Str("path", result.Path).Str("version", result.Version).Msg("FFmpeg found on this system")
+		parameters.exe = result.Path
+	}
 
 	return parameters, nil
 }

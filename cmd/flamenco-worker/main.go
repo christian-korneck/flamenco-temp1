@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"net/url"
 	"os"
 	"os/signal"
@@ -20,6 +21,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"git.blender.org/flamenco/internal/appinfo"
+	"git.blender.org/flamenco/internal/find_ffmpeg"
 	"git.blender.org/flamenco/internal/worker"
 )
 
@@ -91,6 +93,8 @@ func main() {
 
 		configWrangler.SetManagerURL(url)
 	}
+
+	findFFmpeg()
 
 	// Give the auto-discovery some time to find a Manager.
 	discoverTimeout := 10 * time.Minute
@@ -250,5 +254,18 @@ func logFatalManagerDiscoveryError(err error, discoverTimeout time.Duration) {
 		log.Fatal().Str("timeout", discoverTimeout.String()).Msg("could not discover Manager in time")
 	} else {
 		log.Fatal().Err(err).Msg("auto-discovery error")
+	}
+}
+
+// findFFmpeg tries to find FFmpeg, in order to show its version (if found) or a warning (if not).
+func findFFmpeg() {
+	result, err := find_ffmpeg.Find()
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		log.Warn().Msg("FFmpeg could not be found on this system, render jobs may not run correctly")
+	case err != nil:
+		log.Warn().Err(err).Msg("there was an unexpected error finding FFmepg on this system, render jobs may not run correctly")
+	default:
+		log.Info().Str("path", result.Path).Str("version", result.Version).Msg("FFmpeg found on this system")
 	}
 }
