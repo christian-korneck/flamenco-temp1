@@ -53,6 +53,9 @@ export default {
 
     document.body.classList.add('is-two-columns');
   },
+  unmounted() {
+    document.body.classList.remove('is-two-columns');
+  },
   watch: {
     workerID(newWorkerID, oldWorkerID) {
       this._fetchWorker(newWorkerID);
