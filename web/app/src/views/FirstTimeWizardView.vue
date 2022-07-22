@@ -116,7 +116,7 @@
 
         <p v-else>Choose how a Worker should invoke the Blender command when performing a task.</p>
 
-        <fieldset v-if="allBlenders.length >= 1">
+        <fieldset v-if="autoFoundBlenders.length >= 1">
           <label v-if="autoFoundBlenderPathEnvvar" for="blender-path_envvar">
             <input type="radio" v-model="selectedBlender" name="blender" :value="autoFoundBlenderPathEnvvar" id="blender-path_envvar">
             {{ sourceLabels[autoFoundBlenderPathEnvvar.source] }} <br>
