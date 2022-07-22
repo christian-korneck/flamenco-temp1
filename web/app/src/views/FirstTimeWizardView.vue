@@ -219,7 +219,7 @@
           <dl>
             <dt>Storage</dt>
             <dd>{{ sharedStorageCheckResult.path }}</dd>
-            <dt>Blender</dt>
+            <dt>Blender Command</dt>
             <dd v-if="selectedBlender.source == 'file_association'">
               Whatever Blender is associated with .blend files
               (currently "<code>{{ selectedBlender.path }}</code>")
@@ -477,6 +477,17 @@ export default {
 
 .setup-step ul li {
   margin-bottom: var(--spacer-xs);
+}
+
+.setup-step dl {
+  background-color: var(--color-background);
+  border-radius: var(--border-radius);
+  padding: var(--spacer);
+}
+
+.setup-step dl dt {
+  margin-bottom: var(--spacer-sm);
+  width: initial;
 }
 
 .step-welcome ul li h3 {
