@@ -33,7 +33,7 @@
         </p>
         <p>Before we start, here is a quick overview of the Flamenco architecture.</p>
 
-        <img src="architecture.png" alt="Flamenco architecture"/>
+        <img src="@/assets/architecture.png" alt="Flamenco architecture"/>
 
         <p>The illustration shows the key components and how they interact together:</p>
         <ul>
