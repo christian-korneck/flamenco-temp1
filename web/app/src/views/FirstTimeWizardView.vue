@@ -247,7 +247,7 @@
 </template>
 
 <script>
-import microtip from 'microtip/microtip.css'
+import 'microtip/microtip.css'
 import NotificationBar from '@/components/footer/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
 import StepItem from '@/components/steps/StepItem.vue';
