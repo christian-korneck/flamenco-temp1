@@ -59,24 +59,33 @@
         </div>
       </div>
 
-      <p v-if="isScheduleEditing">Adjust at which time of the day (and on which days) this worker should go to sleep.</p>
+      <div v-if="isScheduleEditing">
+        <p>
+          Adjust at which time of the day (and on which days) this worker should go to sleep.
+        </p>
+      </div>
       <div class="sleep-schedule-edit" v-if="isScheduleEditing">
         <div>
           <label>Days of the week</label>
           <input type="text" placeholder="mo tu we th fr" v-model="workerSleepSchedule.days_of_week">
           <span class="input-help-text">
-            Write the days name using their first two letters, separated by spaces.
+            Write each day name using their first two letters, separated by spaces.
             (e.g. mo tu we th fr)
           </span>
         </div>
-        <div>
-          <label>Start Time</label>
-          <input type="time" placeholder="09:00" v-model="workerSleepSchedule.start_time">
+        <div class="sleep-schedule-edit-time">
+          <div>
+            <label>Start Time</label>
+            <input type="text" placeholder="09:00" v-model="workerSleepSchedule.start_time" class="time">
+          </div>
+          <div>
+            <label>End Time</label>
+            <input type="text" placeholder="18:00" v-model="workerSleepSchedule.end_time" class="time">
+          </div>
         </div>
-        <div>
-          <label>End Time</label>
-          <input type="time" placeholder="18:00" v-model="workerSleepSchedule.end_time">
-        </div>
+        <span class="input-help-text">
+          Use 24-hour format.
+        </span>
       </div>
 
       <dl v-if="!isScheduleEditing">
@@ -205,7 +214,6 @@ export default {
 </script>
 
 <style scoped>
-
 .sleep-schedule .btn-bar label+.btn {
   margin-left: var(--spacer-sm);
 }
@@ -218,15 +226,12 @@ export default {
 
 .sleep-schedule-edit {
   display: flex;
-  margin: var(--spacer-lg) 0;
+  margin: var(--spacer-lg) 0 0;
+  flex-direction: column;
 }
 
 .sleep-schedule-edit > div {
-  margin-right: var(--spacer-sm);
-}
-
-.sleep-schedule-edit > div:first-child {
-  flex: 1;
+  margin: var(--spacer-sm) 0 ;
 }
 
 .sleep-schedule-edit label {
@@ -236,13 +241,25 @@ export default {
   color: var(--color-text-muted);
 }
 
+.sleep-schedule-edit > .sleep-schedule-edit-time {
+  display: flex;
+  margin-bottom: 0;
+}
+
 .toggle-sleep-schedule {
   visibility: hidden;
   display: none;
 }
 
-input[type="text"] {
+.sleep-schedule-edit input[type="text"] {
   font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  width: 23ch;
+}
+
+.sleep-schedule-edit input[type="text"].time {
+  width: 10ch;
+  margin-right: var(--spacer);
 }
 
 /* Prevent fields with long IDs from overflowing. */

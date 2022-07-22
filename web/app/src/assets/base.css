@@ -348,8 +348,7 @@ fieldset {
   border-radius: var(--border-radius);
 }
 
-input[type="text"],
-input[type="time"] {
+input[type="text"] {
   appearance: none;
   background-color: var(--color-background);
   border-radius: var(--border-radius);
@@ -368,10 +367,6 @@ input[type="text"]:focus {
 
 input[type="text"].is-invalid {
   border-color: var(--color-danger);
-}
-
-input[type="time"] {
-  height: 37px;
 }
 
 .input-help-text {
