@@ -24,6 +24,11 @@ WEB_STATIC=web/static
 # Prevent any dependency that requires a C compiler, i.e. only work with pure-Go libraries.
 export CGO_ENABLED=0
 
+# FFmpeg version to bundle.
+FFMPEG_VERSION=5.0.1
+TOOLS=./tools
+TOOLS_DOWNLOAD=./tools/download
+
 all: application
 
 # Install generators and build the software.
@@ -190,6 +195,50 @@ site:
 		--exclude .well-known/ \
 		--exclude .htaccess \
 		--delete-after
+
+# Download & install FFmpeg in the 'tools' directory for supported platforms.
+.PHONY: tools
+tools:
+	$(MAKE) -s tools-linux
+	$(MAKE) -s tools-darwin
+	$(MAKE) -s tools-windows
+
+FFMPEG_PACKAGE_LINUX=$(TOOLS_DOWNLOAD)/ffmpeg-$(FFMPEG_VERSION)-linux-amd64-static.tar.xz
+FFMPEG_PACKAGE_DARWIN=$(TOOLS_DOWNLOAD)/ffmpeg-$(FFMPEG_VERSION)-darwin-amd64.zip
+FFMPEG_PACKAGE_WINDOWS=$(TOOLS_DOWNLOAD)/ffmpeg-$(FFMPEG_VERSION)-windows-amd64.zip
+
+.PHONY: tools-linux
+tools-linux:
+	[ -e $(FFMPEG_PACKAGE_LINUX) ] || curl \
+		--create-dirs -o $(FFMPEG_PACKAGE_LINUX) \
+		https://johnvansickle.com/ffmpeg/releases/ffmpeg-$(FFMPEG_VERSION)-amd64-static.tar.xz
+	tar xvf \
+		$(FFMPEG_PACKAGE_LINUX) \
+		ffmpeg-$(FFMPEG_VERSION)-amd64-static/ffmpeg \
+		--strip-components=1
+	mv ffmpeg $(TOOLS)/ffmpeg-linux-amd64
+
+.PHONY: tools-darwin
+tools-darwin:
+	[ -e $(FFMPEG_PACKAGE_DARWIN) ] || curl \
+		--create-dirs -o $(FFMPEG_PACKAGE_DARWIN) \
+		https://evermeet.cx/ffmpeg/ffmpeg-$(FFMPEG_VERSION).zip
+	unzip $(FFMPEG_PACKAGE_DARWIN)
+	mv ffmpeg $(TOOLS)/ffmpeg-darwin-amd64
+
+.PHONY: tools-windows
+tools-windows:
+	[ -e $(FFMPEG_PACKAGE_WINDOWS) ] || curl \
+		--create-dirs -o $(FFMPEG_PACKAGE_WINDOWS) \
+		https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-$(FFMPEG_VERSION)-essentials_build.zip
+	unzip -j $(FFMPEG_PACKAGE_WINDOWS) ffmpeg-5.0.1-essentials_build/bin/ffmpeg.exe -d .
+	mv ffmpeg.exe $(TOOLS)/ffmpeg-windows-amd64.exe
+
+# 	https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-$(FFMPEG_VERSION)-essentials_build.zip
+#
+# cd tools-download;
+
+
 
 package: flamenco-manager flamenco-worker addon-packer
 	rm -rf dist-build
