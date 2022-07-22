@@ -71,12 +71,7 @@ func (fcw *FileConfigWrangler) WorkerConfig() (WorkerConfig, error) {
 	}
 
 	wc := fcw.DefaultConfig()
-	filepath, err := appinfo.InFlamencoHome(configFilename)
-	if err != nil {
-		return wc, err
-	}
-
-	err = fcw.loadConfig(filepath, &wc)
+	err := fcw.loadConfig(configFilename, &wc)
 
 	if err != nil {
 		switch {
