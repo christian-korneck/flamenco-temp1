@@ -91,7 +91,7 @@ func TestCheckSharedStoragePath(t *testing.T) {
 	assertResponseJSON(t, echoCtx, http.StatusOK, api.PathCheckResult{
 		Path:     mf.tempdir,
 		IsUsable: true,
-		Cause:    "Directory checked OK!",
+		Cause:    "Directory checked successfully",
 	})
 	files, err := filepath.Glob(filepath.Join(mf.tempdir, "*"))
 	if assert.NoError(t, err) {

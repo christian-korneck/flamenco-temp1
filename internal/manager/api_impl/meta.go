@@ -142,7 +142,7 @@ func (f *Flamenco) CheckSharedStoragePath(e echo.Context) error {
 
 	// There is a directory, and we can create a file there. Should be good to go.
 	return e.JSON(http.StatusOK, api.PathCheckResult{
-		Cause:    "Directory checked OK!",
+		Cause:    "Directory checked successfully",
 		IsUsable: true,
 		Path:     path,
 	})
