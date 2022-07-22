@@ -578,23 +578,6 @@ span.state-transition-arrow.lazy {
   color: var(--color-text-muted);
 }
 
-.global-last-rendered {
-  align-items: center;
-  display: flex;
-  grid-column-end: col-3;
-  grid-column-start: col-1;
-  justify-content: center;
-
-  /* FIXME: the positioning of the image & sizing of the container DIV doesn't
-  work well yet. */
-  height: 100%;
-}
-
-.global-last-rendered .last-rendered {
-  max-height: 100%;
-  max-width: 100%;
-}
-
 .preview-container {
   align-items: center;
   background-color: var(--color-background);

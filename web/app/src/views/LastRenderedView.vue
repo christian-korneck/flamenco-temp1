@@ -44,3 +44,20 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.global-last-rendered {
+  align-items: center;
+  display: flex;
+  grid-column-end: col-3;
+  grid-column-start: col-1;
+  justify-content: center;
+  height: calc(100vh - calc(var(--header-height) - var(--footer-height) - calc(var(--grid-gap) * -12)));
+  max-height: 100%;
+}
+
+.global-last-rendered .last-rendered {
+  max-height: 100%;
+  max-width: 100%;
+}
+</style>
