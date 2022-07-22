@@ -1,9 +1,9 @@
 <template>
   <div class="global-last-rendered">
-      <last-rendered-image
-        ref="lastRenderedImage"
-        :jobID="false"
-        thumbnailSuffix="last-rendered.jpg" />
+    <last-rendered-image
+      ref="lastRenderedImage"
+      :jobID="false"
+      thumbnailSuffix="last-rendered.jpg" />
   </div>
 
   <footer class="app-footer"><notification-bar /></footer>
