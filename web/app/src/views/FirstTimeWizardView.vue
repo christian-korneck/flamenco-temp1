@@ -7,7 +7,9 @@
         @click="jumpToStep(step)"
         :class="{
           current: step == currentSetupStep,
-          done: step < currentSetupStep,
+          done: step < overallSetupStep,
+          done_previously: (step < overallSetupStep && currentSetupStep > step),
+          done_and_current: step == currentSetupStep && (step < overallSetupStep || step == 1),
           disabled: step > overallSetupStep,
         }"
         >
@@ -498,12 +500,22 @@ export default {
 }
 
 .progress li.done span {
+  background-color: var(--setup-progress-indicator-color);
+  box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color);
+}
+
+.progress li.done_previously span {
   background-color: var(--setup-progress-indicator-color-done);
   box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color-done);
 }
 
 .progress li.current span {
   background-color: var(--color-background-column);
+  box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color-current);
+}
+
+.progress li.done_and_current span {
+  background-color: var(--setup-progress-indicator-color-current);
   box-shadow: 0 0 0 var(--setup-progress-indicator-border-width) var(--setup-progress-indicator-color-current);
 }
 
