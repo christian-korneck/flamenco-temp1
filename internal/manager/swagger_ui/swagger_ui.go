@@ -1,5 +1,7 @@
 package swagger_ui
 
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import (
 	"embed"
 	"io/fs"

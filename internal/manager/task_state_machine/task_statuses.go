@@ -1,5 +1,7 @@
 package task_state_machine
 
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import "git.blender.org/flamenco/pkg/api"
 
 var (

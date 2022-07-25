@@ -1,5 +1,7 @@
 package stresser
 
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import (
 	"github.com/rs/zerolog/log"
 

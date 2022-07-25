@@ -1,6 +1,8 @@
 // Package own_url provides a way for a process to find a URL on which it can be reached.
 package own_url
 
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import (
 	"fmt"
 	"net"

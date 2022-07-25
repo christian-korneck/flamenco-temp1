@@ -1,5 +1,7 @@
 package task_state_machine
 
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import (
 	"testing"
 

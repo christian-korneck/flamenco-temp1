@@ -1,6 +1,8 @@
 // package find_ffmpeg can find an FFmpeg binary on the system.
 package find_ffmpeg
 
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import (
 	"context"
 	"errors"
