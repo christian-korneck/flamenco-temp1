@@ -102,17 +102,17 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
-  /api/v3/configuration/wizard:
-    summary: Save the configuration from the First-Time Wizard.
+  /api/v3/configuration/setup-assistant:
+    summary: Save the configuration from the Setup Assistant.
     post:
       summary: Update the Manager's configuration, and restart it in fully functional mode.
       tags: [meta]
-      operationId: saveWizardConfig
+      operationId: saveSetupAssistantConfig
       requestBody:
         description: Configuration to save.
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/WizardConfig" }
+            schema: { $ref: "#/components/schemas/SetupAssistantConfig" }
       responses:
         "204":
           description: Normal response. The webapp should do a full refresh at this point.
@@ -1088,9 +1088,9 @@ components:
           type: boolean
       required: [storageLocation, shamanEnabled, isFirstRun]
 
-    WizardConfig:
+    SetupAssistantConfig:
       type: object
-      description: Configuration obtained from the First-Time Wizard.
+      description: Configuration obtained from the Setup Assistant.
       properties:
         "storageLocation":
           description: Directory used for job file storage.
