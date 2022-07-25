@@ -70,7 +70,7 @@ webapp-static: addon-packer
 # When changing the base URL, also update the line
 # e.GET("/app/*", echo.WrapHandler(webAppHandler))
 # in `cmd/flamenco-manager/main.go`
-	yarn --cwd web/app build --outDir ../static --base=/app/
+	yarn --cwd web/app build --outDir ../static --base=/app/ --logLevel warn
 # yarn --cwd web/app build --outDir ../static --base=/app/ --minify false
 	./addon-packer -filename ${WEB_STATIC}/flamenco3-addon.zip
 	@echo "Web app has been installed into ${WEB_STATIC}"
@@ -192,7 +192,7 @@ test:
 
 clean:
 	@go clean -i -x
-	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race addon-packer
+	rm -f flamenco*-v* flamenco-manager flamenco-worker *.exe flamenco-*_race addon-packer stresser
 	$(MAKE) clean-webapp-static
 
 clean-webapp-static:
@@ -250,21 +250,48 @@ tools-windows:
 	unzip -j $(FFMPEG_PACKAGE_WINDOWS) ffmpeg-5.0.1-essentials_build/bin/ffmpeg.exe -d .
 	mv ffmpeg.exe $(TOOLS)/ffmpeg-windows-amd64.exe
 
-# 	https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-$(FFMPEG_VERSION)-essentials_build.zip
-#
-# cd tools-download;
+RELEASE_PACKAGE_LINUX := dist/flamenco-${VERSION}-linux-amd64.tar.gz
+RELEASE_PACKAGE_DARWIN := dist/flamenco-${VERSION}-macos-amd64.tar.gz
+RELEASE_PACKAGE_WINDOWS := dist/flamenco-${VERSION}-windows-amd64.zip
 
+.PHONY: release-package
+release-package:
+	$(MAKE) -s release-package-linux
+	$(MAKE) -s release-package-darwin
+	$(MAKE) -s release-package-windows
 
-
-package: flamenco-manager flamenco-worker addon-packer
-	rm -rf dist-build
-	mkdir -p dist-build
-	cp -a flamenco-manager flamenco-worker dist-build/
-	cp -a web/static/flamenco3-addon.zip dist-build/
-	cp -a README.md LICENSE dist-build/
-	cd dist-build; zip -r -9 flamenco-${VERSION}.zip *
+.PHONY: release-package-linux
+release-package-linux:
+	$(MAKE) -s clean
+	$(MAKE) -s webapp-static
+	$(MAKE) -s flamenco-manager-without-webapp GOOS=linux GOARCH=amd64
+	$(MAKE) -s flamenco-worker GOOS=linux GOARCH=amd64
+	$(MAKE) -s tools-linux
 	mkdir -p dist
-	mv dist-build/flamenco-${VERSION}.zip dist
-	rm -rf dist-build
+	tar zcvf ${RELEASE_PACKAGE_LINUX} flamenco-manager flamenco-worker README.md LICENSE tools/*-linux*
+	@echo "Done! Created ${RELEASE_PACKAGE_LINUX}"
+
+.PHONY: release-package-darwin
+release-package-darwin:
+	$(MAKE) -s clean
+	$(MAKE) -s webapp-static
+	$(MAKE) -s flamenco-manager-without-webapp GOOS=darwin GOARCH=amd64
+	$(MAKE) -s flamenco-worker GOOS=darwin GOARCH=amd64
+	$(MAKE) -s tools-darwin
+	mkdir -p dist
+	tar zcvf ${RELEASE_PACKAGE_DARWIN} flamenco-manager flamenco-worker README.md LICENSE tools/*-darwin*
+	@echo "Done! Created ${RELEASE_PACKAGE_DARWIN}"
+
+.PHONY: release-package-windows
+release-package-windows:
+	$(MAKE) -s clean
+	$(MAKE) -s webapp-static
+	$(MAKE) -s flamenco-manager-without-webapp GOOS=windows GOARCH=amd64
+	$(MAKE) -s flamenco-worker GOOS=windows GOARCH=amd64
+	$(MAKE) -s tools-windows
+	mkdir -p dist
+	rm -f ${RELEASE_PACKAGE_WINDOWS}
+	zip -r -9 ${RELEASE_PACKAGE_WINDOWS} flamenco-manager.exe flamenco-worker.exe README.md LICENSE tools/*-windows*
+	@echo "Done! Created ${RELEASE_PACKAGE_WINDOWS}"
 
 .PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp webapp-static generate generate-go generate-py with-deps swagger-ui list-embedded test clean clean-webapp-static
