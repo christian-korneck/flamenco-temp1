@@ -20,7 +20,7 @@ import { MetaApi } from "@/manager-api";
 import { apiClient } from '@/stores/api-query-count';
 
 export default {
-  name: 'FirstTimeWizard',
+  name: 'SetupAssistant',
   components: {
     ApiSpinner,
   },

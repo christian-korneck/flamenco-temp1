@@ -3,10 +3,10 @@ import { createPinia } from 'pinia'
 import { DateTime } from 'luxon';
 
 import App from '@/App.vue'
-import FirstTimeWizard from '@/FirstTimeWizard.vue'
+import SetupAssistant from '@/SetupAssistant.vue'
 import autoreload from '@/autoreloader'
 import router from '@/router/index'
-import wizardRouter from '@/router/first-time-wizard'
+import setupAssistantRouter from '@/router/setup-assistant'
 import { ApiClient, MetaApi } from "@/manager-api";
 import * as urls from '@/urls'
 
@@ -31,11 +31,11 @@ function normalMode() {
   app.mount('#app')
 }
 
-function firstTimeWizardMode() {
-  console.log("Flamenco First Time Wizard is starting");
-  const app = createApp(FirstTimeWizard)
+function setupAssistantMode() {
+  console.log("Flamenco Setup Assistant is starting");
+  const app = createApp(SetupAssistant)
   app.use(pinia)
-  app.use(wizardRouter)
+  app.use(setupAssistantRouter)
   app.mount('#app')
 }
 
@@ -47,7 +47,7 @@ const metaAPI = new MetaApi(apiClient);
 metaAPI.getConfiguration()
   .then((config) => {
     console.log("Got config!", config);
-    if (config.isFirstRun) firstTimeWizardMode();
+    if (config.isFirstRun) setupAssistantMode();
     else normalMode();
   })
   .catch((error) => {

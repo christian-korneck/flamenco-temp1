@@ -1,8 +1,8 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import FirstTimeWizard from '@/FirstTimeWizard.vue'
-import router from '@/router/first-time-wizard'
+import SetupAssistant from '@/SetupAssistant.vue'
+import router from '@/router/setup-assistant'
 
 // Ensure Tabulator can find `luxon`, which it needs for sorting by
 // date/time/datetime.
@@ -14,7 +14,7 @@ window.plain = (x) => JSON.parse(JSON.stringify(x));
 // objectEmpty returns whether the object is empty or not.
 window.objectEmpty = (o) => !o || Object.entries(o).length == 0;
 
-const app = createApp(FirstTimeWizard)
+const app = createApp(SetupAssistant)
 const pinia = createPinia()
 
 app.use(pinia)

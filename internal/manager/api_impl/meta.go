@@ -233,29 +233,29 @@ func (f *Flamenco) CheckBlenderExePath(e echo.Context) error {
 	return e.JSON(http.StatusOK, response)
 }
 
-func (f *Flamenco) SaveWizardConfig(e echo.Context) error {
+func (f *Flamenco) SaveSetupAssistantConfig(e echo.Context) error {
 	logger := requestLogger(e)
 
-	var wizardCfg api.WizardConfig
-	if err := e.Bind(&wizardCfg); err != nil {
-		logger.Warn().Err(err).Msg("first-time wizard: bad request received")
+	var setupAssistantCfg api.SetupAssistantConfig
+	if err := e.Bind(&setupAssistantCfg); err != nil {
+		logger.Warn().Err(err).Msg("setup assistant: bad request received")
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
-	logger = logger.With().Interface("config", wizardCfg).Logger()
+	logger = logger.With().Interface("config", setupAssistantCfg).Logger()
 
-	if wizardCfg.StorageLocation == "" ||
-		!wizardCfg.BlenderExecutable.IsUsable ||
-		wizardCfg.BlenderExecutable.Path == "" {
-		logger.Warn().Msg("first-time wizard: configuration is incomplete, unable to accept")
+	if setupAssistantCfg.StorageLocation == "" ||
+		!setupAssistantCfg.BlenderExecutable.IsUsable ||
+		setupAssistantCfg.BlenderExecutable.Path == "" {
+		logger.Warn().Msg("setup assistant: configuration is incomplete, unable to accept")
 		return sendAPIError(e, http.StatusBadRequest, "configuration is incomplete")
 	}
 
 	conf := f.config.Get()
-	conf.SharedStoragePath = wizardCfg.StorageLocation
+	conf.SharedStoragePath = setupAssistantCfg.StorageLocation
 
 	var executable string
-	switch wizardCfg.BlenderExecutable.Source {
+	switch setupAssistantCfg.BlenderExecutable.Source {
 	case api.BlenderPathSourceFileAssociation:
 		// The Worker will try to use the file association when the command is set
 		// to the string "blender".
@@ -263,10 +263,10 @@ func (f *Flamenco) SaveWizardConfig(e echo.Context) error {
 	case api.BlenderPathSourcePathEnvvar:
 		// The input command can be found on $PATH, and thus we don't need to save
 		// the absolute path to Blender here.
-		executable = wizardCfg.BlenderExecutable.Input
+		executable = setupAssistantCfg.BlenderExecutable.Input
 	case api.BlenderPathSourceInputPath:
 		// The path should be used as-is.
-		executable = wizardCfg.BlenderExecutable.Path
+		executable = setupAssistantCfg.BlenderExecutable.Path
 	}
 	if commandNeedsQuoting(executable) {
 		executable = strconv.Quote(executable)
@@ -287,10 +287,10 @@ func (f *Flamenco) SaveWizardConfig(e echo.Context) error {
 	// Save the final configuration to disk.
 	if err := f.config.Save(); err != nil {
 		logger.Error().Err(err).Msg("error saving configuration file")
-		return sendAPIError(e, http.StatusInternalServerError, "first-time wizard: error saving configuration file: %v", err)
+		return sendAPIError(e, http.StatusInternalServerError, "setup assistant: error saving configuration file: %v", err)
 	}
 
-	logger.Info().Msg("first-time wizard: updating configuration")
+	logger.Info().Msg("setup assistant: updating configuration")
 
 	// Request the shutdown in a goroutine, so that this one can continue sending the response.
 	go f.requestShutdown()

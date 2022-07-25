@@ -17,7 +17,7 @@ import (
 var webStaticFS embed.FS
 
 // WebAppHandler returns a HTTP handler to serve the static files of the Flamenco Manager web app.
-// `appFilename` is either `index.html` for the main webapp, or `first-time-wizard.html`.
+// `appFilename` is either `index.html` for the main webapp, or `setup-assistant.html`.
 func WebAppHandler(appFilename string) (http.Handler, error) {
 	// Strip the 'static/' directory off of the embedded filesystem.
 	fs, err := fs.Sub(webStaticFS, "static")

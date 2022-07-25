@@ -122,11 +122,11 @@ func TestCheckSharedStoragePath(t *testing.T) {
 	}
 }
 
-func TestSaveWizardConfig(t *testing.T) {
+func TestSaveSetupAssistantConfig(t *testing.T) {
 	mf, finish := metaTestFixtures(t)
 	defer finish()
 
-	doTest := func(body api.WizardConfig) config.Conf {
+	doTest := func(body api.SetupAssistantConfig) config.Conf {
 		// Always start the test with a clean configuration.
 		originalConfig := config.DefaultConfig(func(c *config.Conf) {
 			c.SharedStoragePath = ""
@@ -142,7 +142,7 @@ func TestSaveWizardConfig(t *testing.T) {
 
 		// Call the API.
 		echoCtx := mf.prepareMockedJSONRequest(body)
-		err := mf.flamenco.SaveWizardConfig(echoCtx)
+		err := mf.flamenco.SaveSetupAssistantConfig(echoCtx)
 		if !assert.NoError(t, err) {
 			t.FailNow()
 		}
@@ -153,7 +153,7 @@ func TestSaveWizardConfig(t *testing.T) {
 
 	// Test situation where file association with .blend files resulted in a blender executable.
 	{
-		savedConfig := doTest(api.WizardConfig{
+		savedConfig := doTest(api.SetupAssistantConfig{
 			StorageLocation: mf.tempdir,
 			BlenderExecutable: api.BlenderPathCheckResult{
 				IsUsable: true,
@@ -175,7 +175,7 @@ func TestSaveWizardConfig(t *testing.T) {
 
 	// Test situation where the given command could be found on $PATH.
 	{
-		savedConfig := doTest(api.WizardConfig{
+		savedConfig := doTest(api.SetupAssistantConfig{
 			StorageLocation: mf.tempdir,
 			BlenderExecutable: api.BlenderPathCheckResult{
 				IsUsable: true,
@@ -197,7 +197,7 @@ func TestSaveWizardConfig(t *testing.T) {
 
 	// Test a custom command given with the full path.
 	{
-		savedConfig := doTest(api.WizardConfig{
+		savedConfig := doTest(api.SetupAssistantConfig{
 			StorageLocation: mf.tempdir,
 			BlenderExecutable: api.BlenderPathCheckResult{
 				IsUsable: true,

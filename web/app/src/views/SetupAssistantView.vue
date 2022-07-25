@@ -208,7 +208,7 @@
 
       <step-item
         v-show="currentSetupStep == 4"
-        @next-clicked="confirmWizard"
+        @next-clicked="confirmSetupAssistant"
         @back-clicked="prevStep"
         next-label="Confirm"
         title="Review"
@@ -251,7 +251,7 @@ import 'microtip/microtip.css'
 import NotificationBar from '@/components/footer/NotificationBar.vue'
 import UpdateListener from '@/components/UpdateListener.vue'
 import StepItem from '@/components/steps/StepItem.vue';
-import { MetaApi, PathCheckInput, WizardConfig } from "@/manager-api";
+import { MetaApi, PathCheckInput, SetupAssistantConfig } from "@/manager-api";
 import { apiClient } from '@/stores/api-query-count';
 
 function debounce(func, wait, immediate) {
@@ -270,7 +270,7 @@ function debounce(func, wait, immediate) {
 }
 
 export default {
-  name: 'FirstTimeWizardView',
+  name: 'SetupAssistantView',
   components: {
     UpdateListener,
     StepItem,
@@ -440,23 +440,23 @@ export default {
       }
     },
 
-    confirmWizard() {
-      const wizardConfig = new WizardConfig(
+    confirmSetupAssistant() {
+      const setupAssistantConfig = new SetupAssistantConfig(
         this.sharedStorageCheckResult.path,
         this.selectedBlender,
       );
-      console.log("saving configuration:", wizardConfig);
+      console.log("saving configuration:", setupAssistantConfig);
       this.isConfirming = true;
       this.isConfirmed = false;
-      this.metaAPI.saveWizardConfig({ wizardConfig: wizardConfig })
+      this.metaAPI.saveSetupAssistantConfig({ setupAssistantConfig: setupAssistantConfig })
         .then((result) => {
-          console.log("Wizard config saved, reload the page");
+          console.log("Setup Assistant config saved, reload the page");
           this.isConfirmed = true;
           // Give the Manager some time to restart.
           window.setTimeout(() => { window.location.reload() }, 2000);
         })
         .catch((error) => {
-          console.log("Error saving wizard config:", error);
+          console.log("Error saving setup assistan config:", error);
           // Only clear this flag on an error.
           this.isConfirming = false;
         })

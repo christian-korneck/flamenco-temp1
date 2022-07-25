@@ -22,7 +22,7 @@ var defaultConfig = Conf{
 		DatabaseDSN:             "flamenco-manager.sqlite",
 		SSDPDiscovery:           true,
 		LocalManagerStoragePath: "./flamenco-manager-storage",
-		SharedStoragePath:       "", // Empty string means "first run", and should trigger the config wizard.
+		SharedStoragePath:       "", // Empty string means "first run", and should trigger the config setup assistant.
 
 		Shaman: shaman_config.Config{
 			// Enable Shaman by default, except on Windows where symlinks are still tricky.

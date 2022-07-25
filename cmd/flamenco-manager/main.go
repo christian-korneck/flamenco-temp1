@@ -54,11 +54,11 @@ import (
 )
 
 var cliArgs struct {
-	version         bool
-	writeConfig     bool
-	delayResponses  bool
-	firstTimeWizard bool
-	pprof           bool
+	version        bool
+	writeConfig    bool
+	delayResponses bool
+	setupAssistant bool
+	pprof          bool
 }
 
 const (
@@ -86,9 +86,9 @@ func main() {
 	for startFlamenco {
 		startFlamenco = runFlamencoManager()
 
-		// After the first run, the first-time wizard should not be forced any more.
+		// After the first run, the setup assistant should not be forced any more.
 		// If the configuration is still incomplete it can still auto-trigger.
-		cliArgs.firstTimeWizard = false
+		cliArgs.setupAssistant = false
 
 		if startFlamenco {
 			log.Info().
@@ -113,7 +113,7 @@ func runFlamencoManager() bool {
 		log.Error().Err(err).Msg("loading configuration")
 	}
 
-	if cliArgs.firstTimeWizard {
+	if cliArgs.setupAssistant {
 		configService.ForceFirstRun()
 	}
 	isFirstRun, err := configService.IsFirstRun()
@@ -513,7 +513,7 @@ func parseCliArgs() {
 	flag.BoolVar(&cliArgs.writeConfig, "write-config", false, "Writes configuration to flamenco-manager.yaml, then exits.")
 	flag.BoolVar(&cliArgs.delayResponses, "delay", false,
 		"Add a random delay to any HTTP responses. This aids in development of Flamenco Manager's web frontend.")
-	flag.BoolVar(&cliArgs.firstTimeWizard, "wizard", false, "Open a webbrowser with the first-time configuration wizard.")
+	flag.BoolVar(&cliArgs.setupAssistant, "setup-assistant", false, "Open a webbrowser with the setup assistant.")
 	flag.BoolVar(&cliArgs.pprof, "pprof", false, "Expose profiler endpoints on /debug/pprof/.")
 
 	flag.Parse()

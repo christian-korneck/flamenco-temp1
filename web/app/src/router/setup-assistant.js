@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: "/",
       name: "index",
-      component: () => import("../views/FirstTimeWizardView.vue"),
+      component: () => import("../views/SetupAssistantView.vue"),
     },
     {
       path: "/:pathMatch(.*)*",
