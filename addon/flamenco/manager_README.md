@@ -95,7 +95,7 @@ Class | Method | HTTP request | Description
 *MetaApi* | [**get_configuration_file**](flamenco/manager/docs/MetaApi.md#get_configuration_file) | **GET** /api/v3/configuration/file | Retrieve the configuration of Flamenco Manager.
 *MetaApi* | [**get_variables**](flamenco/manager/docs/MetaApi.md#get_variables) | **GET** /api/v3/configuration/variables/{audience}/{platform} | Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser&#39;s platform. 
 *MetaApi* | [**get_version**](flamenco/manager/docs/MetaApi.md#get_version) | **GET** /api/v3/version | Get the Flamenco version of this Manager
-*MetaApi* | [**save_wizard_config**](flamenco/manager/docs/MetaApi.md#save_wizard_config) | **POST** /api/v3/configuration/wizard | Update the Manager&#39;s configuration, and restart it in fully functional mode.
+*MetaApi* | [**save_setup_assistant_config**](flamenco/manager/docs/MetaApi.md#save_setup_assistant_config) | **POST** /api/v3/configuration/setup-assistant | Update the Manager&#39;s configuration, and restart it in fully functional mode.
 *ShamanApi* | [**shaman_checkout**](flamenco/manager/docs/ShamanApi.md#shaman_checkout) | **POST** /api/v3/shaman/checkout/create | Create a directory, and symlink the required files into it. The files must all have been uploaded to Shaman before calling this endpoint.
 *ShamanApi* | [**shaman_checkout_requirements**](flamenco/manager/docs/ShamanApi.md#shaman_checkout_requirements) | **POST** /api/v3/shaman/checkout/requirements | Checks a Shaman Requirements file, and reports which files are unknown.
 *ShamanApi* | [**shaman_file_store**](flamenco/manager/docs/ShamanApi.md#shaman_file_store) | **POST** /api/v3/shaman/files/{checksum}/{filesize} | Store a new file on the Shaman server. Note that the Shaman server can forcibly close the HTTP connection when another client finishes uploading the exact same file, to prevent double uploads. The file&#39;s contents should be sent in the request body. 
@@ -152,6 +152,7 @@ Class | Method | HTTP request | Description
  - [PathCheckResult](flamenco/manager/docs/PathCheckResult.md)
  - [RegisteredWorker](flamenco/manager/docs/RegisteredWorker.md)
  - [SecurityError](flamenco/manager/docs/SecurityError.md)
+ - [SetupAssistantConfig](flamenco/manager/docs/SetupAssistantConfig.md)
  - [ShamanCheckout](flamenco/manager/docs/ShamanCheckout.md)
  - [ShamanCheckoutResult](flamenco/manager/docs/ShamanCheckoutResult.md)
  - [ShamanFileSpec](flamenco/manager/docs/ShamanFileSpec.md)
@@ -176,7 +177,6 @@ Class | Method | HTTP request | Description
  - [TaskSummary](flamenco/manager/docs/TaskSummary.md)
  - [TaskUpdate](flamenco/manager/docs/TaskUpdate.md)
  - [TaskWorker](flamenco/manager/docs/TaskWorker.md)
- - [WizardConfig](flamenco/manager/docs/WizardConfig.md)
  - [Worker](flamenco/manager/docs/Worker.md)
  - [WorkerAllOf](flamenco/manager/docs/WorkerAllOf.md)
  - [WorkerList](flamenco/manager/docs/WorkerList.md)

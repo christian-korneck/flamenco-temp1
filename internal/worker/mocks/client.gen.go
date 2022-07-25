@@ -656,44 +656,44 @@ func (mr *MockFlamencoClientMockRecorder) RequestWorkerStatusChangeWithResponse(
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestWorkerStatusChangeWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).RequestWorkerStatusChangeWithResponse), varargs...)
 }
 
-// SaveWizardConfigWithBodyWithResponse mocks base method.
-func (m *MockFlamencoClient) SaveWizardConfigWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.SaveWizardConfigResponse, error) {
+// SaveSetupAssistantConfigWithBodyWithResponse mocks base method.
+func (m *MockFlamencoClient) SaveSetupAssistantConfigWithBodyWithResponse(arg0 context.Context, arg1 string, arg2 io.Reader, arg3 ...api.RequestEditorFn) (*api.SaveSetupAssistantConfigResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "SaveWizardConfigWithBodyWithResponse", varargs...)
-	ret0, _ := ret[0].(*api.SaveWizardConfigResponse)
+	ret := m.ctrl.Call(m, "SaveSetupAssistantConfigWithBodyWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.SaveSetupAssistantConfigResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SaveWizardConfigWithBodyWithResponse indicates an expected call of SaveWizardConfigWithBodyWithResponse.
-func (mr *MockFlamencoClientMockRecorder) SaveWizardConfigWithBodyWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+// SaveSetupAssistantConfigWithBodyWithResponse indicates an expected call of SaveSetupAssistantConfigWithBodyWithResponse.
+func (mr *MockFlamencoClientMockRecorder) SaveSetupAssistantConfigWithBodyWithResponse(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveWizardConfigWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SaveWizardConfigWithBodyWithResponse), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSetupAssistantConfigWithBodyWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SaveSetupAssistantConfigWithBodyWithResponse), varargs...)
 }
 
-// SaveWizardConfigWithResponse mocks base method.
-func (m *MockFlamencoClient) SaveWizardConfigWithResponse(arg0 context.Context, arg1 api.SaveWizardConfigJSONRequestBody, arg2 ...api.RequestEditorFn) (*api.SaveWizardConfigResponse, error) {
+// SaveSetupAssistantConfigWithResponse mocks base method.
+func (m *MockFlamencoClient) SaveSetupAssistantConfigWithResponse(arg0 context.Context, arg1 api.SaveSetupAssistantConfigJSONRequestBody, arg2 ...api.RequestEditorFn) (*api.SaveSetupAssistantConfigResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "SaveWizardConfigWithResponse", varargs...)
-	ret0, _ := ret[0].(*api.SaveWizardConfigResponse)
+	ret := m.ctrl.Call(m, "SaveSetupAssistantConfigWithResponse", varargs...)
+	ret0, _ := ret[0].(*api.SaveSetupAssistantConfigResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SaveWizardConfigWithResponse indicates an expected call of SaveWizardConfigWithResponse.
-func (mr *MockFlamencoClientMockRecorder) SaveWizardConfigWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// SaveSetupAssistantConfigWithResponse indicates an expected call of SaveSetupAssistantConfigWithResponse.
+func (mr *MockFlamencoClientMockRecorder) SaveSetupAssistantConfigWithResponse(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveWizardConfigWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SaveWizardConfigWithResponse), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSetupAssistantConfigWithResponse", reflect.TypeOf((*MockFlamencoClient)(nil).SaveSetupAssistantConfigWithResponse), varargs...)
 }
 
 // ScheduleTaskWithResponse mocks base method.

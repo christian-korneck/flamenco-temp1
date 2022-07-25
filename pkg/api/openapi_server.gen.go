@@ -28,12 +28,12 @@ type ServerInterface interface {
 	// Retrieve the configuration of Flamenco Manager.
 	// (GET /api/v3/configuration/file)
 	GetConfigurationFile(ctx echo.Context) error
+	// Update the Manager's configuration, and restart it in fully functional mode.
+	// (POST /api/v3/configuration/setup-assistant)
+	SaveSetupAssistantConfig(ctx echo.Context) error
 	// Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser's platform.
 	// (GET /api/v3/configuration/variables/{audience}/{platform})
 	GetVariables(ctx echo.Context, audience ManagerVariableAudience, platform string) error
-	// Update the Manager's configuration, and restart it in fully functional mode.
-	// (POST /api/v3/configuration/wizard)
-	SaveWizardConfig(ctx echo.Context) error
 	// Submit a new job for Flamenco Manager to execute.
 	// (POST /api/v3/jobs)
 	SubmitJob(ctx echo.Context) error
@@ -189,6 +189,15 @@ func (w *ServerInterfaceWrapper) GetConfigurationFile(ctx echo.Context) error {
 	return err
 }
 
+// SaveSetupAssistantConfig converts echo context to params.
+func (w *ServerInterfaceWrapper) SaveSetupAssistantConfig(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.SaveSetupAssistantConfig(ctx)
+	return err
+}
+
 // GetVariables converts echo context to params.
 func (w *ServerInterfaceWrapper) GetVariables(ctx echo.Context) error {
 	var err error
@@ -210,15 +219,6 @@ func (w *ServerInterfaceWrapper) GetVariables(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetVariables(ctx, audience, platform)
-	return err
-}
-
-// SaveWizardConfig converts echo context to params.
-func (w *ServerInterfaceWrapper) SaveWizardConfig(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.SaveWizardConfig(ctx)
 	return err
 }
 
@@ -768,8 +768,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/v3/configuration/check/blender", wrapper.CheckBlenderExePath)
 	router.POST(baseURL+"/api/v3/configuration/check/shared-storage", wrapper.CheckSharedStoragePath)
 	router.GET(baseURL+"/api/v3/configuration/file", wrapper.GetConfigurationFile)
+	router.POST(baseURL+"/api/v3/configuration/setup-assistant", wrapper.SaveSetupAssistantConfig)
 	router.GET(baseURL+"/api/v3/configuration/variables/:audience/:platform", wrapper.GetVariables)
-	router.POST(baseURL+"/api/v3/configuration/wizard", wrapper.SaveWizardConfig)
 	router.POST(baseURL+"/api/v3/jobs", wrapper.SubmitJob)
 	router.GET(baseURL+"/api/v3/jobs/last-rendered", wrapper.FetchGlobalLastRenderedInfo)
 	router.POST(baseURL+"/api/v3/jobs/query", wrapper.QueryJobs)

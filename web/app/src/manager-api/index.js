@@ -42,6 +42,7 @@ import PathCheckInput from './model/PathCheckInput';
 import PathCheckResult from './model/PathCheckResult';
 import RegisteredWorker from './model/RegisteredWorker';
 import SecurityError from './model/SecurityError';
+import SetupAssistantConfig from './model/SetupAssistantConfig';
 import ShamanCheckout from './model/ShamanCheckout';
 import ShamanCheckoutResult from './model/ShamanCheckoutResult';
 import ShamanFileSpec from './model/ShamanFileSpec';
@@ -66,7 +67,6 @@ import TaskStatusChange from './model/TaskStatusChange';
 import TaskSummary from './model/TaskSummary';
 import TaskUpdate from './model/TaskUpdate';
 import TaskWorker from './model/TaskWorker';
-import WizardConfig from './model/WizardConfig';
 import Worker from './model/Worker';
 import WorkerAllOf from './model/WorkerAllOf';
 import WorkerList from './model/WorkerList';
@@ -298,6 +298,12 @@ export {
     SecurityError,
 
     /**
+     * The SetupAssistantConfig model constructor.
+     * @property {module:model/SetupAssistantConfig}
+     */
+    SetupAssistantConfig,
+
+    /**
      * The ShamanCheckout model constructor.
      * @property {module:model/ShamanCheckout}
      */
@@ -440,12 +446,6 @@ export {
      * @property {module:model/TaskWorker}
      */
     TaskWorker,
-
-    /**
-     * The WizardConfig model constructor.
-     * @property {module:model/WizardConfig}
-     */
-    WizardConfig,
 
     /**
      * The Worker model constructor.

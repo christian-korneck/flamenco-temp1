@@ -421,6 +421,14 @@ type SecurityError struct {
 	Message string `json:"message"`
 }
 
+// Configuration obtained from the Setup Assistant.
+type SetupAssistantConfig struct {
+	BlenderExecutable BlenderPathCheckResult `json:"blenderExecutable"`
+
+	// Directory used for job file storage.
+	StorageLocation string `json:"storageLocation"`
+}
+
 // Set of files with their SHA256 checksum, size in bytes, and desired location in the checkout directory.
 type ShamanCheckout struct {
 	// Path where the Manager should create this checkout. It is relative to the Shaman checkout path as configured on the Manager. In older versions of the Shaman this was just the "checkout ID", but in this version it can be a path like `project-slug/scene-name/unique-ID`.
@@ -656,14 +664,6 @@ type TaskWorker struct {
 	Name    string `json:"name"`
 }
 
-// Configuration obtained from the First-Time Wizard.
-type WizardConfig struct {
-	BlenderExecutable BlenderPathCheckResult `json:"blenderExecutable"`
-
-	// Directory used for job file storage.
-	StorageLocation string `json:"storageLocation"`
-}
-
 // Worker defines model for Worker.
 type Worker struct {
 	// Embedded struct due to allOf(#/components/schemas/WorkerSummary)
@@ -749,8 +749,8 @@ type CheckBlenderExePathJSONBody PathCheckInput
 // CheckSharedStoragePathJSONBody defines parameters for CheckSharedStoragePath.
 type CheckSharedStoragePathJSONBody PathCheckInput
 
-// SaveWizardConfigJSONBody defines parameters for SaveWizardConfig.
-type SaveWizardConfigJSONBody WizardConfig
+// SaveSetupAssistantConfigJSONBody defines parameters for SaveSetupAssistantConfig.
+type SaveSetupAssistantConfigJSONBody SetupAssistantConfig
 
 // SubmitJobJSONBody defines parameters for SubmitJob.
 type SubmitJobJSONBody SubmittedJob
@@ -806,8 +806,8 @@ type CheckBlenderExePathJSONRequestBody CheckBlenderExePathJSONBody
 // CheckSharedStoragePathJSONRequestBody defines body for CheckSharedStoragePath for application/json ContentType.
 type CheckSharedStoragePathJSONRequestBody CheckSharedStoragePathJSONBody
 
-// SaveWizardConfigJSONRequestBody defines body for SaveWizardConfig for application/json ContentType.
-type SaveWizardConfigJSONRequestBody SaveWizardConfigJSONBody
+// SaveSetupAssistantConfigJSONRequestBody defines body for SaveSetupAssistantConfig for application/json ContentType.
+type SaveSetupAssistantConfigJSONRequestBody SaveSetupAssistantConfigJSONBody
 
 // SubmitJobJSONRequestBody defines body for SubmitJob for application/json ContentType.
 type SubmitJobJSONRequestBody SubmitJobJSONBody

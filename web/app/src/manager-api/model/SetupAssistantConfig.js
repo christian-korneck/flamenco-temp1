@@ -15,21 +15,21 @@ import ApiClient from '../ApiClient';
 import BlenderPathCheckResult from './BlenderPathCheckResult';
 
 /**
- * The WizardConfig model module.
- * @module model/WizardConfig
+ * The SetupAssistantConfig model module.
+ * @module model/SetupAssistantConfig
  * @version 0.0.0
  */
-class WizardConfig {
+class SetupAssistantConfig {
     /**
-     * Constructs a new <code>WizardConfig</code>.
-     * Configuration obtained from the First-Time Wizard.
-     * @alias module:model/WizardConfig
+     * Constructs a new <code>SetupAssistantConfig</code>.
+     * Configuration obtained from the Setup Assistant.
+     * @alias module:model/SetupAssistantConfig
      * @param storageLocation {String} Directory used for job file storage.
      * @param blenderExecutable {module:model/BlenderPathCheckResult} 
      */
     constructor(storageLocation, blenderExecutable) { 
         
-        WizardConfig.initialize(this, storageLocation, blenderExecutable);
+        SetupAssistantConfig.initialize(this, storageLocation, blenderExecutable);
     }
 
     /**
@@ -43,15 +43,15 @@ class WizardConfig {
     }
 
     /**
-     * Constructs a <code>WizardConfig</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>SetupAssistantConfig</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/WizardConfig} obj Optional instance to populate.
-     * @return {module:model/WizardConfig} The populated <code>WizardConfig</code> instance.
+     * @param {module:model/SetupAssistantConfig} obj Optional instance to populate.
+     * @return {module:model/SetupAssistantConfig} The populated <code>SetupAssistantConfig</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new WizardConfig();
+            obj = obj || new SetupAssistantConfig();
 
             if (data.hasOwnProperty('storageLocation')) {
                 obj['storageLocation'] = ApiClient.convertToType(data['storageLocation'], 'String');
@@ -70,17 +70,17 @@ class WizardConfig {
  * Directory used for job file storage.
  * @member {String} storageLocation
  */
-WizardConfig.prototype['storageLocation'] = undefined;
+SetupAssistantConfig.prototype['storageLocation'] = undefined;
 
 /**
  * @member {module:model/BlenderPathCheckResult} blenderExecutable
  */
-WizardConfig.prototype['blenderExecutable'] = undefined;
+SetupAssistantConfig.prototype['blenderExecutable'] = undefined;
 
 
 
 
 
 
-export default WizardConfig;
+export default SetupAssistantConfig;
 

@@ -30,7 +30,7 @@ from flamenco.manager.model.manager_variable_audience import ManagerVariableAudi
 from flamenco.manager.model.manager_variables import ManagerVariables
 from flamenco.manager.model.path_check_input import PathCheckInput
 from flamenco.manager.model.path_check_result import PathCheckResult
-from flamenco.manager.model.wizard_config import WizardConfig
+from flamenco.manager.model.setup_assistant_config import SetupAssistantConfig
 
 
 class MetaApi(object):
@@ -364,18 +364,18 @@ class MetaApi(object):
             },
             api_client=api_client
         )
-        self.save_wizard_config_endpoint = _Endpoint(
+        self.save_setup_assistant_config_endpoint = _Endpoint(
             settings={
                 'response_type': None,
                 'auth': [],
-                'endpoint_path': '/api/v3/configuration/wizard',
-                'operation_id': 'save_wizard_config',
+                'endpoint_path': '/api/v3/configuration/setup-assistant',
+                'operation_id': 'save_setup_assistant_config',
                 'http_method': 'POST',
                 'servers': None,
             },
             params_map={
                 'all': [
-                    'wizard_config',
+                    'setup_assistant_config',
                 ],
                 'required': [],
                 'nullable': [
@@ -391,13 +391,13 @@ class MetaApi(object):
                 'allowed_values': {
                 },
                 'openapi_types': {
-                    'wizard_config':
-                        (WizardConfig,),
+                    'setup_assistant_config':
+                        (SetupAssistantConfig,),
                 },
                 'attribute_map': {
                 },
                 'location_map': {
-                    'wizard_config': 'body',
+                    'setup_assistant_config': 'body',
                 },
                 'collection_format_map': {
                 }
@@ -928,7 +928,7 @@ class MetaApi(object):
         kwargs['_host_index'] = kwargs.get('_host_index')
         return self.get_version_endpoint.call_with_http_info(**kwargs)
 
-    def save_wizard_config(
+    def save_setup_assistant_config(
         self,
         **kwargs
     ):
@@ -937,12 +937,12 @@ class MetaApi(object):
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.save_wizard_config(async_req=True)
+        >>> thread = api.save_setup_assistant_config(async_req=True)
         >>> result = thread.get()
 
 
         Keyword Args:
-            wizard_config (WizardConfig): Configuration to save.. [optional]
+            setup_assistant_config (SetupAssistantConfig): Configuration to save.. [optional]
             _return_http_data_only (bool): response data without head status
                 code and headers. Default is True.
             _preload_content (bool): if False, the urllib3.HTTPResponse object
@@ -999,5 +999,5 @@ class MetaApi(object):
         kwargs['_content_type'] = kwargs.get(
             '_content_type')
         kwargs['_host_index'] = kwargs.get('_host_index')
-        return self.save_wizard_config_endpoint.call_with_http_info(**kwargs)
+        return self.save_setup_assistant_config_endpoint.call_with_http_info(**kwargs)
 

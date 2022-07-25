@@ -43,6 +43,7 @@ from flamenco.manager.model.path_check_input import PathCheckInput
 from flamenco.manager.model.path_check_result import PathCheckResult
 from flamenco.manager.model.registered_worker import RegisteredWorker
 from flamenco.manager.model.security_error import SecurityError
+from flamenco.manager.model.setup_assistant_config import SetupAssistantConfig
 from flamenco.manager.model.shaman_checkout import ShamanCheckout
 from flamenco.manager.model.shaman_checkout_result import ShamanCheckoutResult
 from flamenco.manager.model.shaman_file_spec import ShamanFileSpec
@@ -67,7 +68,6 @@ from flamenco.manager.model.task_status_change import TaskStatusChange
 from flamenco.manager.model.task_summary import TaskSummary
 from flamenco.manager.model.task_update import TaskUpdate
 from flamenco.manager.model.task_worker import TaskWorker
-from flamenco.manager.model.wizard_config import WizardConfig
 from flamenco.manager.model.worker import Worker
 from flamenco.manager.model.worker_all_of import WorkerAllOf
 from flamenco.manager.model.worker_list import WorkerList

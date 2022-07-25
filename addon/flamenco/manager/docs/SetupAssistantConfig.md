@@ -1,6 +1,6 @@
-# WizardConfig
+# SetupAssistantConfig
 
-Configuration obtained from the First-Time Wizard.
+Configuration obtained from the Setup Assistant.
 
 ## Properties
 Name | Type | Description | Notes

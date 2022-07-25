@@ -11,7 +11,7 @@ Method | HTTP request | Description
 [**get_configuration_file**](MetaApi.md#get_configuration_file) | **GET** /api/v3/configuration/file | Retrieve the configuration of Flamenco Manager.
 [**get_variables**](MetaApi.md#get_variables) | **GET** /api/v3/configuration/variables/{audience}/{platform} | Get the variables of this Manager. Used by the Blender add-on to recognise two-way variables, and for the web interface to do variable replacement based on the browser&#39;s platform. 
 [**get_version**](MetaApi.md#get_version) | **GET** /api/v3/version | Get the Flamenco version of this Manager
-[**save_wizard_config**](MetaApi.md#save_wizard_config) | **POST** /api/v3/configuration/wizard | Update the Manager&#39;s configuration, and restart it in fully functional mode.
+[**save_setup_assistant_config**](MetaApi.md#save_setup_assistant_config) | **POST** /api/v3/configuration/setup-assistant | Update the Manager&#39;s configuration, and restart it in fully functional mode.
 
 
 # **check_blender_exe_path**
@@ -469,8 +469,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **save_wizard_config**
-> save_wizard_config()
+# **save_setup_assistant_config**
+> save_setup_assistant_config()
 
 Update the Manager's configuration, and restart it in fully functional mode.
 
@@ -482,7 +482,7 @@ import time
 import flamenco.manager
 from flamenco.manager.api import meta_api
 from flamenco.manager.model.error import Error
-from flamenco.manager.model.wizard_config import WizardConfig
+from flamenco.manager.model.setup_assistant_config import SetupAssistantConfig
 from pprint import pprint
 # Defining the host is optional and defaults to http://localhost
 # See configuration.py for a list of all supported configuration parameters.
@@ -495,7 +495,7 @@ configuration = flamenco.manager.Configuration(
 with flamenco.manager.ApiClient() as api_client:
     # Create an instance of the API class
     api_instance = meta_api.MetaApi(api_client)
-    wizard_config = WizardConfig(
+    setup_assistant_config = SetupAssistantConfig(
         storage_location="storage_location_example",
         blender_executable=BlenderPathCheckResult(
             input="input_example",
@@ -504,15 +504,15 @@ with flamenco.manager.ApiClient() as api_client:
             is_usable=True,
             cause="cause_example",
         ),
-    ) # WizardConfig | Configuration to save. (optional)
+    ) # SetupAssistantConfig | Configuration to save. (optional)
 
     # example passing only required values which don't have defaults set
     # and optional values
     try:
         # Update the Manager's configuration, and restart it in fully functional mode.
-        api_instance.save_wizard_config(wizard_config=wizard_config)
+        api_instance.save_setup_assistant_config(setup_assistant_config=setup_assistant_config)
     except flamenco.manager.ApiException as e:
-        print("Exception when calling MetaApi->save_wizard_config: %s\n" % e)
+        print("Exception when calling MetaApi->save_setup_assistant_config: %s\n" % e)
 ```
 
 
@@ -520,7 +520,7 @@ with flamenco.manager.ApiClient() as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **wizard_config** | [**WizardConfig**](WizardConfig.md)| Configuration to save. | [optional]
+ **setup_assistant_config** | [**SetupAssistantConfig**](SetupAssistantConfig.md)| Configuration to save. | [optional]
 
 ### Return type
 

@@ -21,7 +21,7 @@ import ManagerVariable from '../model/ManagerVariable';
 import ManagerVariableAudience from '../model/ManagerVariableAudience';
 import PathCheckInput from '../model/PathCheckInput';
 import PathCheckResult from '../model/PathCheckResult';
-import WizardConfig from '../model/WizardConfig';
+import SetupAssistantConfig from '../model/SetupAssistantConfig';
 
 /**
 * Meta service.
@@ -343,12 +343,12 @@ export default class MetaApi {
     /**
      * Update the Manager's configuration, and restart it in fully functional mode.
      * @param {Object} opts Optional parameters
-     * @param {module:model/WizardConfig} opts.wizardConfig Configuration to save.
+     * @param {module:model/SetupAssistantConfig} opts.setupAssistantConfig Configuration to save.
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}, with an object containing HTTP response
      */
-    saveWizardConfigWithHttpInfo(opts) {
+    saveSetupAssistantConfigWithHttpInfo(opts) {
       opts = opts || {};
-      let postBody = opts['wizardConfig'];
+      let postBody = opts['setupAssistantConfig'];
 
       let pathParams = {
       };
@@ -364,7 +364,7 @@ export default class MetaApi {
       let accepts = ['application/json'];
       let returnType = null;
       return this.apiClient.callApi(
-        '/api/v3/configuration/wizard', 'POST',
+        '/api/v3/configuration/setup-assistant', 'POST',
         pathParams, queryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, null
       );
@@ -373,11 +373,11 @@ export default class MetaApi {
     /**
      * Update the Manager's configuration, and restart it in fully functional mode.
      * @param {Object} opts Optional parameters
-     * @param {module:model/WizardConfig} opts.wizardConfig Configuration to save.
+     * @param {module:model/SetupAssistantConfig} opts.setupAssistantConfig Configuration to save.
      * @return {Promise} a {@link https://www.promisejs.org/|Promise}
      */
-    saveWizardConfig(opts) {
-      return this.saveWizardConfigWithHttpInfo(opts)
+    saveSetupAssistantConfig(opts) {
+      return this.saveSetupAssistantConfigWithHttpInfo(opts)
         .then(function(response_and_data) {
           return response_and_data.data;
         });
