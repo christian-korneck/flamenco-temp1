@@ -61,6 +61,7 @@ func main() {
 
 	log.Info().
 		Str("version", appinfo.ApplicationVersion).
+		Str("git", appinfo.ApplicationGitHash).
 		Str("OS", runtime.GOOS).
 		Str("ARCH", runtime.GOARCH).
 		Int("pid", os.Getpid()).

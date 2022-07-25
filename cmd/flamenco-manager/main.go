@@ -72,6 +72,7 @@ func main() {
 	log.Logger = log.Output(output)
 	log.Info().
 		Str("version", appinfo.ApplicationVersion).
+		Str("git", appinfo.ApplicationGitHash).
 		Str("os", runtime.GOOS).
 		Str("arch", runtime.GOARCH).
 		Msgf("starting %v", appinfo.ApplicationName)

@@ -1,12 +1,11 @@
 PKG := git.blender.org/flamenco
-VERSION := $(shell git describe --tags --dirty --always)
-# Version used in the OpenAPI-generated code shouldn't contain the '-dirty'
-# suffix. In the common development workflow, those files will always be dirty
-# (because they're only committed after locally working, which means the
-# implementation has already been written).
-OAPI_VERSION := $(shell git describe --tags --always)
 
-LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
+# To update the version number in all the relevant places, update the VERSION
+# variable below and run `make update-version`.
+VERSION := 3.0-dev0
+
+GITHASH := $(shell git describe --dirty --always)
+LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION} -X ${PKG}/internal/appinfo.ApplicationGitHash=${GITHASH}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
 # Package name of the generated Python/JavaScript code for the Flamenco API.
@@ -76,7 +75,10 @@ webapp-static: addon-packer
 	./addon-packer -filename ${WEB_STATIC}/flamenco3-addon.zip
 	@echo "Web app has been installed into ${WEB_STATIC}"
 
-generate: generate-go generate-py generate-js
+generate:
+	$(MAKE) generate-go
+	$(MAKE) generate-py
+	$(MAKE) generate-js
 
 generate-go:
 	go generate ./pkg/api/...
@@ -99,10 +101,10 @@ generate-py:
 		-g python \
 		-o addon/ \
 		--package-name "${PY_API_PKG_NAME}" \
-		--http-user-agent "Flamenco/${OAPI_VERSION} (Blender add-on)" \
+		--http-user-agent "Flamenco/${VERSION} (Blender add-on)" \
 		-p generateSourceCodeOnly=true \
 		-p projectName=Flamenco \
-		-p packageVersion="${OAPI_VERSION}" > .openapi-generator-py.log
+		-p packageVersion="${VERSION}" > .openapi-generator-py.log
 
 # The generator outputs files so that we can write our own tests. We don't,
 # though, so it's better to just remove those placeholders.
@@ -130,7 +132,7 @@ generate-js:
 		-i pkg/api/flamenco-openapi.yaml \
 		-g javascript \
 		-o web/_tmp-manager-api-javascript \
-		--http-user-agent "Flamenco/${OAPI_VERSION} / webbrowser" \
+		--http-user-agent "Flamenco/${VERSION} / webbrowser" \
 		-p projectName=flamenco-manager \
 		-p projectVersion="0.0.0" \
 		-p apiPackage="${JS_API_PKG_NAME}" \
@@ -149,11 +151,26 @@ ifeq ($(OS),Windows_NT)
 	git status --porcelain | grep '^ M web/app/src/manager-api' | cut -d' ' -f3 | xargs unix2dos --keepdate
 endif
 
+.PHONY:
+update-version:
+	@echo "--- Updating Flamenco version to ${VERSION}"
+	@echo "--- If this stops with exit status 42, it was already at that version."
+	@echo
+	go run ./cmd/update-version ${VERSION}
+	$(MAKE) generate-py
+	$(MAKE) generate-js
+	@echo
+	@echo 'File replacement done, commit with:'
+	@echo
+	@echo 'git commit -m "Bumped version to ${VERSION}" Makefile addon/flamenco/__init__.py'
+	@echo 'git tag -a -m "Tagged version ${VERSION}" v${VERSION}'
+
 version:
-	@echo "OS          : ${OS}"
 	@echo "Package     : ${PKG}"
 	@echo "Version     : ${VERSION}"
-	@echo "OAPI Version: ${OAPI_VERSION}"
+	@echo "Git Hash    : ${GITHASH}"
+	@echo -n "GOOS        : "; go env GOOS
+	@echo -n "GOARCH      : "; go env GOARCH
 	@echo
 	@env | grep GO
 
