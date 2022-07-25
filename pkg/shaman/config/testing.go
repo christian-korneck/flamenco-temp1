@@ -25,12 +25,18 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 )
 
 // CreateTestConfig creates a configuration + cleanup function.
 func CreateTestConfig() (conf Config, cleanup func()) {
 	tempDir, err := ioutil.TempDir("", "shaman-test-")
+	if err != nil {
+		panic(err)
+	}
+
+	tempDir, err = filepath.EvalSymlinks(tempDir)
 	if err != nil {
 		panic(err)
 	}
