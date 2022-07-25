@@ -5,7 +5,6 @@ VERSION := $(shell git describe --tags --dirty --always)
 # (because they're only committed after locally working, which means the
 # implementation has already been written).
 OAPI_VERSION := $(shell git describe --tags --always)
-PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
 
 LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
@@ -172,7 +171,7 @@ swagger-ui:
 test:
 # Ensure the web-static directory exists, so that `web/web_app.go` can embed something.
 	mkdir -p ${WEB_STATIC}
-	go test -short ${PKG_LIST}
+	go test -short ./...
 
 clean:
 	@go clean -i -x
