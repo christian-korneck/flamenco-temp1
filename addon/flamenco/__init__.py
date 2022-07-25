@@ -9,7 +9,7 @@ bl_info = {
     "blender": (3, 1, 0),
     "description": "Flamenco client for Blender.",
     "location": "Output Properties > Flamenco",
-    "doc_url": "https://www.flamenco.io/",
+    "doc_url": "https://flamenco.blender.org/",
     "category": "System",
     "support": "COMMUNITY",
     "warning": "This is version 3.0-dev0 of the add-on, which is not a stable release",

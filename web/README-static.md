@@ -12,7 +12,7 @@ has something to work with, even before any static files have been built.
 
 # Running static flamenco.io site locally
 
-[Flamenco.io](https://www.flamenco.io/) runs off of [Hugo](https://gohugo.io/).
+The [Flamenco website](https://flamenco.blender.org/) runs off of [Hugo](https://gohugo.io/).
 
 Hugo is automatically installed when running `make with-deps`, but you can also [manually install Hugo](https://gohugo.io/getting-started/installing/).
 
