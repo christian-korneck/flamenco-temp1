@@ -28,6 +28,7 @@ __pycache__
 .mypy_cache/
 .openapi-generator/
 .hugo_build.lock
+.openapi-generator-*.log
 
 web/manager-api/dist/
 web/static/

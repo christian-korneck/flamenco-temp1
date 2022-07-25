@@ -102,7 +102,7 @@ generate-py:
 		--http-user-agent "Flamenco/${OAPI_VERSION} (Blender add-on)" \
 		-p generateSourceCodeOnly=true \
 		-p projectName=Flamenco \
-		-p packageVersion="${OAPI_VERSION}"
+		-p packageVersion="${OAPI_VERSION}" > .openapi-generator-py.log
 
 # The generator outputs files so that we can write our own tests. We don't,
 # though, so it's better to just remove those placeholders.
@@ -136,7 +136,7 @@ generate-js:
 		-p apiPackage="${JS_API_PKG_NAME}" \
 		-p disallowAdditionalPropertiesIfNotPresent=false \
 		-p usePromises=true \
-		-p moduleName=flamencoManager
+		-p moduleName=flamencoManager > .openapi-generator-js.log
 
 # Cherry-pick the generated sources, and remove everything else.
 # The only relevant bit is that the generated code depends on `superagent`,
