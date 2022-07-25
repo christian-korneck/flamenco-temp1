@@ -189,7 +189,7 @@ func (s *Server) gcFilterLinkedFiles(checkoutPath string, oldFiles mtimeMap, log
 		}
 
 		if err != nil {
-			logger.Debug().Err(err).Msg("error while walking checkout path while searching for symlinks")
+			logger.Info().Err(err).Msg("error while walking checkout path while searching for symlinks")
 			return err
 		}
 		if info.IsDir() || info.Mode()&os.ModeSymlink == 0 {
@@ -214,6 +214,7 @@ func (s *Server) gcFilterLinkedFiles(checkoutPath string, oldFiles mtimeMap, log
 
 		// Delete the link target from the old files, if it was there at all.
 		delete(oldFiles, linkTarget)
+		logger.Trace().Str("path", linkTarget).Msg("shaman: file is in use, should not be garbage-collected")
 		return nil
 	}
 	if err := filepath.Walk(checkoutPath, visit); err != nil {
