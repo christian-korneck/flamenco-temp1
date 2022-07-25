@@ -138,12 +138,11 @@ func runFlamencoManager() bool {
 	_, port, _ := net.SplitHostPort(listen)
 	log.Info().Str("port", port).Msg("listening")
 
-	// Find our URLs, and log them for the user's convenience.
+	// Find our URLs.
 	urls, err := own_url.AvailableURLs("http", listen)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to figure out my own URL")
 	}
-	logURLs(urls)
 
 	ssdp := makeAutoDiscoverable(urls)
 
@@ -233,6 +232,12 @@ func runFlamencoManager() bool {
 	go func() {
 		defer wg.Done()
 		sleepScheduler.Run(mainCtx)
+	}()
+
+	// Log the URLs last, hopefully that makes them more visible / encouraging to go to for users.
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		logURLs(urls)
 	}()
 
 	// Open a webbrowser, but give the web service some time to start first.
