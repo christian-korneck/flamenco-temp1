@@ -16,7 +16,7 @@ has something to work with, even before any static files have been built.
 
 Hugo is automatically installed when running `make with-deps`, but you can also [manually install Hugo](https://gohugo.io/getting-started/installing/).
 
-To locally run the site, from the `web/flamenco-io-site` directory, start the server with:
+To locally run the site, from the `web/project-website` directory, start the server with:
 
 ```
 hugo server -D

@@ -186,10 +186,10 @@ clean-webapp-static:
 	mkdir -p ./${WEB_STATIC}
 	touch ${WEB_STATIC}/emptyfile
 
-site:
-	rm -rf web/flamenco-io-site/public/
-	cd web/flamenco-io-site; hugo --baseURL https://www.flamenco.io/
-	rsync web/flamenco-io-site/public/ flamenco.io:flamenco.io/ \
+project-website:
+	rm -rf web/project-website/public/
+	cd web/project-website; hugo --baseURL https://flamenco.blender.org/
+	rsync web/project-website/public/ flamenco@flamenco.blender.org:/var/www/flamenco.blender.org/ \
 		-va \
 		--exclude v2/ \
 		--exclude .well-known/ \
