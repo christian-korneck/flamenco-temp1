@@ -675,6 +675,9 @@ type Worker struct {
 	// Operating system of the Worker
 	Platform           string   `json:"platform"`
 	SupportedTaskTypes []string `json:"supported_task_types"`
+
+	// Task assigned to a Worker.
+	Task *WorkerTask `json:"task,omitempty"`
 }
 
 // List of workers.
@@ -741,6 +744,14 @@ type WorkerSummary struct {
 
 	// Version of Flamenco this Worker is running
 	Version string `json:"version"`
+}
+
+// WorkerTask defines model for WorkerTask.
+type WorkerTask struct {
+	// Embedded struct due to allOf(#/components/schemas/TaskSummary)
+	TaskSummary `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
+	JobId string `json:"job_id"`
 }
 
 // CheckBlenderExePathJSONBody defines parameters for CheckBlenderExePath.

@@ -16,6 +16,7 @@ import WorkerAllOf from './WorkerAllOf';
 import WorkerStatus from './WorkerStatus';
 import WorkerStatusChangeRequest from './WorkerStatusChangeRequest';
 import WorkerSummary from './WorkerSummary';
+import WorkerTask from './WorkerTask';
 
 /**
  * The Worker model module.
@@ -97,6 +98,9 @@ class Worker {
             if (data.hasOwnProperty('supported_task_types')) {
                 obj['supported_task_types'] = ApiClient.convertToType(data['supported_task_types'], ['String']);
             }
+            if (data.hasOwnProperty('task')) {
+                obj['task'] = WorkerTask.constructFromObject(data['task']);
+            }
         }
         return obj;
     }
@@ -153,6 +157,11 @@ Worker.prototype['platform'] = undefined;
  */
 Worker.prototype['supported_task_types'] = undefined;
 
+/**
+ * @member {module:model/WorkerTask} task
+ */
+Worker.prototype['task'] = undefined;
+
 
 // Implement WorkerSummary interface:
 /**
@@ -196,6 +205,10 @@ WorkerAllOf.prototype['platform'] = undefined;
  * @member {Array.<String>} supported_task_types
  */
 WorkerAllOf.prototype['supported_task_types'] = undefined;
+/**
+ * @member {module:model/WorkerTask} task
+ */
+WorkerAllOf.prototype['task'] = undefined;
 
 
 

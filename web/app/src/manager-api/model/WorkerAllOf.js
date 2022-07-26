@@ -12,6 +12,7 @@
  */
 
 import ApiClient from '../ApiClient';
+import WorkerTask from './WorkerTask';
 
 /**
  * The WorkerAllOf model module.
@@ -62,6 +63,9 @@ class WorkerAllOf {
             if (data.hasOwnProperty('supported_task_types')) {
                 obj['supported_task_types'] = ApiClient.convertToType(data['supported_task_types'], ['String']);
             }
+            if (data.hasOwnProperty('task')) {
+                obj['task'] = WorkerTask.constructFromObject(data['task']);
+            }
         }
         return obj;
     }
@@ -85,6 +89,11 @@ WorkerAllOf.prototype['platform'] = undefined;
  * @member {Array.<String>} supported_task_types
  */
 WorkerAllOf.prototype['supported_task_types'] = undefined;
+
+/**
+ * @member {module:model/WorkerTask} task
+ */
+WorkerAllOf.prototype['task'] = undefined;
 
 
 

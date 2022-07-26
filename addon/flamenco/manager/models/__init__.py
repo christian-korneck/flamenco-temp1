@@ -79,3 +79,5 @@ from flamenco.manager.model.worker_state_changed import WorkerStateChanged
 from flamenco.manager.model.worker_status import WorkerStatus
 from flamenco.manager.model.worker_status_change_request import WorkerStatusChangeRequest
 from flamenco.manager.model.worker_summary import WorkerSummary
+from flamenco.manager.model.worker_task import WorkerTask
+from flamenco.manager.model.worker_task_all_of import WorkerTaskAllOf

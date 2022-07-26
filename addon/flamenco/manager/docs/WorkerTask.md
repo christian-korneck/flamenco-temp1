@@ -1,13 +1,17 @@
-# WorkerAllOf
+# WorkerTask
 
+Task assigned to a Worker.
 
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ip_address** | **str** | IP address of the Worker | 
-**platform** | **str** | Operating system of the Worker | 
-**supported_task_types** | **[str]** |  | 
-**task** | [**WorkerTask**](WorkerTask.md) |  | [optional] 
+**id** | **str** |  | 
+**name** | **str** |  | 
+**status** | [**TaskStatus**](TaskStatus.md) |  | 
+**priority** | **int** |  | 
+**task_type** | **str** |  | 
+**updated** | **datetime** |  | 
+**job_id** | **str** |  | 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

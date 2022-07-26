@@ -78,6 +78,8 @@ import WorkerStateChanged from './model/WorkerStateChanged';
 import WorkerStatus from './model/WorkerStatus';
 import WorkerStatusChangeRequest from './model/WorkerStatusChangeRequest';
 import WorkerSummary from './model/WorkerSummary';
+import WorkerTask from './model/WorkerTask';
+import WorkerTaskAllOf from './model/WorkerTaskAllOf';
 import JobsApi from './manager/JobsApi';
 import MetaApi from './manager/MetaApi';
 import ShamanApi from './manager/ShamanApi';
@@ -512,6 +514,18 @@ export {
      * @property {module:model/WorkerSummary}
      */
     WorkerSummary,
+
+    /**
+     * The WorkerTask model constructor.
+     * @property {module:model/WorkerTask}
+     */
+    WorkerTask,
+
+    /**
+     * The WorkerTaskAllOf model constructor.
+     * @property {module:model/WorkerTaskAllOf}
+     */
+    WorkerTaskAllOf,
 
     /**
     * The JobsApi service constructor.

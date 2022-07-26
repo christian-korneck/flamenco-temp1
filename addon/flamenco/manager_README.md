@@ -188,6 +188,8 @@ Class | Method | HTTP request | Description
  - [WorkerStatus](flamenco/manager/docs/WorkerStatus.md)
  - [WorkerStatusChangeRequest](flamenco/manager/docs/WorkerStatusChangeRequest.md)
  - [WorkerSummary](flamenco/manager/docs/WorkerSummary.md)
+ - [WorkerTask](flamenco/manager/docs/WorkerTask.md)
+ - [WorkerTaskAllOf](flamenco/manager/docs/WorkerTaskAllOf.md)
 
 
 ## Documentation For Authorization
