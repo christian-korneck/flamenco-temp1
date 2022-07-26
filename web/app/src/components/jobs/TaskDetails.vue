@@ -14,14 +14,14 @@
 
       <dt class="field-worker" title="Assigned To">Assigned To</dt>
       <dd>
-        <worker-link :worker="taskData.worker" />
+        <link-worker :worker="taskData.worker" />
       </dd>
 
       <template v-if="taskData.failed_by_workers.length > 0">
         <dt class="field-failed-by-workers" title="Failed by Workers">Failed by Workers</dt>
         <dd>
           <div v-for="worker in taskData.failed_by_workers">
-            <worker-link :worker="worker" />
+            <link-worker :worker="worker" />
           </div>
         </dd>
       </template>
@@ -76,7 +76,7 @@ import { JobsApi } from '@/manager-api';
 import { backendURL } from '@/urls';
 import { apiClient } from '@/stores/api-query-count';
 import { useNotifs } from "@/stores/notifications";
-import WorkerLink from '@/components/WorkerLink.vue';
+import LinkWorker from '@/components/LinkWorker.vue';
 
 export default {
   props: [
@@ -85,7 +85,7 @@ export default {
   emits: [
     "showTaskLogTail", // Emitted when the user presses the "follow task log" button.
   ],
-  components: { WorkerLink },
+  components: { LinkWorker },
   data() {
     return {
       datetime: datetime, // So that the template can access it.

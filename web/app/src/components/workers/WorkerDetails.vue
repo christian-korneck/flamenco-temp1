@@ -30,7 +30,7 @@
 
       <dt class="field-task">Last Task</dt>
       <dd>
-        <worker-task-link :workerTask="workerData.task" />
+        <link-worker-task :workerTask="workerData.task" />
       </dd>
     </dl>
   </template>
@@ -45,14 +45,14 @@ import * as datetime from "@/datetime";
 import { WorkerMgtApi } from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 import { workerStatus } from "../../statusindicator";
-import WorkerTaskLink from '@/components/WorkerTaskLink.vue';
+import LinkWorkerTask from '@/components/LinkWorkerTask.vue';
 
 export default {
   props: [
     "workerData", // Worker data to show.
   ],
   components: {
-    WorkerTaskLink,
+    LinkWorkerTask,
   },
   data() {
     return {
