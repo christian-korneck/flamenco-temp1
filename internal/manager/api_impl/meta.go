@@ -230,6 +230,13 @@ func (f *Flamenco) CheckBlenderExePath(e echo.Context) error {
 		response.Cause = fmt.Sprintf("Found %v", checkResult.BlenderVersion)
 	}
 
+	logger.Info().
+		Str("input", response.Input).
+		Str("foundLocation", response.Path).
+		Str("result", response.Cause).
+		Bool("isUsable", response.IsUsable).
+		Msg("result of command check")
+
 	return e.JSON(http.StatusOK, response)
 }
 
