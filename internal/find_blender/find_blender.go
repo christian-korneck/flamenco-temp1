@@ -18,6 +18,7 @@ import (
 var (
 	ErrNotAvailable = errors.New("not available on this platform")
 	ErrNotBlender   = errors.New("not a Blender executable")
+	ErrTimedOut     = errors.New("version check took too long")
 )
 
 // blenderVersionTimeout is how long `blender --version` is allowed to take,
@@ -101,7 +102,11 @@ func getBlenderVersion(ctx context.Context, commandline string) (string, error) 
 
 	cmd := exec.CommandContext(cmdCtx, commandline, "--version")
 	stdoutStderr, err := cmd.CombinedOutput()
-	if err != nil {
+	switch {
+	case errors.Is(cmdCtx.Err(), context.DeadlineExceeded):
+		logger.Warn().Stringer("timeout", blenderVersionTimeout).Msg("command timed out")
+		return "", fmt.Errorf("%s: %w", commandline, ErrTimedOut)
+	case err != nil:
 		logger.Info().Err(err).Str("output", string(stdoutStderr)).Msg("error running command")
 		return "", err
 	}
