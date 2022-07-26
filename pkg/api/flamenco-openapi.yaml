@@ -1987,6 +1987,7 @@ components:
             "supported_task_types":
               type: array
               items: { type: string }
+            "task": { $ref: "#/components/schemas/WorkerTask" }
           required:
             - id
             - name
@@ -1995,6 +1996,14 @@ components:
             - platform
             - version
             - supported_task_types
+
+    WorkerTask:
+      description: Task assigned to a Worker.
+      allOf:
+        - $ref: "#/components/schemas/TaskSummary"
+        - properties:
+            "job_id": { type: string, format: uuid }
+          required: [job_id]
 
     WorkerStatusChangeRequest:
       type: object
