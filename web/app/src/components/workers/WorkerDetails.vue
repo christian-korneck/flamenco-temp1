@@ -35,35 +35,18 @@
     </dl>
 
     <section class="sleep-schedule" :class="{'is-schedule-active': workerSleepSchedule.is_active}">
-      <h3 class="sub-title">Sleep Schedule</h3>
-      <div class="btn-bar-group">
-        <div class="btn-bar">
-          <label for="toggle-sleep-schedule" v-if="!isScheduleEditing">
-            <input
-              v-model="workerSleepSchedule.is_active"
-              @change="toggleWorkerSleepSchedule"
-              class="toggle-sleep-schedule"
-              id="toggle-sleep-schedule"
-              type="checkbox">
-            <span class="btn btn-primary" v-if="workerSleepSchedule.is_active">
-              Turn Schedule Off
-            </span>
-            <span class="btn" v-else>
-              Turn Schedule On
-            </span>
-          </label>
-
-          <button v-if="isScheduleEditing" @click="cancelEditWorkerSleepSchedule" class="btn">Cancel</button>
-          <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn btn-primary">Save Schedule</button>
-          <button v-else @click="isScheduleEditing = true" class="btn btn-secondary">Edit</button>
+      <h3 class="sub-title">
+        <switch-checkbox
+          :isChecked="workerSleepSchedule.is_active"
+          @switch-toggle="toggleWorkerSleepSchedule" >
+        </switch-checkbox>
+        Sleep Schedule
+        <div v-if="!isScheduleEditing" class="sub-title-buttons">
+          <button @click="isScheduleEditing = true">Edit</button>
         </div>
-      </div>
+      </h3>
+      <p>Time of the day (and on which days) this worker should go to sleep. </p>
 
-      <div v-if="isScheduleEditing">
-        <p>
-          Adjust at which time of the day (and on which days) this worker should go to sleep.
-        </p>
-      </div>
       <div class="sleep-schedule-edit" v-if="isScheduleEditing">
         <div>
           <label>Days of the week</label>
@@ -86,13 +69,18 @@
         <span class="input-help-text">
           Use 24-hour format.
         </span>
+        <div class="btn-bar-group">
+          <div class="btn-bar">
+            <button v-if="isScheduleEditing" @click="cancelEditWorkerSleepSchedule" class="btn">Cancel</button>
+            <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn btn-primary">Save Schedule</button>
+          </div>
+        </div>
       </div>
 
       <dl v-if="!isScheduleEditing">
         <dt>Status</dt>
         <dd>
-          <span v-if="workerSleepSchedule.is_active">enabled</span>
-          <span v-else>disabled</span>
+          {{ workerSleepScheduleStatusLabel }}
         </dd>
         <dt>Days of Week</dt>
         <dd>
@@ -123,6 +111,7 @@ import { WorkerMgtApi, WorkerSleepSchedule } from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 import { workerStatus } from "../../statusindicator";
 import LinkWorkerTask from '@/components/LinkWorkerTask.vue';
+import SwitchCheckbox from '@/components/SwitchCheckbox.vue';
 
 export default {
   props: [
@@ -130,6 +119,7 @@ export default {
   ],
   components: {
     LinkWorkerTask,
+    SwitchCheckbox,
   },
   data() {
     return {
@@ -172,6 +162,9 @@ export default {
         'end_time': this.workerSleepSchedule.end_time === '' ? '24:00' : this.workerSleepSchedule.end_time,
       }
     },
+    workerSleepScheduleStatusLabel() {
+      return this.workerSleepSchedule.is_active ? 'Enabled' : 'Disabled';
+    },
   },
   methods: {
     fetchWorkerSleepSchedule() {
@@ -195,7 +188,8 @@ export default {
         this.notifs.add(notifMessage));
     },
     toggleWorkerSleepSchedule() {
-      let verb = this.workerSleepSchedule.is_active ? 'Enabled' : 'Disabled';
+      this.workerSleepSchedule.is_active = !this.workerSleepSchedule.is_active;
+      let verb = this.workerSleepScheduleStatusLabel;
       this.setWorkerSleepSchedule(`${verb} schedule for worker ${this.workerData.name}`);
     },
     saveWorkerSleepSchedule() {
@@ -214,6 +208,21 @@ export default {
 </script>
 
 <style scoped>
+
+.sub-title {
+  position: relative;
+}
+
+.switch {
+  top: 1px;
+}
+
+.sub-title-buttons {
+  position: absolute;
+  right: var(--spacer);
+  bottom: var(--spacer-xs);
+}
+
 .sleep-schedule .btn-bar label+.btn {
   margin-left: var(--spacer-sm);
 }

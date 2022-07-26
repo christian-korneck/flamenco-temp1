@@ -223,7 +223,7 @@ h2.column-title {
   color: var(--color-text-hint);
   font-size: var(--font-size-base);
   margin: 0;
-  padding-bottom: var(--spacer-xs);
+  padding-bottom: var(--spacer-sm);
 }
 
 h3.sub-title {
