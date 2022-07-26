@@ -15,7 +15,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var ErrNotAvailable = errors.New("not available on this platform")
+var (
+	ErrNotAvailable = errors.New("not available on this platform")
+	ErrNotBlender   = errors.New("not a Blender executable")
+)
 
 // blenderVersionTimeout is how long `blender --version` is allowed to take,
 // before timing out. This can be much slower than expected, when loading
@@ -104,10 +107,12 @@ func getBlenderVersion(ctx context.Context, commandline string) (string, error) 
 	}
 
 	version := string(stdoutStderr)
-	lines := strings.SplitN(version, "\n", 2)
-	if len(lines) > 0 {
-		version = lines[0]
+	lines := strings.Split(version, "\n")
+	for idx := range lines {
+		line := strings.TrimSpace(lines[idx])
+		if strings.HasPrefix(line, "Blender ") {
+			return line, nil
+		}
 	}
-
-	return strings.TrimSpace(version), nil
+	return "", fmt.Errorf("%s: %w", commandline, ErrNotBlender)
 }
