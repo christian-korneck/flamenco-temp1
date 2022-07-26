@@ -99,9 +99,9 @@
 
       <step-item
         v-show="currentSetupStep == 3"
-        @next-clicked="nextStep"
+        @next-clicked="nextStepAfterCheckBlenderExePath"
         @back-clicked="prevStep"
-        :is-next-clickable="selectedBlender != null && selectedBlender.is_usable"
+        :is-next-clickable="selectedBlender != null || customBlenderExe != (null || '')"
         title="Blender"
       >
 
@@ -178,8 +178,9 @@
             </div>
             <div>
               <input
-                @input="checkBlenderExePath"
                 v-model="customBlenderExe"
+                @keyup.enter="nextStepAfterCheckBlenderExePath"
+                @focus="selectedBlender = null"
                 :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
                 type="text"
                 placeholder="Path to Blender"
@@ -193,8 +194,8 @@
 
         <div v-if="autoFoundBlenders.length === 0">
           <input
-            @input="checkBlenderExePath"
             v-model="customBlenderExe"
+            @keyup.enter="nextStepAfterCheckBlenderExePath"
             :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
             type="text"
             placeholder="Path to Blender executable"
@@ -253,21 +254,6 @@ import UpdateListener from '@/components/UpdateListener.vue'
 import StepItem from '@/components/steps/StepItem.vue';
 import { MetaApi, PathCheckInput, SetupAssistantConfig } from "@/manager-api";
 import { apiClient } from '@/stores/api-query-count';
-
-function debounce(func, wait, immediate) {
-  var timeout;
-  return function() {
-    var context = this, args = arguments;
-    var later = function() {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    var callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
-}
 
 export default {
   name: 'SetupAssistantView',
@@ -360,6 +346,13 @@ export default {
         .catch((error) => {
           console.log("Error checking storage path:", error);
         })
+    },
+
+    nextStepAfterCheckBlenderExePath() {
+      this.checkBlenderExePath();
+      if (this.selectedBlender != null && this.selectedBlender.is_usable) {
+        this.nextStep();
+      }
     },
 
     findBlenderExePath() {
@@ -462,9 +455,6 @@ export default {
         })
     },
   },
-  created() {
-    this.checkBlenderExePath = debounce(this.checkBlenderExePath, 200)
-  }
 }
 </script>
 <style>
