@@ -132,11 +132,11 @@
                 {{autoFoundBlenderPathEnvvar.path}}
               </span>
               <span
-                :aria-label="autoFoundBlenderPathEnvvar.cause"
+                aria-label="Console output when running with --version"
                 class="command-preview"
                 data-microtip-position="top"
                 role="tooltip">
-                [preview output]
+                {{ autoFoundBlenderPathEnvvar.cause }}
               </span>
             </div>
           </label>
@@ -156,11 +156,11 @@
                 {{autoFoundBlenderFileAssociation.path}}
               </span>
               <span
-                :aria-label="autoFoundBlenderFileAssociation.cause"
+                aria-label="Console output when running with --version"
                 class="command-preview"
                 data-microtip-position="top"
                 role="tooltip">
-                [preview output]
+                {{ autoFoundBlenderFileAssociation.cause }}
               </span>
             </div>
           </label>
