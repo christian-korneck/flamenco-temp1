@@ -51,6 +51,91 @@ func TestCreateFetchWorker(t *testing.T) {
 	assert.EqualValues(t, w.SupportedTaskTypes, fetchedWorker.SupportedTaskTypes)
 }
 
+func TestFetchWorkerTask(t *testing.T) {
+	ctx, cancel, db := persistenceTestFixtures(t, 10000*time.Second)
+	defer cancel()
+
+	// Worker without task.
+	w := Worker{
+		UUID:               uuid.New(),
+		Name:               "дрон",
+		Address:            "fe80::5054:ff:fede:2ad7",
+		Platform:           "linux",
+		Software:           "3.0",
+		Status:             api.WorkerStatusAwake,
+		SupportedTaskTypes: "blender,ffmpeg,file-management",
+	}
+
+	err := db.CreateWorker(ctx, &w)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	{ // Test without any task assigned.
+		task, err := db.FetchWorkerTask(ctx, &w)
+		if assert.NoError(t, err) {
+			assert.Nil(t, task)
+		}
+	}
+
+	// Create a job with tasks.
+	authTask1 := authorTestTask("the task", "blender")
+	authTask2 := authorTestTask("the other task", "blender")
+	jobUUID := "b6a1d859-122f-4791-8b78-b943329a9989"
+	atj := authorTestJob(jobUUID, "simple-blender-render", authTask1, authTask2)
+	constructTestJob(ctx, t, db, atj)
+
+	assignedTask, err := db.ScheduleTask(ctx, &w)
+	assert.NoError(t, err)
+
+	{ // Assigned task should be returned.
+		foundTask, err := db.FetchWorkerTask(ctx, &w)
+		if assert.NoError(t, err) && assert.NotNil(t, foundTask) {
+			assert.Equal(t, assignedTask.UUID, foundTask.UUID)
+			assert.Equal(t, jobUUID, foundTask.Job.UUID, "the job UUID should be returned as well")
+		}
+	}
+
+	// Set the task to 'completed'.
+	assignedTask.Status = api.TaskStatusCompleted
+	assert.NoError(t, db.SaveTaskStatus(ctx, assignedTask))
+
+	{ // Completed-but-last-assigned task should be returned.
+		foundTask, err := db.FetchWorkerTask(ctx, &w)
+		if assert.NoError(t, err) && assert.NotNil(t, foundTask) {
+			assert.Equal(t, assignedTask.UUID, foundTask.UUID)
+			assert.Equal(t, jobUUID, foundTask.Job.UUID, "the job UUID should be returned as well")
+		}
+	}
+
+	// Assign another task.
+	newlyAssignedTask, err := db.ScheduleTask(ctx, &w)
+	if !assert.NoError(t, err) || !assert.NotNil(t, newlyAssignedTask) {
+		t.FailNow()
+	}
+
+	{ // Newly assigned task should be returned.
+		foundTask, err := db.FetchWorkerTask(ctx, &w)
+		if assert.NoError(t, err) && assert.NotNil(t, foundTask) {
+			assert.Equal(t, newlyAssignedTask.UUID, foundTask.UUID)
+			assert.Equal(t, jobUUID, foundTask.Job.UUID, "the job UUID should be returned as well")
+		}
+	}
+
+	// Set the new task to 'completed'.
+	newlyAssignedTask.Status = api.TaskStatusCompleted
+	assert.NoError(t, db.SaveTaskStatus(ctx, newlyAssignedTask))
+
+	{ // Completed-but-last-assigned task should be returned.
+		foundTask, err := db.FetchWorkerTask(ctx, &w)
+		if assert.NoError(t, err) && assert.NotNil(t, foundTask) {
+			assert.Equal(t, newlyAssignedTask.UUID, foundTask.UUID)
+			assert.Equal(t, jobUUID, foundTask.Job.UUID, "the job UUID should be returned as well")
+		}
+	}
+
+}
+
 func TestSaveWorker(t *testing.T) {
 	ctx, cancel, db := persistenceTestFixtures(t, 1*time.Second)
 	defer cancel()

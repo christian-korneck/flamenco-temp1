@@ -27,6 +27,11 @@
 
       <dt class="field-supported_task_types">Task Types</dt>
       <dd>{{ workerData.supported_task_types.join(', ') }}</dd>
+
+      <dt class="field-task">Last Task</dt>
+      <dd>
+        <worker-task-link :workerTask="workerData.task" />
+      </dd>
     </dl>
   </template>
 
@@ -40,11 +45,15 @@ import * as datetime from "@/datetime";
 import { WorkerMgtApi } from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 import { workerStatus } from "../../statusindicator";
+import WorkerTaskLink from '@/components/WorkerTaskLink.vue';
 
 export default {
   props: [
     "workerData", // Worker data to show.
   ],
+  components: {
+    WorkerTaskLink,
+  },
   data() {
     return {
       datetime: datetime, // So that the template can access it.
@@ -58,6 +67,7 @@ export default {
   },
   watch: {
     workerData(newData) {
+      console.log("new data:", plain(newData));
       if (newData)
         this.workerStatusHTML = workerStatus(newData);
       else
@@ -74,7 +84,7 @@ export default {
 
 <style scoped>
 /* Prevent fields with long IDs from overflowing. */
-.field-id + dd {
+.field-id+dd {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

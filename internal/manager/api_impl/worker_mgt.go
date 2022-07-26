@@ -40,7 +40,8 @@ func (f *Flamenco) FetchWorker(e echo.Context, workerUUID string) error {
 		return sendAPIError(e, http.StatusBadRequest, "not a valid UUID")
 	}
 
-	dbWorker, err := f.persist.FetchWorker(e.Request().Context(), workerUUID)
+	ctx := e.Request().Context()
+	dbWorker, err := f.persist.FetchWorker(ctx, workerUUID)
 	if errors.Is(err, persistence.ErrWorkerNotFound) {
 		logger.Debug().Msg("non-existent worker requested")
 		return sendAPIError(e, http.StatusNotFound, "worker %q not found", workerUUID)
@@ -50,8 +51,23 @@ func (f *Flamenco) FetchWorker(e echo.Context, workerUUID string) error {
 		return sendAPIError(e, http.StatusInternalServerError, "error fetching worker: %v", err)
 	}
 
+	dbTask, err := f.persist.FetchWorkerTask(ctx, dbWorker)
+	if err != nil {
+		logger.Error().Err(err).Msg("error fetching task assigned to worker")
+		return sendAPIError(e, http.StatusInternalServerError, "error fetching task assigned to worker: %v", err)
+	}
+
 	logger.Debug().Msg("fetched worker")
 	apiWorker := workerDBtoAPI(*dbWorker)
+
+	if dbTask != nil {
+		apiWorkerTask := api.WorkerTask{
+			TaskSummary: taskDBtoSummary(dbTask),
+			JobId:       dbTask.Job.UUID,
+		}
+		apiWorker.Task = &apiWorkerTask
+	}
+
 	return e.JSON(http.StatusOK, apiWorker)
 }
 

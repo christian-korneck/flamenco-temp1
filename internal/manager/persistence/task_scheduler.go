@@ -85,13 +85,7 @@ func findTaskForWorker(tx *gorm.DB, w *Worker) (*Task, error) {
 	// If a task is alreay active & assigned to this worker, return just that.
 	// Note that this task type could be blocklisted or no longer supported by the
 	// Worker, but since it's active that is unlikely.
-	assignedTaskResult := tx.
-		Model(&task).
-		Joins("left join jobs on tasks.job_id = jobs.id").
-		Where("tasks.status = ?", api.TaskStatusActive).
-		Where("jobs.status in ?", schedulableJobStatuses).
-		Where("tasks.worker_id = ?", w.ID). // assigned to this worker
-		Limit(1).
+	assignedTaskResult := taskAssignedAndRunnableQuery(tx.Model(&task), w).
 		Preload("Job").
 		Find(&task)
 	if assignedTaskResult.Error != nil {
@@ -151,4 +145,15 @@ func assignTaskToWorker(tx *gorm.DB, w *Worker, t *Task) error {
 	return tx.Model(t).
 		Select("WorkerID", "LastTouchedAt").
 		Updates(Task{WorkerID: &w.ID, LastTouchedAt: tx.NowFunc()}).Error
+}
+
+// taskAssignedAndRunnableQuery appends some GORM clauses to query for a task
+// that's already assigned to this worker, and is in a runnable state.
+func taskAssignedAndRunnableQuery(tx *gorm.DB, w *Worker) *gorm.DB {
+	return tx.
+		Joins("left join jobs on tasks.job_id = jobs.id").
+		Where("tasks.status = ?", api.TaskStatusActive).
+		Where("jobs.status in ?", schedulableJobStatuses).
+		Where("tasks.worker_id = ?", w.ID). // assigned to this worker
+		Limit(1)
 }

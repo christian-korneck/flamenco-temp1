@@ -80,6 +80,42 @@ func (db *DB) FetchWorkers(ctx context.Context) ([]*Worker, error) {
 	return workers, nil
 }
 
+// FetchWorkerTask returns the most recent task assigned to the given Worker.
+func (db *DB) FetchWorkerTask(ctx context.Context, worker *Worker) (*Task, error) {
+	task := Task{}
+
+	// See if there is a task assigned to this worker in the same way that the
+	// task scheduler does.
+	query := db.gormDB.WithContext(ctx)
+	query = taskAssignedAndRunnableQuery(query, worker)
+	tx := query.
+		Order("tasks.updated_at").
+		Preload("Job").
+		Find(&task)
+	if tx.Error != nil {
+		return nil, taskError(tx.Error, "fetching task assigned to Worker %s", worker.UUID)
+	}
+	if task.ID != 0 {
+		// Found a task!
+		return &task, nil
+	}
+
+	// If not found, just find the last-modified task associated with this Worker.
+	tx = db.gormDB.WithContext(ctx).
+		Where("worker_id = ?", worker.ID).
+		Order("tasks.updated_at DESC").
+		Preload("Job").
+		Find(&task)
+	if tx.Error != nil {
+		return nil, taskError(tx.Error, "fetching task assigned to Worker %s", worker.UUID)
+	}
+	if task.ID == 0 {
+		return nil, nil
+	}
+
+	return &task, nil
+}
+
 func (db *DB) SaveWorkerStatus(ctx context.Context, w *Worker) error {
 	err := db.gormDB.WithContext(ctx).
 		Model(w).

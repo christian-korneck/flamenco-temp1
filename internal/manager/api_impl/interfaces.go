@@ -42,6 +42,7 @@ type PersistenceService interface {
 	CreateWorker(ctx context.Context, w *persistence.Worker) error
 	FetchWorker(ctx context.Context, uuid string) (*persistence.Worker, error)
 	FetchWorkers(ctx context.Context) ([]*persistence.Worker, error)
+	FetchWorkerTask(context.Context, *persistence.Worker) (*persistence.Task, error)
 	SaveWorker(ctx context.Context, w *persistence.Worker) error
 	SaveWorkerStatus(ctx context.Context, w *persistence.Worker) error
 	WorkerSeen(ctx context.Context, w *persistence.Worker) error

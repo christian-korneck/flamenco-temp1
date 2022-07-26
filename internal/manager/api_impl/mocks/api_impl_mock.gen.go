@@ -216,6 +216,21 @@ func (mr *MockPersistenceServiceMockRecorder) FetchWorker(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorker", reflect.TypeOf((*MockPersistenceService)(nil).FetchWorker), arg0, arg1)
 }
 
+// FetchWorkerTask mocks base method.
+func (m *MockPersistenceService) FetchWorkerTask(arg0 context.Context, arg1 *persistence.Worker) (*persistence.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchWorkerTask", arg0, arg1)
+	ret0, _ := ret[0].(*persistence.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchWorkerTask indicates an expected call of FetchWorkerTask.
+func (mr *MockPersistenceServiceMockRecorder) FetchWorkerTask(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchWorkerTask", reflect.TypeOf((*MockPersistenceService)(nil).FetchWorkerTask), arg0, arg1)
+}
+
 // FetchWorkers mocks base method.
 func (m *MockPersistenceService) FetchWorkers(arg0 context.Context) ([]*persistence.Worker, error) {
 	m.ctrl.T.Helper()
