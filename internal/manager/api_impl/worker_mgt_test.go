@@ -84,8 +84,15 @@ func TestFetchWorker(t *testing.T) {
 	assert.NoError(t, err)
 	assertResponseAPIError(t, echo, http.StatusInternalServerError, "error fetching worker: some unknown error")
 
-	// Test with worker that doesn't have a status change requested.
+	// Test with worker that does NOT have a status change requested, and DOES have an assigned task.
 	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
+	assignedTask := persistence.Task{
+		UUID:   "806057d5-759a-4e75-86a4-356d43f28cff",
+		Name:   "test task",
+		Job:    &persistence.Job{UUID: "f0e25ee4-0d13-4291-afc3-e9446b555aaf"},
+		Status: api.TaskStatusActive,
+	}
+	mf.persistence.EXPECT().FetchWorkerTask(gomock.Any(), &worker).Return(&assignedTask, nil)
 
 	echo = mf.prepareMockedRequest(nil)
 	err = mf.flamenco.FetchWorker(echo, workerUUID)
@@ -100,12 +107,21 @@ func TestFetchWorker(t *testing.T) {
 		IpAddress:          "fe80::5054:ff:fede:2ad7",
 		Platform:           "linux",
 		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
+		Task: &api.WorkerTask{
+			TaskSummary: api.TaskSummary{
+				Id:     assignedTask.UUID,
+				Name:   assignedTask.Name,
+				Status: assignedTask.Status,
+			},
+			JobId: assignedTask.Job.UUID,
+		},
 	})
 
-	// Test with worker that does have a status change requested.
+	// Test with worker that does have a status change requested, but does NOT Have an assigned task.
 	requestedStatus := api.WorkerStatusAsleep
 	worker.StatusChangeRequest(requestedStatus, false)
 	mf.persistence.EXPECT().FetchWorker(gomock.Any(), workerUUID).Return(&worker, nil)
+	mf.persistence.EXPECT().FetchWorkerTask(gomock.Any(), &worker).Return(nil, nil)
 
 	echo = mf.prepareMockedRequest(nil)
 	err = mf.flamenco.FetchWorker(echo, worker.UUID)
@@ -121,6 +137,7 @@ func TestFetchWorker(t *testing.T) {
 		IpAddress:          "fe80::5054:ff:fede:2ad7",
 		Platform:           "linux",
 		SupportedTaskTypes: []string{"blender", "ffmpeg", "file-management", "misc"},
+		Task:               nil,
 	})
 }
 
