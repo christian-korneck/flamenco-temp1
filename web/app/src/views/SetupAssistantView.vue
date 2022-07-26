@@ -182,7 +182,7 @@
                 v-model="customBlenderExe"
                 :class="{'is-invalid': blenderExeCheckResult != null && !blenderExeCheckResult.is_usable}"
                 type="text"
-                placeholder="Path to Blender executable"
+                placeholder="Path to Blender"
               >
               <p v-if="isBlenderExeChecking" class="is-in-progress">Checking...</p>
               <p v-if="blenderExeCheckResult != null && !blenderExeCheckResult.is_usable" class="check-failed">

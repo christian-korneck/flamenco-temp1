@@ -14,6 +14,8 @@ import (
 	"unsafe"
 )
 
+const blenderExeName = "blender.exe"
+
 // fileAssociation returns the full path of `blender.exe` associated with ".blend" files.
 func fileAssociation() (string, error) {
 	exe, err := getFileAssociation(".blend")
