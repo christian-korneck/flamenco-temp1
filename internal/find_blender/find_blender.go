@@ -41,7 +41,7 @@ func CheckBlender(ctx context.Context, exename string) (CheckBlenderResult, erro
 		// exename is not given, see if we can use .blend file association.
 		fullPath, err := fileAssociation()
 		switch {
-		case err == ErrNotAvailable:
+		case errors.Is(err, ErrNotAvailable):
 			// Association finder not available, act as if "blender" was given as exename.
 			return CheckBlender(ctx, "blender")
 		case err != nil:
