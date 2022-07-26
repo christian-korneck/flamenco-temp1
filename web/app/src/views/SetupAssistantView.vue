@@ -38,16 +38,16 @@
         <p>The illustration shows the key components and how they interact together:</p>
         <ul>
           <li>
-            <h3>Manager</h3>This application. It coordinates all the activity.
+            <strong>Manager</strong>: This application. It coordinates all the activity.
           </li>
           <li>
-            <h3>Worker</h3>A workstation or dedicated rendering machine. It executes the tasks assigned by the Manager.
+            <strong>Worker</strong>: A workstation or dedicated rendering machine. It executes the tasks assigned by the Manager.
           </li>
           <li>
-            <h3>Shared Storage</h3>A location accessible by the Manager and the Workers, where files, logs and internal previews can be saved.
+            <strong>Shared Storage</strong>: A location accessible by the Manager and the Workers, where the files to be rendered should be saved.
           </li>
           <li>
-            <h3>Blender Add-on</h3>This is needed to connect to the Manager and submit a job from Blender.
+            <strong>Blender Add-on</strong>: This is needed to connect to the Manager and submit a job from Blender.
           </li>
         </ul>
         <p>More information is available on the online documentation at
@@ -475,7 +475,7 @@ export default {
 }
 
 .setup-step ul li {
-  margin-bottom: var(--spacer-xs);
+  margin-bottom: var(--spacer);
 }
 
 .setup-step dl {
@@ -620,7 +620,7 @@ body.is-setup-assistant #app {
   --color-check-ok: var(--color-success);
 
   max-width: 640px;
-  margin: 10vh auto auto;
+  margin: 5vh auto auto;
   width: 100%;
 }
 
