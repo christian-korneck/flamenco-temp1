@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 
 	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/crosspath"
@@ -15,6 +16,11 @@ import (
 )
 
 var ErrNotAvailable = errors.New("not available on this platform")
+
+// blenderVersionTimeout is how long `blender --version` is allowed to take,
+// before timing out. This can be much slower than expected, when loading
+// Blender from shared storage on a not-so-fast NAS.
+const blenderVersionTimeout = 10 * time.Second
 
 type CheckBlenderResult struct {
 	Input          string // What was the original 'exename' CheckBlender was told to find.
@@ -86,7 +92,11 @@ func getResultWithVersion(
 func getBlenderVersion(ctx context.Context, commandline string) (string, error) {
 	logger := log.With().Str("commandline", commandline).Logger()
 
-	cmd := exec.CommandContext(ctx, commandline, "--version")
+	// Make sure that command execution doesn't hang indefinitely.
+	cmdCtx, cmdCtxCancel := context.WithTimeout(ctx, blenderVersionTimeout)
+	defer cmdCtxCancel()
+
+	cmd := exec.CommandContext(cmdCtx, commandline, "--version")
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Info().Err(err).Str("output", string(stdoutStderr)).Msg("error running command")
