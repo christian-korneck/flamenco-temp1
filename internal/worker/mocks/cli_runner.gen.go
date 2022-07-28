@@ -9,7 +9,9 @@ import (
 	exec "os/exec"
 	reflect "reflect"
 
+	cli_runner "git.blender.org/flamenco/internal/worker/cli_runner"
 	gomock "github.com/golang/mock/gomock"
+	zerolog "github.com/rs/zerolog"
 )
 
 // MockCommandLineRunner is a mock of CommandLineRunner interface.
@@ -52,4 +54,18 @@ func (mr *MockCommandLineRunnerMockRecorder) CommandContext(arg0, arg1 interface
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CommandContext", reflect.TypeOf((*MockCommandLineRunner)(nil).CommandContext), varargs...)
+}
+
+// RunWithTextOutput mocks base method.
+func (m *MockCommandLineRunner) RunWithTextOutput(arg0 context.Context, arg1 zerolog.Logger, arg2 *exec.Cmd, arg3 cli_runner.LogChunker, arg4 chan<- string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunWithTextOutput", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunWithTextOutput indicates an expected call of RunWithTextOutput.
+func (mr *MockCommandLineRunnerMockRecorder) RunWithTextOutput(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWithTextOutput", reflect.TypeOf((*MockCommandLineRunner)(nil).RunWithTextOutput), arg0, arg1, arg2, arg3, arg4)
 }

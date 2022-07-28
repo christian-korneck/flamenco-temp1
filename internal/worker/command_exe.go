@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"git.blender.org/flamenco/internal/worker/cli_runner"
 	"git.blender.org/flamenco/pkg/api"
 )
 
@@ -50,6 +51,13 @@ type TimeService interface {
 // CommandLineRunner is an interface around exec.CommandContext().
 type CommandLineRunner interface {
 	CommandContext(ctx context.Context, name string, arg ...string) *exec.Cmd
+	RunWithTextOutput(
+		ctx context.Context,
+		logger zerolog.Logger,
+		execCmd *exec.Cmd,
+		logChunker cli_runner.LogChunker,
+		lineChannel chan<- string,
+	) error
 }
 
 // ErrNoExecCmd means CommandLineRunner.CommandContext() returned nil.

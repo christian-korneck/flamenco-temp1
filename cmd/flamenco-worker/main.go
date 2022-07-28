@@ -23,6 +23,7 @@ import (
 	"git.blender.org/flamenco/internal/appinfo"
 	"git.blender.org/flamenco/internal/find_ffmpeg"
 	"git.blender.org/flamenco/internal/worker"
+	"git.blender.org/flamenco/internal/worker/cli_runner"
 )
 
 var (
@@ -132,7 +133,7 @@ func main() {
 		return
 	}
 
-	cliRunner := worker.NewCLIRunner()
+	cliRunner := cli_runner.NewCLIRunner()
 	listener = worker.NewListener(client, buffer)
 	cmdRunner := worker.NewCommandExecutor(cliRunner, listener, timeService)
 	taskRunner := worker.NewTaskExecutor(cmdRunner, listener)

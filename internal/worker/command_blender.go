@@ -5,12 +5,11 @@ package worker
 /* This file contains the commands in the "blender" type group. */
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"io"
 	"os/exec"
 	"regexp"
+	"sync"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog"
@@ -19,10 +18,6 @@ import (
 	"git.blender.org/flamenco/pkg/api"
 	"git.blender.org/flamenco/pkg/crosspath"
 )
-
-// The buffer size used to read stdout/stderr output from Blender.
-// Effectively this determines the maximum line length that can be handled.
-const StdoutBufferSize = 40 * 1024
 
 var regexpFileSaved = regexp.MustCompile("Saved: '(.*)'")
 
@@ -43,65 +38,39 @@ func (ce *CommandExecutor) cmdBlenderRender(ctx context.Context, logger zerolog.
 		return err
 	}
 
-	outPipe, err := execCmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	execCmd.Stderr = execCmd.Stdout // Redirect stderr to stdout.
-
-	if err := execCmd.Start(); err != nil {
-		logger.Error().Err(err).Msg("error starting CLI execution")
-		return err
-	}
-
-	blenderPID := execCmd.Process.Pid
-	logger = logger.With().Int("pid", blenderPID).Logger()
-
-	reader := bufio.NewReaderSize(outPipe, StdoutBufferSize)
 	logChunker := NewLogChunker(taskID, ce.listener, ce.timeService)
+	lineChannel := make(chan string)
 
-	for {
-		lineBytes, isPrefix, readErr := reader.ReadLine()
-		if readErr == io.EOF {
-			break
+	// Process the output of Blender.
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for line := range lineChannel {
+			ce.processLineBlender(ctx, logger, taskID, line)
 		}
-		if readErr != nil {
-			logger.Error().Err(err).Msg("error reading stdout/err")
-			return err
-		}
-		line := string(lineBytes)
-		if isPrefix {
-			logger.Warn().
-				Str("line", fmt.Sprintf("%s...", line[:256])).
-				Int("lineLength", len(line)).
-				Msg("unexpectedly long line read, truncating")
-		}
+	}()
 
-		logger.Debug().Msg(line)
-		ce.processLineBlender(ctx, logger, taskID, line)
+	// Run the subprocess.
+	subprocessErr := ce.cli.RunWithTextOutput(ctx,
+		logger,
+		execCmd,
+		logChunker,
+		lineChannel,
+	)
 
-		if err := logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", blenderPID, line)); err != nil {
-			return fmt.Errorf("appending log entry to log chunker: %w", err)
-		}
-	}
-	if err := logChunker.Flush(ctx); err != nil {
-		return fmt.Errorf("flushing log chunker: %w", err)
-	}
+	// Wait for the processing to stop.
+	close(lineChannel)
+	wg.Wait()
 
-	if err := execCmd.Wait(); err != nil {
-		logger.Error().Err(err).Msg("error in CLI execution")
-		return err
-	}
-
-	if execCmd.ProcessState.Success() {
-		logger.Info().Msg("command exited succesfully")
-	} else {
-		logger.Error().
+	if subprocessErr != nil {
+		logger.Error().Err(subprocessErr).
 			Int("exitCode", execCmd.ProcessState.ExitCode()).
 			Msg("command exited abnormally")
-		return fmt.Errorf("command exited abnormally with code %d", execCmd.ProcessState.ExitCode())
+		return subprocessErr
 	}
 
+	logger.Info().Msg("command exited succesfully")
 	return nil
 }
 

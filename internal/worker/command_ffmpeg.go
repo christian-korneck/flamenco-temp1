@@ -5,11 +5,9 @@ package worker
 /* This file contains the commands in the "ffmpeg" type group. */
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -47,63 +45,17 @@ func (ce *CommandExecutor) cmdFramesToVideo(ctx context.Context, logger zerolog.
 	}
 	defer cleanup()
 
-	outPipe, err := execCmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	execCmd.Stderr = execCmd.Stdout // Redirect stderr to stdout.
-
-	if err := execCmd.Start(); err != nil {
-		logger.Error().Err(err).Msg("error starting CLI execution")
-		return err
-	}
-
-	ffmpegPID := execCmd.Process.Pid
-	logger = logger.With().Int("pid", ffmpegPID).Logger()
-
-	reader := bufio.NewReaderSize(outPipe, StdoutBufferSize)
 	logChunker := NewLogChunker(taskID, ce.listener, ce.timeService)
+	subprocessErr := ce.cli.RunWithTextOutput(ctx, logger, execCmd, logChunker, nil)
 
-	for {
-		lineBytes, isPrefix, readErr := reader.ReadLine()
-		if readErr == io.EOF {
-			break
-		}
-		if readErr != nil {
-			logger.Error().Err(err).Msg("error reading stdout/err")
-			return err
-		}
-		line := string(lineBytes)
-		if isPrefix {
-			logger.Warn().
-				Str("line", fmt.Sprintf("%s...", line[:256])).
-				Int("lineLength", len(line)).
-				Msg("unexpectedly long line read, truncating")
-		}
-
-		logger.Debug().Msg(line)
-		if err := logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", ffmpegPID, line)); err != nil {
-			return fmt.Errorf("appending log entry to log chunker: %w", err)
-		}
-	}
-	if err := logChunker.Flush(ctx); err != nil {
-		return fmt.Errorf("flushing log chunker: %w", err)
-	}
-
-	if err := execCmd.Wait(); err != nil {
-		logger.Error().Err(err).Msg("error in CLI execution")
-		return err
-	}
-
-	if execCmd.ProcessState.Success() {
-		logger.Info().Msg("command exited succesfully")
-	} else {
-		logger.Error().
+	if subprocessErr != nil {
+		logger.Error().Err(subprocessErr).
 			Int("exitCode", execCmd.ProcessState.ExitCode()).
 			Msg("command exited abnormally")
-		return fmt.Errorf("command exited abnormally with code %d", execCmd.ProcessState.ExitCode())
+		return subprocessErr
 	}
 
+	logger.Info().Msg("command exited succesfully")
 	return nil
 }
 
