@@ -73,6 +73,7 @@ func main() {
 	log.Info().
 		Str("version", appinfo.ApplicationVersion).
 		Str("git", appinfo.ApplicationGitHash).
+		Str("releaseCycle", appinfo.ReleaseCycle).
 		Str("os", runtime.GOOS).
 		Str("arch", runtime.GOARCH).
 		Msgf("starting %v", appinfo.ApplicationName)

@@ -3,9 +3,12 @@ PKG := git.blender.org/flamenco
 # To update the version number in all the relevant places, update the VERSION
 # variable below and run `make update-version`.
 VERSION := 3.0-dev0
+RELEASE_CYCLE := alpha
 
 GITHASH := $(shell git describe --dirty --always)
-LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION} -X ${PKG}/internal/appinfo.ApplicationGitHash=${GITHASH}
+LDFLAGS := -X ${PKG}/internal/appinfo.ApplicationVersion=${VERSION} \
+	-X ${PKG}/internal/appinfo.ApplicationGitHash=${GITHASH} \
+	-X ${PKG}/internal/appinfo.ReleaseCycle=${RELEASE_CYCLE}
 BUILD_FLAGS = -ldflags="${LDFLAGS}"
 
 # Package name of the generated Python/JavaScript code for the Flamenco API.

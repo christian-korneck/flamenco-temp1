@@ -153,7 +153,7 @@ func signOn(ctx context.Context, cfg WorkerConfig, client FlamencoClient) (api.W
 	req := api.SignOnJSONRequestBody{
 		Name:               workerName(),
 		SupportedTaskTypes: cfg.TaskTypes,
-		SoftwareVersion:    appinfo.ApplicationVersion,
+		SoftwareVersion:    appinfo.ExtendedVersion(),
 	}
 
 	logger.Info().

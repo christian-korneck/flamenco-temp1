@@ -23,7 +23,7 @@ import (
 
 func (f *Flamenco) GetVersion(e echo.Context) error {
 	return e.JSON(http.StatusOK, api.FlamencoVersion{
-		Version: appinfo.ApplicationVersion,
+		Version: appinfo.ExtendedVersion(),
 		Name:    appinfo.ApplicationName,
 	})
 }
