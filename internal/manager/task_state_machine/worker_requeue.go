@@ -84,6 +84,7 @@ func (sm *StateMachine) requeueTasksOfWorker(
 			lastErr = err
 		}
 
+		// The error is already logged by the log storage.
 		_ = sm.logStorage.WriteTimestamped(logger, task.Job.UUID, task.UUID, task.Activity)
 	}
 
