@@ -253,7 +253,7 @@ func (f *Flamenco) WorkerStateChanged(e echo.Context) error {
 	// Re-queue all tasks (should be only one) this worker is now working on.
 	if prevStatus == api.WorkerStatusAwake && w.Status != api.WorkerStatusAwake {
 		err := f.stateMachine.RequeueActiveTasksOfWorker(bgCtx, w,
-			fmt.Sprintf("worker changed status to '%s'", w.Status))
+			fmt.Sprintf("worker %s changed status to '%s'", w.Identifier(), w.Status))
 		if err != nil {
 			logger.Warn().Err(err).Msg("error re-queueing worker tasks after it changed to non-awake status")
 		}

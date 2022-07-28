@@ -349,7 +349,8 @@ func TestWorkerStateChanged(t *testing.T) {
 	savedWorker.Status = api.WorkerStatusAsleep
 	mf.persistence.EXPECT().SaveWorkerStatus(gomock.Any(), &savedWorker).Return(nil)
 	mf.persistence.EXPECT().WorkerSeen(gomock.Any(), &worker)
-	mf.stateMachine.EXPECT().RequeueActiveTasksOfWorker(gomock.Any(), &worker, "worker changed status to 'asleep'")
+	mf.stateMachine.EXPECT().RequeueActiveTasksOfWorker(gomock.Any(), &worker,
+		"worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c) changed status to 'asleep'")
 
 	// Perform the request
 	echo := mf.prepareMockedJSONRequest(api.WorkerStateChanged{
