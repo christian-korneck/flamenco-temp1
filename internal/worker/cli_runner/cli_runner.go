@@ -30,6 +30,8 @@ func (cli *CLIRunner) CommandContext(ctx context.Context, name string, arg ...st
 
 // RunWithTextOutput runs a command and sends its output line-by-line to the
 // lineChannel. Stdout and stderr are combined.
+// Before returning. RunWithTextOutput() waits for the subprocess, to ensure it
+// doesn't become defunct.
 func (cli *CLIRunner) RunWithTextOutput(
 	ctx context.Context,
 	logger zerolog.Logger,
@@ -53,14 +55,22 @@ func (cli *CLIRunner) RunWithTextOutput(
 
 	reader := bufio.NewReaderSize(outPipe, StdoutBufferSize)
 
+	// returnErr determines which error is returned to the caller. More important
+	// errors overwrite less important ones. This is done via a variable instead
+	// of simply returning, because the function must be run to completion in
+	// order to wait for processes (and not create defunct ones).
+	var returnErr error = nil
+readloop:
 	for {
 		lineBytes, isPrefix, readErr := reader.ReadLine()
-		if readErr == io.EOF {
-			break
-		}
-		if readErr != nil {
+
+		switch {
+		case readErr == io.EOF:
+			break readloop
+		case readErr != nil:
 			logger.Error().Err(err).Msg("error reading stdout/err")
-			return err
+			returnErr = readErr
+			break readloop
 		}
 
 		line := string(lineBytes)
@@ -77,27 +87,31 @@ func (cli *CLIRunner) RunWithTextOutput(
 		}
 
 		if err := logChunker.Append(ctx, fmt.Sprintf("pid=%d > %s", blenderPID, line)); err != nil {
-			return fmt.Errorf("appending log entry to log chunker: %w", err)
+			returnErr = fmt.Errorf("appending log entry to log chunker: %w", err)
+			break readloop
 		}
 	}
 
 	if err := logChunker.Flush(ctx); err != nil {
-		return fmt.Errorf("flushing log chunker: %w", err)
+		// any readErr is less important, as these are likely caused by other
+		// issues, which will surface on the Wait() and Success() calls.
+		returnErr = fmt.Errorf("flushing log chunker: %w", err)
 	}
 
 	if err := execCmd.Wait(); err != nil {
-		logger.Error().Err(err).Msg("error in CLI execution")
-		return err
-	}
-
-	if execCmd.ProcessState.Success() {
-		logger.Info().Msg("command exited succesfully")
-	} else {
 		logger.Error().
 			Int("exitCode", execCmd.ProcessState.ExitCode()).
 			Msg("command exited abnormally")
-		return fmt.Errorf("command exited abnormally with code %d", execCmd.ProcessState.ExitCode())
+		returnErr = fmt.Errorf("command exited abnormally with code %d", execCmd.ProcessState.ExitCode())
 	}
 
+	if returnErr != nil {
+		logger.Error().Err(err).
+			Int("exitCode", execCmd.ProcessState.ExitCode()).
+			Msg("command exited abnormally")
+		return returnErr
+	}
+
+	logger.Info().Msg("command exited succesfully")
 	return nil
 }
