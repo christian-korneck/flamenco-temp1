@@ -44,7 +44,7 @@ Each job compiler has two parts to it:
 - the `compileJob()` function that takes those settings and creates the tasks.
 
 TODO: write more documentation. For now, you can refer to [the built-in job
-compiler scripts](built-in-scripts) as examples.
+compiler scripts][built-in-scripts] as examples.
 
 [built-in-scripts]: https://developer.blender.org/diffusion/F/browse/main/internal/manager/job_compilers/scripts/
 
