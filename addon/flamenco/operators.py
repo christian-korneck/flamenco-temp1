@@ -11,6 +11,7 @@ import bpy
 
 from . import job_types, job_submission, preferences
 from .job_types_propgroup import JobTypePropertyGroup
+from .bat.submodules import bpathlib
 
 if TYPE_CHECKING:
     from .bat.interface import (
@@ -242,8 +243,10 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             self.blendfile_on_farm = None
             self._bat_pack_shaman(context, blendfile)
         elif job_submission.is_file_inside_job_storage(context, blendfile):
+            self.log.info("File is already in job storage location, submitting it as-is")
             self._use_blendfile_directly(context, blendfile)
         else:
+            self.log.info("File is not already in job storage location, copying it there")
             self.blendfile_on_farm = self._bat_pack_filesystem(context, blendfile)
 
         context.window_manager.modal_handler_add(self)
@@ -363,7 +366,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         # The blend file is contained in the job storage path, no need to
         # copy anything.
-        self.blendfile_on_farm = PurePosixPath(blendfile.absolute().resolve().as_posix())
+        self.blendfile_on_farm = bpathlib.make_absolute(blendfile)
         self._submit_job(context)
 
     def _submit_job(self, context: bpy.types.Context) -> None:

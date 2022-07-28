@@ -2,10 +2,12 @@
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Optional, Union
 import platform
+import logging
 
 import bpy
 
 from .job_types_propgroup import JobTypePropertyGroup
+from .bat.submodules import bpathlib
 from . import preferences
 
 if TYPE_CHECKING:
@@ -26,6 +28,7 @@ else:
 # it'll be set to the path of the BAT-packed blend file.
 BLENDFILE_SETTING_KEY = "blendfile"
 
+log = logging.getLogger(__name__)
 
 def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
     from flamenco.manager.models import SubmittedJob, JobMetadata
@@ -101,6 +104,11 @@ def is_file_inside_job_storage(context: bpy.types.Context, blendfile: Path) -> b
 
     prefs = preferences.get(context)
     job_storage = Path(prefs.job_storage).absolute().resolve()
+
+    log.info("Checking whether the file is already inside the job storage")
+    log.info("    file   : %s", blendfile)
+    log.info("    storage: %s", job_storage)
+
     try:
         blendfile.relative_to(job_storage)
     except ValueError:
