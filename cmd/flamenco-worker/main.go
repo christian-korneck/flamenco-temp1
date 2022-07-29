@@ -95,6 +95,7 @@ func main() {
 		configWrangler.SetManagerURL(url)
 	}
 
+	findBlender()
 	findFFmpeg()
 
 	// Give the auto-discovery some time to find a Manager.
