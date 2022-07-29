@@ -15,7 +15,7 @@ const JOB_TYPE = {
         { key: "add_path_components", type: "int32", required: true, default: 0, propargs: {min: 0, max: 32}, visible: "submission",
           description: "Number of path components of the current blend file to use in the render output path"},
         { key: "render_output_path", type: "string", subtype: "file_path", editable: false,
-          eval: "str(Path(settings.render_output_root) / last_n_dir_parts(settings.add_path_components) / jobname / '{timestamp}' / '######')",
+          eval: "str(Path(bpy.path.abspath(settings.render_output_root), last_n_dir_parts(settings.add_path_components), jobname, '{timestamp}', '######'))",
           description: "Final file path of where render output will be saved"},
 
         // Automatically evaluated settings:
