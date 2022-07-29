@@ -156,11 +156,9 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        # Only allow the
-        propgroup = getattr(context.scene, "flamenco_job_settings", None)
-        if propgroup is None:
-            return False
-        return getattr(propgroup, 'job_type', None) is not None
+        # Only allow submission when there is a job type selected.
+        job_type = job_types.active_job_type(context.scene)
+        return job_type is not None
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> set[str]:
         filepath = self._save_blendfile(context)
@@ -243,10 +241,14 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             self.blendfile_on_farm = None
             self._bat_pack_shaman(context, blendfile)
         elif job_submission.is_file_inside_job_storage(context, blendfile):
-            self.log.info("File is already in job storage location, submitting it as-is")
+            self.log.info(
+                "File is already in job storage location, submitting it as-is"
+            )
             self._use_blendfile_directly(context, blendfile)
         else:
-            self.log.info("File is not already in job storage location, copying it there")
+            self.log.info(
+                "File is not already in job storage location, copying it there"
+            )
             self.blendfile_on_farm = self._bat_pack_filesystem(context, blendfile)
 
         context.window_manager.modal_handler_add(self)
@@ -295,9 +297,7 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         return PurePosixPath(pack_target_file.as_posix())
 
-    def _bat_pack_shaman(
-        self, context: bpy.types.Context, blendfile: Path
-    ) -> None:
+    def _bat_pack_shaman(self, context: bpy.types.Context, blendfile: Path) -> None:
         """Use the Manager's Shaman API to submit the BAT pack.
 
         :return: the filesystem path of the blend file, for in the render job definition.
@@ -359,7 +359,9 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
 
         return {"RUNNING_MODAL"}
 
-    def _use_blendfile_directly(self, context: bpy.types.Context, blendfile: Path) -> None:
+    def _use_blendfile_directly(
+        self, context: bpy.types.Context, blendfile: Path
+    ) -> None:
         # The temporary '.flamenco.blend' file should not be deleted, as it
         # will be used directly by the render job.
         self.temp_blendfile = None
