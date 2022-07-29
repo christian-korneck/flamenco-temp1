@@ -52,7 +52,7 @@ func TestCreateFetchWorker(t *testing.T) {
 }
 
 func TestFetchWorkerTask(t *testing.T) {
-	ctx, cancel, db := persistenceTestFixtures(t, 10000*time.Second)
+	ctx, cancel, db := persistenceTestFixtures(t, 10*time.Second)
 	defer cancel()
 
 	// Worker without task.
