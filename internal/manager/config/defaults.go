@@ -9,7 +9,7 @@ import (
 
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-const DefaultBlenderArguments = "--factory-startup -b -y"
+const DefaultBlenderArguments = "-b -y"
 
 // The default configuration, use DefaultConfig() to obtain a copy.
 var defaultConfig = Conf{
