@@ -86,7 +86,7 @@ func Load(ts TimeService) (*Service, error) {
 }
 
 func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJob, error) {
-	vm, err := s.compilerForJobType(sj.Type)
+	vm, err := s.compilerVMForJobType(sj.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (s *Service) ListJobTypes() api.AvailableJobTypes {
 	defer s.mutex.Unlock()
 
 	for typeName := range s.compilers {
-		compiler, err := s.compilerForJobType(typeName)
+		compiler, err := s.compilerVMForJobType(typeName)
 		if err != nil {
 			log.Warn().Err(err).Str("jobType", typeName).Msg("unable to determine job type settings")
 			continue
@@ -163,7 +163,7 @@ func (s *Service) ListJobTypes() api.AvailableJobTypes {
 // GetJobType returns information about the named job type.
 // Returns ErrJobTypeUnknown when the name doesn't correspond with a known job type.
 func (s *Service) GetJobType(typeName string) (api.AvailableJobType, error) {
-	compiler, err := s.compilerForJobType(typeName)
+	compiler, err := s.compilerVMForJobType(typeName)
 	if err != nil {
 		return api.AvailableJobType{}, err
 	}

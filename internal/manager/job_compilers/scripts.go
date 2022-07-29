@@ -150,9 +150,9 @@ func newGojaVM(registry *require.Registry) *goja.Runtime {
 	return vm
 }
 
-// compilerForJobType returns a Goja *Runtime that has the job compiler script for
-// the given job type loaded up.
-func (s *Service) compilerForJobType(jobTypeName string) (*VM, error) {
+// compilerVMForJobType returns a Goja *Runtime that has the job compiler script
+// for the given job type loaded up.
+func (s *Service) compilerVMForJobType(jobTypeName string) (*VM, error) {
 	program, ok := s.compilers[jobTypeName]
 	if !ok {
 		return nil, ErrJobTypeUnknown
