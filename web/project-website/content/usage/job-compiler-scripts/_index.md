@@ -74,3 +74,41 @@ scripts, you can follow these types or make them up yourself. Don't forget to
 configure your workers to run them!
 
 [worker-config]: {{< ref "usage/worker-configuration" >}}
+
+## Job Settings
+
+The `JOB_TYPE` object contains the *job settings*. These can be shown in
+Blender's user interface for submitting files, but can also be automatically
+calculated based on the current file, the [context][context], etc.
+
+The exact specifications of these settings can be found via the "API" link in
+the top-right corner of the Flamenco Manager web interface. Search for the
+`AvailableJobSetting` schema. This will always be accurate for your particular
+version of Flamenco.
+
+TODO: write about these in more detail.
+
+### Available Python names for Evaluation
+
+Job settings can have an `eval` key, which is a Python expression that
+determines the value of the setting. That Python expression has access to the
+following names:
+
+- `jobname`: The name of the current Flamenco job.
+- `settings`: The settings of the current Flamenco job.
+- `bpy`: Blender's Python interface ([docs][bpy])
+- `C`: The current [context][context], short-hand for `bpy.context`.
+- `Path`: The `Path` class from Python's [pathlib][pathlib] library for file &
+  directory path manipulation. Note that this does *not* understand Blender's
+  `//` prefix for blendfile-relative paths. Use `bpy.path.abspath()` to turn
+  those into an absolute path if necessary.
+- `last_n_dir_parts(n, Optional[file_path])`: a function that returns the last
+  `n` directory parts of some file's path. For example,
+  `last_n_dir_parts(2, '/complex/path/to/a/file.blend')` will return `to/a`, as
+  those are the last `2` components of the directory. If `file_path` is
+  ommitted, it uses the current blend file, i.e. `bpy.data.filepath`.
+
+
+[bpy]: https://docs.blender.org/api/master/
+[context]: https://docs.blender.org/api/master/bpy.context.html
+[pathlib]: https://docs.python.org/3/library/pathlib.html
