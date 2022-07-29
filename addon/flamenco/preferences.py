@@ -4,7 +4,7 @@
 import bpy
 
 
-def discard_flamenco_client(prefs, context):
+def discard_flamenco_client(context):
     """Discard any cached Flamenco client after the Manager URL changes."""
     from . import comms
 
@@ -22,6 +22,18 @@ def _refresh_the_planet(
                 region.tag_redraw()
 
 
+def _manager_url_updated(prefs, context):
+    discard_flamenco_client(context)
+
+    from . import comms
+
+    api_client = comms.flamenco_api_client(prefs.manager_url)
+
+    # Warning, be careful what of the context to access here. Accessing /
+    # changing too much can cause crashes, infinite loops, etc.
+    comms.ping_manager(context, api_client, prefs)
+
+
 class FlamencoPreferences(bpy.types.AddonPreferences):
     bl_idname = "flamenco"
 
@@ -29,7 +41,7 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
         name="Manager URL",
         description="Location of the Manager",
         default="http://localhost:8080/",
-        update=discard_flamenco_client,
+        update=_manager_url_updated,
     )
 
     is_shaman_enabled: bpy.props.BoolProperty(  # type: ignore
@@ -68,16 +80,25 @@ class FlamencoPreferences(bpy.types.AddonPreferences):
 
         row = col.row(align=True)
         row.prop(self, "manager_url")
-        row.operator("flamenco.ping_manager", text="", icon="CHECKMARK")
-        if context.window_manager.flamenco_status_ping:
-            split = col.split(factor=0.4)
+        row.operator("flamenco.ping_manager", text="", icon="FILE_REFRESH")
+
+        def text_row(parent, label):
+            split = parent.split(factor=0.4)
             split.label(text="")
-            split.label(text=context.window_manager.flamenco_status_ping)
+            split.label(text=label)
+
+        if not self.job_storage:
+            text_row(col, "Press the refresh button before using Flamenco")
+
+        if context.window_manager.flamenco_status_ping:
+            text_row(col, context.window_manager.flamenco_status_ping)
+        else:
+            aligned = col.column(align=True)
+            text_row(aligned, "Press the refresh button to check the connection")
+            text_row(aligned, "and update the job storage location")
 
         if self.is_shaman_enabled:
-            split = col.split(factor=0.4)
-            split.label(text="")
-            split.label(text="Shaman enabled")
+            text_row(col, "Shaman enabled")
         col.prop(self, "job_storage_for_gui", text="Job Storage")
 
 

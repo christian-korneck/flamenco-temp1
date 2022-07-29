@@ -5,7 +5,7 @@ import datetime
 import logging
 from pathlib import Path, PurePosixPath
 from typing import Optional, TYPE_CHECKING
-from urllib3.exceptions import HTTPError, MaxRetryError
+from urllib3.exceptions import MaxRetryError
 
 import bpy
 
@@ -81,40 +81,14 @@ class FLAMENCO_OT_ping_manager(FlamencoOpMixin, bpy.types.Operator):
     bl_options = {"REGISTER"}  # No UNDO.
 
     def execute(self, context: bpy.types.Context) -> set[str]:
+        from . import comms, preferences
+
         api_client = self.get_api_client(context)
+        prefs = preferences.get(context)
 
-        from flamenco.manager import ApiException
-        from flamenco.manager.apis import MetaApi
-        from flamenco.manager.models import FlamencoVersion, ManagerConfiguration
-
-        context.window_manager.flamenco_status_ping = "..."
-
-        meta_api = MetaApi(api_client)
-        try:
-            version: FlamencoVersion = meta_api.get_version()
-            config: ManagerConfiguration = meta_api.get_configuration()
-        except ApiException as ex:
-            report = "Manager cannot be reached: %s" % ex
-            level = "ERROR"
-        except MaxRetryError as ex:
-            # This is the common error, when for example the port number is
-            # incorrect and nothing is listening.
-            report = "Manager cannot be reached"
-            level = "WARNING"
-        except HTTPError as ex:
-            report = "Manager cannot be reached: %s" % ex
-            level = "ERROR"
-        else:
-            report = "%s version %s found" % (version.name, version.version)
-            level = "INFO"
-
-            # Store whether this Manager supports the Shaman API.
-            prefs = preferences.get(context)
-            prefs.is_shaman_enabled = config.shaman_enabled
-            prefs.job_storage = config.storage_location
-
+        report, level = comms.ping_manager(context, api_client, prefs)
         self.report({level}, report)
-        context.window_manager.flamenco_status_ping = report
+
         return {"FINISHED"}
 
 
