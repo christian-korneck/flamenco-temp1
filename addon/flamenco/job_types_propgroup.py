@@ -142,6 +142,33 @@ class JobTypePropertyGroup:
 
             job.settings[setting.key] = value
 
+    def eval_visible_settings_if_no_value(self, context: bpy.types.Context) -> None:
+        """Assign default values to all visible, evaluatable settings.
+
+        If the setting already has a value, that value will not be overwritten
+        in order to retain the user's input.
+
+        If the setting has an `eval` property, it'll be evaluated and used as
+        the setting value. Otherwise it will be skipped.
+        """
+        print(f"eval_visible_settings_if_no_value")
+        for setting in self.job_type.settings:
+            if not job_types.setting_is_visible(setting):
+                # Skip those settings that will be hidden from the GUI.
+                # These are evaluated at submission time anyway.
+                continue
+
+            setting_eval = setting.get("eval", "")
+            if not setting_eval:
+                continue
+
+            if getattr(self, setting.key):
+                # Non-falsey setting, so don't overwrite.
+                continue
+
+            value = self.eval_setting(context, setting.key, setting_eval)
+            setattr(self, setting.key, value)
+
     @staticmethod
     def last_n_dir_parts(n: int, filepath: Union[str, Path, None] = None) -> Path:
         """Return the last `n` parts of the directory of `filepath`.

@@ -142,6 +142,8 @@ def update_job_type_properties(scene: bpy.types.Scene) -> None:
         description="Parameters for the Flamenco job",
     )
 
+    scene.flamenco_job_settings.eval_visible_settings_if_no_value(bpy.context)
+
 
 def _clear_available_job_types(scene: bpy.types.Scene) -> None:
     global _available_job_types
