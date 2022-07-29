@@ -1010,6 +1010,7 @@ with flamenco.manager.ApiClient() as api_client:
     submitted_job = SubmittedJob(
         name="name_example",
         type="type_example",
+        type_etag="type_etag_example",
         priority=50,
         settings=JobSettings(),
         metadata=JobMetadata(
@@ -1053,6 +1054,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Job was succesfully compiled into individual tasks. |  -  |
+**412** | The given job type etag does not match the job type etag on the Manager. This is likely due to the client caching the job type for too long.  |  -  |
 **0** | Error message |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

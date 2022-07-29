@@ -158,13 +158,18 @@ func (s *Service) compilerVMForJobType(jobTypeName string) (*VM, error) {
 		return nil, ErrJobTypeUnknown
 	}
 
-	vm := newGojaVM(s.registry)
-	if _, err := vm.RunProgram(program.program); err != nil {
+	runtime := newGojaVM(s.registry)
+	if _, err := runtime.RunProgram(program.program); err != nil {
 		return nil, err
 	}
 
-	return &VM{
-		runtime:  vm,
+	vm := &VM{
+		runtime:  runtime,
 		compiler: program,
-	}, nil
+	}
+	if err := vm.updateEtag(); err != nil {
+		return nil, err
+	}
+
+	return vm, nil
 }

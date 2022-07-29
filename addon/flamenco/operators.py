@@ -350,6 +350,8 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
         assert self.job is not None
         assert self.blendfile_on_farm is not None
 
+        from flamenco.manager import ApiException
+
         api_client = self.get_api_client(context)
 
         propgroup = getattr(context.scene, "flamenco_job_settings", None)
@@ -362,7 +364,18 @@ class FLAMENCO_OT_submit_job(FlamencoOpMixin, bpy.types.Operator):
             propgroup.job_type, self.job, self.blendfile_on_farm
         )
 
-        submitted_job = job_submission.submit_job(self.job, api_client)
+        try:
+            submitted_job = job_submission.submit_job(self.job, api_client)
+        except ApiException as ex:
+            if ex.status == 412:
+                self.report(
+                    {"ERROR"},
+                    "Cached job type is old. Refresh the job types and submit again, please",
+                )
+                return
+            self.report({"ERROR"}, f"Could not submit job: {ex.reason}")
+            return
+
         self.report({"INFO"}, "Job %s submitted" % submitted_job.name)
 
     def _quit(self, context: bpy.types.Context) -> set[str]:

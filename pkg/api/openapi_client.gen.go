@@ -2804,6 +2804,7 @@ type SubmitJobResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Job
+	JSON412      *Error
 	JSONDefault  *Error
 }
 
@@ -4299,6 +4300,13 @@ func ParseSubmitJobResponse(rsp *http.Response) (*SubmitJobResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error

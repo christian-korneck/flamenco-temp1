@@ -93,6 +93,7 @@ class SubmittedJob(ModelNormal):
             'type': (str,),  # noqa: E501
             'priority': (int,),  # noqa: E501
             'submitter_platform': (str,),  # noqa: E501
+            'type_etag': (str,),  # noqa: E501
             'settings': (JobSettings,),  # noqa: E501
             'metadata': (JobMetadata,),  # noqa: E501
         }
@@ -107,6 +108,7 @@ class SubmittedJob(ModelNormal):
         'type': 'type',  # noqa: E501
         'priority': 'priority',  # noqa: E501
         'submitter_platform': 'submitter_platform',  # noqa: E501
+        'type_etag': 'type_etag',  # noqa: E501
         'settings': 'settings',  # noqa: E501
         'metadata': 'metadata',  # noqa: E501
     }
@@ -158,6 +160,7 @@ class SubmittedJob(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            type_etag (str): Hash of the job type, copied from the `AvailableJobType.etag` property of the job type. The job will be rejected if this field doesn't match the actual job type on the Manager. This prevents job submission with old settings, after the job compiler script has been updated. If this field is ommitted, the check is bypassed. . [optional]  # noqa: E501
             settings (JobSettings): [optional]  # noqa: E501
             metadata (JobMetadata): [optional]  # noqa: E501
         """
@@ -252,6 +255,7 @@ class SubmittedJob(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            type_etag (str): Hash of the job type, copied from the `AvailableJobType.etag` property of the job type. The job will be rejected if this field doesn't match the actual job type on the Manager. This prevents job submission with old settings, after the job compiler script has been updated. If this field is ommitted, the check is bypassed. . [optional]  # noqa: E501
             settings (JobSettings): [optional]  # noqa: E501
             metadata (JobMetadata): [optional]  # noqa: E501
         """

@@ -62,6 +62,9 @@ class SubmittedJob {
             if (data.hasOwnProperty('type')) {
                 obj['type'] = ApiClient.convertToType(data['type'], 'String');
             }
+            if (data.hasOwnProperty('type_etag')) {
+                obj['type_etag'] = ApiClient.convertToType(data['type_etag'], 'String');
+            }
             if (data.hasOwnProperty('priority')) {
                 obj['priority'] = ApiClient.convertToType(data['priority'], 'Number');
             }
@@ -90,6 +93,12 @@ SubmittedJob.prototype['name'] = undefined;
  * @member {String} type
  */
 SubmittedJob.prototype['type'] = undefined;
+
+/**
+ * Hash of the job type, copied from the `AvailableJobType.etag` property of the job type. The job will be rejected if this field doesn't match the actual job type on the Manager. This prevents job submission with old settings, after the job compiler script has been updated. If this field is ommitted, the check is bypassed. 
+ * @member {String} type_etag
+ */
+SubmittedJob.prototype['type_etag'] = undefined;
 
 /**
  * @member {Number} priority

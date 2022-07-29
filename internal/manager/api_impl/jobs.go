@@ -83,12 +83,20 @@ func (f *Flamenco) SubmitJob(e echo.Context) error {
 		submittedJob.SubmitterPlatform = runtime.GOOS
 	}
 
+	if submittedJob.TypeEtag == nil || *submittedJob.TypeEtag == "" {
+		logger.Warn().Msg("job submitted without job type etag, refresh the job types in the Blender add-on")
+	}
+
 	// Before compiling the job, replace the two-way variables. This ensures all
 	// the tasks also use those.
 	replaceTwoWayVariables(f.config, submittedJob)
 
 	authoredJob, err := f.jobCompiler.Compile(ctx, submittedJob)
-	if err != nil {
+	switch {
+	case errors.Is(err, job_compilers.ErrJobTypeBadEtag):
+		logger.Warn().Err(err).Msg("rejecting submitted job, job type etag does not match")
+		return sendAPIError(e, http.StatusPreconditionFailed, "rejecting job, job type etag does not match")
+	case err != nil:
 		logger.Warn().Err(err).Msg("error compiling job")
 		// TODO: make this a more specific error object for this API call.
 		return sendAPIError(e, http.StatusBadRequest, fmt.Sprintf("error compiling job: %v", err))

@@ -95,9 +95,17 @@ def _available_job_types_from_json(job_types_json: str) -> None:
     json_dict = json.loads(job_types_json)
 
     dummy_cfg = Configuration()
-    job_types = validate_and_convert_types(
-        json_dict, (AvailableJobTypes,), ["job_types"], True, True, dummy_cfg
-    )
+
+    try:
+        job_types = validate_and_convert_types(
+            json_dict, (AvailableJobTypes,), ["job_types"], True, True, dummy_cfg
+        )
+    except TypeError:
+        _log.warn(
+            "Flamenco: could not restore cached job types, refresh them from Flamenco Manager"
+        )
+        _store_available_job_types(AvailableJobTypes(job_types=[]))
+        return
 
     assert isinstance(
         job_types, AvailableJobTypes

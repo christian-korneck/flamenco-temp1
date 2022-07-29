@@ -210,6 +210,8 @@ type AvailableJobSettingVisibility string
 
 // Job type supported by this Manager, and its parameters.
 type AvailableJobType struct {
+	// Hash of the job type. If the job settings or the label change, this etag will change. This is used on job submission to ensure that the submitted job settings are up to date.
+	Etag     string                `json:"etag"`
 	Label    string                `json:"label"`
 	Name     string                `json:"name"`
 	Settings []AvailableJobSetting `json:"settings"`
@@ -588,6 +590,10 @@ type SubmittedJob struct {
 	// As a special case, the platform "manager" can be given, which will be interpreted as "the Manager's platform". This is mostly to make test/debug scripts easier, as they can use a static document on all platforms.
 	SubmitterPlatform string `json:"submitter_platform"`
 	Type              string `json:"type"`
+
+	// Hash of the job type, copied from the `AvailableJobType.etag` property of the job type. The job will be rejected if this field doesn't match the actual job type on the Manager. This prevents job submission with old settings, after the job compiler script has been updated.
+	// If this field is ommitted, the check is bypassed.
+	TypeEtag *string `json:"type_etag,omitempty"`
 }
 
 // The task as it exists in the Manager database, i.e. before variable replacement.

@@ -255,3 +255,57 @@ func TestSimpleBlenderRenderOutputPathFieldReplacement(t *testing.T) {
 	}, tVideo.Commands[0].Parameters)
 
 }
+
+func TestEtag(t *testing.T) {
+	c := mockedClock(t)
+
+	s, err := Load(c)
+	assert.NoError(t, err)
+
+	// Etags should be computed when the compiler VM is obtained.
+	vm, err := s.compilerVMForJobType("echo-sleep-test")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	const expectEtag = "eba586e16d6b55baaa43e32f9e78ae514b457fee"
+	assert.Equal(t, expectEtag, vm.jobTypeEtag)
+
+	// A mismatching Etag should prevent job compilation.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	sj := api.SubmittedJob{
+		Name:              "job name",
+		Type:              "echo-sleep-test",
+		Priority:          50,
+		SubmitterPlatform: "linux",
+		Settings: &api.JobSettings{AdditionalProperties: map[string]interface{}{
+			"message": "hey",
+		}},
+	}
+
+	{ // Test without etag.
+		aj, err := s.Compile(ctx, sj)
+		if assert.NoError(t, err, "job without etag should always be accepted") {
+			assert.NotNil(t, aj)
+		}
+	}
+
+	{ // Test with bad etag.
+		sj.TypeEtag = ptr("this is not the right etag")
+		_, err := s.Compile(ctx, sj)
+		assert.ErrorIs(t, err, ErrJobTypeBadEtag)
+	}
+
+	{ // Test with correct etag.
+		sj.TypeEtag = ptr(expectEtag)
+		aj, err := s.Compile(ctx, sj)
+		if assert.NoError(t, err, "job with correct etag should be accepted") {
+			assert.NotNil(t, aj)
+		}
+	}
+}
+
+func ptr[T any](value T) *T {
+	return &value
+}

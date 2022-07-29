@@ -176,6 +176,71 @@ func TestSubmitJobWithSettings(t *testing.T) {
 	err := mf.flamenco.SubmitJob(echoCtx)
 	assert.NoError(t, err)
 }
+
+func TestSubmitJobWithEtag(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mf := newMockedFlamenco(mockCtrl)
+
+	submittedJob := api.SubmittedJob{
+		Name:              "поднео посао",
+		Type:              "test",
+		Priority:          50,
+		SubmitterPlatform: "linux",
+		TypeEtag:          ptr("bad etag"),
+	}
+
+	mf.jobCompiler.EXPECT().Compile(gomock.Any(), submittedJob).
+		Return(nil, job_compilers.ErrJobTypeBadEtag)
+	mf.expectConvertTwoWayVariables(t, config.VariableAudienceWorkers, "linux", map[string]string{}).AnyTimes()
+
+	// Expect the job to be rejected.
+	{
+		echoCtx := mf.prepareMockedJSONRequest(submittedJob)
+		err := mf.flamenco.SubmitJob(echoCtx)
+		assert.NoError(t, err)
+		assertResponseAPIError(t, echoCtx,
+			http.StatusPreconditionFailed, "rejecting job, job type etag does not match")
+	}
+
+	// Expect the job compiler to be called.
+	authoredJob := job_compilers.AuthoredJob{
+		JobID:    "afc47568-bd9d-4368-8016-e91d945db36d",
+		Name:     submittedJob.Name,
+		JobType:  submittedJob.Type,
+		Priority: submittedJob.Priority,
+		Status:   api.JobStatusUnderConstruction,
+		Created:  mf.clock.Now(),
+	}
+	mf.jobCompiler.EXPECT().Compile(gomock.Any(), gomock.Any()).Return(&authoredJob, nil)
+
+	// Expect the job to be saved with 'queued' status:
+	mf.persistence.EXPECT().StoreAuthoredJob(gomock.Any(), gomock.Any()).Return(nil)
+
+	// Expect the job to be fetched from the database again:
+	dbJob := persistence.Job{
+		UUID:     authoredJob.JobID,
+		Name:     authoredJob.Name,
+		JobType:  authoredJob.JobType,
+		Priority: authoredJob.Priority,
+		Status:   api.JobStatusQueued,
+		Settings: persistence.StringInterfaceMap{},
+		Metadata: persistence.StringStringMap{},
+	}
+	mf.persistence.EXPECT().FetchJob(gomock.Any(), authoredJob.JobID).Return(&dbJob, nil)
+
+	// Expect the new job to be broadcast.
+	mf.broadcaster.EXPECT().BroadcastNewJob(gomock.Any())
+
+	{ // Expect the job with the right etag to be accepted.
+		submittedJob.TypeEtag = ptr("correct etag")
+		echoCtx := mf.prepareMockedJSONRequest(submittedJob)
+		err := mf.flamenco.SubmitJob(echoCtx)
+		assert.NoError(t, err)
+	}
+}
+
 func TestGetJobTypeHappy(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -183,6 +248,7 @@ func TestGetJobTypeHappy(t *testing.T) {
 
 	// Get an existing job type.
 	jt := api.AvailableJobType{
+		Etag:  "some etag",
 		Name:  "test-job-type",
 		Label: "Test Job Type",
 		Settings: []api.AvailableJobSetting{

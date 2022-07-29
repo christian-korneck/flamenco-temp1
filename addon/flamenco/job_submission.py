@@ -48,6 +48,7 @@ def job_for_scene(scene: bpy.types.Scene) -> Optional[_SubmittedJob]:
         settings=settings,
         metadata=metadata,
         submitter_platform=platform.system().lower(),
+        type_etag=propgroup.job_type.etag,
     )
     return job
 

@@ -6,7 +6,10 @@ package job_compilers
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"sort"
 	"sync"
@@ -22,6 +25,7 @@ import (
 
 var ErrJobTypeUnknown = errors.New("job type unknown")
 var ErrScriptIncomplete = errors.New("job compiler script incomplete")
+var ErrJobTypeBadEtag = errors.New("job type etag does not match")
 
 // Service contains job compilers defined in JavaScript.
 type Service struct {
@@ -40,8 +44,9 @@ type Compiler struct {
 }
 
 type VM struct {
-	runtime  *goja.Runtime // Goja VM containing the job compiler script.
-	compiler Compiler      // Program loaded into this VM.
+	runtime     *goja.Runtime // Goja VM containing the job compiler script.
+	compiler    Compiler      // Program loaded into this VM.
+	jobTypeEtag string        // Etag for this particular job type.
 }
 
 // jobCompileFunc is a function that fills job.Tasks.
@@ -88,6 +93,10 @@ func Load(ts TimeService) (*Service, error) {
 func (s *Service) Compile(ctx context.Context, sj api.SubmittedJob) (*AuthoredJob, error) {
 	vm, err := s.compilerVMForJobType(sj.Type)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := vm.checkJobTypeEtag(sj); err != nil {
 		return nil, err
 	}
 
@@ -203,5 +212,49 @@ func (vm *VM) getJobTypeInfo() (api.AvailableJobType, error) {
 	}
 
 	ajt.Name = vm.compiler.jobType
+	ajt.Etag = vm.jobTypeEtag
 	return ajt, nil
+}
+
+// getEtag gets the job type etag hash.
+func (vm *VM) getEtag() (string, error) {
+	jobTypeInfo, err := vm.getJobTypeInfo()
+	if err != nil {
+		return "", err
+	}
+
+	// Convert to JSON, then compute the SHA256sum to get the Etag.
+	asBytes, err := json.Marshal(&jobTypeInfo)
+	if err != nil {
+		return "", err
+	}
+
+	hasher := sha1.New()
+	hasher.Write(asBytes)
+	hashsum := hasher.Sum(nil)
+	return fmt.Sprintf("%x", hashsum), nil
+}
+
+// updateEtag sets vm.jobTypeEtag based on the job type info it contains.
+func (vm *VM) updateEtag() error {
+	etag, err := vm.getEtag()
+	if err != nil {
+		return err
+	}
+
+	vm.jobTypeEtag = etag
+	return nil
+}
+
+func (vm *VM) checkJobTypeEtag(sj api.SubmittedJob) error {
+	if sj.TypeEtag == nil || *sj.TypeEtag == "" {
+		return nil
+	}
+
+	if vm.jobTypeEtag != *sj.TypeEtag {
+		return fmt.Errorf("%w: expecting %q, submitted job has %q",
+			ErrJobTypeBadEtag, vm.jobTypeEtag, *sj.TypeEtag)
+	}
+
+	return nil
 }

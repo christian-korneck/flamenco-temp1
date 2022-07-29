@@ -90,6 +90,7 @@ class AvailableJobType(ModelNormal):
             'name': (str,),  # noqa: E501
             'label': (str,),  # noqa: E501
             'settings': ([AvailableJobSetting],),  # noqa: E501
+            'etag': (str,),  # noqa: E501
         }
 
     @cached_property
@@ -101,6 +102,7 @@ class AvailableJobType(ModelNormal):
         'name': 'name',  # noqa: E501
         'label': 'label',  # noqa: E501
         'settings': 'settings',  # noqa: E501
+        'etag': 'etag',  # noqa: E501
     }
 
     read_only_vars = {
@@ -110,13 +112,14 @@ class AvailableJobType(ModelNormal):
 
     @classmethod
     @convert_js_args_to_python_args
-    def _from_openapi_data(cls, name, label, settings, *args, **kwargs):  # noqa: E501
+    def _from_openapi_data(cls, name, label, settings, etag, *args, **kwargs):  # noqa: E501
         """AvailableJobType - a model defined in OpenAPI
 
         Args:
             name (str):
             label (str):
             settings ([AvailableJobSetting]):
+            etag (str): Hash of the job type. If the job settings or the label change, this etag will change. This is used on job submission to ensure that the submitted job settings are up to date. 
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -179,6 +182,7 @@ class AvailableJobType(ModelNormal):
         self.name = name
         self.label = label
         self.settings = settings
+        self.etag = etag
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \
@@ -199,13 +203,14 @@ class AvailableJobType(ModelNormal):
     ])
 
     @convert_js_args_to_python_args
-    def __init__(self, name, label, settings, *args, **kwargs):  # noqa: E501
+    def __init__(self, name, label, settings, etag, *args, **kwargs):  # noqa: E501
         """AvailableJobType - a model defined in OpenAPI
 
         Args:
             name (str):
             label (str):
             settings ([AvailableJobSetting]):
+            etag (str): Hash of the job type. If the job settings or the label change, this etag will change. This is used on job submission to ensure that the submitted job settings are up to date. 
 
         Keyword Args:
             _check_type (bool): if True, values for parameters in openapi_types
@@ -266,6 +271,7 @@ class AvailableJobType(ModelNormal):
         self.name = name
         self.label = label
         self.settings = settings
+        self.etag = etag
         for var_name, var_value in kwargs.items():
             if var_name not in self.attribute_map and \
                         self._configuration is not None and \

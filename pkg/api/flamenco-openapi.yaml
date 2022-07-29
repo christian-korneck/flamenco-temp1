@@ -591,6 +591,14 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Job" }
+        "412":
+          description: >
+            The given job type etag does not match the job type etag on the
+            Manager. This is likely due to the client caching the job type for
+            too long.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
         default:
           description: Error message
           content:
@@ -1355,7 +1363,13 @@ components:
         "settings":
           type: array
           items: { $ref: "#/components/schemas/AvailableJobSetting" }
-      required: [name, label, settings]
+        "etag":
+          type: string
+          description: >
+            Hash of the job type. If the job settings or the label change, this
+            etag will change. This is used on job submission to ensure that the
+            submitted job settings are up to date.
+      required: [name, label, settings, etag]
 
     AvailableJobSetting:
       type: object
@@ -1428,6 +1442,16 @@ components:
       properties:
         "name": { type: string }
         "type": { type: string }
+        "type_etag":
+          type: string
+          description: >
+            Hash of the job type, copied from the `AvailableJobType.etag`
+            property of the job type. The job will be rejected if this field
+            doesn't match the actual job type on the Manager. This prevents job
+            submission with old settings, after the job compiler script has been
+            updated.
+
+            If this field is ommitted, the check is bypassed.
         "priority": { type: integer, default: 50 }
         "settings": { $ref: "#/components/schemas/JobSettings" }
         "metadata": { $ref: "#/components/schemas/JobMetadata" }

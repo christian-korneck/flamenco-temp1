@@ -27,10 +27,11 @@ class AvailableJobType {
      * @param name {String} 
      * @param label {String} 
      * @param settings {Array.<module:model/AvailableJobSetting>} 
+     * @param etag {String} Hash of the job type. If the job settings or the label change, this etag will change. This is used on job submission to ensure that the submitted job settings are up to date. 
      */
-    constructor(name, label, settings) { 
+    constructor(name, label, settings, etag) { 
         
-        AvailableJobType.initialize(this, name, label, settings);
+        AvailableJobType.initialize(this, name, label, settings, etag);
     }
 
     /**
@@ -38,10 +39,11 @@ class AvailableJobType {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, name, label, settings) { 
+    static initialize(obj, name, label, settings, etag) { 
         obj['name'] = name;
         obj['label'] = label;
         obj['settings'] = settings;
+        obj['etag'] = etag;
     }
 
     /**
@@ -64,6 +66,9 @@ class AvailableJobType {
             if (data.hasOwnProperty('settings')) {
                 obj['settings'] = ApiClient.convertToType(data['settings'], [AvailableJobSetting]);
             }
+            if (data.hasOwnProperty('etag')) {
+                obj['etag'] = ApiClient.convertToType(data['etag'], 'String');
+            }
         }
         return obj;
     }
@@ -85,6 +90,12 @@ AvailableJobType.prototype['label'] = undefined;
  * @member {Array.<module:model/AvailableJobSetting>} settings
  */
 AvailableJobType.prototype['settings'] = undefined;
+
+/**
+ * Hash of the job type. If the job settings or the label change, this etag will change. This is used on job submission to ensure that the submitted job settings are up to date. 
+ * @member {String} etag
+ */
+AvailableJobType.prototype['etag'] = undefined;
 
 
 

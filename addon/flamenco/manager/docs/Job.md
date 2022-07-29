@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **status** | [**JobStatus**](JobStatus.md) |  | 
 **activity** | **str** | Description of the last activity on this job. | 
 **priority** | **int** |  | defaults to 50
+**type_etag** | **str** | Hash of the job type, copied from the &#x60;AvailableJobType.etag&#x60; property of the job type. The job will be rejected if this field doesn&#39;t match the actual job type on the Manager. This prevents job submission with old settings, after the job compiler script has been updated. If this field is ommitted, the check is bypassed.  | [optional] 
 **settings** | [**JobSettings**](JobSettings.md) |  | [optional] 
 **metadata** | [**JobMetadata**](JobMetadata.md) |  | [optional] 
 **any string name** | **bool, date, datetime, dict, float, int, list, str, none_type** | any string name can be used but the value must be the correct type | [optional]
