@@ -87,7 +87,6 @@ class JobTypePropertyGroup:
     def eval_and_assign(
         self,
         context: bpy.types.Context,
-        job: _SubmittedJob,
         setting_key: str,
         setting_eval: str,
     ) -> None:

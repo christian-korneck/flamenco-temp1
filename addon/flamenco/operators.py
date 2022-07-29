@@ -134,7 +134,7 @@ class FLAMENCO_OT_eval_setting(FlamencoOpMixin, bpy.types.Operator):
             return {"CANCELLED"}
 
         propgroup: JobTypePropertyGroup = context.scene.flamenco_job_settings
-        propgroup.eval_and_assign(context, job, self.setting_key, self.setting_eval)
+        propgroup.eval_and_assign(context, self.setting_key, self.setting_eval)
         return {"FINISHED"}
 
 
