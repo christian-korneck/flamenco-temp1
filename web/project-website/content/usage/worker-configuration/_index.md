@@ -17,8 +17,8 @@ The task types are determined by the [job compiler scripts][scripts]. The ones
 listed here are in use by the default scripts. These determine which kind of
 tasks this Worker will get. See [task types][task-types] for more info.
 
-[scripts]: {{< ref "usage/job-compiler-scripts/_index.md" >}}
-[task-types]: {{< ref "usage/job-compiler-scripts/_index.md" >}}#task-types
+[scripts]: {{< ref "usage/job-types" >}}
+[task-types]: {{< ref "usage/job-types" >}}#task-types
 
 ## Worker Local Files
 

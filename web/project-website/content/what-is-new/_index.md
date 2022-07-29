@@ -16,6 +16,6 @@ Compared to version 2, Flamenco 3:
 - supports [custom job types][custom-jobs] written in JavaScript.
 - comes bundled with FFmpeg; you only need to install Blender.
 
-[custom-jobs]: {{< ref "/usage/job-compiler-scripts" >}}
+[custom-jobs]: {{< ref "usage/job-types" >}}
 
 {{< button size="large" relref="usage/getting-started/" >}}Get Started{{< /button >}}

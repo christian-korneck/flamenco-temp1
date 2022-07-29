@@ -1,10 +1,13 @@
 ---
-title: Job Compiler Scripts
+title: Job Types
 weight: 10
 ---
 
-Flamenco uses *job compiler scripts* to convert a job definition (like "*render
-this Blend file*") into concrete tasks that can be executed by workers.
+Flamenco uses JavaScript files called *job compiler scripts* or two things. They
+
+- define a *job type*, with its own set of settings, and
+- convert a job of this type (like "*render this Blend file*") into concrete
+  tasks that can be executed by workers.
 
 ## Example
 
@@ -50,9 +53,9 @@ compiler scripts][built-in-scripts] as examples.
 
 ## Task Types
 
-In the above example code, you can see calls like `author.Task("echo", "misc")`.
-The first parameter is the task name, which will be shown in the web interface
-and can help to identify each task. The second parameter is the *task type*.
+Each Flamenco task has a *task type*. This is a broad indicator of the kind of
+work this task encompasses. The task's type determines which worker is allowed
+to execute the task.
 
 The following task types are defined by the standard job compiler scripts:
 
@@ -68,6 +71,10 @@ let a puny machine do the file management and maybe video compression with
 FFmpeg, while the Blender tasks are left for the big ones. By default the
 workers can run all the above task types. See [worker
 configuration][worker-config] for more info.
+
+In the above example code, you can see calls like `author.Task("echo", "misc")`.
+The first parameter is the task name, which will be shown in the web interface
+and can help to identify each task. The second parameter is the *task type*.
 
 In the end, these are just strings. When you create your own job compiler
 scripts, you can follow these types or make them up yourself. Don't forget to
