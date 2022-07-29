@@ -35,6 +35,13 @@ type CheckBlenderResult struct {
 	Source         api.BlenderPathSource
 }
 
+// Find returns the path of a `blender` executable,
+// If there is one associated with .blend files, and the current platform is
+// supported to query those, that one is used. Otherwise $PATH is searched.
+func Find(ctx context.Context) (CheckBlenderResult, error) {
+	return CheckBlender(ctx, "")
+}
+
 // FileAssociation returns the full path of a Blender executable, by inspecting file association with .blend files.
 // `ErrNotAvailable` is returned if no "blender finder" is available for the current platform.
 func FileAssociation() (string, error) {
