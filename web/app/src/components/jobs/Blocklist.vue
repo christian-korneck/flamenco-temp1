@@ -73,7 +73,10 @@ function removeBlocklistEntry(blocklistEntry) {
 
 watch(() => props.jobID, refreshBlocklist);
 watch(blocklist, () => {
-  nextTick(() => { emit("reshuffled") })
+  const emitter = () => { emit("reshuffled") };
+  nextTick(() => {
+    nextTick(emitter);
+  });
 })
 watch(isVisible, refreshBlocklist);
 onMounted(refreshBlocklist);
