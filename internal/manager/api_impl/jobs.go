@@ -371,14 +371,14 @@ func (f *Flamenco) RemoveJobBlocklist(e echo.Context, jobID string) error {
 	logger := requestLogger(e).With().Str("job", jobID).Logger()
 	ctx := e.Request().Context()
 
-	var job api.RemoveJobBlocklistJSONRequestBody
-	if err := e.Bind(&job); err != nil {
+	var entriesToRemove api.RemoveJobBlocklistJSONRequestBody
+	if err := e.Bind(&entriesToRemove); err != nil {
 		logger.Warn().Err(err).Msg("bad request received")
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
 
 	var lastErr error
-	for _, entry := range job {
+	for _, entry := range entriesToRemove {
 		sublogger := logger.With().
 			Str("worker", entry.WorkerId).
 			Str("taskType", entry.TaskType).
