@@ -93,6 +93,7 @@ export default {
     showFooterPopup(shown) {
       if (shown) localStorage.setItem("footer-popover-visible", "true");
       else localStorage.removeItem("footer-popover-visible");
+      this._recalcTasksTableHeight();
     },
   },
   methods: {
