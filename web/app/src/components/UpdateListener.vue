@@ -71,7 +71,7 @@ export default {
     connectToWebsocket() {
       // The SocketIO client API docs are available at:
       // https://github.com/socketio/socket.io-client/blob/2.4.x/docs/API.md
-      console.log("connecting JobsListener to WS", websocketURL);
+      // console.log("connecting JobsListener to WS", websocketURL);
       const ws = io(websocketURL, {
         transports: ["websocket"],
       });
@@ -83,7 +83,7 @@ export default {
       window.ws = ws;
 
       this.socket.on('connect', (error) => {
-        console.log("socketIO connection established");
+        // console.log("socketIO connection established");
         this.sockStatus.connected();
         this._resubscribe();
       });
@@ -102,7 +102,7 @@ export default {
       });
 
       this.socket.on("disconnect", (reason) => {
-        console.log("socketIO disconnected:", reason);
+        // console.log("socketIO disconnected:", reason);
         this.$emit("sioDisconnected", reason);
         this.sockStatus.disconnected(reason);
 
@@ -179,7 +179,6 @@ export default {
 
     sendBroadcastMessage(name, message) {
       const payload = { name: name, text: message };
-      console.log("sending broadcast message:", payload);
       this.socket.emit("/chat", payload);
     },
 
@@ -190,7 +189,6 @@ export default {
      */
     _updateMainSubscription(operation, type) {
       const payload = new API.SocketIOSubscription(operation, type);
-      console.log(`sending ${type} ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
     },
 
@@ -202,7 +200,6 @@ export default {
     _updateJobSubscription(operation, jobID) {
       const payload = new API.SocketIOSubscription(operation, "job");
       payload.uuid = jobID;
-      console.log(`sending job ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
     },
 
@@ -214,7 +211,6 @@ export default {
     _updateTaskLogSubscription(operation, taskID) {
       const payload = new API.SocketIOSubscription(operation, "tasklog");
       payload.uuid = taskID;
-      console.log(`sending tasklog ${operation}:`, payload);
       this.socket.emit("/subscription", payload);
     },
 

@@ -33,8 +33,6 @@ onMounted(() => {
   tabulator = new Tabulator('#task_log_list', tabOptions);
   tabulator.on("tableBuilt", _scrollToBottom);
   tabulator.on("tableBuilt", _subscribeToPinia);
-  console.log("Task log list: mounted on task ID", tasks.activeTaskID);
-
   _fetchLogTail(tasks.activeTaskID);
 });
 onUnmounted(() => {
@@ -42,7 +40,6 @@ onUnmounted(() => {
 });
 
 tasks.$subscribe((_, state) => {
-  console.log("Task log list: new task ID", state.activeTaskID);
   _fetchLogTail(state.activeTaskID);
 });
 
@@ -71,5 +68,5 @@ function _fetchLogTail(taskID) {
 </script>
 
 <template>
-    <div id="task_log_list"></div>
+  <div id="task_log_list"></div>
 </template>

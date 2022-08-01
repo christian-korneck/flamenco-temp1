@@ -152,7 +152,6 @@ export default {
     },
 
     onJobTypeLoaded(jobType) {
-      console.log("Job type loaded: ", jobType);
       this.jobType = jobType;
 
       // Construct a lookup table for the settings.

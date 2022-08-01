@@ -130,7 +130,6 @@ export default {
       this.fetchTasks();
     },
     fetchTasks() {
-      console.log("Fetching tasks for job", this.jobID);
       if (!this.jobID) {
         this.tabulator.setData([]);
         return;

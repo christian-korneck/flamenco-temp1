@@ -34,7 +34,6 @@ export const useNotifs = defineStore('notifications', {
       const notif = {id: this._generateID(), msg: message, time: new Date()};
       this.history.push(notif);
       this.last = notif;
-      console.log("New notification:", plain(notif));
       this._prune();
       this._restartHideTimer();
     },
@@ -43,7 +42,6 @@ export const useNotifs = defineStore('notifications', {
      * @param {API.SocketIOJobUpdate} jobUpdate Job update received via SocketIO.
      */
     addJobUpdate(jobUpdate) {
-      console.log('Received job update:', jobUpdate);
       let msg = `Job ${jobUpdate.name}`;
       if (jobUpdate.previous_status && jobUpdate.previous_status != jobUpdate.status) {
         msg += ` changed status ${jobUpdate.previous_status} ➜ ${jobUpdate.status}`;
@@ -55,7 +53,6 @@ export const useNotifs = defineStore('notifications', {
      * @param {API.SocketIOTaskUpdate} taskUpdate Task update received via SocketIO.
      */
     addTaskUpdate(taskUpdate) {
-      console.log('Received task update:', taskUpdate);
       let msg = `Task ${taskUpdate.name}`;
       if (taskUpdate.previous_status && taskUpdate.previous_status != taskUpdate.status) {
         msg += ` changed status ${taskUpdate.previous_status} ➜ ${taskUpdate.status}`;
@@ -70,7 +67,6 @@ export const useNotifs = defineStore('notifications', {
      * @param {API.SocketIOWorkerUpdate} workerUpdate Worker update received via SocketIO.
      */
      addWorkerUpdate(workerUpdate) {
-      console.log('Received worker update:', workerUpdate);
       let msg = `Worker ${workerUpdate.name}`;
       if (workerUpdate.previous_status && workerUpdate.previous_status != workerUpdate.status) {
         msg += ` changed status ${workerUpdate.previous_status} ➜ ${workerUpdate.status}`;

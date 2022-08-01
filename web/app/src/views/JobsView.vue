@@ -182,7 +182,6 @@ export default {
      */
     _routeToJob(jobID) {
       const route = { name: 'jobs', params: { jobID: jobID } };
-      console.log("routing to job", route.params);
       this.$router.push(route);
     },
     /**
@@ -191,7 +190,6 @@ export default {
      */
     _routeToTask(taskID) {
       const route = { name: 'jobs', params: { jobID: this.jobID, taskID: taskID } };
-      console.log("routing to task", route.params);
       this.$router.push(route);
     },
 

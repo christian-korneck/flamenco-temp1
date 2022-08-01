@@ -91,7 +91,6 @@ export default {
      */
     _routeToWorker(workerID) {
       const route = { name: 'workers', params: { workerID: workerID } };
-      console.log("routing to worker", route.params);
       this.$router.push(route);
     },
 

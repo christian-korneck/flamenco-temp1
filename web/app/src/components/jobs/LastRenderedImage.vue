@@ -48,14 +48,11 @@ function fetchImageURL(jobID) {
  * @param {JobLastRenderedImageInfo} thumbnailInfo
  */
 function setImageURL(thumbnailInfo) {
-  console.log("LastRenderedImage.vue: setImageURL", thumbnailInfo);
-
   if (thumbnailInfo == null) {
     // This indicates that there is no last-rendered image.
     // Default to a hard-coded 'nothing to be seen here, move along' image.
     imageURL.value = "/app/nothing-rendered-yet.svg";
     cssClasses['nothing-rendered-yet'] = true;
-    console.log("LastRenderedImage.vue: setting image URL to:", imageURL.value);
     return;
   }
 
@@ -72,7 +69,6 @@ function setImageURL(thumbnailInfo) {
     url.pathname = thumbnailInfo.base + "/" + suffix
     url.search = new Date().getTime(); // This forces the image to be reloaded.
     imageURL.value = url.toString();
-    console.log("LastRenderedImage.vue: setting image URL to:", imageURL.value);
     foundThumbnail = true;
     break;
   }
@@ -95,13 +91,11 @@ function refreshLastRenderedImage(lastRenderedUpdate) {
     return;
   }
 
-  console.log('refreshLastRenderedImage:', lastRenderedUpdate);
   setImageURL(lastRenderedUpdate.thumbnail);
 }
 
 // Call fetchImageURL(jobID) whenever the job ID prop changes value.
 watch(() => props.jobID, (newJobID) => {
-  console.log("Last-Rendered Image: new job ID: ", newJobID);
   fetchImageURL(newJobID);
 });
 fetchImageURL(props.jobID);

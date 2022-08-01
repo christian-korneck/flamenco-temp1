@@ -46,7 +46,6 @@ const apiClient = new ApiClient(urls.api());;
 const metaAPI = new MetaApi(apiClient);
 metaAPI.getConfiguration()
   .then((config) => {
-    console.log("Got config!", config);
     if (config.isFirstRun) setupAssistantMode();
     else normalMode();
   })
