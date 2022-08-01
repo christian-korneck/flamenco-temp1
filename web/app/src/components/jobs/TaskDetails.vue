@@ -27,10 +27,8 @@
         </dd>
       </template>
 
-      <template v-if="taskData.type">
-        <dt class="field-type" title="Type">Type</dt>
-        <dd>{{ taskData.type }}</dd>
-      </template>
+      <dt class="field-type" title="Task Type">Task Type</dt>
+      <dd>{{ taskData.task_type }}</dd>
 
       <dt class="field-priority" title="Priority">Priority</dt>
       <dd>{{ taskData.priority }}</dd>
