@@ -7,12 +7,15 @@
       <tr>
         <th>Worker</th>
         <th>Task Type</th>
+        <th></th>
       </tr>
       <tr v-for="entry in blocklist">
         <td>
           <link-worker :worker="{ id: entry.worker_id, name: entry.worker_name }" />
         </td>
         <td>{{ entry.task_type }}</td>
+        <td><button class="btn in-table-row" @click="removeBlocklistEntry(entry)"
+            title="Allow this worker to execute these task types">❌</button></td>
       </tr>
     </table>
     <div v-else class="dl-no-data">
@@ -56,6 +59,18 @@ function refreshBlocklist() {
     })
 }
 
+function removeBlocklistEntry(blocklistEntry) {
+  jobsApi.removeJobBlocklist(props.jobID, { jobBlocklistEntry: [blocklistEntry] })
+    .then(() => {
+      blocklist.value = blocklist.value.filter(
+        (entry) => !(entry.worker_id == blocklistEntry.worker_id && entry.task_type == blocklistEntry.task_type));
+    })
+    .catch((error) => {
+      console.log("Error removing entry from blocklist", error);
+      refreshBlocklist();
+    })
+}
+
 watch(() => props.jobID, refreshBlocklist);
 watch(blocklist, () => {
   nextTick(() => { emit("reshuffled") })
@@ -89,5 +104,11 @@ table.blocklist tr {
 
 table.blocklist tr:nth-child(odd) {
   background-color: var(--table-color-background-row-odd);
+}
+
+button.in-table-row {
+  background-color: unset;
+  border: unset;
+  padding: 0;
 }
 </style>

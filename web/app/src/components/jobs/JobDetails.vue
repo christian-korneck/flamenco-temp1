@@ -55,7 +55,7 @@
         </dl>
       </TabItem>
       <TabItem title="Blocklist">
-        <blocklist :jobID="jobData.id" />
+        <blocklist :jobID="jobData.id" @reshuffled="emit_reshuffled_delayed" />
       </TabItem>
     </TabsWrapper>
   </template>
