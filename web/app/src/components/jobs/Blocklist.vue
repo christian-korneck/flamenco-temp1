@@ -26,10 +26,12 @@
 import { apiClient } from '@/stores/api-query-count';
 import { JobsApi } from '@/manager-api';
 import LinkWorker from '@/components/LinkWorker.vue';
-import { watch, onMounted, inject, ref } from 'vue'
+import { watch, onMounted, inject, ref, nextTick } from 'vue'
 
 // jobID should be the job UUID string.
 const props = defineProps(['jobID']);
+const emit = defineEmits(['reshuffled'])
+
 const jobsApi = new JobsApi(apiClient);
 const isVisible = inject("isVisible");
 const isFetching = ref(false);
@@ -44,9 +46,7 @@ function refreshBlocklist() {
   isFetching.value = true;
   jobsApi.fetchJobBlocklist(props.jobID)
     .then((newBlocklist) => {
-      console.log(`received blocklist for job ${props.jobID}`, newBlocklist);
       blocklist.value = newBlocklist;
-      // TODO: remit 'reshuffled' & handle in parent.
     })
     .catch((error) => {
       errorMsg.value = error.message;
@@ -57,6 +57,9 @@ function refreshBlocklist() {
 }
 
 watch(() => props.jobID, refreshBlocklist);
+watch(blocklist, () => {
+  nextTick(() => { emit("reshuffled") })
+})
 watch(isVisible, refreshBlocklist);
 onMounted(refreshBlocklist);
 </script>
