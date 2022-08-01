@@ -82,6 +82,11 @@ export default {
 
     this._fetchJob(this.jobID);
     this._fetchTask(this.taskID);
+
+    window.addEventListener("resize", this._recalcTasksTableHeight);
+  },
+  unmounted() {
+    window.removeEventListener("resize", this._recalcTasksTableHeight);
   },
   watch: {
     jobID(newJobID, oldJobID) {
