@@ -14,7 +14,8 @@
 
       <dt class="field-worker" title="Assigned To">Assigned To</dt>
       <dd>
-        <link-worker :worker="taskData.worker" />
+        <link-worker v-if="taskData.worker" :worker="taskData.worker" />
+        <template v-else>-</template>
       </dd>
 
       <template v-if="taskData.failed_by_workers.length > 0">
