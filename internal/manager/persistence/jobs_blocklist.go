@@ -47,6 +47,7 @@ func (db *DB) FetchJobBlocklist(ctx context.Context, jobUUID string) ([]JobBlock
 		Joins("inner join jobs on jobs.id = job_blocks.job_id").
 		Joins("Worker").
 		Where("jobs.uuid = ?", jobUUID).
+		Order("Worker.name").
 		Scan(&entries)
 	return entries, tx.Error
 }
