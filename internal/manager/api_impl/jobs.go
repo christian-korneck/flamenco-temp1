@@ -376,6 +376,9 @@ func (f *Flamenco) RemoveJobBlocklist(e echo.Context, jobID string) error {
 		logger.Warn().Err(err).Msg("bad request received")
 		return sendAPIError(e, http.StatusBadRequest, "invalid format")
 	}
+	if len(entriesToRemove) == 0 {
+		return sendAPIError(e, http.StatusBadRequest, "empty list of blocklist entries given")
+	}
 
 	var lastErr error
 	for _, entry := range entriesToRemove {
