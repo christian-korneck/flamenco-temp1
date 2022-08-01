@@ -83,6 +83,7 @@ class JobBlocklistEntry(ModelNormal):
         return {
             'worker_id': (str,),  # noqa: E501
             'task_type': (str,),  # noqa: E501
+            'worker_name': (str,),  # noqa: E501
         }
 
     @cached_property
@@ -93,6 +94,7 @@ class JobBlocklistEntry(ModelNormal):
     attribute_map = {
         'worker_id': 'worker_id',  # noqa: E501
         'task_type': 'task_type',  # noqa: E501
+        'worker_name': 'worker_name',  # noqa: E501
     }
 
     read_only_vars = {
@@ -140,6 +142,7 @@ class JobBlocklistEntry(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            worker_name (str): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)
@@ -227,6 +230,7 @@ class JobBlocklistEntry(ModelNormal):
                                 Animal class but this time we won't travel
                                 through its discriminator because we passed in
                                 _visited_composed_classes = (Animal,)
+            worker_name (str): [optional]  # noqa: E501
         """
 
         _check_type = kwargs.pop('_check_type', True)

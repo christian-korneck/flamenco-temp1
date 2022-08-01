@@ -288,8 +288,9 @@ type JobBlocklist []JobBlocklistEntry
 
 // JobBlocklistEntry defines model for JobBlocklistEntry.
 type JobBlocklistEntry struct {
-	TaskType string `json:"task_type"`
-	WorkerId string `json:"worker_id"`
+	TaskType   string  `json:"task_type"`
+	WorkerId   string  `json:"worker_id"`
+	WorkerName *string `json:"worker_name,omitempty"`
 }
 
 // Enough information for a client to piece together different strings to form a host-relative URL to the last-rendered image. To construct the URL, concatenate "{base}/{one of the suffixes}".

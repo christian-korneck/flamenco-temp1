@@ -788,6 +788,7 @@ with flamenco.manager.ApiClient() as api_client:
         JobBlocklistEntry(
             worker_id="worker_id_example",
             task_type="task_type_example",
+            worker_name="worker_name_example",
         ),
     ]) # JobBlocklist | Tuples (worker, task type) to be removed from the blocklist. (optional)
 

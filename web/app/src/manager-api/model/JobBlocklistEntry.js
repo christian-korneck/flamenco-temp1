@@ -57,6 +57,9 @@ class JobBlocklistEntry {
             if (data.hasOwnProperty('task_type')) {
                 obj['task_type'] = ApiClient.convertToType(data['task_type'], 'String');
             }
+            if (data.hasOwnProperty('worker_name')) {
+                obj['worker_name'] = ApiClient.convertToType(data['worker_name'], 'String');
+            }
         }
         return obj;
     }
@@ -73,6 +76,11 @@ JobBlocklistEntry.prototype['worker_id'] = undefined;
  * @member {String} task_type
  */
 JobBlocklistEntry.prototype['task_type'] = undefined;
+
+/**
+ * @member {String} worker_name
+ */
+JobBlocklistEntry.prototype['worker_name'] = undefined;
 
 
 
