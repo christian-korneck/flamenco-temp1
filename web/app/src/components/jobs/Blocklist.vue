@@ -65,7 +65,7 @@ onMounted(refreshBlocklist);
 table.blocklist {
   width: 100%;
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   border-collapse: collapse;
 }
 
@@ -77,7 +77,6 @@ table.blocklist th {
 
 table.blocklist th {
   color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
   font-weight: normal;
 }
 
