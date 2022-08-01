@@ -54,6 +54,9 @@
           <dd>{{ jobData.activity }}</dd>
         </dl>
       </TabItem>
+      <TabItem title="Blocklist">
+        <blocklist :jobID="jobData.id" />
+      </TabItem>
     </TabsWrapper>
   </template>
 
@@ -67,6 +70,7 @@ import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';
 import LastRenderedImage from '@/components/jobs/LastRenderedImage.vue'
+import Blocklist from './Blocklist.vue'
 import TabItem from '@/components/TabItem.vue'
 import TabsWrapper from '@/components/TabsWrapper.vue'
 
@@ -81,6 +85,7 @@ export default {
     LastRenderedImage,
     TabItem,
     TabsWrapper,
+    Blocklist,
   },
   data() {
     return {
