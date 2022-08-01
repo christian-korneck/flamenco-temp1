@@ -71,24 +71,44 @@ func getFileAssociation(extension string) (string, error) {
 		return "", fmt.Errorf("converting string to UTF16: %w", err)
 	}
 
-	var cchOut uint32 = 65535
-	buf := make([]uint16, cchOut)
-	pszOut := unsafe.Pointer(&buf[0])
-
-	result1, _, errno := syscall.SyscallN(
-		assocQueryString,
-		uintptr(ASSOCF_INIT_DEFAULTTOSTAR), // [in]            ASSOCF   flags
-		uintptr(ASSOCSTR_EXECUTABLE),       // [in]            ASSOCSTR str
-		uintptr(unsafe.Pointer(pszAssoc)),  // [in]            LPCWSTR  pszAssoc
-		uintptr(unsafe.Pointer(pszExtra)),  // [in, optional]  LPCWSTR  pszExtra
-		uintptr(pszOut),                    // [out, optional] LPWSTR   pszOut
-		uintptr(unsafe.Pointer(&cchOut)),   // [in, out]       DWORD    *pcchOut
+	var (
+		bufferSize uint32 = 1024
+		result1    uintptr
+		errno      syscall.Errno
 	)
-	if errno != 0 {
-		return "", fmt.Errorf("error calling AssocQueryStringW from shlwapi.dll: %w", errno)
+	buf := make([]uint16, bufferSize)
+
+	pszOut := unsafe.Pointer(&buf[0])
+	result1, _, errno = syscall.SyscallN(
+		assocQueryString,
+		uintptr(ASSOCF_NONE),                 // [in]            ASSOCF   flags
+		uintptr(ASSOCSTR_EXECUTABLE),         // [in]            ASSOCSTR str
+		uintptr(unsafe.Pointer(pszAssoc)),    // [in]            LPCWSTR  pszAssoc
+		uintptr(unsafe.Pointer(pszExtra)),    // [in, optional]  LPCWSTR  pszExtra
+		uintptr(pszOut),                      // [out, optional] LPWSTR   pszOut
+		uintptr(unsafe.Pointer(&bufferSize)), // [in, out]       DWORD    *pcchOut
+	)
+	// Somehow Windows Home returns an error 122 "The data area passed to a system
+	// call is too small" even when the data area is big enough. So, for the sake
+	// of sanity of this software developer, let's just ignore that particular
+	// error.
+	if errno != 0 && errno != 122 {
+		exe := syscall.UTF16ToString(buf)
+		return "", fmt.Errorf("error calling %s from %s: %d; %w (with bufsize=%v and pszOut=%q)",
+			funcname, libname, errno, errno, bufferSize, exe)
 	}
-	if result1 != 0 {
-		return "", fmt.Errorf("unknown result %d calling AssocQueryStringW from shlwapi.dll: %w", result1, err)
+	switch result1 {
+	case S_OK:
+		// Continue below with the happy flow.
+	case ERROR_NO_ASSOCIATION:
+		// No association with .blend files exists, and that's fine.
+		return "", ErrAssociationNotFound
+	case S_FALSE:
+		return "", fmt.Errorf("error calling %s from %s: buffer too small, should be %v", funcname, libname, bufferSize)
+	case E_POINTER:
+		return "", fmt.Errorf("error calling %s from %s: invalid pointer", funcname, libname)
+	default:
+		return "", fmt.Errorf("unknown result %#x calling %s from %s", result1, funcname, libname)
 	}
 
 	exe := syscall.UTF16ToString(buf)
@@ -146,3 +166,12 @@ const (
 )
 
 type ASSOCSTR uint32
+
+// Source: https://docs.microsoft.com/en-us/windows/win32/seccrypto/common-hresult-values
+// and some other random Duck Duck Go searches.
+const (
+	S_OK                 uintptr = 0x00000000
+	E_POINTER            uintptr = 0x80004003
+	S_FALSE              uintptr = 0x00000001
+	ERROR_NO_ASSOCIATION uintptr = 0x80070483
+)

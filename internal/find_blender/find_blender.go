@@ -18,9 +18,10 @@ import (
 )
 
 var (
-	ErrNotAvailable = errors.New("not available on this platform")
-	ErrNotBlender   = errors.New("not a Blender executable")
-	ErrTimedOut     = errors.New("version check took too long")
+	ErrNotAvailable        = errors.New("not available on this platform")
+	ErrAssociationNotFound = errors.New("no program is associated with .blend files")
+	ErrNotBlender          = errors.New("not a Blender executable")
+	ErrTimedOut            = errors.New("version check took too long")
 )
 
 // blenderVersionTimeout is how long `blender --version` is allowed to take,
