@@ -340,6 +340,10 @@ func (f *Flamenco) ScheduleTask(e echo.Context) error {
 		return sendAPIError(e, http.StatusInternalServerError, "internal error updating task for timeout calculation: %v", err)
 	}
 
+	// Broadcast a worker update so that the web frontend will show the newly assigned task.
+	update := webupdates.NewWorkerUpdate(worker)
+	f.broadcaster.BroadcastWorkerUpdate(update)
+
 	// Convert database objects to API objects:
 	apiCommands := []api.Command{}
 	for _, cmd := range dbTask.Commands {
