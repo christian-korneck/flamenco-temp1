@@ -1674,6 +1674,7 @@ components:
       properties:
         worker_id: { type: string, format: uuid }
         task_type: { type: string }
+        worker_name: { type: string }
       required: [worker_id, task_type]
 
     JobStatusChange:
