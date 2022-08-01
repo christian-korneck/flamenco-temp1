@@ -58,6 +58,7 @@ func TestTaskScheduleHappy(t *testing.T) {
 		"Task assigned to worker дрон (e7632d62-c3b8-4af0-9e78-01752928952c)")
 
 	mf.stateMachine.EXPECT().TaskStatusChange(bgCtx, &task, api.TaskStatusActive)
+	mf.broadcaster.EXPECT().BroadcastWorkerUpdate(gomock.Any())
 
 	err := mf.flamenco.ScheduleTask(echo)
 	assert.NoError(t, err)
