@@ -19,7 +19,6 @@ steps:
 The downside to this approach is that the second commit will likely break the
 project, which is unfortunate. However, this approach does have some advantages:
 
-- The regenerated code has the commit hash of the actual change to the OpenAPI
-  definition.
+- The regenerated code has the right Flamenco version number.
 - Changes to manually-written and generated code are tracked in separate
   commits. This makes them easier to comprehend by humans.
