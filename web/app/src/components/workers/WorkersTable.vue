@@ -19,7 +19,7 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { WorkerMgtApi } from '@/manager-api'
 import { indicator, workerStatus } from '@/statusindicator';

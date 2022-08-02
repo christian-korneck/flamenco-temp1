@@ -69,7 +69,7 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
 import * as datetime from "@/datetime";
 import { JobsApi } from '@/manager-api';
 import { backendURL } from '@/urls';

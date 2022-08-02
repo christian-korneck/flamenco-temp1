@@ -103,7 +103,7 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
 import { useNotifs } from '@/stores/notifications'
 
 import * as datetime from "@/datetime";

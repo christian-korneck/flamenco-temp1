@@ -65,7 +65,7 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api';
 import { apiClient } from '@/stores/api-query-count';

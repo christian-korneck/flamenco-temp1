@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
