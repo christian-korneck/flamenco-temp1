@@ -644,3 +644,7 @@ span.state-transition-arrow.lazy {
   max-height: 100%;
   max-width: 100%;
 }
+
+.click-to-copy {
+  cursor: pointer;
+}

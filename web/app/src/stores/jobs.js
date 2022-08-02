@@ -17,6 +17,12 @@ export const useJobs = defineStore('jobs', {
      * @type {string}
      */
     activeJobID: "",
+
+    /**
+     * Set to true when it is known that there are no jobs at all in the system.
+     * This is written by the JobsTable.vue component.
+     */
+    isJobless: false,
   }),
   getters: {
     canDelete() {

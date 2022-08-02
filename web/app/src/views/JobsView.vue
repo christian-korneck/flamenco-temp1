@@ -3,8 +3,12 @@
     <jobs-table ref="jobsTable" :activeJobID="jobID" @tableRowClicked="onTableJobClicked" />
   </div>
   <div class="col col-2 job-details-column" id="col-job-details">
-    <job-details ref="jobDetails" :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
-    <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID" @tableRowClicked="onTableTaskClicked" />
+    <get-the-addon v-if="jobs.isJobless" />
+    <template v-else>
+      <job-details ref="jobDetails" :jobData="jobs.activeJob" @reshuffled="_recalcTasksTableHeight" />
+      <tasks-table v-if="hasJobData" ref="tasksTable" :jobID="jobID" :taskID="taskID"
+        @tableRowClicked="onTableTaskClicked" />
+    </template>
   </div>
   <div class="col col-3">
     <task-details v-if="hasJobData" :taskData="tasks.activeTask" @showTaskLogTail="showTaskLogTail" />
@@ -37,6 +41,7 @@ import { useTaskLog } from '@/stores/tasklog'
 import { apiClient } from '@/stores/api-query-count';
 
 import FooterPopup from '@/components/footer/FooterPopup.vue'
+import GetTheAddon from '@/components/GetTheAddon.vue'
 import JobDetails from '@/components/jobs/JobDetails.vue'
 import JobsTable from '@/components/jobs/JobsTable.vue'
 import NotificationBar from '@/components/footer/NotificationBar.vue'
@@ -49,6 +54,7 @@ export default {
   props: ["jobID", "taskID"], // provided by Vue Router.
   components: {
     FooterPopup,
+    GetTheAddon,
     JobDetails,
     JobsTable,
     NotificationBar,

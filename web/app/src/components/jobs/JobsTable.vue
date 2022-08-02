@@ -18,6 +18,7 @@ import * as datetime from "@/datetime";
 import * as API from '@/manager-api'
 import { indicator } from '@/statusindicator';
 import { apiClient } from '@/stores/api-query-count';
+import { useJobs } from '@/stores/jobs';
 
 import JobActionsBar from '@/components/jobs/JobActionsBar.vue'
 import StatusFilterBar from '@/components/StatusFilterBar.vue'
@@ -33,6 +34,8 @@ export default {
     return {
       shownStatuses: [],
       availableStatuses: [], // Will be filled after data is loaded from the backend.
+
+      jobs: useJobs(),
     };
   },
   mounted() {
@@ -127,6 +130,7 @@ export default {
     fetchAllJobs() {
       const jobsApi = new API.JobsApi(apiClient);
       const jobsQuery = {};
+      this.jobs.isJobless = false;
       jobsApi.queryJobs(jobsQuery).then(this.onJobsFetched, function (error) {
         // TODO: error handling.
         console.error(error);
@@ -135,6 +139,8 @@ export default {
     onJobsFetched(data) {
       // "Down-cast" to JobUpdate to only get those fields, just for debugging things:
       // data.jobs = data.jobs.map((j) => API.JobUpdate.constructFromObject(j));
+      const hasJobs = data && data.jobs && data.jobs.length > 0;
+      this.jobs.isJobless = !hasJobs;
       this.tabulator.setData(data.jobs);
       this._refreshAvailableStatuses();
 
