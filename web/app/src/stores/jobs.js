@@ -36,6 +36,9 @@ export const useJobs = defineStore('jobs', {
     },
   },
   actions: {
+    setIsJobless(isJobless) {
+      this.$patch({ isJobless: isJobless });
+    },
     setActiveJobID(jobID) {
       this.$patch({
         activeJob: {id: jobID, settings: {}, metadata: {}},
