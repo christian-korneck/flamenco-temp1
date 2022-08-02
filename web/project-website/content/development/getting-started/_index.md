@@ -91,3 +91,9 @@ See [building][building] for more `make` targets, for example to run unit tests,
 enable the race condition checker, and all other kinds of useful things.
 
 [building]: {{< relref "../building/" >}}
+
+## 4. Get Involved
+
+If you're interested in helping out with Flamenco development, please read [Get Involved!][get-involved]
+
+[get-involved]: {{ <ref "development/get-involved" >}}
