@@ -1,5 +1,8 @@
 ---
 header:
+  - name: Download
+    ref: /download
+    external: false
   - name: Getting Started
     ref: /usage/getting-started
     external: false
