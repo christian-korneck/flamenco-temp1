@@ -30,6 +30,10 @@ FFMPEG_VERSION=5.0.1
 TOOLS=./tools
 TOOLS_DOWNLOAD=./tools/download
 
+# SSH account & hostname for publishing.
+WEBSERVER_SSH=flamenco@flamenco.blender.org
+WEBSERVER_ROOT=/var/www/flamenco.blender.org
+
 all: application
 
 # Install generators and build the software.
@@ -208,7 +212,7 @@ clean-webapp-static:
 project-website:
 	rm -rf web/project-website/public/
 	cd web/project-website; hugo --baseURL https://flamenco.blender.org/
-	rsync web/project-website/public/ flamenco@flamenco.blender.org:/var/www/flamenco.blender.org/ \
+	rsync web/project-website/public/ ${WEBSERVER_SSH}:${WEBSERVER_ROOT}/ \
 		-va \
 		--exclude v2/ \
 		--exclude .well-known/ \
