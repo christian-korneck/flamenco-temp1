@@ -17,6 +17,8 @@ development. For information on its predecessor, see [Flamenco 2](/v2/).
 
 {{< button size="large" relref="usage/getting-started/" >}}Getting Started{{< /button >}}
 
+{{< button size="large" relref="download" >}}Download Flamenco{{< /button >}}
+
 <--->
 
 ![Flamenco Screenshot](/images/flamenco_screenshot_01.webp)

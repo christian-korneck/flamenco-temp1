@@ -3,11 +3,13 @@ title: Getting Started
 weight: 0
 ---
 
-*This will be finalised when a release of Flamenco 3 can actually be downloaded.*
+{{< hint type=note >}}
+This will be finalised when Flamenco 3 is released. Currently it is still in a testing phase.
+{{< /hint >}}
 
 In broad terms, to render with Flamenco, follow these steps:
 
-1. Download Flamenco (link will become available when we release the first beta version).
+1. [Download Flamenco][download].
 2. Create a directory on some storage, like a NAS, and make sure it's available at the same path on each computer.
 3. Install Blender on each computer you want to render on. It should be in the same place everywhere.
 4. Pick the computer that will manage the farm. Run `flamenco-manager` on it. This will start a web browser with the *Flamenco Setup Assistant*.
@@ -20,3 +22,4 @@ In broad terms, to render with Flamenco, follow these steps:
 Curious about [what changed since the last major release][what-is-new]?
 
 [what-is-new]: {{< ref "what-is-new" >}}
+[download]: {{< ref "download" >}}
