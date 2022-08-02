@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Callable, Optional, Any, Union
 import bpy
 
 from . import job_types
+from .bat.submodules import bpathlib
 
 _log = logging.getLogger(__name__)
 
@@ -175,11 +176,11 @@ class JobTypePropertyGroup:
         If `n` is 0, returns an empty `Path()`.
         If `filepath` is None, uses bpy.data.filepath instead.
 
-        >>> str(lastNDirParts(2, "/path/to/some/file.blend"))
+        >>> str(last_n_dir_parts(2, "/path/to/some/file.blend"))
         "to/some"
 
         Always returns a relative path:
-        >>> str(lastNDirParts(200, "C:\\path\\to\\some\\file.blend"))
+        >>> str(last_n_dir_parts(200, "C:\\path\\to\\some\\file.blend"))
         "path\\to\\some"
         """
 
@@ -189,9 +190,9 @@ class JobTypePropertyGroup:
         if filepath is None:
             filepath = Path(bpy.data.filepath)
         elif isinstance(filepath, str):
-            filepath = Path(filepath)
+            filepath = Path(bpy.path.abspath(filepath))
 
-        dirpath = filepath.parent
+        dirpath = bpathlib.make_absolute(filepath).parent
         if n >= len(dirpath.parts):
             all_parts = dirpath.relative_to(dirpath.anchor)
             return all_parts
