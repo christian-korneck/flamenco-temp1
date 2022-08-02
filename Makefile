@@ -215,6 +215,7 @@ project-website:
 	rsync web/project-website/public/ ${WEBSERVER_SSH}:${WEBSERVER_ROOT}/ \
 		-va \
 		--exclude v2/ \
+		--exclude downloads/ \
 		--exclude .well-known/ \
 		--exclude .htaccess \
 		--delete-after
@@ -300,5 +301,11 @@ release-package-windows:
 	rm -f ${RELEASE_PACKAGE_WINDOWS}
 	zip -r -9 ${RELEASE_PACKAGE_WINDOWS} flamenco-manager.exe flamenco-worker.exe README.md LICENSE tools/*-windows*
 	@echo "Done! Created ${RELEASE_PACKAGE_WINDOWS}"
+
+.PHONY: publish-release-packages
+publish-release-packages:
+	rsync -va \
+		${RELEASE_PACKAGE_LINUX} ${RELEASE_PACKAGE_DARWIN} ${RELEASE_PACKAGE_WINDOWS} \
+		${WEBSERVER_SSH}:${WEBSERVER_ROOT}/downloads/
 
 .PHONY: application version flamenco-manager flamenco-worker flamenco-manager_race flamenco-worker_race webapp webapp-static generate generate-go generate-py with-deps swagger-ui list-embedded test clean clean-webapp-static
