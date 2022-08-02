@@ -181,7 +181,7 @@ func (f *Flamenco) FindBlenderExePath(e echo.Context) error {
 		// There could be another Blender found on $PATH.
 		result, err := find_blender.CheckBlender(ctx, "blender")
 		switch {
-		case errors.Is(err, fs.ErrNotExist):
+		case errors.Is(err, fs.ErrNotExist), errors.Is(err, exec.ErrNotFound):
 			logger.Info().Msg("Blender could not be found as 'blender' on $PATH")
 		case err != nil:
 			logger.Info().Err(err).Msg("there was an error finding Blender as 'blender' on $PATH")
