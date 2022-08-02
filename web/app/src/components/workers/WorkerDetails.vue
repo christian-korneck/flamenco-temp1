@@ -36,9 +36,7 @@
 
     <section class="sleep-schedule" :class="{'is-schedule-active': workerSleepSchedule.is_active}">
       <h3 class="sub-title">
-        <switch-checkbox
-          :isChecked="workerSleepSchedule.is_active"
-          @switch-toggle="toggleWorkerSleepSchedule" >
+        <switch-checkbox :isChecked="workerSleepSchedule.is_active" @switch-toggle="toggleWorkerSleepSchedule">
         </switch-checkbox>
         Sleep Schedule
         <div v-if="!isScheduleEditing" class="sub-title-buttons">
@@ -72,7 +70,8 @@
         <div class="btn-bar-group">
           <div class="btn-bar">
             <button v-if="isScheduleEditing" @click="cancelEditWorkerSleepSchedule" class="btn">Cancel</button>
-            <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn btn-primary">Save Schedule</button>
+            <button v-if="isScheduleEditing" @click="saveWorkerSleepSchedule" class="btn btn-primary">Save
+              Schedule</button>
           </div>
         </div>
       </div>
@@ -208,7 +207,6 @@ export default {
 </script>
 
 <style scoped>
-
 .sub-title {
   position: relative;
 }
@@ -226,9 +224,11 @@ export default {
 .sleep-schedule .btn-bar label+.btn {
   margin-left: var(--spacer-sm);
 }
+
 .sleep-schedule dl {
   color: var(--color-text-muted);
 }
+
 .sleep-schedule.is-schedule-active dl {
   color: unset;
 }
@@ -239,8 +239,8 @@ export default {
   flex-direction: column;
 }
 
-.sleep-schedule-edit > div {
-  margin: var(--spacer-sm) 0 ;
+.sleep-schedule-edit>div {
+  margin: var(--spacer-sm) 0;
 }
 
 .sleep-schedule-edit label {
@@ -250,7 +250,7 @@ export default {
   color: var(--color-text-muted);
 }
 
-.sleep-schedule-edit > .sleep-schedule-edit-time {
+.sleep-schedule-edit>.sleep-schedule-edit-time {
   display: flex;
   margin-bottom: 0;
 }

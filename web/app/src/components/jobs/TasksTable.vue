@@ -3,11 +3,8 @@
   <div class="btn-bar-group">
     <task-actions-bar />
     <div class="align-right">
-      <status-filter-bar
-        :availableStatuses="availableStatuses"
-        :activeStatuses="shownStatuses"
-        @click="toggleStatusFilter"
-      />
+      <status-filter-bar :availableStatuses="availableStatuses" :activeStatuses="shownStatuses"
+        @click="toggleStatusFilter" />
     </div>
   </div>
   <div>

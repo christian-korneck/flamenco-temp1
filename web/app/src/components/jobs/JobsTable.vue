@@ -3,11 +3,8 @@
   <div class="btn-bar-group">
     <job-actions-bar />
     <div class="align-right">
-      <status-filter-bar
-        :availableStatuses="availableStatuses"
-        :activeStatuses="shownStatuses"
-        @click="toggleStatusFilter"
-      />
+      <status-filter-bar :availableStatuses="availableStatuses" :activeStatuses="shownStatuses"
+        @click="toggleStatusFilter" />
     </div>
   </div>
   <div>
@@ -91,7 +88,7 @@ export default {
     this.tabulator.on("rowClick", this.onRowClick);
     this.tabulator.on("tableBuilt", this._onTableBuilt);
 
-     window.addEventListener('resize', this.recalcTableHeight);
+    window.addEventListener('resize', this.recalcTableHeight);
   },
   unmounted() {
     window.removeEventListener('resize', this.recalcTableHeight);

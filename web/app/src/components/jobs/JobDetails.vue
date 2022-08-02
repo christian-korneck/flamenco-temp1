@@ -225,7 +225,7 @@ export default {
 
 <style scoped>
 /* Prevent fields with long IDs from overflowing. */
-.field-id + dd {
+.field-id+dd {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
