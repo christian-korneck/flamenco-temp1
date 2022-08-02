@@ -1,3 +1,12 @@
+
+/**
+ * The duration in milliseconds of the "flash" effect, when an element has been
+ * copied.
+ *
+ * Also check `base.css`, `.copied` rule, which defines transition durations.
+ */
+const flashAfterCopyDuration = 150;
+
 /**
  * Copy the inner text of an element to the clipboard.
  *
@@ -18,4 +27,13 @@ export function copyElementText(clickEvent) {
   document.execCommand("copy");
 
   document.body.removeChild(inputElement);
+
+  flashElement(sourceElement);
+}
+
+function flashElement(element) {
+  element.classList.add("copied");
+  window.setTimeout(() => {
+    element.classList.remove("copied");
+  }, 150);
 }

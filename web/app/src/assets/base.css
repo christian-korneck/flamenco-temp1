@@ -646,5 +646,13 @@ span.state-transition-arrow.lazy {
 }
 
 .click-to-copy {
+  /* The transition plays together with the duration set in clipboard.js */
+  --transition-duration: var(--transition-speed-fast);
   cursor: pointer;
+  transition: var(--transition-duration);
+}
+.click-to-copy.copied {
+  background-color: var(--color-accent-background);
+  color: var(--color-accent-text);
+  transition: var(--transition-duration);
 }

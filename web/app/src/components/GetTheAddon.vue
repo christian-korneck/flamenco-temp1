@@ -4,7 +4,7 @@
       <p>Get the Blender add-on and submit a job.</p>
       <p><button class="btn btn-primary">Get the add-on!</button></p>
       <p>Use the URL below in the add-on preferences. Click on it to copy.</p>
-      <p class="click-to-copy" title="Click to copy this URL" @click="copyElementText">{{ api() }}</p>
+      <p><span class="click-to-copy" title="Click to copy this URL" @click="copyElementText">{{ api() }}</span></p>
     </div>
   </div>
 </template>
@@ -21,8 +21,12 @@ import { copyElementText } from '@/clipboard.js';
   text-align: center;
 }
 
-button {
+.btn {
   margin: var(--spacer);
   font-size: var(--font-size-lg);
+}
+
+.click-to-copy {
+  padding: var(--spacer-sm);
 }
 </style>
