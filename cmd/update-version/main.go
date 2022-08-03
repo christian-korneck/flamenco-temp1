@@ -41,12 +41,7 @@ func main() {
 		return
 	}
 
-	// Lot the result & some easy-to-copy Git commands:
-	commitMsg := fmt.Sprintf("Bumped version to %s", cliArgs.newVersion)
-	tagMsg := fmt.Sprintf("Tagged version %s", cliArgs.newVersion)
-	log.Info().Msg("file replacement done, commit with:")
-	log.Info().Msgf("git commit -m %q %s %s", commitMsg, makefileFile, addonVersionFile)
-	log.Info().Msgf("git tag -a -m %q v%s", tagMsg, cliArgs.newVersion)
+	log.Info().Msg("file replacement done")
 }
 
 func parseCliArgs() {
