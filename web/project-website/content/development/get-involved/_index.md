@@ -3,10 +3,10 @@ title: Get Involved
 weight: 2
 ---
 
-Flamenco is Open Source, and open to all kinds of contributions.
+Flamenco is a Free and Open Source project, developed in public under the GPL license.
 
-Get in contact with other developers on the [#flamenco channel][chat] of Blender
-Chat. They will be happy to see a new face!
+Join the community on the [#flamenco channel][chat] of Blender Chat do discuss
+development topics. New faces are always welcome!
 
 If you want to know what kind of work can be done, take a look at the
 [workboard][workboard].
