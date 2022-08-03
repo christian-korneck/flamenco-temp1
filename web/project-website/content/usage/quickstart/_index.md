@@ -19,6 +19,14 @@ In broad terms, to render with Flamenco, follow these steps:
 8. Save your Blend file in the shared storage.
 9. Tell Flamenco to render it. You can find the Flamenco panel in Blender's Output Properties.
 
+## Setup Flamenco in 5 minutes on Windows
+
+{{< youtube O728EFaXuBk >}}
+
+## Setup Flamenco in 5 minutes on Linux and macOS
+
+Videos coming soon!
+
 Curious about [what changed since the last major release][what-is-new]?
 
 [what-is-new]: {{< ref "what-is-new" >}}
