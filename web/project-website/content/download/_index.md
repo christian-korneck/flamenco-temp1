@@ -7,8 +7,8 @@ Download Flamenco for your platform here. Each download contains both Flamenco M
 The latest version is: **{{< flamenco/latestVersion >}}**
 
 {{< hint type=caution >}}
-This is NOT an official release version yet! Flamenco is still in development,
-and this is simply the latest published development version.
+This is a **beta** version of the software! Read the announcement at the [Blender Studio blog](https://studio.blender.org/blog/announcing-flamenco-3-beta/). <br>
+Please report any issue at [developer.blender.org](https://developer.blender.org/project/profile/58/). A stable release is planned by the end of September 2022.
 {{< /hint >}}
 
 | Platform | File                                                 |
