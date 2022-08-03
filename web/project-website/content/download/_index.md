@@ -16,3 +16,10 @@ Please report any issue at [developer.blender.org](https://developer.blender.org
 | Windows  | {{< flamenco/downloadLink os="windows" ext="zip" >}} |
 | Linux    | {{< flamenco/downloadLink os="linux" >}}             |
 | macOS    | {{< flamenco/downloadLink os="macos" >}}             |
+
+
+## License
+
+Flamenco is Free and Open Source software, available under the
+[GNU General Public License](https://developer.blender.org/diffusion/F/browse/main/LICENSE).<br>
+Download the source code at [developer.blender.org](https://developer.blender.org/diffusion/F/).
