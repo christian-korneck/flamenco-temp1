@@ -18,4 +18,4 @@ Compared to version 2, Flamenco 3:
 
 [custom-jobs]: {{< ref "usage/job-types" >}}
 
-{{< button size="large" relref="usage/getting-started/" >}}Get Started{{< /button >}}
+{{< button size="large" relref="usage/quickstart/" >}}Quickstart{{< /button >}}

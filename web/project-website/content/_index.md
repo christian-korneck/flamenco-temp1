@@ -15,7 +15,7 @@ Flamenco is used in production at [Blender Studio](https://studio.blender.org).
 **Disclaimer:** this site describes Flamenco 3, which is still under heavy
 development. For information on its predecessor, see [Flamenco 2](/v2/).
 
-{{< button size="large" relref="usage/getting-started/" >}}Getting Started{{< /button >}}
+{{< button size="large" relref="usage/quickstart/" >}}Quickstart{{< /button >}}
 
 {{< button size="large" relref="download" >}}Download Flamenco{{< /button >}}
 
