@@ -9,3 +9,6 @@ header:
   - name: Development
     ref: /development/getting-started
     external: false
+  - name: Get Involved
+    ref: /development/get-involved
+    external: false
